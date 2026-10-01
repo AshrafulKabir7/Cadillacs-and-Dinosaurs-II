@@ -1,0 +1,18 @@
+# Local deployment state and credentials
+.vercel/
+.env
+.env.*
+!.env.example
+
+# Editor / OS files and local scratch outputs
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.log
+node_modules/
+work/
+
+# Never commit the original arcade ROM set or emulator research.
+dino/
+roms/
+*.zip

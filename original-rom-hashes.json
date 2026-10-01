@@ -1,0 +1,94 @@
+{
+  "bprg1.11d": {
+    "bytes": 279,
+    "sha256": "5e0b72dcc776259ee9402a7c930a5c39d6f49ed645a519ff46167c8c82b2eb0e"
+  },
+  "buf1": {
+    "bytes": 279,
+    "sha256": "f313dbf1d435ba58cc5014db6dea1770abdd01ba54c1bc510751b950dc79696a"
+  },
+  "cd-1m.3a": {
+    "bytes": 524288,
+    "sha256": "1e0b873a72e6ce283b0b674041037c45ae2c9e57b4c1c5deedf330c69998eb33"
+  },
+  "cd-2m.4a": {
+    "bytes": 524288,
+    "sha256": "d4528720f43771bb35058794b0b19fd4211f596f476a2a8f111d6a6ea9bb2ac1"
+  },
+  "cd-3m.5a": {
+    "bytes": 524288,
+    "sha256": "2df64bef90aec02faad1c5ae9e7038b1d5c23ff1894bf99fe4db49e806099511"
+  },
+  "cd-4m.6a": {
+    "bytes": 524288,
+    "sha256": "58e8dce0273dc91ae3265581dc1c9bb5d60a1976ba9a8cf2ab3bfacf6d7e16e9"
+  },
+  "cd-5m.7a": {
+    "bytes": 524288,
+    "sha256": "92ec3ebdb4632449ed9fee9d9382cadc93afc80bba69156cdb71705785cde0ee"
+  },
+  "cd-6m.8a": {
+    "bytes": 524288,
+    "sha256": "4d3be3501039715b053bc025fc9e0e9331dd5f41fb46365ec04a6dc5842bb874"
+  },
+  "cd-7m.9a": {
+    "bytes": 524288,
+    "sha256": "e0312d5f24b2cc3185c20ad8dfca3d8dcd4dcebeee1ac36c24a93d4cda0d8954"
+  },
+  "cd-8m.10a": {
+    "bytes": 524288,
+    "sha256": "873f920fc397490caf9c3e48cba87c071bff407c41464007e0ad56bcb0e7a13d"
+  },
+  "cd-q1.1k": {
+    "bytes": 524288,
+    "sha256": "8f401f35d50fca27d363e6e808cfa0fca32a6e4d18150790a560b447838b534e"
+  },
+  "cd-q2.2k": {
+    "bytes": 524288,
+    "sha256": "807a1198834ee3809ed2add8abe0d720609b4f2e2228d3cbe38079f5f33842e9"
+  },
+  "cd-q3.3k": {
+    "bytes": 524288,
+    "sha256": "d9555b58a16d915d3f6685c818c7941a95a3b950df0c566298a61dc28a161756"
+  },
+  "cd-q4.4k": {
+    "bytes": 524288,
+    "sha256": "8634cf71ba5b6117651a913c26cb5206113a52bf608dee0e4b6b1756f8dc817f"
+  },
+  "cde_21a.6f": {
+    "bytes": 524288,
+    "sha256": "324f61554147e18626bf42589f01714b967ab989a3b193dfdc30971751eaf13c"
+  },
+  "cde_22a.7f": {
+    "bytes": 524288,
+    "sha256": "027912a08621097e0b245ac126a19800f9f2f3264a2de34a99e7b6064d15a91f"
+  },
+  "cde_23a.8f": {
+    "bytes": 524288,
+    "sha256": "e9f6a050ceaeabe2cc274e74a929c76a9f803e28af32cc5b44035b602d173647"
+  },
+  "cd_q.5k": {
+    "bytes": 131072,
+    "sha256": "5ade0e369ac996254e660906154c3ffe4cdec02d0b2ad162157baf88dcc5d90d"
+  },
+  "ioa1": {
+    "bytes": 279,
+    "sha256": "8073941038aab9017d09df03d45f191688e7becaeb2c2ee6ac64bd6c57060372"
+  },
+  "iob1.12d": {
+    "bytes": 279,
+    "sha256": "9771ac95f6b470fe5f2046f6e8eafa4940be369d3bda1be0093b9b56ffe4491a"
+  },
+  "ioc1.ic1": {
+    "bytes": 279,
+    "sha256": "66c77432770f751f6e8fbd4969bdee7d5ad2f8bf2695fbe91ed275f47a9c4711"
+  },
+  "prg2": {
+    "bytes": 279,
+    "sha256": "0f50b3a9e10727bde4551605899975dec1335c08ba3112f4297b60d51340a9d0"
+  },
+  "rom1": {
+    "bytes": 279,
+    "sha256": "dff9c541fce76f6ed2c89112381ebf008cda1c7e3adde3047396d1aa2fde7d1a"
+  }
+}

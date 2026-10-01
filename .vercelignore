@@ -1,0 +1,9 @@
+.git/
+.github/
+*.md
+*.bat
+original-rom-hashes.json
+preview.png
+.nojekyll
+.gitignore
+work/
