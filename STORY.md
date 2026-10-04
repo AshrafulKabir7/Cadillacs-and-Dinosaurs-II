@@ -14,10 +14,10 @@ The four heroes must stop her without destroying the very refuge they came to sa
 
 ## The heroes
 
-- **Mustapha Cairo — Mostafa.** The fastest way through trouble is a flying kick. His cyclone special controls groups, and his movement suits aggressive play.
-- **Jack Tenrec.** A mechanic and a practical leader. Balanced damage and health, with a rising uppercut special. He gets the Cadillac running for the pursuit.
-- **Hannah Dundee.** The scientist who understands what is happening to the animals. Fast movement and a spinning sweep, with less health than the others.
-- **Mess O'Bradovich.** The heavy hitter. Slower movement, the most health and the strongest normal attacks. His seismic smash clears a crowded lane.
+- **Mustapha Cairo — Mostafa.** The fastest way through trouble is a flying kick. His Tornado Kick special controls groups, and his movement suits aggressive play.
+- **Jack Tenrec.** A mechanic and a practical leader. Balanced damage and health, with a Dino Uppercut special. He gets the Cadillac running for the pursuit.
+- **Hannah Dundee.** The scientist who understands what is happening to the animals. Fast movement, extra weapon damage and Spiral Smash, with less health than the others.
+- **Mess O'Bradovich.** The heavy hitter. Slower movement, the most health and the strongest normal attacks. His Knuckle Bomb clears a crowded lane.
 
 All four experience the same connected campaign. The choice changes combat statistics and animation, not the story route.
 
@@ -25,7 +25,7 @@ All four experience the same connected campaign. The choice changes combat stati
 
 **Setting:** sunset over a partly submerged city, abandoned cranes, cracked loading platforms and ruined towers.
 
-**Goal:** intercept the first cargo transfer. Four encounters introduce raiders, ranged enemies, breakable containers and weapon pickups.
+**Goal:** intercept the first cargo transfer. Six encounters introduce raiders, ranged enemies, breakable containers and weapon pickups.
 
 **Boss: Warden Rook.** A former dock enforcer wearing salvaged armor. He moves into range, warns before a heavy strike, and tries to corner the hero. Stay in the same lane long enough to land a combo, then move away or jump when he winds up.
 
@@ -39,9 +39,9 @@ All four experience the same connected campaign. The choice changes combat stati
 
 **Setting:** a ruined expressway threaded through returning forest.
 
-**Goal:** pursue the convoy from the Cadillac. The car moves automatically. Steer, fire, boost and ram through four escort formations.
+**Goal:** pursue the convoy from the Cadillac. The car moves automatically. Steer, boost and ram through six escort formations.
 
-**Boss: Iron Convoy.** An armored transport with a three-lane projectile volley. Keep firing, change lanes when it winds up, and use boost to pass through danger. A close-range ram damages escorts and the truck.
+**Boss: Iron Convoy.** An armored transport with a three-lane projectile volley. Change lanes for its volley, dodge its charge and marked bombardment, then boost into it during recovery. A close-range ram damages escorts and the truck.
 
 **Story turn:** the rescued cargo includes a young dinosaur. Hannah opens its cage and finds a locator pointing toward the Verdant Basin.
 
@@ -55,7 +55,7 @@ All four experience the same connected campaign. The choice changes combat stati
 
 **Goal:** destroy the control network and push through raiders, gunners and altered raptors.
 
-**Boss: Thornmaw.** A mutated predator with luminous growths. It marks a patch of ground before an acid strike. Moving outside the marked patch is safer than jumping over it. Close in after the attack and use a flying kick or weapon.
+**Boss: Thornmaw.** A massive altered predator. It cycles through charges, marked acid strikes and leaps. Moving outside the marked patch is safer than jumping over it. Close in after the attack and use a flying kick or weapon.
 
 **Story turn:** the control collars go dark. The remaining animals escape. A pipeline carries the serum toward a foundry.
 
@@ -69,7 +69,7 @@ All four experience the same connected campaign. The choice changes combat stati
 
 **Goal:** reach the furnace gates and disable the serum supply.
 
-**Boss: Foreman Cinder.** A poacher turned refinery guardian. He winds up a fast rushing attack. Change lanes during his warning or jump as he passes. His recovery window leaves time for a heavy combo.
+**Boss: Foreman Cinder.** A poacher turned refinery guardian. He cycles through a heavy cleave, a fast rush and a marked fire attack. Change lanes during his warning or jump as he passes. His recovery window leaves time for a heavy combo.
 
 **Story turn:** beneath the refinery is an elevator into a pre-cataclysm research station. Its records reveal Project Regent.
 
@@ -83,7 +83,7 @@ All four experience the same connected campaign. The choice changes combat stati
 
 **Goal:** destroy the station's defenses before its experiments reach maturity.
 
-**Boss: Sentinel Echo.** Voss's adaptable guardian. Echo alternates between marked shockwave attacks and summoning reinforcements. Use your special when the reinforcements close in. Jump over the marked pulse, then concentrate attacks on Echo.
+**Boss: Sentinel Echo.** Voss's adaptable guardian. Echo cycles through projectile volleys, leaping attacks and summoning reinforcements. Use your special when the reinforcements close in. Move away from the marked leap landing, then concentrate attacks on Echo during recovery.
 
 **Story turn:** Echo breaks. Voss broadcasts her plan from the vault below. The heroes take the final descent.
 
@@ -99,7 +99,7 @@ All four experience the same connected campaign. The choice changes combat stati
 
 **Final boss, phase one: Dr. Mara Voss.** The serum has already changed her. She moves into combat range and fires projectile volleys. Dodge between lanes and punish her recovery.
 
-**Final boss, phase two: the Pale Regent.** When Voss's first health bar is depleted, she transforms into the creature she meant to create: a large pale dinosaur hybrid with dorsal armor and a glowing reactor graft. A fresh health bar appears. Its warning is shorter, its ground slam is larger and its movement is faster. Jump over the marked slam or get outside the ring, then strike before the next warning.
+**Final boss, phase two: the Pale Regent.** When Voss's first health bar is depleted, she transforms into the creature she meant to create: a large pale dinosaur hybrid with elongated limbs and a whipping tail. A fresh health bar appears. It cycles through ground slams, charges, spine volleys and leaps; its movement is faster. Jump over the marked slam or get outside the ring, then strike before the next warning.
 
 The second form has more health than the first. Save food, weapons and enough health for specials. Both forms remain inside the reachable combat arena.
 

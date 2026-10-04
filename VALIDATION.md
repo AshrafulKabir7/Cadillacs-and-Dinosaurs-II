@@ -1,21 +1,27 @@
-# Validation
+# Validation — October 4, 2026
 
-Validated in Chromium on Windows on October 1, 2026.
+Tested in Chromium on Windows. **51 browser checks passed with no uncaught runtime exceptions.**
 
-## Campaign and gameplay
+Coverage: four heroes; supplied stage music, pause/mute, boss-intro-to-loop transitions; melee timing/direction; pistol ammo and lanes; shotgun spread; Uzi bursts; rifle penetration; rocket splash; grenade flight; special health/weapon drop; knockdowns; jumping; calming dinosaurs; rod breakage; knife stab/throw; attack-button pickup; fourteen weapons; six encounters and boss completion per chapter; final transformation; ending; saved unlocks; Sound Room; metadata/duration for all 27 MP3s; offline launch with music; mobile layout and touch jump.
 
-27 browser integration checks passed with no uncaught browser errors. They covered selection of all four hero buttons, character/difficulty selection, melee damage, special health cost and cooldown, jump physics, destructible crates and gun ammunition, airborne dodging, pause/resume, Cadillac movement and boost, all four encounters and boss completion in each of the six chapters, inter-chapter story scenes, the final boss's second phase, the ending, chapter unlocks and persistence after reload.
+Transition checks accelerate encounters through test helpers. A separate playthrough uses normal keyboard movement, attacks, jumps, specials and pickups, without forcing damage or teleporting. It completed all six Story chapters and both final boss forms. It caught a Cadillac reverse-movement problem, which was corrected.
 
-Campaign transition checks deliberately accelerated encounter completion to verify progression independently of combat balance. A separate automated playthrough used regular keyboard movement, attacks, jumps, specials and pickups without teleporting or forcing enemy damage. It completed all six chapters in Story mode, including both final boss forms. This uncovered a final-boss arena boundary problem; the boundary was corrected and the playthrough completed after the fix. Boss wind-ups are preserved under normal hits so they can execute their attacks during combat.
+Additional input checks cover a simulated gamepad alongside keyboard input, gamepad jump, three-life exhaustion, chapter retry and touch attack. Gameplay, bosses, the transformed final boss, Sound Room and a 390-pixel touch viewport were visually inspected. Scenery margins and weapon orientation were corrected.
 
-Additional input checks covered coexistence of keyboard and a connected gamepad, a simulated gamepad jump, three-life exhaustion, chapter retry, visibility of touch controls and a touch attack.
+Original ROM hashes are checked before packaging. MP3 and weapon-sheet originals are read-only inputs; delivery copies are separate.
 
-## Loading and layout
+## Reproduce tests
 
-The game was launched through both a localhost server and a direct `file://` URL. Direct offline loading passed. Screenshots of the title, hero selection, gameplay and all six boss environments were reviewed. A 390-pixel phone layout and touch-device layout were checked. Hero selection was adjusted to keep the start button visible on the smaller screen.
+From the repository root:
 
-The original arcade file hashes were checked again before packaging. The supplied ROM folder remained unchanged.
+1. `npm install --prefix tests`
+2. `npm exec --prefix tests -- playwright install chromium`
+3. In another terminal: `python -m http.server 8766 --bind 127.0.0.1`
+4. `node tests/regression.cjs`
+5. `node tests/bot.cjs`
+
+Reports and screenshots go to ignored `tests/results/`. Test dependencies are optional; play and deployment require no installation or build.
 
 ## Limits
 
-Automated play verifies that the campaign can be completed; it does not replace human testing for enjoyment or fine balancing. The delivered campaign is intentionally short. Story-mode progression was played through automatically. Arcade selection and its changed statistics were checked, but a full Arcade playthrough was not performed. Physical gamepad hardware was not available; its mappings were tested with a simulated controller. Chromium was used for testing; other current browsers were not individually tested. Saving depends on the browser allowing local storage.
+Automated completion does not prove ideal balance or replace human playtesting. The campaign remains short. Full Arcade-difficulty completion and physical controllers were not tested. Chromium was tested; Firefox, Safari and physical phones were not individually tested. Phone/touch and controllers were simulated. Local validation and a GitHub push do not establish a successful Vercel deployment.

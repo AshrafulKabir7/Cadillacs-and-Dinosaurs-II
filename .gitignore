@@ -16,3 +16,5 @@ work/
 dino/
 roms/
 *.zip
+
+tests/results/

@@ -1,27 +1,42 @@
-# Source and asset notes
+# Assets and gameplay references
 
-The supplied `dino` folder contains CPS-1 arcade ROM images, not the source project for the original game. The filenames and graphics layout were identified using the official MAME driver for Cadillacs and Dinosaurs:
+The supplied dino directory contains CPS-1 ROM images, not the original source project. This is a newly written browser game; it does not emulate the original at runtime.
 
-- https://github.com/mamedev/mame/blob/master/src/mame/capcom/cps1.cpp
-- https://github.com/mamedev/mame/blob/master/src/mame/capcom/cps1_v.cpp
-- https://docs.mamedev.org/luascript/index.html
+## ROM graphics
 
-## Recovered graphics
+Graphics ROMs were interleaved into a four-megabyte region and decoded into 16×16 tiles with four bitplanes. Original palettes and sprite placement were read from emulated graphics memory. The first atlas contains 194 poses/objects. This update adds **90 selected combat poses**: raiders, knife fighters, poachers, heavy enemies, raptors, a larger dinosaur, mutants, Slice-derived and Tyrog-derived boss artwork, and a motorcycle. Incomplete and overlapping frames were omitted from the new atlas.
 
-The eight `cd-*m` graphics ROMs were interleaved into their original four-megabyte graphics region. Tiles were decoded as 16×16 pixels with four bitplanes. Sprite placement and palette data were read from emulated graphics memory during short captures of each of the four heroes. The result is an atlas of 194 recovered poses and objects, including the heroes, two enemy appearances and a barrel.
+New named bosses are fan-sequel characters using adapted arcade art. The Pale Regent changes the palette and scale of recovered mutant artwork. Vehicles remain canvas drawings; some movement states reuse poses. Timing and encounters are this game's implementation.
 
-The runtime embeds that atlas in `assets.js`; it does not run the original arcade program or require MAME. The recovered characters retain their original colored pixel artwork. Only selected complete poses are used by the game. Other captured poses remain in the atlas as editing references. Some captured enemy poses contain overlapping objects; the game selects the clean poses.
+Technical references:
 
-The new environments, Cadillac, dinosaur enemies and Pale Regent are drawn by this game's canvas code. Several human bosses use recovered enemy artwork with a changed palette or additional equipment. The synthesized music and effects are new; the original QSound soundtrack is not used.
+- [Official MAME CPS-1 driver](https://github.com/mamedev/mame/blob/master/src/mame/capcom/cps1.cpp)
+- [Official MAME video implementation](https://github.com/mamedev/mame/blob/master/src/mame/capcom/cps1_v.cpp)
+- [MAME Lua API](https://docs.mamedev.org/luascript/index.html)
+- [Archived MAME cheat metadata](https://github.com/libretro/mame2010-libretro/tree/master/metadata), used for stage selection and player health during local artwork capture.
 
-This is a newly written browser game, not a ROM patch. It has no dependency on an emulator, external website, downloaded font, game engine package, installation service or remote account.
+Official MAME ran without sound for extraction. The supplied set lacked unused board-logic dumps and expected QSound firmware; temporary research used zero-filled placeholders for missing files. These are not authentic dumps and are neither distributed nor used by the game. No emulator or full ROM archive is included. The original ROM hash manifest is retained.
 
-## Extraction details
+## Supplied weapons and music
 
-For the extraction process only, official MAME was run without audio. The supplied set lacked several unused board-logic dumps and the QSound firmware expected by that MAME build. A temporary research archive used zero-filled placeholders for those missing files. Those placeholders were not added to the original folder, are not represented as authentic dumps, and are not used by this game. Emulation was used solely to read graphics and palettes; original arcade music was not recovered.
+`assets/reference/weapons.png` preserves the supplied weapon sheet. Runtime rectangles select weapons, muzzle flashes and explosions. Canvas color-keying removes blue; horizontal poses and facing direction are selected individually.
 
-Original ROM files were only read. Their recorded SHA-256 hashes were rechecked after completion. `original-rom-hashes.json` contains the manifest.
+The 28 MP3 files contain **27 unique recordings**. Both Four Heroes files have identical SHA-256 hashes. `assets/audio/manifest.json` records source names, duplicates, input hashes, output sizes and durations. Delivery copies use 160 kbps MP3; originals were only read. Audio totals approximately 45.7 MB. Only the current cue loads, rather than the entire collection at startup.
 
-## Attribution
+Music is the supplied soundtrack. Combat effects are synthesized. Playback starts after user interaction. The Sound Room contains all distinct supplied tracks.
 
-Cadillacs and Dinosaurs arcade game and original artwork: Capcom, 1993. Original characters and setting derive from Mark Schultz's Xenozoic Tales. This personal fan project is unofficial and is not affiliated with or endorsed by the original creators. New fan-game source code, story and procedural graphics are in this folder and can be edited directly.
+## Background artwork
+
+Sheets contributed by **shunninghuang** at [Sprite Database](https://spritedatabase.net/game/597) remain in `assets/reference/`, including original credit strips. Runtime crops exclude strips from gameplay, key out magenta, and arrange scenery/floor sections into the sequel's areas. Mission signs, hazards and encounters are new.
+
+Source pages: [Episode 1](https://spritedatabase.net/file/20058), [Episode 2](https://spritedatabase.net/file/20059), [Episode 4](https://spritedatabase.net/file/20061), [Episode 5](https://spritedatabase.net/file/20062), [Episode 6](https://spritedatabase.net/file/20063), [Episode 7](https://spritedatabase.net/file/20064), [Episode 8](https://spritedatabase.net/file/20065).
+
+## Movement and combat
+
+- [RQ87 gameplay reference](https://rq87.flyingomelette.com/RQ/CAD/game.html): running, pickups, weapon drops, calming dinosaurs and Cadillac contact attacks.
+- [RQ87 weapon reference](https://rq87.flyingomelette.com/RQ/CAD/wep.html): firearm differences, ammunition, explosives, knife throwing and rod breakage.
+- [RQ87 character reference](https://rq87.flyingomelette.com/RQ/CAD/char.html): movement, dash attacks and specials.
+
+These informed selected mechanics. The new engine does not reproduce every original move, animation, AI rule or damage value. Cooperative grabs and team moves are outside this single-player version.
+
+Original game, artwork and music: Capcom, 1993. Characters and setting derive from Mark Schultz's Xenozoic Tales. This unofficial fan project is unaffiliated with the original creators. No ownership of original assets is asserted.

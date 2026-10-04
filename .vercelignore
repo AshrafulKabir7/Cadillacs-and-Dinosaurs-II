@@ -7,3 +7,13 @@ preview.png
 .nojekyll
 .gitignore
 work/
+
+tests/
+
+assets/reference/
+
+assets/sprites.png
+
+assets/combat-sprites.png
+
+assets/audio/manifest.json
