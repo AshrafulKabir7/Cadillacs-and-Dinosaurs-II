@@ -22,9 +22,9 @@ Before the message finishes, armed dock guards seize the transmitter and drive t
 
 ## Chapter 1 — The Drowned Harbor
 
-The route passes the silent docks, customs house and Rook's blockade. The guards have confiscated fuel and maps as well as the radio. Their ordinary raiders flank the heroes while armed poachers hold the long lanes.
+The route passes the silent docks, the lighthouse relay and Rook's blockade. The player restores three relay consoles, carrying the warning district by district while the main transmitter remains missing. The guards have confiscated fuel and maps as well as the radio. Their ordinary raiders flank the heroes while armed poachers hold the long lanes.
 
-**Warden Rook** is Sable's dock enforcer. He uses a close combination, a committed rush and covering fire. His orders reveal the commissioner's name. The stolen transmitter and a floodgate governor leave on an armored tanker.
+**Warden Rook** is Sable's dock enforcer. He uses a close combination, a committed baton rush and a warned ground strike. His orders reveal the commissioner's name. The stolen transmitter and a floodgate governor leave on an armored tanker.
 
 **Rook:** There's no evacuation order. Go home.
 
@@ -36,13 +36,13 @@ The gang needs both pieces of cargo: the radio can warn the settlements, and the
 
 ## Chapter 2 — The Green Highway
 
-Jack takes the Cadillac along the broken expressway. Mustapha calls the gaps in the road, Hannah tracks the tanker signal, and Mess clears its escorts. The chapter is a vehicle pursuit, with steering, ramming, boost and an armored transport boss.
+Jack takes the Cadillac along the broken expressway. Mustapha calls the gaps in the road, Hannah tracks the tanker signal, and Mess clears its escorts. The chapter is a vehicle pursuit, with steering, ramming, boost and an armored transport boss. The player steers into three dropped cargo modules: a pressure sensor, the governor and its service map.
 
 **Mess:** How much water can one man steal?
 
 **Jack:** Enough to make everyone else pay for it.
 
-The **Iron Convoy** has volleys, a rush and marked bombardment. After the escort is stopped, Hannah recovers the transmitter and broadcasts the first genuine evacuation warning. Jack secures the governor, but its drive coupling is damaged.
+The **Iron Convoy** has volleys, a rush and marked bombardment. After the escort is stopped, Hannah recovers the transmitter and extends the dock relays' evacuation warning to the inland settlements. Jack secures the governor, but its drive coupling is damaged.
 
 The tanker's map reveals a second part of Sable's plan. Sonic beacons have driven migrating dinosaurs onto the only safe ridge, forcing the refugees back toward the lowlands.
 
@@ -54,7 +54,7 @@ Hired hunters defend the beacon trail. Ordinary dinosaurs calm and leave after b
 
 **Mess:** Then we move the men who put us here.
 
-When the encounter ends, the beacon fails. Thornmaw retreats alive. Its young follow the herd along the reopened passage. Families cross behind them.
+The player destroys three trail lures along the passage. At the nest, a fourth sonic driver must be destroyed during the boss encounter. Reducing Thornmaw's health only staggers it; silencing the driver makes it retreat alive. Its young follow the herd along the reopened passage. Families cross behind them.
 
 **Hannah:** There. Above the flood line. Last Eden.
 
@@ -64,7 +64,7 @@ The governor still needs a coupling. Jack recognizes the manufacturer's stamp: C
 
 ## Chapter 4 — The Ashen Foundry
 
-Sable's men are melting down communal water pumps to build an armored maintenance crawler. The heroes cross the scrap yard and machine shop before reaching **Foreman Cinder** at the furnace floor. Steam vents warn before discharging. Cinder fights with heavy cleaves, a charge and furnace bursts.
+Sable's men are melting down communal water pumps to build an armored maintenance crawler. The heroes cross the scrap yard and machine shop before reaching **Foreman Cinder** at the furnace floor. The player must close the coolant bypass, furnace feed and coupling-press valves. Each requires a short uninterrupted hold at its console. Vents warn before discharging and stop after the active valve is secured. Cinder fights with heavy cleaves, a charge and furnace bursts.
 
 **Cinder:** Water belongs to whoever can hold the gate.
 
@@ -82,7 +82,7 @@ The archive is a pumping station and radio relay. **Signal Captain Echo**, Sable
 
 **Hannah:** This is Hannah Dundee. Stay on the high road. We're coming.
 
-Echo uses ranged volleys, a jumping attack and calls hired reinforcements. Breaking his defense restores the real channel. Hannah gets acknowledgments from the settlements; they are opening their shelters. Jack releases the service-tunnel lock.
+Echo uses ranged volleys, a jumping attack and calls hired reinforcements. The player retunes three radio consoles to the displayed ridge, shelter and tunnel channels, then breaks Echo's defense to secure the real broadcast. Hannah gets acknowledgments from the settlements; they are opening their shelters. Jack releases the service-tunnel lock.
 
 Sable makes an offer over the recovered frequency.
 
@@ -92,7 +92,7 @@ Jack switches off the receiver. The Cadillac enters the tunnel.
 
 ## Chapter 6 — The Crown Barrier
 
-The service tunnel opens onto the reservoir walkway. Last Eden is visible above the far bank. At the floodgate, **Marshal Sable** tries to hold the heroes off with gunfire, close attacks and guards.
+The service tunnel opens onto the reservoir walkway. The player operates the downstream gate, relief channel and governor socket on the approach. Last Eden is visible above the far bank. At the floodgate, **Marshal Sable** tries to hold the heroes off with gunfire, close attacks and guards.
 
 **Sable:** They'll thank the man who decides who survives.
 
@@ -102,7 +102,7 @@ When his first health bar is depleted, Sable boards the **Crown Engine**. This i
 
 Its attack cycle is a marked hammer shockwave, a spillway surge, a three-lane cannon volley and a committed charge. Jump the shockwave; change lanes for the surge, which cannot be jumped. Strike during recovery. Damaging the crawler below half health produces smoke.
 
-Destroying the drive stops Sable from tearing out the gate. Jack installs the recovered governor. Mess holds the manual release, Hannah coordinates downstream shelters and Mustapha opens the spillway. Water flows into the old riverbed a gate at a time.
+Destroying the drive stops Sable from tearing out the gate. The chapter stays playable: the hero must reach and hold the final spillway release to finish. Jack checks the installed governor. Mess holds the manual release, Hannah coordinates downstream shelters and Mustapha opens the spillway. Water flows into the old riverbed a gate at a time.
 
 ## Ending — no toll at the well
 
@@ -118,4 +118,4 @@ The four drive home together. Last Eden remains a refuge open to the coast, with
 
 ## Playable scope
 
-Chapter briefings, dialogue, objectives and completion/ending text are in `campaign.js` and `game.js`. The garage scene, extra lines and inter-chapter actions above are the extended scenario; they are presented through text transitions, not fully animated cinematics. The six boss encounters and both final phases are playable.
+Chapter briefings, dialogue, objectives and completion/ending text are in `campaign.js`, `mission-data.js` and `game.js`. All 20 mission tasks are required in play; their progress appears on the HUD. The garage scene, extra lines and inter-chapter actions above are the extended scenario; they are presented through text transitions, not fully animated cinematics. The six boss encounters and both final phases are playable.

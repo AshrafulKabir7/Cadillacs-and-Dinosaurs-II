@@ -6,9 +6,9 @@ The supplied dino directory contains CPS-1 ROM images, not the original source p
 
 Graphics ROMs were interleaved into a four-megabyte region and decoded into 16×16 tiles with four bitplanes. Original palettes and sprite placement were read from emulated graphics memory. The first atlas contains 194 poses/objects. This update adds **90 selected combat poses**: raiders, knife fighters, poachers, heavy enemies, raptors, a larger dinosaur, mutants, Slice-derived and Tyrog-derived boss artwork, and a motorcycle. Incomplete and overlapping frames were omitted from the new atlas.
 
-New named bosses are fan-sequel characters using adapted arcade art. The Crown Engine is new canvas artwork with a cockpit, hydraulic hammer, cannon, tracks and damage smoke. Vehicles remain canvas drawings; some movement states reuse poses. Timing and encounters are this game's implementation.
+Rook, Cinder, Echo and Sable now have original generated ready/attack sprites. Thornmaw retains the larger recovered dinosaur artwork. Older boss-adapted frames remain in the atlas but no longer render these four human bosses. The Crown Engine is new canvas artwork with a cockpit, hydraulic hammer, cannon, tracks and damage smoke. Vehicles remain canvas drawings; some movement states reuse poses. Timing and encounters are this game's implementation.
 
-The hero correction adds **28 selected poses** in `hero-art.js` / `assets/hero-actions.png`: aiming, recoil, three running frames, a dash strike and an aerial strike for each hero. Aiming and dash art was recovered through controlled local arcade captures. The firearm renderer holds the aiming torso while using walking legs; it never selects an unarmed attack animation for gunfire. Per-hero grip coordinates align the supplied gun sprites. Atlas frame metadata identifies its local capture and frame number.
+The hero correction adds **28 selected poses** in `hero-art.js` / `assets/hero-actions.png`: aiming, recoil, three running frames, a dash strike and an aerial strike for each hero. Aiming and dash art was recovered through controlled local arcade captures. The firearm renderer uses full-body aiming/recoil poses when firing and the original full-body stride with a lowered weapon while walking. This removes the previous torso/leg clipping seam. It never selects an unarmed attack animation for gunfire. Per-hero grip coordinates align the supplied gun sprites. Atlas frame metadata identifies its local capture and frame number.
 
 Technical references:
 
@@ -29,11 +29,14 @@ Music is the supplied soundtrack. Combat effects are synthesized. Playback start
 
 ## Background artwork
 
-Sheets contributed by **shunninghuang** at [Sprite Database](https://spritedatabase.net/game/597) remain in `assets/reference/`, including original credit strips. Runtime crops exclude strips from gameplay, key out magenta, and arrange scenery/floor sections into the sequel's areas. Mission signs, hazards and encounters are new.
+Sheets contributed by **shunninghuang** at [Sprite Database](https://spritedatabase.net/game/597) remain in `assets/reference/`, including original credit strips. These are retained research assets. `world-art.js` and these backgrounds are no longer loaded by `index.html` and are excluded from the Vercel upload. The active six environments and four human boss designs were generated for this sequel. Exact prompts, files and the built-in generation method are recorded in [ART-DIRECTION.md](ART-DIRECTION.md). Mission consoles, hazards and the final machine are drawn in code.
 
 Source pages: [Episode 1](https://spritedatabase.net/file/20058), [Episode 2](https://spritedatabase.net/file/20059), [Episode 4](https://spritedatabase.net/file/20061), [Episode 5](https://spritedatabase.net/file/20062), [Episode 6](https://spritedatabase.net/file/20063), [Episode 7](https://spritedatabase.net/file/20064), [Episode 8](https://spritedatabase.net/file/20065).
 
 ## Movement and combat
+
+The latest pass also used the user's local all-boss-fights video. [VIDEO-REVIEW.md](VIDEO-REVIEW.md) records the sampled portions, observations, reproduced bugs and fixes. The MP4 remains an unchanged local input and is not redistributed.
+
 
 - [Goh_Billy's GameFAQs move list, supplied by the user](https://gamefaqs.gamespot.com/arcade/575551-cadillacs-and-dinosaurs/faqs/53882): indexed excerpts were accessible, though the full page blocked direct retrieval. These establish different character actions and attack/jump inputs; they are references, not this sequel's script.
 - [ninjasrok's GameFAQs walkthrough](https://gamefaqs.gamespot.com/arcade/575551-cadillacs-and-dinosaurs/faqs/45433): indexed material corroborates the four distinct running attacks and enemy attack patterns.

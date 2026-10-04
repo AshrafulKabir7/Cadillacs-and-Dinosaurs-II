@@ -1,0 +1,47 @@
+const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs');
+fs.mkdirSync('tests/results',{recursive:true});
+(async()=>{const browser=await chromium.launch({headless:true}),page=await browser.newPage({viewport:{width:1280,height:900}}),errors=[];
+page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
+await page.goto('http://127.0.0.1:8766');await page.waitForFunction(()=>SEQUEL_RENDER.ready);await page.click('#sound');
+const checks=await page.evaluate(()=>{
+ const g=LAST_EDEN,out=[];const check=(name,value)=>out.push({name,passed:!!value});
+ const ticks=n=>{for(let i=0;i<n;i++)g.step(1/60);},key=(code,on)=>window.dispatchEvent(new KeyboardEvent(on?'keydown':'keyup',{code,bubbles:true}));
+ const target=x=>{const e=g.test.spawnEnemy(x,350,'brute');e.hp=e.maxhp=10000;e.state='recover';e.timer=999;return e;};
+ const kill=()=>{g.snapshot.enemies.forEach((e,i)=>{if(!e.dead)g.test.damageEnemy(i,99999);});ticks(110);};
+ const task=level=>{g.start(level);g.test.move(400,350);ticks(1);kill();g.test.move(970,350);ticks(1);kill();return g.snapshot.mission.active;};
+ for(let hero=0;hero<4;hero++){
+  g.start(0,hero);g.test.move(100,350);g.test.equip('gun');g.controls.attack();key('KeyS',true);ticks(10);key('KeyS',false);
+  check(`Hero ${hero+1}: firing plants feet in both axes`,g.snapshot.player.y===350&&g.snapshot.player.x===100);
+  g.start(0,hero);g.test.move(100,350);const e=target(260);g.test.equip('gun');g.controls.jump();ticks(22);g.controls.attack();ticks(15);
+  check(`Hero ${hero+1}: overhead shot misses a grounded enemy`,e.hp===e.maxhp);
+ }
+ g.start(0);g.test.move(100,350);ticks(110);g.test.equip('uzi');g.controls.attack();g.test.damagePlayer(24);ticks(25);
+ check('A knockdown cancels unspent burst rounds',!g.snapshot.player.weapon&&g.snapshot.drops.some(d=>d.type==='uzi'&&d.ammo===47)&&g.snapshot.bullets.length<=1);
+ g.start(0);g.test.move(100,350);target(170).inv=3;const hp=g.snapshot.player.hp;g.controls.special();check('Invulnerable enemies do not trigger special health cost',g.snapshot.player.hp===hp);
+ g.start(0);g.test.move(100,350);const late=target(320);key('ShiftLeft',true);key('KeyD',true);ticks(1);g.controls.attack();ticks(6);
+ check('A distant target is outside the first dash impact',late.hp===late.maxhp);ticks(13);key('KeyD',false);key('ShiftLeft',false);
+ check('The travelling dash hits when it reaches a target',late.hp<late.maxhp);const hit=late.hp;ticks(12);check('One dash cannot damage the same target repeatedly',late.hp===hit);
+ g.start(0);g.test.move(100,350);key('KeyJ',true);ticks(10);key('KeyK',true);ticks(1);check('Jumping while attack is held does not trigger an accidental special',g.snapshot.player.z>0&&g.snapshot.player.special===0);key('KeyJ',false);key('KeyK',false);
+ g.start(0);g.test.move(100,350);const far=target(215),near=target(170);g.test.equip('gun');g.controls.attack();ticks(20);check('A pistol hits the nearest enemy, independent of spawn order',near.hp<near.maxhp&&far.hp===far.maxhp);
+ g.start(0);g.test.move(100,310);const blocked=target(360);blocked.y=310;g.test.equip('gun');g.controls.attack();ticks(30);check('A crate absorbs the shot before the enemy behind it',blocked.hp===blocked.maxhp&&g.snapshot.objects[0].hp<=0);
+ g.start(0);g.test.move(100,350);const fallen=target(150);g.test.damageEnemy(0,1);fallen.inv=0;g.test.damageEnemy(0,1);fallen.inv=0;g.test.damageEnemy(0,1);ticks(55);check('A knocked-down enemy enters a separate rise state',fallen.state==='rise');ticks(24);check('Enemy recovery ends in a standing state',fallen.state==='walk');
+ g.start(0);key('KeyD',true);ticks(3);key('Escape',true);key('Escape',false);document.getElementById('resume').click();const px=g.snapshot.player.x;ticks(20);check('Pause clears a held movement key',g.snapshot.player.x===px);key('KeyD',false);
+ let t=task(0);check('Clearing fighters alone leaves the relay arena locked',g.snapshot.lock!==null&&t.kind==='relay');g.test.move(t.x,t.y);g.test.equip('gun');key('KeyE',true);ticks(70);key('KeyE',false);check('Holding interact operates a relay without throwing the gun',g.snapshot.mission.completed===1&&g.snapshot.player.weapon==='gun');check('Completing the relay opens the cleared arena',g.snapshot.lock===null);
+ t=task(2);g.test.move(t.x-100,t.y);g.test.equip('bazooka');g.controls.attack();ticks(40);check('Rocket splash destroys a sonic objective',g.snapshot.mission.completed===1);
+ t=task(3);g.test.move(t.x,t.y);key('KeyE',true);ticks(20);key('KeyE',false);g.test.move(t.x-120,t.y);ticks(60);check('Leaving a valve interrupts its operation',g.snapshot.mission.active?.progress===0);g.test.move(t.x,t.y);key('KeyE',true);ticks(70);key('KeyE',false);check('Returning and holding interact completes a valve',g.snapshot.mission.completed===1);
+ t=task(4);g.test.move(t.x,t.y);key('KeyE',true);ticks(60);key('KeyE',false);check('Holding interact steps a tuning dial only once',g.snapshot.mission.active?.channel===1);key('KeyE',true);ticks(1);key('KeyE',false);check('Tuning the marked channel completes the radio task',g.snapshot.mission.completed===1);
+ g.start(5);g.test.move(4300,350);g.test.spawnBoss();ticks(170);g.test.damageEnemy(0,9999);ticks(180);g.test.damageEnemy(0,9999);ticks(110);check('Defeating the final machine leaves a playable release task',g.state==='play'&&g.snapshot.mission.active?.bossTask);t=g.snapshot.mission.active;g.test.move(t.x,t.y);key('KeyE',true);ticks(100);key('KeyE',false);check('Operating the final release completes the chapter',g.state==='clear');
+ check('All four new human boss designs load',SEQUEL_RENDER.bossCount===4&&SEQUEL_RENDER.ready);
+ return out;
+});
+const mobile=await browser.newPage({viewport:{width:844,height:390},isMobile:true,hasTouch:true});mobile.on('pageerror',e=>errors.push(e.message));await mobile.addInitScript(()=>{window.requestAnimationFrame=()=>0;});await mobile.goto('http://127.0.0.1:8766');await mobile.waitForFunction(()=>SEQUEL_RENDER.ready);await mobile.click('#sound');
+await mobile.evaluate(()=>{const g=LAST_EDEN,ticks=n=>{for(let i=0;i<n;i++)g.step(1/60);};g.start(0);g.test.move(400,350);ticks(1);g.test.finishEncounter();ticks(100);g.test.move(970,350);ticks(1);g.snapshot.enemies.forEach((e,i)=>g.test.damageEnemy(i,99999));ticks(100);const t=g.snapshot.mission.active;g.test.move(t.x,t.y);ticks(100);g.render();});
+checks.push({name:'Landscape touch controls and playfield fit the viewport',passed:await mobile.evaluate(()=>[...document.querySelectorAll('[data-key],#game')].every(e=>{const r=e.getBoundingClientRect();return r.top>=0&&r.left>=0&&r.bottom<=innerHeight&&r.right<=innerWidth;}))});
+const pick=await mobile.locator('[data-key="KeyE"]').boundingBox();await mobile.mouse.move(pick.x+pick.width/2,pick.y+pick.height/2);await mobile.mouse.down();await mobile.evaluate(()=>{for(let i=0;i<70;i++)LAST_EDEN.step(1/60);LAST_EDEN.render();});await mobile.mouse.up();
+checks.push({name:'Holding the on-screen interact button completes a relay',passed:await mobile.evaluate(()=>LAST_EDEN.snapshot.mission.completed===1)});await mobile.screenshot({path:'tests/results/landscape-controls.png'});
+await mobile.click('#full');await mobile.waitForFunction(()=>document.fullscreenElement);checks.push({name:'Touch fullscreen includes the controls',passed:await mobile.evaluate(()=>document.fullscreenElement.classList.contains('cabinet'))});await mobile.evaluate(()=>document.exitFullscreen());
+const offline=await browser.newPage();offline.on('pageerror',e=>errors.push(e.message));await offline.goto(require('node:url').pathToFileURL(require('node:path').resolve('index.html')).href);await offline.waitForFunction(()=>SEQUEL_RENDER.ready);checks.push({name:'Original scenery and all new human bosses load from a local file',passed:await offline.evaluate(()=>SEQUEL_RENDER.bossCount===4)});
+checks.push({name:'No browser exceptions in sequel and mobile checks',passed:errors.length===0});
+fs.writeFileSync('tests/results/sequel-report.json',JSON.stringify({passed:checks.filter(c=>c.passed).length,checks,errors},null,2));await browser.close();
+for(const row of checks)assert.ok(row.passed,row.name);assert.equal(errors.length,0,errors.join('\n'));console.log(JSON.stringify({passed:checks.length,errors}));
+})().catch(e=>{console.error(e);process.exit(1);});

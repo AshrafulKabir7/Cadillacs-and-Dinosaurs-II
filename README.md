@@ -12,8 +12,11 @@ Open **index.html** or **PLAY GAME.bat**. Keep the whole folder, including `asse
 
 For **Vercel**, import this repository, choose **Other**, leave build/install commands empty, and use output directory **`.`**. The root `vercel.json` supplies those settings. No environment variables are needed. [DEPLOYMENT.md](DEPLOYMENT.md) also covers GitHub Pages.
 
-## Arcade polish update
+## Video-reference and sequel update
 
+- **The four heroes and regular enemy artwork are preserved.** New environments and four human bosses share the arcade palette and perspective. [Art assets and generation prompts](ART-DIRECTION.md).
+- **20 required playable objectives**: restore three dock relays, recover three cargo modules, destroy four sonic lures, operate three pressure valves, tune three radio channels, and prepare/release four floodgate controls. Thornmaw retreats when the nest driver is silenced; the final chapter ends after you operate the spillway.
+- **Video-informed combat fixes**: grounded firing plants both feet; bullets respect airborne height, nearby obstacles and target order; interrupted bursts retain their unspent ammunition. Flying strikes can connect as they travel, and enemy knockdowns have a separate recovery state. Pause clears held input. [Review and reproduced defects](VIDEO-REVIEW.md).
 - **Separate armed animations for all four heroes.** Firearms use recovered aiming/recoil poses and aligned grips. Shooting never triggers a fist strike; picking up a gun cancels queued melee. Point-blank shots work correctly.
 - **28 additional hero poses** with distinct running, dash and aerial attacks: Mustapha's flying kick, Jack's slide, Hannah's knee and Mess's body splash. Double-tap running continues while the direction is held.
 - A rewritten campaign, new dialogue and ending, a living Thornmaw retreat, and **Sable's mechanical Crown Engine** with hammer, cannon, charge and spillway surge attacks.
@@ -21,7 +24,7 @@ For **Vercel**, import this repository, choose **Other**, leave build/install co
 - **27 supplied soundtrack tracks**, with changing area themes, boss intros and loops, stage-clear cues, an ending and a Sound Room. Duplicate Four Heroes files are stored once. Tracks load individually as needed.
 - **14 weapon types** using the supplied sheet: gun, Uzi, shotgun, rifle, M-16A1, bazooka, knife, rod, stick, club, torch, grenade, dynamite and stone.
 - **90 additional recovered combat poses** for armed enemies, heavy fighters, dinosaurs and mutants.
-- **Three visual areas and six encounters per chapter**, with arcade scenery, varied enemy formations, supplies, foundry vents and pumping-station hazards. Knife fighters throw from range; heavy enemies commit to warned rushes.
+- **Six original environments and six encounters per chapter**, with parallax scenery, rain, ambient particles, varied enemy formations, supplies, foundry vents and pumping-station hazards. Knife fighters throw from range; heavy enemies commit to warned rushes.
 - Timed melee impacts, combo knockdowns, double-tap running, dash strikes, aerial attacks and weapon drops on heavy hits. Mustapha is fastest; Hannah deals extra weapon damage.
 - Distinct boss attack cycles, warnings and recovery windows. Ordinary dinosaurs calm down and escape when defeated.
 
@@ -32,8 +35,8 @@ For **Vercel**, import this repository, choose **Other**, leave build/install co
 | Move / steer | WASD or arrows | Left stick / D-pad |
 | Attack / nearby weapon pickup | J, Z or Space | X / left face button |
 | Jump / Cadillac boost | K or X | A / bottom face button |
-| Special / ram | L or C; also attack + jump | Y / top face button |
-| Pick up / throw weapon | E or V | B / right face button |
+| Special / ram | L or C; also tap attack + jump together | Y / top face button |
+| Interact / pick up / throw | E or V | B / right face button |
 | Run | Shift or double tap a direction | — |
 | Pause | Esc or P | Start |
 
@@ -42,6 +45,8 @@ Touch controls appear on touch devices. Landscape gives a larger playfield. Conn
 Hold attack for combos. Jump first, then attack for a flying kick; attack while running for a dash strike. Specials cost eight health **when they hit an enemy** and drop the held weapon. Heavy hits also drop weapons, retaining ammunition.
 
 Pistols, shotguns and rifles carry six rounds; bazookas carry four. Uzis and M-16A1s fire bursts. Shotguns hit a wider lane, rifles penetrate and rockets cause splash damage. **While holding a firearm, J only fires. Empty guns do not switch to melee: use E to throw or swap them.** This deliberate control choice prevents a held fire button turning into punches. Knives stab nearby enemies or are thrown at distant ones. Broken rods become sticks. Grenades and dynamite arc before exploding.
+
+At a marked relay, valve or gate, **hold E / PICK** while standing still. At a radio, tap E until its display matches the marked channel. Attack sonic lures and drive into highway cargo. Both the enemies and the active objective must be cleared to open the next area.
 
 Break containers for supplies; walk over food to heal. Change lanes for charges, volleys and blue spillway-surge markers; jump over shockwaves. Attack during recovery. In the Cadillac, steer into enemies; J bashes, K boosts and L rams. Steer left to reach escorts behind the car.
 
@@ -63,10 +68,10 @@ Audio begins after a click or keypress. SOUND toggles all audio. **Sound Room / 
 ## Development
 
 - `game.js`: combat, input, layouts, rendering and boss state machines.
-- `campaign.js`: chapter briefings, dialogue and completion text.
+- `campaign.js`, `mission-data.js`: chapter script and required mission tasks.
 - `audio.js`, `soundtrack-data.js`, `assets/audio/`: soundtrack and source manifest.
-- `assets.js`, `hero-art.js`, `combat-art.js`, `world-art.js`: embedded atlases/scene data for local-file loading.
-- `assets/reference/`: original weapon/background sheets, including background credit strips.
+- `assets.js`, `hero-art.js`, `combat-art.js`, `weapon-art.js`, `sequel-art.js`: embedded artwork for local-file loading. `sequel-render.js` draws the new scenery and bosses.
+- `assets/original/`: new environment and boss atlases. `assets/reference/`: supplied weapon sheet and retained earlier background references; original-game scenery is no longer loaded in play.
 - [STORY.md](STORY.md), [SOURCE-NOTES.md](SOURCE-NOTES.md), [VALIDATION.md](VALIDATION.md): story, provenance and testing.
 - `tests/`: optional development tests. No test dependency is required to play or deploy.
 
@@ -74,4 +79,4 @@ There is no production build step. `LAST_EDEN.snapshot` and explicitly named `LA
 
 ## Credits
 
-Original artwork and music: **Capcom, Cadillacs and Dinosaurs (1993)**. Characters and setting: **Mark Schultz's Xenozoic Tales**. Backgrounds: **shunninghuang**, via [Sprite Database](https://spritedatabase.net/game/597). Weapon sheet and MP3s were supplied by the user. New fan-game engine, story and encounters were created for this project. Source ROMs and Downloads files remain unchanged.
+Original artwork and music: **Capcom, Cadillacs and Dinosaurs (1993)**. Characters and setting: **Mark Schultz's Xenozoic Tales**. Earlier background references retained with credits: **shunninghuang**, via [Sprite Database](https://spritedatabase.net/game/597). Active scenery and human boss designs are original generated assets. Weapon sheet and MP3s were supplied by the user. New fan-game engine, story and encounters were created for this project. Source ROMs and Downloads files remain unchanged.

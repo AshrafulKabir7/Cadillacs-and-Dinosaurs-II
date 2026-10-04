@@ -22,7 +22,7 @@ fs.mkdirSync('tests/results',{recursive:true});
    results.push([`Hero ${hero+1}: picking up a gun cancels a pending punch`,Math.abs(e.maxhp-e.hp-32*(hero===2?1.25:1))<.01]);
   }
   g.start(0);g.test.move(100,346);const e=target(64);g.test.equip('gun');g.controls.attack();ticks(25);results.push(['Gunfire does not hit a close target behind the hero',e.hp===e.maxhp]);
-  g.start(2);g.test.move(3980,350);g.test.spawnBoss();ticks(160);g.test.damageEnemy(0,9999);results.push(['Thornmaw retreats alive instead of dying',g.snapshot.enemies[0].state==='flee']);
+  g.start(2);g.test.move(3980,350);g.test.spawnBoss();ticks(160);g.test.damageEnemy(0,9999);results.push(['Thornmaw remains alive while the sonic driver is active',g.snapshot.enemies[0].hp===1&&g.snapshot.mission.active?.kind==='beacon']);g.test.damageObjective(9999);results.push(['Thornmaw retreats alive when the sonic driver is destroyed',g.snapshot.enemies[0].state==='flee']);
   g.start(5);g.test.move(4300,350);g.test.spawnBoss();ticks(160);g.test.damageEnemy(0,9999);ticks(190);const b=g.snapshot.enemies.find(e=>e.boss);results.push(['Sable survives into the mechanical Crown Engine phase',b.type==='sable'&&b.phase===2&&b.hp>0]);
   for(let i=0;i<700&&!g.snapshot.zones.some(z=>z.style==='flood');i++)g.step(.016);
   results.push(['Crown Engine announces a spillway surge that requires changing lanes',g.snapshot.zones.some(z=>z.style==='flood'&&!z.air&&z.total===1.25)]);
