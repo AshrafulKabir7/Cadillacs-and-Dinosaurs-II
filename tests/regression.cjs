@@ -38,7 +38,7 @@ require('node:fs').mkdirSync('tests/results',{recursive:true});
  });for(const [name,ok] of combat)check(name,ok);
  for(let level=0;level<6;level++){
   const result=await page.evaluate(i=>{const g=LAST_EDEN;g.start(i,i%4);function ticks(n){for(let k=0;k<n;k++)g.step(.033);}for(let w=0;w<6;w++){g.test.move(410+w*555,350);g.step(.016);if(g.snapshot.wave!==w+1)throw new Error(`Missing encounter ${i}:${w}`);g.test.finishEncounter();ticks(50);}const len=[4200,4300,4400,4450,4400,4650][i];g.test.move(len-420,350);g.step(.016);ticks(82);const boss=g.snapshot.enemies.find(e=>e.boss);if(!boss)throw new Error('No boss '+i);let phase=true;if(i===5){g.test.damageEnemy(g.snapshot.enemies.findIndex(e=>e.boss),9999);phase=g.snapshot.enemies.some(e=>e.phase===2&&e.hp>0);}g.test.finishEncounter();ticks(55);return {state:g.state,phase,unlocked:g.snapshot.unlocked};},level);
-  check(`Chapter ${level+1} has six encounters and a completable boss`,result.state==='clear');if(level===5)check('Final boss changes into its second form',result.phase);
+  check(`Chapter ${level+1} has six encounters and a completable boss`,result.state==='clear');if(level===5)check('Final boss advances to the Crown Engine phase',result.phase);
   if(level<5){await page.click('#next');check(`Chapter ${level+1} continues to next briefing`,await page.evaluate(()=>LAST_EDEN.state==='brief'));}
  }
  await page.click('#next');check('Campaign reaches ending',await page.evaluate(()=>LAST_EDEN.state==='ending'));await page.reload();check('Chapter unlocks persist',await page.evaluate(()=>LAST_EDEN.snapshot.unlocked===5));

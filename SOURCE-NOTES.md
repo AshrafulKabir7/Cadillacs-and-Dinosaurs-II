@@ -6,7 +6,9 @@ The supplied dino directory contains CPS-1 ROM images, not the original source p
 
 Graphics ROMs were interleaved into a four-megabyte region and decoded into 16×16 tiles with four bitplanes. Original palettes and sprite placement were read from emulated graphics memory. The first atlas contains 194 poses/objects. This update adds **90 selected combat poses**: raiders, knife fighters, poachers, heavy enemies, raptors, a larger dinosaur, mutants, Slice-derived and Tyrog-derived boss artwork, and a motorcycle. Incomplete and overlapping frames were omitted from the new atlas.
 
-New named bosses are fan-sequel characters using adapted arcade art. The Pale Regent changes the palette and scale of recovered mutant artwork. Vehicles remain canvas drawings; some movement states reuse poses. Timing and encounters are this game's implementation.
+New named bosses are fan-sequel characters using adapted arcade art. The Crown Engine is new canvas artwork with a cockpit, hydraulic hammer, cannon, tracks and damage smoke. Vehicles remain canvas drawings; some movement states reuse poses. Timing and encounters are this game's implementation.
+
+The hero correction adds **28 selected poses** in `hero-art.js` / `assets/hero-actions.png`: aiming, recoil, three running frames, a dash strike and an aerial strike for each hero. Aiming and dash art was recovered through controlled local arcade captures. The firearm renderer holds the aiming torso while using walking legs; it never selects an unarmed attack animation for gunfire. Per-hero grip coordinates align the supplied gun sprites. Atlas frame metadata identifies its local capture and frame number.
 
 Technical references:
 
@@ -33,10 +35,20 @@ Source pages: [Episode 1](https://spritedatabase.net/file/20058), [Episode 2](ht
 
 ## Movement and combat
 
+- [Goh_Billy's GameFAQs move list, supplied by the user](https://gamefaqs.gamespot.com/arcade/575551-cadillacs-and-dinosaurs/faqs/53882): indexed excerpts were accessible, though the full page blocked direct retrieval. These establish different character actions and attack/jump inputs; they are references, not this sequel's script.
+- [ninjasrok's GameFAQs walkthrough](https://gamefaqs.gamespot.com/arcade/575551-cadillacs-and-dinosaurs/faqs/45433): indexed material corroborates the four distinct running attacks and enemy attack patterns.
+- [The supplied Namu enemy-list URL](https://en.namu.wiki/w/%EC%BA%90%EB%94%9C%EB%9D%BD%26%EB%8B%A4%EC%9D%B4%EB%85%B8%EC%86%8C%EC%96%B4/%EC%A0%81%EA%B5%B0%20%EC%9D%BC%EB%9E%8C) could not be retrieved. Its complete contents were not reviewed; no claim of exact Namu roster coverage is made.
+
 - [RQ87 gameplay reference](https://rq87.flyingomelette.com/RQ/CAD/game.html): running, pickups, weapon drops, calming dinosaurs and Cadillac contact attacks.
 - [RQ87 weapon reference](https://rq87.flyingomelette.com/RQ/CAD/wep.html): firearm differences, ammunition, explosives, knife throwing and rod breakage.
 - [RQ87 character reference](https://rq87.flyingomelette.com/RQ/CAD/char.html): movement, dash attacks and specials.
 
 These informed selected mechanics. The new engine does not reproduce every original move, animation, AI rule or damage value. Cooperative grabs and team moves are outside this single-player version.
+
+An intentional input difference: an empty firearm stays in the hero's hands and J produces no melee attack. E discards/swaps it. This addresses the requested gun-versus-punch behavior; original empty-rifle clubbing is not active in this version.
+
+## Story continuity
+
+The opening follows the original ending: Fessenden's laboratory collapses, Jack helps Hannah escape, and both return in the Cadillac to rejoin Mustapha and Mess. The ending account was cross-checked against the [arcade game's plot summary](https://en.wikipedia.org/wiki/Cadillacs_and_Dinosaurs_(video_game)). The water blockade, Marshal Sable, evacuation ridge, Crown Engine, dialogue and ensuing six-chapter scenario are new fan fiction. Chapter transitions use text panels rather than animated cinematics.
 
 Original game, artwork and music: Capcom, 1993. Characters and setting derive from Mark Schultz's Xenozoic Tales. This unofficial fan project is unaffiliated with the original creators. No ownership of original assets is asserted.

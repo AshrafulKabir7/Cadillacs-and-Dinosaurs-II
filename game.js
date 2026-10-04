@@ -7,17 +7,10 @@ const W=768,H=432,GROUND=254,FLOOR=407;
 const HEROES=[
  {id:'mustapha',name:'MUSTAPHA',nickname:'MOSTAFA',tag:'THE FLYING KICK',hp:120,speed:180,power:21,color:'#d5ec69',special:'Tornado kick'},
  {id:'jack',name:'JACK TENREC',nickname:'',tag:'THE ALL-ROUNDER',hp:140,speed:145,power:23,color:'#7dc4de',special:'Dino uppercut'},
- {id:'hannah',name:'HANNAH DUNDEE',nickname:'',tag:'THE SWIFT STRIKER',hp:110,speed:166,power:19,color:'#efaa77',special:'Spiral smash'},
+ {id:'hannah',name:'HANNAH DUNDEE',nickname:'',tag:'THE SWIFT STRIKER',hp:110,speed:166,power:19,color:'#efaa77',special:'Spiral flash'},
  {id:'mess',name:'MESS O\'BRADOVICH',nickname:'',tag:'THE HEAVY HITTER',hp:170,speed:122,power:29,color:'#b5cc85',special:'Knuckle bomb'}
 ];
-const LEVELS=[
- {name:'THE DROWNED HARBOR',area:'01 / CITY OF THE LOST',theme:'harbor',length:4200,boss:'WARDEN ROOK',kind:'warden',sky:['#354e58','#c3936d'],road:['#505b46','#323e37'],accent:'#efb36d',brief:'Six months after Fessenden fell, a black convoy arrives at the harbor. Its cargo: living dinosaurs. Its destination: a place marked EDEN.',dialog:'JACK: Those cages are headed inland.\nMUSTAPHA: Then we follow the tire tracks.',end:'Rook drops a convoy manifest. Someone called Dr. Mara Voss is harvesting the last unaltered dinosaur bloodlines. A highway leads toward her hidden laboratory.'},
- {name:'THE GREEN HIGHWAY',area:'02 / CONVOY PURSUIT',theme:'highway',drive:true,length:4300,boss:'IRON CONVOY',kind:'truck',sky:['#395947','#afad68'],road:['#52544d','#353a34'],accent:'#d2df7b',brief:'Jack brings the Cadillac out of retirement. The convoy is racing along the abandoned expressway. Cut off its armored escort before it reaches the jungle.',dialog:'JACK: Everybody buckle up.\nHANNAH: You did fix the brakes, right?',end:'The convoy carries a wounded young dinosaur, not a weapon. Hannah frees it. A locator on its cage points to the Verdant Basin. The old world is waking up.'},
- {name:'THE VERDANT BASIN',area:'03 / INTO THE WILD',theme:'jungle',length:4400,boss:'THORNMAW',kind:'raptor',sky:['#203b35','#6e9270'],road:['#4c5b32','#293c29'],accent:'#accb6d',brief:'The jungle has swallowed the suburbs. Voss has turned its hunting grounds into a testing field. Her spores drive the dinosaurs into a frenzy.',dialog:'HANNAH: That growth is changing them.\nMESS: We find the source. We break it.',end:'Thornmaw falls. The surviving animals flee as their control collars go dark. A pipeline carries the same glowing spores into the old industrial district.'},
- {name:'THE ASHEN FOUNDRY',area:'04 / FIRE UNDER THE CITY',theme:'foundry',length:4450,boss:'FOREMAN CINDER',kind:'cinder',sky:['#2f3238','#83533c'],road:['#53504b','#313632'],accent:'#eea05c',brief:'Inside the foundry, stolen engines power a serum refinery. Voss is building an army, and a former poacher now guards her furnace gates.',dialog:'MUSTAPHA: This place smells like trouble.\nJACK: Trouble with a very large power bill.',end:'Cinder\'s refinery collapses. Behind the furnace is an elevator to a pre-cataclysm research station. Its logs call Voss\'s project the Pale Regent.'},
- {name:'THE MIRROR LAB',area:'05 / PROJECT REGENT',theme:'lab',length:4400,boss:'SENTINEL ECHO',kind:'echo',sky:['#152c36','#35595e'],road:['#4e6664','#283e43'],accent:'#7bd6c9',brief:'The lab grows creatures that should never exist. Sentinel Echo learns from every intruder. Destroy its chambers before it can finish mapping the heroes.',dialog:'HANNAH: She isn\'t saving the species.\nJACK: She\'s replacing them.',end:'Echo shatters. Voss broadcasts from the seed vault below: "The world had its chance. Eden will belong to a stronger species." The final descent begins.'},
- {name:'THE LAST EDEN',area:'06 / THE SEED VAULT',theme:'eden',length:4650,boss:'DR. MARA VOSS',kind:'regent',sky:['#132d29','#507659'],road:['#46634c','#263b31'],accent:'#d5ec69',brief:'An ancient vault protects the seeds of a living world. Voss has wired it to her mutation reactor. Shut it down before the last natural refuge becomes a breeding ground.',dialog:'VOSS: I offered this world a future.\nMUSTAPHA: A future needs a choice.',end:'The reactor goes silent. Daylight reaches Eden for the first time in centuries. Voss\'s army loses its control signal, and the dinosaurs return to the wild.'}
-];
+const LEVELS=window.EDEN_CAMPAIGN;
 const rand=(a,b)=>a+Math.random()*(b-a),clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),approach=(x,y,s)=>x<y?Math.min(x+s,y):Math.max(x-s,y);
 const keys=new Set(),pressed=new Set(),touchKeys=new Set(),padKeys=new Set();
 let state='menu',selected=0,difficulty='story',levelIndex=0,level=LEVELS[0],time=0,last=0,camera=0,shake=0,flash=0,hitstop=0;
@@ -53,15 +46,15 @@ const WEAPONS = {
 };
 const SCENES = [
  ['ruins','hall','ruins'], ['wastes','wastes','yard'], ['forest','grove','mine'],
- ['yard','fire','furnace'], ['lab','tanks','lab'], ['grove','tanks','vault']
+ ['yard','fire','furnace'], ['hall','quay','hall'], ['grove','quay','yard']
 ];
 const SECTION_NAMES = [
- ['SMUGGLERS’ QUAY','THE CUSTOMS HOUSE','ROOK’S BLOCKADE'],
- ['BROKEN EXPRESSWAY','CONVOY INTERCEPT','THE LAST ESCORT'],
- ['POACHERS’ TRAIL','THE DEEP CANOPY','THORNMAW’S NEST'],
- ['SCRAPYARD GATES','SERUM REFINERY','THE FURNACE FLOOR'],
- ['OBSERVATION WING','THE GROWTH CHAMBERS','ECHO’S CORE'],
- ['THE BURIED GARDEN','REGENT INCUBATOR','THE SEED VAULT']
+ ['THE SILENT DOCKS','STOLEN TRANSMITTER','ROOK’S BLOCKADE'],
+ ['BROKEN EXPRESSWAY','THE GOVERNOR TANKER','THE LAST ESCORT'],
+ ['THE BLOCKED RIDGE','SONIC LURE TRAIL','THORNMAW’S NEST'],
+ ['SCRAPPED WATER PUMPS','THE MACHINE SHOP','CINDER’S PRESS'],
+ ['THE PUMPING STATION','FALSE DIRECTIONS','THE RADIO RELAY'],
+ ['THE SERVICE TUNNEL','RESERVOIR WALKWAY','THE CROWN FLOODGATE']
 ];
 const STAGE_TRACKS = [['06','07','08'],['16','17','22'],['13','14','07'],['20','21','22'],['08','17','20'],['25','13','14']];
 const BOSS_TRACKS = ['10','19','15','24','24','15'];
@@ -70,8 +63,8 @@ const ENCOUNTERS = [
  [['biker','biker'],['biker','biker','gunner'],['biker','biker','biker'],['biker','gunner','biker'],['biker','biker','gunner'],['biker','biker','biker']],
  [['raider','knifer'],['raptor','raider','gunner'],['raptor','raptor','knifer'],['brute','gunner','raider'],['raptor','brute','gunner'],['raptor','raptor','brute']],
  [['brute','raider'],['knifer','gunner','brute'],['brute','brute','raider'],['gunner','knifer','gunner'],['brute','gunner','raider'],['brute','knifer','gunner']],
- [['gunner','knifer'],['mutant','gunner','raider'],['mutant','raptor','gunner'],['brute','mutant','knifer'],['mutant','gunner','gunner'],['mutant','mutant','brute']],
- [['raptor','brute'],['mutant','gunner','raptor'],['brute','mutant','knifer'],['mutant','raptor','gunner'],['mutant','mutant','brute'],['mutant','gunner','brute']]
+ [['gunner','knifer'],['brute','gunner','raider'],['brute','raptor','gunner'],['brute','brute','knifer'],['brute','gunner','gunner'],['brute','brute','brute']],
+ [['raptor','brute'],['brute','gunner','raptor'],['brute','brute','knifer'],['brute','raptor','gunner'],['brute','brute','brute'],['brute','gunner','brute']]
 ];
 const stageMusic = () => STAGE_TRACKS[levelIndex][Math.min(2,Math.floor(Math.max(0,wave-1)/2))];
 let section = -1, effects = [], lastHitEnemy = null, bossIntro = 0, dashTime = 0, dashKey = '', lastDirection = {key:'',time:0};
@@ -106,16 +99,21 @@ function stageBackdrop(g,idx,cam,t) {
   const scale=1.65, width=data.width*scale;
   const sectionStart=part*1110;
   const sx=clamp((cam-sectionStart)*.74,0,Math.max(0,width-W));
-  const floors={ruins:182,hall:152,forest:155,grove:142,mine:155,yard:142,fire:160,furnace:136,lab:128,tanks:146,vault:133,wastes:137};
+  const floors={ruins:182,hall:152,forest:155,grove:142,mine:155,yard:142,fire:160,furnace:136,lab:128,tanks:146,vault:133,wastes:137,quay:124};
   const fy=floors[name]||150;
   g.drawImage(art,0,Math.max(0,fy-134),data.width,134,-sx,62,width,221);
-  const patches={ruins:[260,184,520,54],hall:[90,157,700,65],forest:[64,157,205,34],grove:[820,146,820,76],mine:[0,168,384,52],yard:[400,164,512,58],fire:[0,176,512,42],furnace:[0,160,384,62],lab:[0,145,768,74],tanks:[100,162,800,58],vault:[512,148,500,60],wastes:[0,158,768,62]};
+  const patches={quay:[100,106,600,48],ruins:[260,184,520,54],hall:[90,157,700,65],forest:[64,157,205,34],grove:[820,146,820,76],mine:[0,168,384,52],yard:[400,164,512,58],fire:[0,176,512,42],furnace:[0,160,384,62],lab:[0,145,768,74],tanks:[100,162,800,58],vault:[512,148,500,60],wastes:[0,158,768,62]};
   const [gx,gy,gw,gh]=patches[name]||patches.ruins, tileW=gw*scale;
   for(let x=-(cam%tileW);x<W;x+=tileW)g.drawImage(art,gx,gy,gw,gh,x,283,tileW,149);
   if(idx===1){rect(g,0,254,W,178,'#363a34');for(let k=0;k<3;k++)for(let j=-1;j<9;j++)rect(g,j*120-((cam+t*120)%120),288+k*51,57,3,'#cdc5a0');rect(g,0,253,W,7,'#b7b398');}
   // New mission landmarks distinguish the sequel route from the source scenes.
   const marker=740+part*1010-cam;
-  if(marker>-200&&marker<W+200){rect(g,marker,162,7,103,'#26322b');rect(g,marker-70,154,149,45,'#152d2b');rect(g,marker-66,158,141,2,LEVELS[idx].accent);label(['EDEN CARGO →','RESTRICTED / 02','VAULT ACCESS →'][part],marker+4,180,10,LEVELS[idx].accent,'center');}
+  if(marker>-200&&marker<W+200){rect(g,marker,162,7,103,'#26322b');rect(g,marker-70,154,149,45,'#152d2b');rect(g,marker-66,158,141,2,LEVELS[idx].accent);label(['HIGH GROUND →','CROWN WATER AUTHORITY','SPILLWAY ACCESS →'][part],marker+4,180,10,LEVELS[idx].accent,'center');}
+  if(idx===5&&part===2){
+    rect(g,0,144,W,92,'#21494f');for(let i=0;i<22;i++)rect(g,(i*47+t*23)%W,155+(i*19)%72,32,2,'#6aa4a288');
+    for(let i=-1;i<6;i++){const gx=i*180-(cam*.5%180);rect(g,gx,87,17,193,'#465e59');rect(g,gx+18,104,151,114,'#1d383d');for(let k=0;k<7;k++)rect(g,gx+23,109+k*15,142,4,'#668479');rect(g,gx-5,80,28,12,'#b4b592');}
+    rect(g,0,240,W,15,'#899a7f');for(let i=0;i<25;i++)rect(g,i*36,243,17,4,'#d7ba70');
+  }
   if(idx===3)for(let i=0;i<13;i++){const px=(i*97+t*18)%W,py=245-(t*38+i*41)%180;rect(g,px,py,2,3,'#ffbd6988');}
   if(idx>=4){g.fillStyle='#65d5c20a';g.fillRect(0,68,W,364);for(let i=0;i<6;i++)rect(g,(i*143+cam*.2)%W,98+(i*47)%158,2,2,'#baf2d1');}
   return true;
@@ -139,7 +137,7 @@ function music(dt) {
 }
 function dropWeapon() {
   if(player.weapon)drops.push({x:player.x-player.dir*20,y:player.y+5,type:player.weapon,ammo:player.ammo,life:60});
-  player.weapon=null;player.ammo=0;
+  player.weapon=null;player.ammo=0;player.pendingStrike=null;
 }
 function explode(x,y,damage,friendly=true,r=96) {
   effects.push({x,y,age:0,life:.65,type:'explosion'});shake=10;sfx('explosion');
@@ -153,12 +151,9 @@ function breakObject(o,power) {
 }
 function weaponAttack() {
   const w=WEAPONS[player.weapon];if(!w)return false;
-  const type=player.weapon;player.attackTotal=w.cooldown;player.attack=w.cooldown;player.attackKind='weapon';player.recoil=w.recoil||0;
-  if(player.ammo<=0){
-    if(type==='rifle'||type==='m16'){meleeStrike(100,34,true);sfx('hit');}
-    else {bullets.push({x:player.x,y:player.y,z:45,vx:player.dir*380,vy:0,friendly:true,damage:30,life:1,kind:'thrown',weapon:type,age:0});player.weapon=null;}
-    return true;
-  }
+  player.pendingStrike=null;player.dashVelocity=0;
+  const type=player.weapon;player.attackTotal=w.cooldown;player.attack=w.cooldown;player.attackKind=w.melee?'weapon-melee':w.thrown?'throw':'fire';player.recoil=w.recoil||0;
+  if(player.ammo<=0){player.attack=.2;player.recoil=0;toast='EMPTY · E TO THROW / SWAP';toastTime=1.2;return true;}
   if(w.melee){
     const close=enemies.some(e=>!e.dead&&Math.abs(e.x-player.x)<w.range&&Math.abs(e.y-player.y)<36);
     if(type==='knife'&&!close){bullets.push({x:player.x,y:player.y,z:48,vx:player.dir*490,vy:0,friendly:true,damage:45,life:1.2,kind:'thrown',weapon:type,age:0});player.weapon=null;player.ammo=0;}
@@ -166,10 +161,10 @@ function weaponAttack() {
     sfx('hit');return true;
   }
   if(w.thrown){bullets.push({x:player.x+player.dir*20,y:player.y,z:50,vx:player.dir*220,vy:0,friendly:true,damage:w.damage,life:type==='dynamite'?1.15:.85,kind:'lob',weapon:type,age:0});if(--player.ammo<=0)player.weapon=null;sfx('jump');return true;}
-  const shots=Math.min(w.burst||1,player.ammo);
-  for(let i=0;i<shots;i++)bullets.push({x:player.x+player.dir*(type==='gun'?55:80),y:player.y,z:65+player.z,vx:player.dir*(w.explosive?450:860),vy:0,friendly:true,damage:w.damage*(selected===2?1.25:1),life:w.spread?.33:1.15,kind:w.explosive?'rocket':'bullet',weapon:type,delay:i*.085,spread:w.spread||25,pierce:w.pierce||1,hits:[],age:0});
+  const shots=Math.min(w.burst||1,player.ammo),mount=gunMount(),muzzle=mount.x+w.sprite[2]*.65*1.12;
+  for(let i=0;i<shots;i++)bullets.push({x:player.x+player.dir*muzzle,sweepFrom:player.x,y:player.y,z:mount.y+player.z,vx:player.dir*(w.explosive?450:860),vy:0,friendly:true,damage:w.damage*(selected===2?1.25:1),life:w.spread?.33:1.15,kind:w.explosive?'rocket':'bullet',weapon:type,delay:i*.085,spread:w.spread||25,pierce:w.pierce||1,hits:[],age:0});
   player.ammo-=shots;player.x-=player.dir*(w.recoil||0);sfx(type==='bazooka'?'rocket':type==='shotgun'?'shotgun':'gun');
-  effects.push({type:'muzzle',x:player.x+player.dir*(type==='gun'?55:84),y:player.y-65-player.z,dir:player.dir,age:0,life:.085});
+  effects.push({type:'muzzle',x:player.x+player.dir*muzzle,y:player.y-mount.y-player.z,dir:player.dir,age:0,life:.085});
   if(player.ammo===0){toast='EMPTY · E THROW / PICK UP ANOTHER WEAPON';toastTime=2;}
   return true;
 }
@@ -182,9 +177,10 @@ function meleeStrike(range,power,knockdown=false) {
 function updateProjectiles(dt) {
   for(const b of bullets){
     if(b.delay>0){b.delay-=dt;continue;}
+    const from=b.sweepFrom??b.x;delete b.sweepFrom;
     b.age=(b.age||0)+dt;b.x+=b.vx*dt;b.y+=(b.vy||0)*dt;b.life-=dt;
     if(b.kind==='lob'){b.z=16+Math.sin(Math.min(1,b.age/(b.weapon==='dynamite'?1.15:.85))*Math.PI)*75;if(b.weapon==='grenade'&&enemies.some(e=>!e.dead&&Math.abs(e.x-b.x)<28&&Math.abs(e.y-b.y)<30)&&b.age>.25)b.life=0;if(b.life<=0){if(b.weapon==='stone'){for(const e of enemies)if(Math.hypot(e.x-b.x,e.y-b.y)<55)damageEnemy(e,b.damage,30,true);}else explode(b.x,b.y,b.damage,b.friendly);}continue;}
-    if(b.friendly){for(const e of enemies)if(!e.dead&&!b.hits?.includes(e.id)&&Math.abs(b.x-e.x)<(e.boss?45:22)&&Math.abs(b.y-e.y)<(b.spread||27)){
+    if(b.friendly){for(const e of enemies)if(!e.dead&&!b.hits?.includes(e.id)&&e.x>=Math.min(from,b.x)-(e.boss?45:22)&&e.x<=Math.max(from,b.x)+(e.boss?45:22)&&Math.abs(b.y-e.y)<(b.spread||27)){
       if(b.kind==='rocket'){explode(b.x,b.y,b.damage,true,120);b.life=0;break;}
       damageEnemy(e,b.damage,Math.sign(b.vx)*12,b.weapon==='rifle'||b.weapon==='shotgun');
       (b.hits||(b.hits=[])).push(e.id);b.pierce=(b.pierce||1)-1;if(b.pierce<=0){b.life=0;break;}
@@ -221,7 +217,7 @@ function menu(){state='menu';lock=null;keys.clear();panel(`<section class="panel
 function characterSelect(startAt=0){state='select';panel(`<section class="panel character-panel"><p class="eyebrow">CHOOSE YOUR HERO</p><h2>THE GANG IS BACK.</h2><div class="hero-grid">${HEROES.map((h,i)=>`<button class="hero-card ${i===selected?'selected':''}" data-hero="${i}"><div class="hero-art"><canvas width="100" height="110" id="portrait-${i}" aria-label="${h.name}"></canvas></div><div class="hero-name">${h.name}</div><div class="hero-tag">${h.tag}</div><div class="hero-stats"><span>POWER ${Math.round(h.power/6)}</span><span>SPEED ${Math.round(h.speed/36)}</span></div></button>`).join('')}</div><div class="select-row"><div class="difficulty"><button id="story-mode" class="${difficulty==='story'?'selected':''}">STORY</button><button id="arcade-mode" class="${difficulty==='arcade'?'selected':''}">ARCADE</button></div><span class="hint">${difficulty==='story'?'More health · forgiving fights':'Faster enemies · harder bosses'}</span><button id="begin" class="primary">LET'S GO →</button></div><div class="menu-buttons"><button id="back" class="secondary">← BACK</button></div></section>`);
  document.querySelectorAll('[data-hero]').forEach(b=>b.onclick=()=>{selected=+b.dataset.hero;characterSelect(startAt);sfx('pickup');});bindButton('story-mode',()=>{difficulty='story';characterSelect(startAt);});bindButton('arcade-mode',()=>{difficulty='arcade';characterSelect(startAt);});bindButton('begin',()=>{score=0;lives=3;kills=0;bestCombo=0;runTime=0;startStage(startAt);});bindButton('back',menu);HEROES.forEach((h,i)=>{const c=document.querySelector('#portrait-'+i),g=c.getContext('2d');g.imageSmoothingEnabled=false;drawFrame(g,A[h.id].frames[0],50,108,1.25,1);});}
 function chapters(){state='chapters';panel(`<section class="panel small-panel"><p class="eyebrow">THE ROAD TO EDEN</p><h2>SIX CHAPTERS. ONE WORLD.</h2><p>Clear a chapter to unlock it here. Your campaign saves at the start of each chapter.</p><div class="level-grid">${LEVELS.map((l,i)=>`<button data-level="${i}" ${i>save.unlocked?'disabled':''}><span>CHAPTER 0${i+1} ${i>save.unlocked?'· LOCKED':''}</span>${l.name}</button>`).join('')}</div><div class="menu-buttons"><button id="back" class="secondary">← MAIN MENU</button></div></section>`);document.querySelectorAll('[data-level]').forEach(b=>b.onclick=()=>characterSelect(+b.dataset.level));bindButton('back',menu);}
-function guide(back){state='guide';panel(`<section class="panel small-panel"><p class="eyebrow">ARCADE FIELD GUIDE</p><h2>GET BACK IN THE FIGHT.</h2><div class="controls-list"><strong>WASD / ↑↓←→</strong><span>Move along the street and between lanes.</span><strong>J / Z</strong><span>Chain punches into a knockdown. Attack in the air for a flying kick; attack over a weapon to pick it up.</span><strong>K / X</strong><span>Jump. Dodge shockwaves and low attacks.</span><strong>L / C</strong><span>Special move, also J + K together. Costs health when it hits; drops your weapon.</span><strong>E / V</strong><span>Pick up a nearby weapon or item. Throw your weapon if holding one.</span><strong>SHIFT</strong><span>Run, or double tap a direction. Attack while running for your hero’s dash strike.</span><strong>ESC / P</strong><span>Pause. Gamepad: stick / D-pad, X hit, A jump, Y special, B pick.</span></div><p>Break barrels for food and weapons. Walk to the right after clearing an encounter. Red attack markers mean dodge or jump. Each gun has its own ammo and firing pattern. Knockdowns drop weapons. Highway: steer into enemies, J bash, K boost, L ram.</p><div class="menu-buttons"><button id="back" class="primary">GOT IT →</button></div></section>`);bindButton('back',back);}
+function guide(back){state='guide';panel(`<section class="panel small-panel"><p class="eyebrow">ARCADE FIELD GUIDE</p><h2>GET BACK IN THE FIGHT.</h2><div class="controls-list"><strong>WASD / ↑↓←→</strong><span>Move along the street and between lanes.</span><strong>J / Z</strong><span>Unarmed: chain hits or use an aerial strike. Holding a gun: fire only, even at close range. Empty gun: E to discard. Attack over a weapon to pick it up.</span><strong>K / X</strong><span>Jump. Dodge shockwaves and low attacks.</span><strong>L / C</strong><span>Special move, also J + K together. Costs health when it hits; drops your weapon.</span><strong>E / V</strong><span>Pick up a nearby weapon or item. Throw your weapon if holding one.</span><strong>SHIFT</strong><span>Run, or double tap a direction. Run + attack: Mustapha’s flying kick, Jack’s slide, Hannah’s knee or Mess’s body splash.</span><strong>ESC / P</strong><span>Pause. Gamepad: stick / D-pad, X hit, A jump, Y special, B pick.</span></div><p>Break barrels for food and weapons. Walk to the right after clearing an encounter. Red attack markers mean dodge or jump. Each gun has its own ammo and firing pattern. Knockdowns drop weapons. Highway: steer into enemies, J bash, K boost, L ram.</p><div class="menu-buttons"><button id="back" class="primary">GOT IT →</button></div></section>`);bindButton('back',back);}
 function startStage(i,skipBrief=false){levelIndex=i;level=LEVELS[i];const hero=HEROES[selected];player={x:130,y:352,z:0,vz:0,dir:1,hp:hero.hp*(difficulty==='story'?1.4:1),maxhp:hero.hp*(difficulty==='story'?1.4:1),hurt:0,inv:1.5,attack:0,attackTotal:.38,special:0,specialCd:0,comboStep:0,weapon:null,ammo:0,move:false,run:false,anim:0,boost:0,boostCd:0,recoil:0,knocked:false,attackKind:"combo",pendingStrike:null};
  enemies=[];objects=[];drops=[];particles=[];bullets=[];zones=[];floating=[];effects=[];section=-1;bossIntro=0;lastHitEnemy=null;dashTime=0;wave=0;lock=null;camera=0;bossSpawned=false;cleared=false;stageTimer=0;combo=0;comboTimer=0;shake=0;flash=0;checkpoint();
  if(!level.drive){const loot=['gun','food','rod','shotgun','food','uzi','grenade','rifle','food','m16','dynamite','bazooka'];for(let j=0;j<12;j++)objects.push({x:300+j*315,y:310+(j*29)%76,hp:28,type:j%3===0?'crate':'barrel',content:loot[(j+levelIndex*2)%loot.length]});drops.push({x:230,y:360,type:levelIndex===0?'gun':'shotgun',life:999});drops.push({x:270,y:375,type:'food',life:999});}
@@ -232,7 +228,7 @@ function pause(){if(state==='play'){state='paused';keys.clear();pressed.clear();
 function resume(){state='play';panel('');keys.clear();pressed.clear();canvas.focus();}
 function gameover(){state='gameover';save.best=Math.max(save.best,score);persist();panel(`<section class="panel small-panel"><p class="eyebrow">THE FIGHT ISN'T OVER</p><h2>CONTINUE?</h2><p>The gang regroups at the start of this chapter. No coins needed.<br>Score ${score.toString().padStart(6,'0')} · Best combo ${bestCombo}</p><div class="menu-buttons"><button id="retry" class="primary">TRY AGAIN →</button><button id="quit" class="secondary">MAIN MENU</button></div></section>`);bindButton('retry',()=>{lives=3;startStage(levelIndex);});bindButton('quit',menu);}
 function stageClear(){if(cleared)return;cleared=true;state='clear';score+=2500+Math.floor(player.hp*10);save.unlocked=Math.max(save.unlocked,Math.min(5,levelIndex+1));save.best=Math.max(save.best,score);sfx('clear');save.checkpoint=levelIndex<5?{level:levelIndex+1,hero:selected,difficulty,score,lives}:null;persist();panel(`<section class="panel small-panel"><p class="eyebrow">CHAPTER 0${levelIndex+1} COMPLETE</p><h2>${levelIndex===5?'EDEN IS FREE.':'KEEP THE ENGINE RUNNING.'}</h2><p>${level.end}</p><p style="color:var(--acid)">SCORE ${score.toString().padStart(6,'0')} · BEST COMBO ${bestCombo}</p><div class="menu-buttons"><button id="next" class="primary">${levelIndex===5?'SEE THE ENDING':'NEXT CHAPTER'} →</button></div></section>`);bindButton('next',()=>levelIndex<5?startStage(levelIndex+1):ending());}
-function ending(){state='ending';save.checkpoint=null;persist();panel(`<section class="panel small-panel"><p class="eyebrow">LAST EDEN · THE END</p><h2>A WORLD WORTH SAVING.</h2><p>Hannah opens the vault. Jack disconnects the reactor. Mess lifts the fallen gate, and Mustapha leads the rescued animals into the sunrise.</p><p>The Cadillac rolls home carrying four tired heroes, a box of seeds, and one very stubborn baby dinosaur.</p><p style="color:var(--acid)">MUSTAPHA: Same time next adventure?<br>JACK: Only if you're buying the fuel.</p><p>${kills} enemies defeated · ${Math.floor(runTime/60)} minutes · score ${score}<br>All six chapters are now available.</p><div class="menu-buttons"><button id="chapters" class="primary">PLAY A CHAPTER →</button><button id="credits" class="secondary">CREDITS</button><button id="quit" class="secondary">MAIN MENU</button></div></section>`);bindButton('chapters',chapters);bindButton('credits',credits);bindButton('quit',menu);}
+function ending(){state='ending';save.checkpoint=null;persist();panel(`<section class="panel small-panel"><p class="eyebrow">LAST EDEN · THE END</p><h2>A WORLD WORTH SAVING.</h2><p>The spillway opens one gate at a time. The old river fills. On the ridge, families make room for a herd and its young. No one has to buy permission to survive.</p><p>Sable faces the settlements he tried to drown. The water keys stay with them. At Last Eden, Hannah hangs a radio beside the first public well. Jack’s Cadillac is already pointing home.</p><p style="color:var(--acid)">MESS: Tell me we’re finally going home.<br>MUSTAPHA: After breakfast. Saving the world makes me hungry.</p><p>${kills} enemies defeated · ${Math.floor(runTime/60)} minutes · score ${score}<br>All six chapters are now available.</p><div class="menu-buttons"><button id="chapters" class="primary">PLAY A CHAPTER →</button><button id="credits" class="secondary">CREDITS</button><button id="quit" class="secondary">MAIN MENU</button></div></section>`);bindButton('chapters',chapters);bindButton('credits',credits);bindButton('quit',menu);}
 function credits(){state='credits';panel(`<section class="panel small-panel"><p class="eyebrow">THANKS FOR PLAYING</p><h2>FOR THE OLD ARCADE DAYS.</h2><p>An unofficial fan sequel created for Mostafa's next adventure. Original character graphics were recovered from the arcade ROM files supplied by the user.</p><p>New story, levels, environments, combat engine, boss behaviors created for this game. Original soundtrack supplied by the user. Background sheets contributed by shunninghuang via Sprite Database. Original Cadillacs and Dinosaurs arcade game and artwork: Capcom. Characters and setting derive from Xenozoic Tales by Mark Schultz.</p><div class="menu-buttons"><button id="quit" class="primary">MAIN MENU →</button></div></section>`);bindButton('quit',menu);}
 function spawnEnemy(x,y,type='raider',boss=false) {
   const base=boss?[540,670,620,690,710,540][levelIndex]:({brute:125,gunner:68,raptor:74,knifer:82,mutant:138,biker:85}[type]||80);
@@ -255,7 +251,7 @@ function spawnWave(n) {
 function spawnBoss() {
   bossSpawned=true;wave=6;section=2;lock={left:level.length-570,right:level.length+100};
   const b=spawnEnemy(level.length-130,344,level.kind,true);b.timer=2.4;b.state='intro';b.inv=2.4;bossIntro=2.4;
-  toast=level.boss+' · '+['BREAK THE BLOCKADE','RAM THE ESCORT','WATCH THE CHARGE','DODGE THE CLEAVES','BREAK ITS RHYTHM','STOP THE REGENT'][levelIndex];toastTime=4;
+  toast=level.boss+' · '+['BREAK THE BLOCKADE','RAM THE ESCORT','WATCH THE CHARGE','DODGE THE CLEAVES','BREAK ITS RHYTHM','SAVE THE FLOODGATE'][levelIndex];toastTime=4;
   sfx('special');
 }
 
@@ -270,8 +266,8 @@ function damageEnemy(e,amount,knock=0,forceDown=false) {
   lastHitEnemy=e;combo++;comboTimer=2;bestCombo=Math.max(bestCombo,combo);score+=Math.floor(amount*3);
   burst(e.x,e.y-48,'#ffe2a1',8);sfx('hit');hitstop=.035;shake=3;
   if(e.hp<=0){
-    if(e.boss&&e.type==='regent'&&e.phase===1){e.phase=2;e.hp=e.maxhp=850*(difficulty==='story'?.84:1.2);e.state='transform';e.timer=2.7;e.inv=2.7;e.attackNo=0;flash=.65;shake=12;toast='THE PALE REGENT · FINAL FORM';toastTime=4;effects.push({x:e.x,y:e.y,age:0,life:.8,type:'explosion'});return;}
-    if(e.type==='raptor'&&!e.boss){e.state='flee';e.timer=1.2;e.hp=1;e.inv=2;e.dir=1;score+=300;kills++;return;}
+    if(e.boss&&e.type==='sable'&&e.phase===1){e.phase=2;e.hp=e.maxhp=850*(difficulty==='story'?.84:1.2);e.state='transform';e.timer=2.7;e.inv=2.7;e.attackNo=0;flash=.65;shake=12;toast='SABLE BOARDS THE CROWN ENGINE';toastTime=4;effects.push({x:e.x,y:e.y,age:0,life:.8,type:'explosion'});return;}
+    if(e.type==='raptor'){e.state='flee';e.timer=1.2;e.hp=1;e.inv=2;e.dir=1;score+=300;kills++;return;}
     e.dead=1;e.state='dead';score+=e.boss?2000:250;kills++;
     if(!e.boss&&e.type==='gunner')drops.push({x:e.x,y:e.y,type:levelIndex>2?'uzi':'gun',life:60});
     else if(!e.boss&&e.type==='knifer')drops.push({x:e.x,y:e.y,type:'knife',life:60});
@@ -299,7 +295,7 @@ function attack() {
   player.attack=player.attackTotal;
   const finish=player.comboStep===2,reach=player.attackKind==='dash'?125:player.attackKind==='air'?108:79;
   player.pendingStrike={t:player.attackKind==='combo'?.095:.08,range:reach,power:h.power*(finish?1.45:1)*(player.attackKind==='combo'?1:1.5),down:finish||player.attackKind!=='combo'};
-  if(player.attackKind==='dash'){player.dashVelocity=player.dir*(selected===0?440:320);if(selected===0){player.z=16;player.vz=140;}}
+  if(player.attackKind==='dash'){player.dashVelocity=player.dir*[440,380,330,350][selected];if(selected!==1){player.z=16;player.vz=selected===3?170:140;}}
   sfx('swing');
 }
 
@@ -320,21 +316,22 @@ function pickup() {
   for(const d of drops){const dd=Math.hypot(d.x-player.x,(d.y-player.y)*1.2);if(dd<dist){dist=dd;nearest=d;}}
   if(nearest){
     if(nearest.type==='food'){player.hp=Math.min(player.maxhp,player.hp+45);popup(player.x,player.y-96,'+45 HEALTH','#d5ec69');}
-    else{dropWeapon();player.weapon=nearest.type==='grenade'?'grenade':nearest.type;player.ammo=nearest.ammo??WEAPONS[player.weapon]?.ammo??1;toast=`${WEAPONS[player.weapon]?.name||player.weapon} · ${player.ammo} ${WEAPONS[player.weapon]?.melee?'HITS':'SHOTS'}`;toastTime=2;}
+    else{dropWeapon();player.attack=0;player.attackKind='ready';player.dashVelocity=0;player.weapon=nearest.type==='grenade'?'grenade':nearest.type;player.ammo=nearest.ammo??WEAPONS[player.weapon]?.ammo??1;toast=`${WEAPONS[player.weapon]?.name||player.weapon} · ${player.ammo} ${WEAPONS[player.weapon]?.melee?'HITS':'SHOTS'}`;toastTime=2;}
     drops.splice(drops.indexOf(nearest),1);sfx('pickup');score+=75;return;
   }
   if(player.weapon){bullets.push({x:player.x,y:player.y,z:45,vx:player.dir*400,vy:0,friendly:true,damage:42,life:1.3,kind:'thrown',weapon:player.weapon,age:0});player.weapon=null;player.ammo=0;sfx('swing');}
 }
 
 function bossMove(e) {
-  const patterns={warden:['jab','charge','volley'],truck:['volley','charge','bombard'],raptor:['charge','acid','leap'],cinder:['cleave','charge','fire'],echo:['volley','leap','summon'],regent:e.phase===2?['slam','charge','spines','leap']:['volley','pulse','summon']};
+  const patterns={warden:['jab','charge','volley'],truck:['volley','charge','bombard'],raptor:['charge','leap','charge'],cinder:['cleave','charge','fire'],echo:['volley','leap','summon'],sable:e.phase===2?['slam','flood','volley','charge']:['volley','jab','summon']};
   e.action=patterns[e.type][e.attackNo++%patterns[e.type].length];e.state='windup';e.timer=['charge','leap'].includes(e.action)?.85:.72;
   e.dir=Math.sign(player.x-e.x)||-1;e.targetX=player.x;e.targetY=player.y;e.startX=e.x;e.startY=e.y;
+  if(e.action==='flood'){for(const offset of [-95,0,95])zones.push({x:player.x+offset,y:player.y,r:58,t:1.25,total:1.25,friendly:false,damage:30,air:false,style:'flood'});e.timer=1.25;}
   if(['slam','pulse','acid','cleave','fire','bombard'].includes(e.action)){
     const x=e.action==='cleave'?e.x+e.dir*72:e.action==='fire'?e.x+e.dir*130:player.x;
     zones.push({x,y:e.action==='cleave'?e.y:player.y,r:e.action==='slam'?112:e.action==='fire'?95:75,t:e.timer,total:e.timer,friendly:false,damage:e.phase===2?32:24,air:e.action!=='acid',style:e.action});
   }
-  toast={charge:'SIDESTEP THE CHARGE',leap:'MOVE AWAY FROM THE LANDING',slam:'JUMP THE SHOCKWAVE',cleave:'BACK AWAY FROM THE CLEAVE',acid:'LEAVE THE MARKED AREA',spines:'CHANGE LANES',volley:'CHANGE LANES',fire:'JUMP OR STEP ASIDE',pulse:'JUMP THE PULSE',summon:'REINFORCEMENTS INCOMING',jab:'DODGE THE COMBO',bombard:'KEEP MOVING'}[e.action];toastTime=1.3;
+  toast={flood:'CHANGE LANES · SPILLWAY SURGE',charge:'SIDESTEP THE CHARGE',leap:'MOVE AWAY FROM THE LANDING',slam:'JUMP THE SHOCKWAVE',cleave:'BACK AWAY FROM THE CLEAVE',acid:'LEAVE THE MARKED AREA',spines:'CHANGE LANES',volley:'CHANGE LANES',fire:'JUMP OR STEP ASIDE',pulse:'JUMP THE PULSE',summon:'REINFORCEMENTS INCOMING',jab:'DODGE THE COMBO',bombard:'KEEP MOVING'}[e.action];toastTime=1.3;
 }
 
 function executeBoss(e) {
@@ -342,8 +339,8 @@ function executeBoss(e) {
   if(e.action==='charge'){e.state='charge';e.timer=.65;e.vx=e.dir*(e.type==='truck'?420:450);return;}
   if(e.action==='leap'){e.state='leap';e.timer=.85;e.startX=e.x;e.startY=e.y;return;}
   if(e.action==='jab'&&Math.abs(player.x-e.x)<115&&Math.abs(player.y-e.y)<39)damagePlayer(24,e.x);
-  if(e.action==='summon'&&enemies.filter(v=>!v.dead&&!v.boss).length<2){spawnEnemy(e.x-100,310,levelIndex===5?'mutant':'knifer');spawnEnemy(e.x+70,382,'gunner');}
-  e.state='recover';e.timer=e.type==='regent'&&e.phase===2?.7:1.1;
+  if(e.action==='summon'&&enemies.filter(v=>!v.dead&&!v.boss).length<2){spawnEnemy(e.x-100,310,'knifer');spawnEnemy(e.x+70,382,'gunner');}
+  e.state='recover';e.timer=e.type==='sable'&&e.phase===2?.7:1.1;
 }
 
 function updateEnemy(e,dt) {
@@ -356,6 +353,8 @@ function updateEnemy(e,dt) {
   if(e.state==='windup'){
     if(e.timer<=0){if(e.boss)executeBoss(e);else{
       if(['gunner','biker'].includes(e.type))shoot(e.x+e.dir*25,e.y,e.dir,false,14,340);
+      else if(e.action==='knife'){bullets.push({x:e.x+e.dir*30,y:e.y,z:48,vx:e.dir*330,vy:0,friendly:false,damage:17,life:1.5,kind:'thrown',weapon:'knife',age:0});}
+      else if(e.action==='rush'){e.state='charge';e.timer=.55;e.vx=e.dir*300;return;}
       else if(Math.abs(e.x-player.x)<85&&Math.abs(e.y-player.y)<35)damagePlayer(e.type==='brute'||e.type==='mutant'?24:14,e.x);
       e.state='recover';e.timer=e.type==='brute'?.8:.5;
     }}return;
@@ -377,7 +376,8 @@ function updateEnemy(e,dt) {
   if(distance>range-8)e.x+=e.dir*speed*dt;
   e.y=approach(e.y,targetY,speed*.6*dt);
   if(e.type==='gunner'&&distance<145)e.x-=e.dir*speed*.7*dt;
-  if(e.timer<=0&&distance<range+25&&dy<(e.boss?130:32)){if(e.boss)bossMove(e);else{e.state='windup';e.timer=e.type==='brute'?.62:.38;}}
+  if(!e.boss&&e.timer<=0&&dy<32&&((e.type==='brute'&&distance>95&&distance<250)||(e.type==='knifer'&&distance>115&&distance<280))){e.action=e.type==='brute'?'rush':'knife';e.state='windup';e.timer=e.type==='brute'?.75:.6;return;}
+  if(e.timer<=0&&distance<range+25&&dy<(e.boss?130:32)){if(e.boss)bossMove(e);else{e.action='melee';e.state='windup';e.timer=e.type==='brute'?.62:.38;}}
   if(lock)e.x=clamp(e.x,lock.left+28,lock.right-42);e.y=clamp(e.y,284,393);
 }
 
@@ -386,11 +386,11 @@ const down=(...ks)=>ks.some(k=>keys.has(k)||padKeys.has(k)),tap=(...ks)=>ks.some
 function update(dt) {
   time+=dt;music(dt);if(state!=='play'){pressed.clear();return;}gamepad();if(state!=='play')return;
   if(hitstop>0){hitstop-=dt;return;}
-  stageTimer+=dt;runTime+=dt;const h=HEROES[selected];player.anim+=dt;bossIntro=Math.max(0,bossIntro-dt);dashTime=Math.max(0,dashTime-dt);
+  stageTimer+=dt;runTime+=dt;const h=HEROES[selected];player.anim+=dt;bossIntro=Math.max(0,bossIntro-dt);if(!down(dashKey))dashTime=0;
   for(const k of ['inv','hurt','attack','special','specialCd','boost','boostCd'])player[k]=Math.max(0,player[k]-dt);
   player.recoil=approach(player.recoil||0,0,30*dt);if(player.hurt<=0)player.knocked=false;
   let dx=(down('ArrowRight','KeyD')?1:0)-(down('ArrowLeft','KeyA')?1:0),dy=(down('ArrowDown','KeyS')?1:0)-(down('ArrowUp','KeyW')?1:0);
-  player.run=down('ShiftLeft','ShiftRight')||(dashTime>0&&down(dashKey));player.move=!!(dx||dy);
+  player.run=(!!dx||!!dy)&&(down('ShiftLeft','ShiftRight')||(dashTime>0&&down(dashKey)));player.move=!!(dx||dy);
   if(dx&&player.attack<=0)player.dir=dx;
   if(player.hurt<=0&&player.special<=0&&bossIntro<=0){
     const speed=level.drive?205:h.speed*(player.run?1.68:1);const drag=player.attack>0&&!level.drive?.18:1;
@@ -400,6 +400,7 @@ function update(dt) {
   }
   player.x=clamp(player.x,lock?lock.left+30:camera+25,lock?lock.right-70:level.length+130);player.y=clamp(player.y,284,393);
   if(player.z>0){player.vz-=850*dt;player.z+=player.vz*dt;if(player.z<=0){player.z=0;player.vz=0;burst(player.x,player.y,'#8b9470',4);}}
+  if(player.weapon)player.pendingStrike=null;
   if(player.pendingStrike){player.pendingStrike.t-=dt;if(player.pendingStrike.t<=0){const hit=player.pendingStrike;meleeStrike(hit.range,hit.power,hit.down);player.pendingStrike=null;}}
   if(down('KeyJ','KeyZ','Space')&&tap('KeyK','KeyX'))special();
   else{if(down('KeyJ','KeyZ','Space'))attack();if(tap('KeyK','KeyX'))jump();}
@@ -443,20 +444,54 @@ function background(g,idx,cam,t){if(stageBackdrop(g,idx,cam,t))return;const l=LE
 function drawFrame(g,f,x,y,scale=1.35,dir=1,filter='none'){if(!f||!sheet.complete)return;g.save();g.imageSmoothingEnabled=false;g.translate(Math.round(x),Math.round(y));g.scale(-dir*scale,scale);g.filter=filter;g.drawImage(sheet,f.x,f.y,f.w,f.h,-f.anchor,-f.h,f.w,f.h);g.restore();}
 function shadow(g,x,y,w=25){g.fillStyle='#10271b66';g.beginPath();g.ellipse(x,y,w,6,0,0,Math.PI*2);g.fill();}
 function drawDino(g,x,y,s,dir,color='#849955',mutant=false,t=0){g.save();g.translate(Math.round(x),Math.round(y));g.scale(dir*s,s);const leg=Math.sin(t*10)*7;poly(g,[[-77,-30],[-127,-18],[-112,-10],[-51,-13],[-13,8],[31,-4],[36,-53],[73,-77],[90,-104],[45,-112],[29,-104],[15,-86],[-6,-65],[-38,-55]],'#20382d');poly(g,[[-74,-29],[-119,-17],[-49,-24],[-17,0],[25,-6],[28,-56],[71,-83],[83,-101],[45,-106],[32,-98],[19,-78],[-9,-61],[-37,-50]],color);poly(g,[[-39,-48],[-20,-57],[11,-57],[22,-39],[11,-12],[-16,-6]],mutant?'#c6d1af':'#adba75');poly(g,[[17,-65],[38,-69],[42,-59],[26,-53],[25,-34],[15,-37]],'#cad391');poly(g,[[42,-97],[78,-99],[88,-91],[43,-83]],'#2c4132');for(let j=0;j<5;j++)poly(g,[[47+j*7,-96],[50+j*7,-88],[53+j*7,-96]],'#e6e7c7');rect(g,54,-105,8,5,mutant?'#ef9360':'#ecdb77');rect(g,56,-105,3,5,'#162f23');poly(g,[[-6,-9],[-12+leg,12],[-31+leg,24],[-4+leg,24],[14,-1]],'#4d633a');poly(g,[[15,-2],[27-leg,15],[8-leg,24],[37-leg,24],[37,-9]],color);rect(g,-31+leg,21,29,4,'#ddd8ad');rect(g,8-leg,21,29,4,'#ddd8ad');if(mutant){for(let j=0;j<5;j++)poly(g,[[-39+j*15,-49+j*2],[-32+j*15,-70+j*2],[-23+j*15,-50+j*2]],'#d3dfb9');for(let j=0;j<3;j++)rect(g,-30+j*12,-32,5,8,'#90d88b');}g.restore();}
-function drawRegent(g,e,x,y){g.save();g.translate(x,y);g.scale(e.dir,1);shadow(g,0,2,70);const bob=Math.sin(e.anim*3)*2;g.translate(0,bob);poly(g,[[-82,-40],[-150,-14],[-150,-5],[-64,-14],[-17,5],[52,-6],[59,-84],[90,-123],[108,-139],[105,-161],[48,-171],[28,-155],[14,-114],[-28,-101],[-66,-83]],'#233b35');poly(g,[[-80,-38],[-143,-11],[-56,-27],[-16,-1],[47,-9],[49,-86],[85,-128],[103,-142],[100,-157],[49,-165],[34,-147],[23,-104],[-29,-95],[-62,-78]],'#cbd2b5');poly(g,[[-55,-76],[-29,-92],[14,-97],[36,-75],[34,-33],[-12,-9],[-38,-28]],'#94a991');for(let k=0;k<6;k++)poly(g,[[-62+k*15,-81-k*4],[-59+k*15,-103-k*4],[-47+k*15,-84-k*4]],'#e9ebce');poly(g,[[43,-145],[101,-147],[112,-136],[47,-126]],'#263b36');for(let j=0;j<6;j++)poly(g,[[49+j*9,-146],[52+j*9,-132],[56+j*9,-146]],'#f3efd8');rect(g,67,-157,12,5,'#f6ab64');rect(g,71,-158,3,7,'#b7473c');poly(g,[[22,-100],[57,-104],[62,-95],[38,-87],[34,-52],[22,-57]],'#bbc9a7');poly(g,[[-14,-9],[-31,15],[-60,26],[-24,26],[8,-5]],'#98ab8a');poly(g,[[29,-8],[49,12],[23,25],[66,25],[58,-20]],'#d5dbc1');rect(g,-59,22,36,5,'#f0e8cc');rect(g,25,21,43,5,'#f0e8cc');rect(g,-33,-68,38,26,'#365e4d');rect(g,-28,-64,29,17,'#b7e280');rect(g,-22,-62,5,13,'#e5f2aa');for(let j=0;j<4;j++)rect(g,-39,-22-j*10,19,3,'#728e78');g.restore();}
+// New antagonist: a flood-control crawler, animated with pistons and treads.
+function drawCrownEngine(g,e,x,y) {
+  g.save();g.translate(Math.round(x),Math.round(y));g.scale(e.dir,1);
+  const step=e.state==='charge'?Math.sin(e.anim*35)*3:Math.sin(e.anim*5);
+  const warn=e.state==='windup',slamming=warn&&e.action==='slam';
+  shadow(g,0,5,96);
+  for(const side of [-1,1]){
+    rect(g,side*48-40,-24,81,27,'#152322');
+    rect(g,side*48-38,-24,77,5,'#54666a');
+    for(let k=0;k<6;k++){rect(g,side*48-34+k*12+step,-16,8,15,'#727c70');rect(g,side*48-32+k*12+step,-14,3,7,'#b1b8a0');}
+  }
+  g.translate(0,step*.3);
+  poly(g,[[-78,-31],[-61,-84],[-38,-104],[39,-104],[69,-79],[80,-31]],'#172d31');
+  poly(g,[[-73,-33],[-57,-78],[-32,-97],[36,-97],[63,-75],[75,-33]],'#567075');
+  poly(g,[[-67,-36],[-52,-74],[-29,-89],[33,-89],[58,-70],[66,-36]],'#87988a');
+  rect(g,-29,-94,63,58,'#263c40');rect(g,-22,-86,49,41,'#15292f');
+  rect(g,-18,-82,40,22,'#427779');rect(g,-16,-80,35,3,'#85c2b6');
+  // Sable remains visible in the cockpit; the second phase is machinery, not a mutation.
+  rect(g,-6,-77,14,15,'#c89c6b');rect(g,-8,-79,18,5,'#273331');
+  rect(g,-6,-67,15,10,'#5c6559');rect(g,-13,-57,31,5,'#85928a');
+  rect(g,-23,-53,48,9,warn?'#df8758':'#a9bd79');
+  for(const sx of [-58,44]){rect(g,sx,-70,15,26,'#30484b');for(let k=0;k<4;k++)rect(g,sx+2,-68+k*6,11,2,'#122a2c');}
+  for(let k=0;k<5;k++)poly(g,[[-54+k*22,-33],[-42+k*22,-33],[-47+k*22,-26],[-59+k*22,-26]],'#d8b761');
+  const lift=slamming?18:0;
+  poly(g,[[36,-76],[83,-102-lift],[94,-92-lift],[48,-57]],'#233d41');
+  poly(g,[[44,-77],[83,-96-lift],[87,-91-lift],[48,-68]],'#b8c1ab');
+  rect(g,77,-112-lift,28,22,'#597078');rect(g,81,-109-lift,26,10,'#d6b970');
+  rect(g,88,-94-lift,12,49+lift,'#bcc5b2');rect(g,84,-94-lift,4,48+lift,'#627c7b');
+  rect(g,73,-48,38,18,'#233b3e');rect(g,76,-48,35,5,'#dfba67');
+  rect(g,-67,-89,25,8,'#647e7e');rect(g,-93,-86,31,7,'#c0c7ad');
+  if(warn){rect(g,1,-113,7,9,'#f09e66');rect(g,-7,-108,23,2,'#f5d392');}
+  if(e.hp<e.maxhp*.5){for(let i=0;i<3;i++)rect(g,-47+i*11,-100-((e.anim*25+i*17)%42),12,7,'#a8b7a566');}
+  g.restore();
+}
 function car(g,x,y,scale=1,boost=false,t=0){g.save();g.translate(x,y);g.scale(scale,scale);shadow(g,0,4,72);poly(g,[[-77,-31],[-57,-53],[-27,-59],[26,-57],[45,-39],[78,-34],[87,-11],[75,-3],[-73,-3],[-86,-11]],'#1b3029');poly(g,[[-78,-29],[-51,-46],[39,-42],[77,-30],[82,-13],[-79,-13]],'#78ac79');poly(g,[[-39,-53],[-24,-57],[23,-55],[35,-43],[-48,-44]],'#d7d1a0');poly(g,[[-37,-52],[-24,-54],[-5,-54],[-5,-43],[-46,-44]],'#315653');poly(g,[[0,-54],[23,-52],[32,-43],[0,-43]],'#315653');rect(g,-75,-26,150,5,'#a8c394');rect(g,-64,-13,127,5,'#496e51');rect(g,69,-25,13,8,'#fff1bd');rect(g,-81,-23,7,8,'#d4945e');rect(g,-86,-11,171,4,'#ddd7ae');for(const xx of [-48,50]){g.fillStyle='#17231e';g.beginPath();g.arc(xx,-3,16,0,Math.PI*2);g.fill();g.fillStyle='#829a83';g.beginPath();g.arc(xx,-3,9,0,Math.PI*2);g.fill();rect(g,xx-2,-9,4,12,'#c4c9a6');rect(g,xx-6,-5,12,4,'#c4c9a6');}rect(g,3,-27,13,3,'#d4daba');rect(g,22,-22,15,2,'#314e3d');if(boost){poly(g,[[-85,-17],[-124-Math.sin(t*20)*18,-4],[-105,-20],[-137,-27],[-84,-23]],'#eaaa56');poly(g,[[-85,-17],[-117,-11],[-104,-23],[-84,-21]],'#e9df91');}g.restore();}
 function truck(g,e,x,y){g.save();g.translate(x,y);shadow(g,0,5,110);rect(g,-92,-96,123,79,'#46564b');rect(g,-89,-91,118,11,'#728069');rect(g,-84,-74,105,47,'#2c4037');for(let j=0;j<5;j++)rect(g,-80+j*21,-69,3,40,'#687958');poly(g,[[25,-68],[66,-68],[94,-47],[106,-25],[100,-8],[23,-8]],'#7d8662');rect(g,34,-62,31,23,'#263e38');rect(g,73,-40,23,11,'#c6c59a');rect(g,26,-25,73,8,'#425b44');rect(g,-97,-13,202,7,'#bbc29c');for(const xx of [-62,64]){g.fillStyle='#192f25';g.beginPath();g.arc(xx,-7,22,0,Math.PI*2);g.fill();g.fillStyle='#91a27b';g.beginPath();g.arc(xx,-7,11,0,Math.PI*2);g.fill();}rect(g,-25,-113,43,13,'#596c54');rect(g,-57,-109,36,7,'#a8b28a');g.restore();}
 function drawFighter(e) {
   const x=e.x-camera,y=e.y-e.z;ctx.save();shadow(ctx,x,e.y,e.boss?42:25);
   if(e.dead)ctx.globalAlpha=clamp(e.dead/.75,0,1);
-  const name=e.type==='warden'?'echo':e.type==='cinder'?'brute':e.type==='raptor'&&e.boss?'thornmaw':e.type==='raptor'&&e.state==='flee'?'calmraptor':e.type==='regent'?(e.phase===2?'regent':'mutant'):e.type==='biker'?'knifer':e.type;
-  if(e.type==='truck')truck(ctx,e,x,y);
+  const name=e.type==='warden'?'echo':e.type==='cinder'?'brute':e.type==='raptor'&&e.boss?'thornmaw':e.type==='raptor'&&e.state==='flee'?'calmraptor':e.type==='sable'?'gunner':e.type==='biker'?'knifer':e.type;
+  if(e.type==='sable'&&e.phase===2)drawCrownEngine(ctx,e,x,y);
+  else if(e.type==='truck')truck(ctx,e,x,y);
   else {
     const data=COMBAT_ART.groups[name]||COMBAT_ART.groups.raider;
     const action=e.dead||e.state==='down'?'down':e.hurt>0?'hurt':['windup','charge','leap'].includes(e.state)?'attack':e.state==='recover'?'rise':'walk';
     const seq=data[action]||data.walk;const n=seq[Math.floor(e.anim*(action==='walk'?8:5))%seq.length];
-    const f=COMBAT_ART.frames[n];const scale=e.boss?(e.type==='regent'&&e.phase===2?1.9:e.type==='raptor'?1.25:1.65):e.type==='raptor'?1.1:1.3;
-    let filter=e.type==='regent'&&e.phase===2?'saturate(.3) brightness(1.45)':e.type==='echo'?'hue-rotate(100deg)':e.type==='cinder'?'hue-rotate(325deg)':e.type==='warden'?'hue-rotate(335deg)':'none';
+    const f=COMBAT_ART.frames[n];const scale=e.boss?(e.type==='sable'&&e.phase===2?1.9:e.type==='raptor'?1.25:1.65):e.type==='raptor'?1.1:1.3;
+    let filter=e.type==='sable'&&e.phase===2?'saturate(.3) brightness(1.45)':e.type==='echo'?'hue-rotate(100deg)':e.type==='cinder'?'hue-rotate(325deg)':e.type==='warden'?'hue-rotate(335deg)':'none';
     if(e.hurt>0)filter+=' brightness(1.6)';
     drawCombat(ctx,f,x,y,scale,e.dir,filter);
     // Recovered poacher poses already include their held firearm.
@@ -469,25 +504,46 @@ function drawFighter(e) {
   ctx.restore();
 }
 
+const heroSheet=new Image();heroSheet.src=HERO_ART.sheet;
+const FIREARMS=new Set(['gun','uzi','shotgun','rifle','m16','bazooka']);
+function heroActionFrame(action,index=0){const data=HERO_ART[HEROES[selected].id],seq=data[action];return HERO_ART.frames[seq[index%seq.length]];}
+function drawHeroAction(g,f,x,y,scale,dir){if(!heroSheet.complete)return;g.save();g.translate(Math.round(x),Math.round(y));g.scale(-dir*scale,scale);g.drawImage(heroSheet,f.x,f.y,f.w,f.h,-f.anchor,-f.h,f.w,f.h);g.restore();}
+function gunMount(recoil=false){
+  const f=heroActionFrame(recoil?'recoil':'aim'),grips=recoil?{jack:[9,4],hannah:[24,23],mustapha:[8,9],mess:[10,8]}:{jack:[7,16],hannah:[24,24],mustapha:[13,21],mess:[11,17]},grip=grips[HEROES[selected].id];
+  return {x:(f.anchor-grip[0])*1.35,y:(f.h-grip[1])*1.35};
+}
 function drawPlayer() {
   const x=player.x-camera,y=player.y-player.z;ctx.save();shadow(ctx,x,player.y,level.drive?72:27);
   if(player.inv>0&&Math.floor(time*16)%2===0)ctx.globalAlpha=.65;
-  if(level.drive)car(ctx,x,y,1,player.boost>0||player.special>0,time);
+  player.pose='idle';
+  if(level.drive){player.pose='driving';car(ctx,x,y,1,player.boost>0||player.special>0,time);}
   else {
-    const data=A[HEROES[selected].id];let anim=player.special>0?'special':player.hurt>0?'hurt':player.attack>0?'attack':player.z>0?'jump':player.move?'walk':'idle';
-    let list=data[anim],frame=player.attack>0&&anim==='attack'?Math.floor((1-player.attack/player.attackTotal)*list.length):player.special>0?Math.floor((.65-player.special)*18):Math.floor(player.anim*(anim==='walk'?player.run?16:10:6));
-    let chosen=list[frame%list.length];
-    if(player.attack>0&&player.attackKind==='air')chosen=[4,28,27,28][selected];
-    if(player.attack>0&&player.attackKind==='dash')chosen=[3,27,26,28][selected];
-    if(player.weapon&&anim==='attack')chosen=data.attack[Math.min(1,data.attack.length-1)];
-    if(player.knocked&&player.hurt>0){ctx.save();ctx.translate(x,y-10);ctx.rotate(-player.dir*1.2);drawFrame(ctx,data.frames[data.hurt[0]],0,0,1.35,player.dir);ctx.restore();}
-    else drawFrame(ctx,data.frames[chosen],x,y,1.35,player.dir);
-    if(player.weapon&&player.hurt<=0){const melee=WEAPONS[player.weapon]?.melee;const swing=melee&&player.attack>0?Math.sin((1-player.attack/player.attackTotal)*Math.PI)*-1.7*player.dir:0;weaponSprite(ctx,player.weapon,x+player.dir*(32-(player.recoil||0)),y-(melee?56:65),1,player.dir,swing);}
+    const data=A[HEROES[selected].id],armed=FIREARMS.has(player.weapon);
+    if(armed&&player.hurt<=0&&player.special<=0){
+      // The aiming torso never uses an unarmed punch or walking-arm frame.
+      const recoiling=player.attack>0&&player.attackKind==='fire'&&player.attack/player.attackTotal>.78&&player.recoil>0,aim=heroActionFrame(recoiling?'recoil':'aim'),mount=gunMount(recoiling),recoil=player.recoil||0;
+      player.pose=player.attack>0&&player.attackKind==='fire'?'fire':player.move?'armed-walk':'armed-ready';
+      if(player.move&&player.attack<=0&&player.z===0){
+        const legs=data.frames[data.walk[Math.floor(player.anim*(player.run?16:10))%data.walk.length]];
+        ctx.save();ctx.beginPath();ctx.rect(x-160,y-43,320,70);ctx.clip();drawFrame(ctx,legs,x,y,1.35,player.dir);ctx.restore();
+        ctx.save();ctx.beginPath();ctx.rect(x-160,y-180,320,137);ctx.clip();drawHeroAction(ctx,aim,x,y,1.35,player.dir);ctx.restore();
+      }else drawHeroAction(ctx,aim,x,y,1.35,player.dir);
+      // Dedicated recoil poses keep the gun aligned with the raised grip.
+      weaponSprite(ctx,player.weapon,x+player.dir*(mount.x-recoil*.2),y-mount.y,1.12,player.dir,recoiling?-.32*player.dir:0);
+    }else {
+      let anim=player.special>0?'special':player.hurt>0?'hurt':player.attack>0?'attack':player.z>0?'jump':player.move?'walk':'idle';
+      let list=data[anim],frame=player.attack>0&&anim==='attack'?Math.floor((1-player.attack/player.attackTotal)*list.length):player.special>0?Math.floor((.65-player.special)*18):Math.floor(player.anim*(anim==='walk'?player.run?16:10:6));
+      let chosen=list[frame%list.length];player.pose=anim;
+      if(player.knocked&&player.hurt>0){ctx.save();ctx.translate(x,y-10);ctx.rotate(-player.dir*1.2);drawFrame(ctx,data.frames[data.hurt[0]],0,0,1.35,player.dir);ctx.restore();}
+      else if(anim==='attack'&&['dash','air'].includes(player.attackKind)){player.pose=player.attackKind;drawHeroAction(ctx,heroActionFrame(player.attackKind),x,y,1.35,player.dir);}
+      else if(anim==='walk'&&player.run){player.pose='run';drawHeroAction(ctx,heroActionFrame('run',Math.floor(player.anim*14)),x,y,1.35,player.dir);}
+      else drawFrame(ctx,data.frames[chosen],x,y,1.35,player.dir);
+      if(player.weapon&&player.hurt<=0){const melee=WEAPONS[player.weapon]?.melee;const swing=melee&&player.attack>0?Math.sin((1-player.attack/player.attackTotal)*Math.PI)*-1.7*player.dir:0;weaponSprite(ctx,player.weapon,x+player.dir*32,y-56,1.12,player.dir,swing);}
+    }
   }
   if(player.special>0){ctx.strokeStyle=HEROES[selected].color;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y-40,85*(1-player.special/.9),32,0,0,Math.PI*2);ctx.stroke();}
   ctx.restore();
 }
-
 function drawObject(o){if(o.hp<=0)return;const x=o.x-camera;shadow(ctx,x,o.y,23);if(o.type==='barrel'){drawFrame(ctx,A.enemies['5'][0],x,o.y,1,1);}else{rect(ctx,x-23,o.y-46,46,46,'#3b4c33');rect(ctx,x-21,o.y-44,42,40,'#9b7b4c');for(let j=0;j<3;j++)rect(ctx,x-18+j*13,o.y-42,2,38,'#5e603e');rect(ctx,x-23,o.y-43,46,6,'#bf9959');rect(ctx,x-23,o.y-9,46,6,'#bf9959');}}
 function drawDrop(d) {
   const x=d.x-camera,y=d.y+Math.sin(time*4+d.x)*2;shadow(ctx,x,d.y,16);
@@ -498,14 +554,14 @@ function drawDrop(d) {
 
 function label(text,x,y,size=12,color='#ecebcf',align='left'){ctx.font=`bold ${size}px Consolas, monospace`;ctx.textAlign=align;ctx.fillStyle='#12261e';ctx.fillText(text,x+1,y+1);ctx.fillStyle=color;ctx.fillText(text,x,y);}
 function hud(){rect(ctx,0,0,W,68,'#0c1d19dc');rect(ctx,0,67,W,1,'#678258');const h=HEROES[selected];const fr=A[h.id].frames[0];ctx.save();ctx.beginPath();ctx.rect(16,12,42,45);ctx.clip();drawFrame(ctx,fr,38,117,1.25,1);ctx.restore();rect(ctx,16,12,42,2,h.color);label(h.name,70,23,12,h.color);rect(ctx,70,31,182,10,'#374a35');rect(ctx,71,32,180*clamp(player.hp/player.maxhp,0,1),8,h.color);label(`${Math.ceil(player.hp)} / ${Math.ceil(player.maxhp)}   × ${lives}`,70,56,10,'#c1cba6');label(level.area,285,23,10,'#b0c19f');label(level.name,285,43,13,'#e6e7c8');label('SCORE '+score.toString().padStart(7,'0'),W-53,23,12,'#e1e6ba','right');label(level.drive?'CADILLAC · RAM / BOOST':player.weapon?(WEAPONS[player.weapon]?.name||player.weapon.toUpperCase())+' · '+player.ammo:'BARE HANDS',W-53,43,10,'#adc197','right');
- const b=enemies.find(e=>e.boss&&!e.dead);if(b){rect(ctx,193,H-41,382,24,'#0e231bdd');rect(ctx,203,H-30,362,7,'#384a35');rect(ctx,204,H-29,360*Math.max(0,b.hp/b.maxhp),5,b.phase===2?'#d5ec69':'#e9a56b');label(b.type==='regent'&&b.phase===2?'THE PALE REGENT':level.boss,W/2,H-35,10,'#efdfb8','center');}
+ const b=enemies.find(e=>e.boss&&!e.dead);if(b){rect(ctx,193,H-41,382,24,'#0e231bdd');rect(ctx,203,H-30,362,7,'#384a35');rect(ctx,204,H-29,360*Math.max(0,b.hp/b.maxhp),5,b.phase===2?'#d5ec69':'#e9a56b');label(b.type==='sable'&&b.phase===2?'SABLE / CROWN ENGINE':level.boss,W/2,H-35,10,'#efdfb8','center');}
  else{rect(ctx,18,H-19,130,3,'#2c4534');rect(ctx,18,H-19,130*clamp(player.x/level.length,0,1),3,'#9aad6b');label('CHAPTER 0'+(levelIndex+1),18,H-25,9,'#b8c59d');}
  if(combo>=2){label(combo+' HIT',W-22,102,27,'#d5ec69','right');label('COMBO',W-25,116,10,'#b7c69c','right');}
  if(toastTime>0){rect(ctx,W/2-250,78,500,25,'#153023dc');label(toast,W/2,95,11,'#e0e8a8','center');}
  if(player.specialCd>0){label('SPECIAL '+Math.ceil(player.specialCd)+'s',18,112,10,'#a6b797');}else label(level.drive?'L · RAM READY':'L · '+h.special.toUpperCase(),18,112,9,'#d5ec69');}
 function render(){ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,W,H);ctx.save();if(shake>0)ctx.translate(rand(-shake,shake),rand(-shake/2,shake/2));
  if(!started||['menu','select','chapters','credits'].includes(state)){background(ctx,0,time*9,time);rect(ctx,0,0,W,H,'#0a221ec0');car(ctx,125,415,1.1,false,time);HEROES.forEach((h,i)=>{drawFrame(ctx,A[h.id].frames[0],340+i*90,424,1.1,1);});rect(ctx,0,0,W,H,'#05131030');}
- else{background(ctx,levelIndex,camera,time);for(const z of zones){const x=z.x-camera;ctx.fillStyle=z.friendly?'#efb36638':'#e77d5a30';ctx.beginPath();ctx.ellipse(x,z.y,z.r,z.r*.4,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle=z.friendly?'#e8bd76':'#efa36b';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,z.y,z.r*(z.t/z.total),z.r*.4*(z.t/z.total),0,0,Math.PI*2);ctx.stroke();}
+ else{background(ctx,levelIndex,camera,time);for(const z of zones){const x=z.x-camera;ctx.fillStyle=z.style==='flood'?'#5bbfda55':z.friendly?'#efb36638':'#e77d5a30';ctx.beginPath();ctx.ellipse(x,z.y,z.r,z.r*.4,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle=z.style==='flood'?'#8fe4ed':z.friendly?'#e8bd76':'#efa36b';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,z.y,z.r*(z.t/z.total),z.r*.4*(z.t/z.total),0,0,Math.PI*2);ctx.stroke();}
  const draws=[...objects.filter(o=>o.hp>0).map(o=>({y:o.y,fn:()=>drawObject(o)})),...drops.map(d=>({y:d.y,fn:()=>drawDrop(d)})),...enemies.map(e=>({y:e.y,fn:()=>drawFighter(e)})),{y:player.y,fn:drawPlayer}];draws.sort((a,b)=>a.y-b.y);draws.forEach(d=>d.fn());drawEffects();for(const p of particles)rect(ctx,p.x-camera,p.y,p.size,p.size,p.color);for(const f of floating)label(f.text,f.x-camera,f.y,12,f.color,'center');hud();
  if(lock&&!bossSpawned){label('CLEAR THE AREA',W/2,123,9,'#d4cf9e','center');}else if(!bossSpawned&&toastTime<=0){label('GO →',W-38,220,19,'#d5ec69','right');}if(state!=='play')rect(ctx,0,0,W,H,'#0b1a1688');}
  if(flash>0)rect(ctx,0,0,W,H,`rgba(226,239,170,${Math.min(.5,flash)})`);ctx.restore();}
@@ -515,6 +571,6 @@ window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener(
 document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;const release=()=>{keys.delete(k);touchKeys.delete(k);};b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);unlockAudio();if(!keys.has(k))pressed.add(k);keys.add(k);touchKeys.add(k);});b.addEventListener('pointerup',release);b.addEventListener('pointercancel',release);b.addEventListener('lostpointercapture',release);});
 bindButton('pause',pause);bindButton('home',()=>{if(state==='play')pause();else menu();});bindButton('sound',()=>{const on=settings.music||settings.sfx;settings.music=!on;settings.sfx=!on;document.querySelector('#sound').textContent=on?'SOUND OFF':'SOUND ON';persist();});document.querySelector('#sound').textContent=settings.music||settings.sfx?'SOUND ON':'SOUND OFF';bindButton('full',()=>{if(document.fullscreenElement)document.exitFullscreen();else document.querySelector('.game-shell').requestFullscreen?.().catch(()=>{});});
 // A narrow, explicit test interface keeps campaign checks reproducible.
-window.LAST_EDEN={get state(){return state;},get snapshot(){return {state,level:levelIndex,wave,score,lives,section,lock:lock?{...lock}:null,bullets:bullets.map(b=>({...b})),zones:zones.map(z=>({...z})),audio:soundtrack.status,player:player?{...player}:null,enemies:enemies.map(e=>({...e})),objects:objects.map(o=>({...o})),drops:drops.map(d=>({...d})),unlocked:save.unlocked};},start:(i=0,hero=0,mode='story')=>{selected=clamp(hero,0,3);difficulty=mode;score=0;lives=3;startStage(clamp(i,0,5),true);},step:(dt=1/60)=>update(dt),controls:{attack,jump,special,pickup},test:{equip:(type,ammo)=>{player.weapon=type;player.ammo=ammo??WEAPONS[type].ammo;},spawnEnemy,drop:(type,x,y)=>drops.push({type,x,y,life:90}),move:(x,y)=>{player.x=x;player.y=y;},damageEnemy:(i,n)=>damageEnemy(enemies[i],n),damagePlayer:n=>damagePlayer(n,player.x-40),finishEncounter:()=>{enemies.forEach(e=>{e.inv=0;damageEnemy(e,9999);if(e.phase===2&&e.hp>0){e.inv=0;damageEnemy(e,9999);}});},spawnBoss,clear:stageClear}};
+window.LAST_EDEN={render, get state(){return state;},get snapshot(){return {state,level:levelIndex,wave,score,lives,section,lock:lock?{...lock}:null,bullets:bullets.map(b=>({...b})),zones:zones.map(z=>({...z})),audio:soundtrack.status,player:player?{...player}:null,enemies:enemies.map(e=>({...e})),objects:objects.map(o=>({...o})),drops:drops.map(d=>({...d})),unlocked:save.unlocked};},start:(i=0,hero=0,mode='story')=>{selected=clamp(hero,0,3);difficulty=mode;score=0;lives=3;startStage(clamp(i,0,5),true);},step:(dt=1/60)=>update(dt),controls:{attack,jump,special,pickup},test:{equip:(type,ammo)=>{player.pendingStrike=null;player.attack=0;player.weapon=type;player.ammo=ammo??WEAPONS[type].ammo;},spawnEnemy,drop:(type,x,y)=>drops.push({type,x,y,life:90}),move:(x,y)=>{player.x=x;player.y=y;},damageEnemy:(i,n)=>damageEnemy(enemies[i],n),damagePlayer:n=>damagePlayer(n,player.x-40),finishEncounter:()=>{enemies.forEach(e=>{e.inv=0;damageEnemy(e,9999);if(e.phase===2&&e.hp>0){e.inv=0;damageEnemy(e,9999);}});},spawnBoss,clear:stageClear}};
 sheet.onload=()=>{if(state==='select')characterSelect();};sheet.onerror=()=>panel('<section class="panel small-panel"><h2>ARTWORK COULD NOT LOAD.</h2><p>Keep assets.js, game.js and index.html in the same folder, then open index.html again.</p></section>');menu();requestAnimationFrame(frame);
 })();

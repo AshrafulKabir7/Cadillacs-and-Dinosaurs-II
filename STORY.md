@@ -1,122 +1,121 @@
-# Last Eden — story and boss guide
+# Last Eden — original sequel script
 
-**Spoilers follow.**
+This is an unofficial continuation of the arcade game's ending. Fessenden is defeated. His laboratory self-destructs; Jack stops to help Hannah, and both survive and return in the Cadillac to rejoin Mustapha and Mess. Those events are history, not stages to replay.
 
-## Premise
+## The new conflict
 
-Six months after the fall of Dr. Fessenden, the coastal settlements are recovering. Jack repairs the Cadillac. Hannah catalogs surviving dinosaur bloodlines. Mess helps rebuild the harbor. Mustapha finally thinks the gang might get a quiet week.
+Three months later, storm tides threaten the recovering coast. Marshal Sable, formerly responsible for maintaining its water pumps, has seized the Crown flood barrier. He intends to flood the independent settlements and sell the survivors access to his reservoirs. His power comes from controlling infrastructure, hired fighters and false information. There is no resurrected Fessenden, new mutation serum or laboratory-made final form.
 
-Then cages arrive on an unmarked convoy. The animals are alive, but their collars glow with an unfamiliar serum. A scientist named **Dr. Mara Voss** has found an ancient seed vault beneath the city. She calls it Eden. It contains the last uncontaminated specimens from before the cataclysm.
+Last Eden is the name Hannah gives a refuge on a dry ridge. It becomes a shared shelter for people and migrating dinosaurs. The four friends have one night to warn the coast, open its evacuation route and restore the barrier's missing governor before dawn.
 
-Voss believes natural evolution has failed. She wants to splice those specimens into a species that can survive anything, then use the vault's reactor to spread her serum across the region. Her creations obey a control signal. Her intended ruler is the **Pale Regent**.
+All heroes follow this story. The chosen hero fights on screen; the chapter dialogue describes what the whole group accomplishes between encounters.
 
-The four heroes must stop her without destroying the very refuge they came to save.
+## Opening — the garage
 
-## The heroes
+Rain drums on the Cadillac's roof. Jack has repaired the last damage from the laboratory escape. Mess is carrying pump parts. Mustapha has just promised himself a quiet evening. Hannah's borrowed radio breaks through the static: the Crown reservoir is rising, but its official flood-warning channel is silent.
 
-- **Mustapha Cairo — Mostafa.** The fastest way through trouble is a flying kick. His Tornado Kick special controls groups, and his movement suits aggressive play.
-- **Jack Tenrec.** A mechanic and a practical leader. Balanced damage and health, with a Dino Uppercut special. He gets the Cadillac running for the pursuit.
-- **Hannah Dundee.** The scientist who understands what is happening to the animals. Fast movement, extra weapon damage and Spiral Smash, with less health than the others.
-- **Mess O'Bradovich.** The heavy hitter. Slower movement, the most health and the strongest normal attacks. His Knuckle Bomb clears a crowded lane.
+Before the message finishes, armed dock guards seize the transmitter and drive toward the harbor.
 
-All four experience the same connected campaign. The choice changes combat statistics and animation, not the story route.
+**Hannah:** Those tide readings are real. We have one night.
 
-## 01 — The Drowned Harbor
+**Mustapha:** Then somebody picked the wrong night to steal our radio.
 
-**Setting:** sunset over a partly submerged city, abandoned cranes, cracked loading platforms and ruined towers.
+## Chapter 1 — The Drowned Harbor
 
-**Goal:** intercept the first cargo transfer. Six encounters introduce raiders, ranged enemies, breakable containers and weapon pickups.
+The route passes the silent docks, customs house and Rook's blockade. The guards have confiscated fuel and maps as well as the radio. Their ordinary raiders flank the heroes while armed poachers hold the long lanes.
 
-**Boss: Warden Rook.** A former dock enforcer wearing salvaged armor. He moves into range, warns before a heavy strike, and tries to corner the hero. Stay in the same lane long enough to land a combo, then move away or jump when he winds up.
+**Warden Rook** is Sable's dock enforcer. He uses a close combination, a committed rush and covering fire. His orders reveal the commissioner's name. The stolen transmitter and a floodgate governor leave on an armored tanker.
 
-**Story turn:** Rook drops a manifest. The shipment is going inland, along the Green Highway.
+**Rook:** There's no evacuation order. Go home.
 
-> Jack: Those cages are headed inland.
->
-> Mustapha: Then we follow the tire tracks.
+**Hannah:** That's what happens when you steal the warning.
 
-## 02 — The Green Highway
+**Jack:** He's buying time. Get in the car.
 
-**Setting:** a ruined expressway threaded through returning forest.
+The gang needs both pieces of cargo: the radio can warn the settlements, and the governor can meter water through the barrier safely.
 
-**Goal:** pursue the convoy from the Cadillac. The car moves automatically. Steer, boost and ram through six escort formations.
+## Chapter 2 — The Green Highway
 
-**Boss: Iron Convoy.** An armored transport with a three-lane projectile volley. Change lanes for its volley, dodge its charge and marked bombardment, then boost into it during recovery. A close-range ram damages escorts and the truck.
+Jack takes the Cadillac along the broken expressway. Mustapha calls the gaps in the road, Hannah tracks the tanker signal, and Mess clears its escorts. The chapter is a vehicle pursuit, with steering, ramming, boost and an armored transport boss.
 
-**Story turn:** the rescued cargo includes a young dinosaur. Hannah opens its cage and finds a locator pointing toward the Verdant Basin.
+**Mess:** How much water can one man steal?
 
-> Jack: Everybody buckle up.
->
-> Hannah: You did fix the brakes, right?
+**Jack:** Enough to make everyone else pay for it.
 
-## 03 — The Verdant Basin
+The **Iron Convoy** has volleys, a rush and marked bombardment. After the escort is stopped, Hannah recovers the transmitter and broadcasts the first genuine evacuation warning. Jack secures the governor, but its drive coupling is damaged.
 
-**Setting:** forest has overtaken the suburbs. The serum has contaminated its hunting grounds.
+The tanker's map reveals a second part of Sable's plan. Sonic beacons have driven migrating dinosaurs onto the only safe ridge, forcing the refugees back toward the lowlands.
 
-**Goal:** destroy the control network and push through raiders, gunners and altered raptors.
+## Chapter 3 — The Verdant Basin
 
-**Boss: Thornmaw.** A massive altered predator. It cycles through charges, marked acid strikes and leaps. Moving outside the marked patch is safer than jumping over it. Close in after the attack and use a flying kick or weapon.
+Hired hunters defend the beacon trail. Ordinary dinosaurs calm and leave after being subdued. At the final nest, **Thornmaw** charges and leaps to protect its young; it does not use manufactured acid or mutant powers.
 
-**Story turn:** the control collars go dark. The remaining animals escape. A pipeline carries the serum toward a foundry.
+**Hannah:** It isn't hunting us. We're between it and its nest.
 
-> Hannah: That growth is changing them.
->
-> Mess: We find the source. We break it.
+**Mess:** Then we move the men who put us here.
 
-## 04 — The Ashen Foundry
+When the encounter ends, the beacon fails. Thornmaw retreats alive. Its young follow the herd along the reopened passage. Families cross behind them.
 
-**Setting:** salvaged industrial engines, orange furnace windows and a working mutation refinery.
+**Hannah:** There. Above the flood line. Last Eden.
 
-**Goal:** reach the furnace gates and disable the serum supply.
+**Mustapha:** Good name. Now let's make sure it's still here tomorrow.
 
-**Boss: Foreman Cinder.** A poacher turned refinery guardian. He cycles through a heavy cleave, a fast rush and a marked fire attack. Change lanes during his warning or jump as he passes. His recovery window leaves time for a heavy combo.
+The governor still needs a coupling. Jack recognizes the manufacturer's stamp: Cinder's foundry has the last working press capable of supplying one.
 
-**Story turn:** beneath the refinery is an elevator into a pre-cataclysm research station. Its records reveal Project Regent.
+## Chapter 4 — The Ashen Foundry
 
-> Mustapha: This place smells like trouble.
->
-> Jack: Trouble with a very large power bill.
+Sable's men are melting down communal water pumps to build an armored maintenance crawler. The heroes cross the scrap yard and machine shop before reaching **Foreman Cinder** at the furnace floor. Steam vents warn before discharging. Cinder fights with heavy cleaves, a charge and furnace bursts.
 
-## 05 — The Mirror Lab
+**Cinder:** Water belongs to whoever can hold the gate.
 
-**Setting:** glowing specimen tanks, cloning equipment and abandoned research corridors.
+**Jack:** Funny. I was about to take it off your hands.
 
-**Goal:** destroy the station's defenses before its experiments reach maturity.
+After the fight, Mess holds the damaged press open while Jack retrieves a coupling. The repaired governor contains a service diagram: a pressure tunnel leads directly into Crown. Its remote lock is controlled by the old tide archive.
 
-**Boss: Sentinel Echo.** Voss's adaptable guardian. Echo cycles through projectile volleys, leaping attacks and summoning reinforcements. Use your special when the reinforcements close in. Move away from the marked leap landing, then concentrate attacks on Echo during recovery.
+Mustapha hears floodwater hit the lower road. The route home is closing.
 
-**Story turn:** Echo breaks. Voss broadcasts her plan from the vault below. The heroes take the final descent.
+## Chapter 5 — The Tide Archive
 
-> Hannah: She isn't saving the species.
->
-> Jack: She's replacing them.
+The archive is a pumping station and radio relay. **Signal Captain Echo**, Sable's communications officer, sends convincing false evacuation orders while jamming Hannah's frequency. The heroes fight through the station, its waterside approach and the relay room.
 
-## 06 — The Last Eden
+**Echo, on the radio:** Turn back. The ridge is closed.
 
-**Setting:** a buried seed vault where preserved specimens and living vegetation surround the mutation reactor.
+**Hannah:** This is Hannah Dundee. Stay on the high road. We're coming.
 
-**Goal:** defeat Voss and shut down the reactor while preserving the vault.
+Echo uses ranged volleys, a jumping attack and calls hired reinforcements. Breaking his defense restores the real channel. Hannah gets acknowledgments from the settlements; they are opening their shelters. Jack releases the service-tunnel lock.
 
-**Final boss, phase one: Dr. Mara Voss.** The serum has already changed her. She moves into combat range and fires projectile volleys. Dodge between lanes and punish her recovery.
+Sable makes an offer over the recovered frequency.
 
-**Final boss, phase two: the Pale Regent.** When Voss's first health bar is depleted, she transforms into the creature she meant to create: a large pale dinosaur hybrid with elongated limbs and a whipping tail. A fresh health bar appears. It cycles through ground slams, charges, spine volleys and leaps; its movement is faster. Jump over the marked slam or get outside the ring, then strike before the next warning.
+**Sable:** Four seats at the top. You can still get out.
 
-The second form has more health than the first. Save food, weapons and enough health for specials. Both forms remain inside the reachable combat arena.
+Jack switches off the receiver. The Cadillac enters the tunnel.
 
-> Voss: I offered this world a future.
->
-> Mustapha: A future needs a choice.
+## Chapter 6 — The Crown Barrier
 
-## Ending
+The service tunnel opens onto the reservoir walkway. Last Eden is visible above the far bank. At the floodgate, **Marshal Sable** tries to hold the heroes off with gunfire, close attacks and guards.
 
-The heroes stop the reactor. The control signal fails. The captive dinosaurs return to the wild, and daylight reaches the vault for the first time in centuries.
+**Sable:** They'll thank the man who decides who survives.
 
-Hannah opens the preserved specimens. Jack disconnects the power system. Mess lifts the fallen gate. Mustapha leads the rescued animals into the sunrise.
+**Mustapha:** Let's take that decision away from you.
 
-They drive home with a box of seeds and the baby dinosaur from the highway. Eden becomes a refuge shared by the settlements, rather than another ruler's laboratory.
+When his first health bar is depleted, Sable boards the **Crown Engine**. This is a second playable boss phase: an armored tracked floodgate crawler with a visible cockpit, hydraulic hammer and cannon. It is not a biological transformation.
 
-> Mustapha: Same time next adventure?
->
-> Jack: Only if you're buying the fuel.
+Its attack cycle is a marked hammer shockwave, a spillway surge, a three-lane cannon volley and a committed charge. Jump the shockwave; change lanes for the surge, which cannot be jumped. Strike during recovery. Damaging the crawler below half health produces smoke.
 
-All six chapters unlock for replay. There is one complete ending, with no unfinished story branch.
+Destroying the drive stops Sable from tearing out the gate. Jack installs the recovered governor. Mess holds the manual release, Hannah coordinates downstream shelters and Mustapha opens the spillway. Water flows into the old riverbed a gate at a time.
+
+## Ending — no toll at the well
+
+Morning reaches the ridge. A family moves its cart aside to let Thornmaw's young pass. The river below is moving again. The settlements take custody of Sable and keep the water keys themselves.
+
+Hannah hangs the repaired radio beside Last Eden's first public well. Jack checks the Cadillac. Mess closes the tool box; Mustapha watches the first bucket come up.
+
+**Mess:** Tell me we're finally going home.
+
+**Mustapha:** After breakfast. Saving the world makes me hungry.
+
+The four drive home together. Last Eden remains a refuge open to the coast, with no ruler charging admission. All six chapters unlock for replay; this campaign has one complete ending.
+
+## Playable scope
+
+Chapter briefings, dialogue, objectives and completion/ending text are in `campaign.js` and `game.js`. The garage scene, extra lines and inter-chapter actions above are the extended scenario; they are presented through text transitions, not fully animated cinematics. The six boss encounters and both final phases are playable.
