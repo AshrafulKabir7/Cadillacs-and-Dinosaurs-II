@@ -24,17 +24,29 @@ html.touch-ui,html.touch-ui body{overscroll-behavior:none;-webkit-tap-highlight-
 .touch-ui body:not(.in-play) .touch-controls{opacity:.3;pointer-events:none}
 .touch-ui .pause-button{top:6px;right:6px;padding:6px 11px;font-size:14px;opacity:.85}
 .touch-ui .below,.touch-ui footer{display:none}
+.full-exit,.rotate-hint{display:none}
+.touch-ui .header-right #full{min-width:40px;min-height:34px;font-size:16px}
+/* Fullscreen on touch devices: no page header, the playfield takes the room, a clear exit button. */
+html.touch-ui.is-full,html.touch-ui.is-full body{background:#05090a}
+html.touch-ui.pseudo-full,html.touch-ui.pseudo-full body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden}
+.touch-ui.is-full .masthead{display:none}
+.touch-ui.is-full:not(.standalone) .full-exit{display:block;position:fixed;top:max(6px,env(safe-area-inset-top));left:max(6px,env(safe-area-inset-left));z-index:30;width:36px;height:36px;padding:0;border-radius:50%;background:#0d1a17cc;border:1px solid #4a5f52;color:#d6dccb;font-size:15px}
 /* Portrait phones: the playfield on top, the stick and buttons in the space below. */
 @media (orientation:portrait){
   .touch-ui .cabinet{width:100%;padding:0 8px;min-height:100dvh;display:flex;flex-direction:column}
   .touch-ui .masthead{height:48px}.touch-ui .logo-mark{font-size:26px}
   .touch-ui .touch-controls{flex:1;align-items:center;max-height:280px}
+  .touch-ui.is-full .cabinet{justify-content:center;padding-top:max(8px,env(safe-area-inset-top))}
+  .touch-ui.is-full .rotate-hint{display:block;margin:10px auto 0;font-size:9px;letter-spacing:2px;color:#9fb79a;text-align:center}
+  .touch-ui.is-full .touch-controls{flex:none;margin-top:14px}
 }
 /* Landscape phones and tablets: stick on the left, buttons on the right, playfield in the middle. */
 @media (orientation:landscape){
   .touch-ui .cabinet{width:100%;height:100dvh;padding:2px max(8px,env(safe-area-inset-right)) 0 max(8px,env(safe-area-inset-left));display:flex;flex-direction:column;align-items:center}
   .touch-ui .masthead{width:100%;height:30px;flex:none;gap:10px}.touch-ui .masthead a{font-size:8px;gap:8px}.touch-ui .masthead b{font-size:11px;letter-spacing:3px;margin-top:2px}.touch-ui .logo-mark{font-size:24px}.touch-ui .header-right button{font-size:9px;padding:5px 9px}.touch-ui .status{display:none}
   /* The playfield takes the full height; the stick and buttons float over its lower corners. */
+  .touch-ui.is-full .cabinet{padding-top:0;justify-content:center}
+  .touch-ui.is-full .game-shell,.touch-ui.is-full .game-shell:has(.small-panel){height:100dvh;box-shadow:none;border:0;border-radius:0}
   .touch-ui .game-shell,.touch-ui .game-shell:has(.small-panel){height:calc(100dvh - 36px);width:auto;max-width:100%;aspect-ratio:16/9;min-height:0;box-shadow:0 0 0 3px #263329}
   .touch-ui .touch-controls{position:fixed;inset:auto 0 0 0;padding:0 max(14px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));z-index:20;pointer-events:none;align-items:flex-end}
   .touch-ui .stick,.touch-ui .touch-actions{pointer-events:auto}

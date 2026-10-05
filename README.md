@@ -47,7 +47,7 @@ Checked frame by frame against the user’s 15-minute arcade video, using the or
 | Run | Shift + ← / →, or double tap ← / → | — |
 | Pause | Esc or P | Start |
 
-**Phones and tablets:** a thumb stick on the left and PICK/USE, SPECIAL, JUMP and HIT/FIRE buttons on the right. Slide your thumb anywhere in the stick to move (diagonals work); push it to the rim to run. Use a second finger for the buttons while moving; hold PICK/USE at consoles. In portrait the controls sit below the playfield; in landscape the playfield fills the screen height and the controls float over its lower corners. The desktop page is unchanged. Connect a controller and press a button to activate it.
+**Phones and tablets:** a thumb stick on the left and PICK/USE, SPECIAL, JUMP and HIT/FIRE buttons on the right. Slide your thumb anywhere in the stick to move (diagonals work); push it to the rim to run. Use a second finger for the buttons while moving; hold PICK/USE at consoles. In portrait the controls sit below the playfield; in landscape the playfield fills the screen height and the controls float over its lower corners. Tap ⛶ for fullscreen: the header disappears, the playfield fills the screen and Android locks to landscape; ✕ or the pause menu exits. iPhone Safari has no page fullscreen, so it fills the screen instead; for true fullscreen on iPhone use Share → Add to Home Screen, which launches the game without browser bars. The desktop page is unchanged. Connect a controller and press a button to activate it.
 
 Hold attack for combos. Jump first, then attack for a flying kick; attack while running for a dash strike. Specials cost eight health **when they hit an enemy** and drop the held weapon. Heavy hits also drop weapons, retaining ammunition.
 

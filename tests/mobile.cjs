@@ -30,6 +30,25 @@ for(const [name,vp] of [['portrait 390x844',{width:390,height:844}],['landscape 
  check(`${name}: playfield and controls fit without scrolling`,lay.fit&&lay.noScroll);
  check(`${name}: the playfield is at least 370 px wide and the attack button at least 64 px`,lay.canvasW>=370&&lay.btn>=64);
  await p.screenshot({path:`tests/results/mobile-${name.split(' ')[0]}-${vp.width}.png`});await ctx.close();}
+// Fullscreen on touch devices: real fullscreen (Android/iPad) and the fill-the-screen fallback (iPhone Safari).
+for(const [name,noApi] of [['fullscreen',false],['iPhone fallback fullscreen',true]]){
+ const vp={width:844,height:390},ctx=await browser.newContext({...devices['Pixel 7'],viewport:vp,screen:vp}),p=await ctx.newPage();p.on('pageerror',e=>errors.push(e.message));
+ if(noApi)await p.addInitScript(()=>{delete Element.prototype.requestFullscreen;delete Element.prototype.webkitRequestFullscreen;});
+ await p.goto(BASE);await p.waitForFunction(()=>window.SEQUEL_RENDER&&SEQUEL_RENDER.ready&&window.ARCADE_HEROES);
+ const cdp=await ctx.newCDPSession(p),touch=(type,points)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:points.map((pt,i)=>({x:pt.x,y:pt.y,id:pt.id??i}))});
+ const tapSel=async sel=>{const r=await p.locator(sel).first().boundingBox();await touch('touchStart',[{x:r.x+r.width/2,y:r.y+r.height/2}]);await p.waitForTimeout(60);await touch('touchEnd',[]);await p.waitForTimeout(450);};
+ await tapSel('#newgame');await tapSel('#begin');await tapSel('#enter-stage');await tapSel('#full');
+ const st=await p.evaluate(()=>{const g=document.getElementById('game').getBoundingClientRect(),shown=e=>getComputedStyle(e).display!=='none';
+   return {full:document.documentElement.classList.contains('is-full'),real:!!document.fullscreenElement,header:shown(document.querySelector('.masthead')),exit:shown(document.getElementById('full-exit')),gameH:g.height,innerH:innerHeight,
+   fit:[...document.querySelectorAll('#game,#stick,[data-key],#full-exit')].filter(shown).every(e=>{const b=e.getBoundingClientRect();return b.top>=0&&b.left>=0&&b.bottom<=innerHeight+1&&b.right<=innerWidth+1;})};});
+ check(`${name}: entering hides the header and fills the screen height`,st.full&&(noApi?!st.real:st.real)&&!st.header&&Math.abs(st.gameH-st.innerH)<2&&st.fit);
+ check(`${name}: an exit button is shown`,st.exit);
+ const sb=await p.locator('#stick').boundingBox(),x0=await p.evaluate(()=>LAST_EDEN.snapshot.player.x);await touch('touchStart',[{x:sb.x+sb.width*.75,y:sb.y+sb.height/2}]);await p.waitForTimeout(600);await touch('touchEnd',[]);
+ check(`${name}: the stick still moves the hero`,await p.evaluate(x=>LAST_EDEN.snapshot.player.x-x>60,x0));
+ await p.waitForTimeout(300);await tapSel('#pause');check(`${name}: the pause menu offers EXIT FULLSCREEN`,await p.evaluate(()=>document.getElementById('pause-full')?.textContent==='EXIT FULLSCREEN'));
+ await tapSel('#pause-full');await p.waitForTimeout(300);await tapSel('#resume');await tapSel('#full');await tapSel('#full-exit');
+ check(`${name}: the exit button restores the normal layout`,await p.evaluate(()=>!document.documentElement.classList.contains('is-full')&&!document.fullscreenElement&&getComputedStyle(document.querySelector('.masthead')).display!=='none'));
+ await ctx.close();}
 const d=await browser.newPage({viewport:{width:1280,height:900}});d.on('pageerror',e=>errors.push(e.message));await d.goto(BASE);await d.waitForFunction(()=>window.SEQUEL_RENDER&&SEQUEL_RENDER.ready);
 check('Desktop keeps its layout: no touch controls, keyboard guide shown',await d.evaluate(()=>!document.documentElement.classList.contains('touch-ui')&&getComputedStyle(document.querySelector('.touch-controls')).display==='none'&&getComputedStyle(document.querySelector('.below')).display!=='none'));
 check('No browser exceptions in mobile checks',errors.length===0);

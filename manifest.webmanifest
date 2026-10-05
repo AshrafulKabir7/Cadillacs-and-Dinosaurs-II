@@ -1,0 +1,29 @@
+{
+  "name": "Cadillacs & Dinosaurs II — Fessenden's Legacy",
+  "short_name": "C&D II",
+  "description": "Unofficial fan sequel to the 1993 arcade game.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0b1316",
+  "theme_color": "#0b1316",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

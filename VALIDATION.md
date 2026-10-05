@@ -1,6 +1,6 @@
 # Validation — October 5, 2026 (arcade feel update)
 
-Tested in Chromium (Playwright 1.62.1) on Windows. **253 browser checks passed: 35 mobile touch checks, 27 combat/gun/sound checks, 41 story/update checks, 35 sequel/combat/mobile checks, 64 armed-action checks and 51 campaign/audio checks. No uncaught browser exceptions were reported.**
+Tested in Chromium (Playwright 1.62.1) on Windows. **263 browser checks passed: 45 mobile touch and fullscreen checks, 27 combat/gun/sound checks, 41 story/update checks, 35 sequel/combat/mobile checks, 64 armed-action checks and 51 campaign/audio checks. No uncaught browser exceptions were reported.**
 
 ## Chapter length
 
@@ -19,7 +19,7 @@ The test player fights efficiently, grabs and throws when it walks into enemies,
 
 ## Mobile touch checks (`tests/mobile.cjs`)
 
-Real touch input is sent through Chromium DevTools touch events on emulated phones at 390×844 (portrait), 844×390 and 667×375 (landscape). For each: menus are tapped through to gameplay; holding the stick walks; sliding the thumb across turns the hero; diagonals move on both axes; the stick rim runs; a second finger attacks while moving; releasing stops the hero; jump works; the playfield and controls fit without scrolling, with a playfield at least 370 px wide and an attack button at least 64 px. The desktop page keeps its layout. Physical phones were not tested.
+Real touch input is sent through Chromium DevTools touch events on emulated phones at 390×844 (portrait), 844×390 and 667×375 (landscape). For each: menus are tapped through to gameplay; holding the stick walks; sliding the thumb across turns the hero; diagonals move on both axes; the stick rim runs; a second finger attacks while moving; releasing stops the hero; jump works; the playfield and controls fit without scrolling, with a playfield at least 370 px wide and an attack button at least 64 px. Fullscreen is tested both with the browser fullscreen API and with it removed (the iPhone Safari case): the header hides, the playfield fills the screen height, controls still work, and the exit button and pause-menu option restore the page. Orientation locking and Add to Home Screen depend on the phone and were not verifiable in emulation. The desktop page keeps its layout. Physical phones were not tested.
 
 ## Combat, gun and sound checks (`tests/combat.cjs`)
 
