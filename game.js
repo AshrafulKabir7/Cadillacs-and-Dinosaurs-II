@@ -13,7 +13,9 @@ const HEROES=[
 const LEVELS=window.EDEN_CAMPAIGN;
 const rand=(a,b)=>a+Math.random()*(b-a),clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),approach=(x,y,s)=>x<y?Math.min(x+s,y):Math.max(x-s,y);
 const keys=new Set(),pressed=new Set(),touchKeys=new Set(),padKeys=new Set();
-function resetInput(){keys.clear();pressed.clear();touchKeys.clear();padKeys.clear();lastDirection={key:'',time:0};dashKey='';dashTime=0;}
+const TOUCH=document.documentElement.classList.contains('touch-ui');let stickId=null;
+function resetInput(){keys.clear();pressed.clear();touchKeys.clear();padKeys.clear();lastDirection={key:'',time:0};dashKey='';dashTime=0;
+  stickId=null;document.querySelectorAll('.touch-controls .held').forEach(b=>b.classList.remove('held'));document.getElementById('stick')?.classList.remove('active','running');const k=document.getElementById('stick-knob');if(k)k.style.transform='';}
 let state='menu',selected=0,difficulty='story',levelIndex=0,level=LEVELS[0],time=0,last=0,camera=0,shake=0,flash=0,hitstop=0;
 let player,enemies=[],allies=[],objects=[],drops=[],particles=[],bullets=[],zones=[],floating=[],wave=0,lock=null,bossSpawned=false,cleared=false,stageTimer=0;
 let plan=null,encIndex=0,encounter=null,sectionIndex=-1,driving=false,parkedCar=null,radio=null,radioQueue=[],alliesFreed=0;
@@ -214,7 +216,7 @@ function soundRoom(back=menu) {
 const combatSheet=new Image();combatSheet.src=COMBAT_ART.sheet;
 function drawCombat(g,f,x,y,scale,dir,filter="none"){if(!f||!combatSheet.complete)return;g.save();g.translate(Math.round(x),Math.round(y));g.scale(-dir*scale,scale);g.filter=filter;g.drawImage(combatSheet,f.x,f.y,f.w,f.h,-f.anchor,-f.h,f.w,f.h);g.restore();}
 function bindButton(id,fn){document.getElementById(id)?.addEventListener('click',()=>{unlockAudio();fn();});}
-function panel(html){overlay.innerHTML=html;document.querySelector('#pause').style.display=state==='play'?'block':'none';}
+function panel(html){overlay.innerHTML=html;document.querySelector('#pause').style.display=state==='play'?'block':'none';document.body.classList.toggle('in-play',state==='play');}
 function menu(){state='menu';lock=null;keys.clear();const cp=save.checkpoint;panel(`<section class="panel title-panel"><p class="eyebrow">SIX MONTHS AFTER FESSENDEN’S LAB BURNED</p><h1>CADILLACS &<br>DINOSAURS <span>II</span></h1><div class="subtitle">FESSENDEN’S LEGACY</div><p class="deck">The doctor is dead. His work is walking again.<br>Four heroes. Six chapters. An army of copies.</p><div class="menu-buttons"><button class="primary" id="newgame">START ADVENTURE →</button>${cp?`<button class="secondary" id="continue">CONTINUE · CH 0${cp.level+1}</button>`:''}<button class="secondary" id="chapters">CHAPTERS</button><button class="secondary" id="guide">HOW TO PLAY</button><button class="secondary" id="jukebox">SOUND ROOM</button></div><p class="title-note">A FAN-MADE SEQUEL · MADE FOR MOSTAFA</p></section>`);bindButton('newgame',()=>characterSelect());bindButton('continue',()=>{const s=save.checkpoint;selected=clamp(s.hero,0,3);difficulty=s.difficulty==='arcade'?'arcade':'story';score=s.score||0;lives=s.lives||3;startStage(clamp(s.level,0,5),{section:s.section|0});});bindButton('chapters',chapters);bindButton('guide',()=>guide(menu));bindButton('jukebox',()=>soundRoom(menu));}
 function characterSelect(startAt=0){state='select';panel(`<section class="panel character-panel"><p class="eyebrow">CHOOSE YOUR HERO</p><h2>THE GANG IS BACK.</h2><div class="hero-grid">${HEROES.map((h,i)=>`<button class="hero-card ${i===selected?'selected':''}" data-hero="${i}"><div class="hero-art"><canvas width="100" height="110" id="portrait-${i}" aria-label="${h.name}"></canvas></div><div class="hero-name">${h.name}</div><div class="hero-tag">${h.tag}</div><div class="hero-stats"><span>POWER ${Math.round(h.power/6)}</span><span>SPEED ${Math.round(h.speed/36)}</span></div></button>`).join('')}</div><div class="select-row"><div class="difficulty"><button id="story-mode" class="${difficulty==='story'?'selected':''}">STORY</button><button id="arcade-mode" class="${difficulty==='arcade'?'selected':''}">ARCADE</button></div><span class="hint">${difficulty==='story'?'More health · forgiving fights':'Faster enemies · harder bosses'}</span><button id="begin" class="primary">LET'S GO →</button></div><div class="menu-buttons"><button id="back" class="secondary">← BACK</button></div></section>`);
  document.querySelectorAll('[data-hero]').forEach(b=>b.onclick=()=>{selected=+b.dataset.hero;characterSelect(startAt);sfx('pickup');});bindButton('story-mode',()=>{difficulty='story';characterSelect(startAt);});bindButton('arcade-mode',()=>{difficulty='arcade';characterSelect(startAt);});bindButton('begin',()=>{score=0;lives=3;kills=0;bestCombo=0;runTime=0;startStage(startAt);});bindButton('back',menu);HEROES.forEach((h,i)=>{const c=document.querySelector('#portrait-'+i),g=c.getContext('2d');g.imageSmoothingEnabled=false;drawFrame(g,A[h.id].frames[0],50,108,1.25,1);});}
@@ -254,7 +256,7 @@ function startStage(i,opts={}){
   }
   driving=!!sec.drive;camera=clamp(player.x-255,0,level.length-W+180);placeProps(start);enterSection(start,true);
   for(let k=0;k<alliesFreed;k++)spawnAlly(k,true);
-  resetInput();started=true;toast=driving?'STEER ↑↓ · RAM ENEMIES · J BASH · K BOOST':start?'CHECKPOINT · '+sec.name:'MOVE → · J ATTACK · K JUMP · E PICK UP';toastTime=6;
+  resetInput();started=true;toast=driving?(TOUCH?'STICK STEERS · HIT BASHES · JUMP BOOSTS':'STEER ↑↓ · RAM ENEMIES · J BASH · K BOOST'):start?'CHECKPOINT · '+sec.name:TOUCH?'STICK MOVES · PUSH TO THE EDGE TO RUN · HIT · JUMP · PICK':'MOVE → · J ATTACK · K JUMP · E PICK UP';toastTime=6;
   if(opts.skipBrief){state='play';panel('');canvas.focus();return;}
   const resume=start?`<p style="color:var(--acid)">RESUMING AT SECTION ${start+1} · ${sec.name}</p>`:'';
   state='brief';panel(`<section class="panel small-panel"><p class="eyebrow">CHAPTER 0${i+1} · ${level.area.split('/')[1].trim()}</p><h2>${level.name}</h2><p>${level.brief}</p><p style="color:var(--acid);white-space:pre-line">${level.dialog}</p>${resume}<div class="menu-buttons"><button id="enter-stage" class="primary">${driving?'START YOUR ENGINE':'ENTER THE CHAPTER'} →</button></div></section>`);bindButton('enter-stage',()=>{state='play';panel('');resetInput();canvas.focus();});}
@@ -530,7 +532,7 @@ function updateGrab(dt,dx){
   if(!g){
     if(driving||player.weapon||player.grabCd>0||player.attack>0||player.hurt>0||player.z>0||player.pickup>0||player.special>0||!dx)return;
     const e=enemies.find(o=>!o.dead&&!o.dying&&!o.boss&&!o.elite&&o.onstage&&!(o.delay>0)&&!o.z&&['walk','hurt','windup','recover'].includes(o.state)&&!['raptor','biker','mutant','regent'].includes(o.type)&&Math.abs(o.x-player.x)<36&&Math.abs(o.y-player.y)<11&&Math.sign(o.x-player.x)===dx);
-    if(e){player.grab={e,t:0,hits:0};e.state='held';e.timer=0;e.hitChain=0;clearEnemyHazards(e.id);player.dir=dx;player.moveState=null;toast='GRAB · J KNEE · BACK + J THROW';toastTime=1.6;}
+    if(e){player.grab={e,t:0,hits:0};e.state='held';e.timer=0;e.hitChain=0;clearEnemyHazards(e.id);player.dir=dx;player.moveState=null;toast=TOUCH?'GRAB · HIT KNEES · BACK + HIT THROWS':'GRAB · J KNEE · BACK + J THROW';toastTime=1.6;}
     return;
   }
   const e=g.e;g.t+=dt;
@@ -691,7 +693,7 @@ function update(dt) {
   updatePickup(dt);
   let dx=(down('ArrowRight','KeyD')?1:0)-(down('ArrowLeft','KeyA')?1:0),dy=(down('ArrowDown','KeyS')?1:0)-(down('ArrowUp','KeyW')?1:0);
   // Running is a horizontal sprint; lane changes while running are slower so the stride stays readable.
-  player.run=!driving&&!!dx&&player.pickup<=0&&(down('ShiftLeft','ShiftRight')||(dashTime>0&&down(dashKey)));player.move=!!(dx||dy);
+  player.run=!driving&&!!dx&&player.pickup<=0&&(down('ShiftLeft','ShiftRight','TouchRun')||(dashTime>0&&down(dashKey)));player.move=!!(dx||dy);
   if(dx&&player.attack<=0&&player.pickup<=0&&!player.grab)player.dir=dx;
   const px=player.x,py=player.y;
   if(player.hurt<=0&&player.special<=0&&bossIntro<=0&&player.pickup<=0&&!frozen&&!player.grab){
@@ -958,7 +960,7 @@ function drawDrop(d) {
   if(d.claimed)return;const x=d.x-camera,y=d.y+Math.sin(time*4+d.x)*2;if(x<-60||x>W+60)return;shadow(ctx,x,d.y,16);
   if(d.type==='food'){rect(ctx,x-12,y-13,24,10,'#d7bb73');rect(ctx,x-10,y-18,19,6,'#b25e42');rect(ctx,x-9,y-21,16,3,'#d28d55');rect(ctx,x-15,y-4,29,3,'#e4ddb0');}
   else weaponSprite(ctx,d.type==='grenade'?'grenade':d.type,x,y-12,.85,1);
-  if(Math.hypot(d.x-player.x,d.y-player.y)<65&&d.type!=='food')label('J / E · '+(WEAPONS[d.type]?.name||d.type.toUpperCase()),x,y-35,10,'#f0e0a8','center');
+  if(Math.hypot(d.x-player.x,d.y-player.y)<65&&d.type!=='food')label((TOUCH?'HIT / PICK · ':'J / E · ')+(WEAPONS[d.type]?.name||d.type.toUpperCase()),x,y-35,10,'#f0e0a8','center');
 }
 // Story set dressing along the back of the floor: Fessenden's cold pods at the harbor, egg racks in the
 // nursery, unfinished vats in the foundry and, in Echo's halls, tanks holding copies of the four heroes.
@@ -1000,7 +1002,25 @@ let accumulator=0;
 function frame(now){const elapsed=Math.min(.1,Math.max(0,(now-last)/1000||1/60));last=now;accumulator+=elapsed;while(accumulator>=1/60){update(1/60);accumulator-=1/60;}render();requestAnimationFrame(frame);}
 window.addEventListener('keydown',e=>{const use=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyW','KeyA','KeyS','KeyD','KeyJ','KeyK','KeyL','KeyZ','KeyX','KeyC','KeyE','KeyV','ShiftLeft','ShiftRight','Enter','Escape','KeyP'];if(use.includes(e.code)&&(state==='play'||['ArrowLeft','ArrowRight','Enter','Escape','KeyP'].includes(e.code)))e.preventDefault();unlockAudio();if(e.code==='Escape'||e.code==='KeyP'){if(!e.repeat){if(state==='play'||state==='paused')pause();else if(e.code==='Escape'&&['select','chapters','guide','credits','jukebox'].includes(state))menu();}return;}if(!e.repeat&&['ArrowLeft','ArrowRight','KeyA','KeyD'].includes(e.code)){const now=performance.now()/1000;if(lastDirection.key===e.code&&now-lastDirection.time<.28){dashTime=1.6;dashKey=e.code;}lastDirection={key:e.code,time:now};}if(!keys.has(e.code))pressed.add(e.code);keys.add(e.code);if(e.code==='Enter'&&!e.repeat){if(state==='menu')characterSelect();else if(state==='select')document.getElementById('begin')?.click();else if(state==='brief')document.getElementById('enter-stage')?.click();else if(state==='clear')document.getElementById('next')?.click();else if(state==='gameover')document.getElementById('retry')?.click();}if(state==='select'&&!e.repeat&&['ArrowLeft','ArrowRight'].includes(e.code)){selected=(selected+(e.code==='ArrowRight'?1:3))%4;characterSelect();}});
 window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',()=>{resetInput();if(state==='play')pause();});document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='play')pause();});
-document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;const release=()=>{keys.delete(k);touchKeys.delete(k);};b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);unlockAudio();if(!keys.has(k))pressed.add(k);keys.add(k);touchKeys.add(k);});b.addEventListener('pointerup',release);b.addEventListener('pointercancel',release);b.addEventListener('lostpointercapture',release);});
+function touchKey(code,on){if(on&&!touchKeys.has(code)){touchKeys.add(code);if(!keys.has(code))pressed.add(code);keys.add(code);}else if(!on&&touchKeys.has(code)){touchKeys.delete(code);keys.delete(code);}}
+const stickEl=document.getElementById('stick'),knobEl=document.getElementById('stick-knob');
+function setStick(x,y){
+  const dead=.3,run=Math.abs(x)>.8;touchKey('ArrowRight',x>dead);touchKey('ArrowLeft',x<-dead);touchKey('ArrowDown',y>dead);touchKey('ArrowUp',y<-dead);touchKey('TouchRun',run);
+  if(knobEl)knobEl.style.transform=x||y?`translate(${x*62}%,${y*62}%)`:'';stickEl?.classList.toggle('running',run);
+}
+function moveStick(e){const r=stickEl.getBoundingClientRect(),R=r.width*.3;let x=(e.clientX-(r.left+r.width/2))/R,y=(e.clientY-(r.top+r.height/2))/R;const m=Math.hypot(x,y);if(m>1){x/=m;y/=m;}setStick(x,y);}
+if(stickEl){
+  stickEl.addEventListener('pointerdown',e=>{e.preventDefault();if(stickId!==null)return;stickId=e.pointerId;try{stickEl.setPointerCapture(e.pointerId);}catch{}unlockAudio();stickEl.classList.add('active');moveStick(e);});
+  stickEl.addEventListener('pointermove',e=>{if(e.pointerId===stickId){e.preventDefault();moveStick(e);}});
+  const endStick=e=>{if(e.pointerId!==stickId)return;stickId=null;stickEl.classList.remove('active');setStick(0,0);};
+  for(const t of ['pointerup','pointercancel','lostpointercapture'])stickEl.addEventListener(t,endStick);
+  stickEl.addEventListener('contextmenu',e=>e.preventDefault());
+}
+document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;let id=null;
+  const release=e=>{if(e.pointerId!==id)return;id=null;b.classList.remove('held');touchKey(k,false);};
+  b.addEventListener('pointerdown',e=>{e.preventDefault();id=e.pointerId;try{b.setPointerCapture(e.pointerId);}catch{}unlockAudio();b.classList.add('held');touchKey(k,true);navigator.vibrate?.(8);});
+  for(const t of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(t,release);
+  b.addEventListener('contextmenu',e=>e.preventDefault());});
 bindButton('pause',pause);bindButton('home',()=>{if(state==='play')pause();else menu();});bindButton('sound',()=>{const on=settings.music||settings.sfx;settings.music=!on;settings.sfx=!on;document.querySelector('#sound').textContent=on?'SOUND OFF':'SOUND ON';persist();});document.querySelector('#sound').textContent=settings.music||settings.sfx?'SOUND ON':'SOUND OFF';bindButton('full',()=>{if(document.fullscreenElement)document.exitFullscreen();else document.querySelector(matchMedia('(pointer:coarse)').matches?'.cabinet':'.game-shell').requestFullscreen?.().catch(()=>{});});
 // A narrow, explicit test interface keeps campaign checks reproducible.
 window.LAST_EDEN={render, get state(){return state;},get snapshot(){return {mission:mission?{completed:mission.completed,total:mission.total,active:mission.active?{...mission.active}:null}:null,artReady:SEQUEL_RENDER.ready,posesReady:ahSheet.complete,state,level:levelIndex,wave,score,lives,section:sectionIndex,encounter:encIndex,driving,camera,length:level.length,plan:plan?{sections:plan.sections.map(s=>({...s})),encounters:plan.encounters.map(e=>({x:e.x,section:e.section,task:e.task,boss:!!e.boss,elite:e.elite?.name||null}))}:null,lock:lock?{...lock}:null,bullets:bullets.map(b=>({...b})),zones:zones.map(z=>({...z})),effects:effects.map(f=>f.type),audio:soundtrack.status,player:player?{...player,pickTarget:null,grab:player.grab?{t:player.grab.t,hits:player.grab.hits,type:player.grab.e.type}:null,moveState:player.moveState?{name:player.moveState.name,k:player.moveState.k}:null}:null,enemies:enemies.map(e=>({...e,target:null,hitList:null})),allies:allies.map(a=>({...a,target:null})),objects:objects.map(o=>({...o})),drops:drops.map(d=>({...d})),unlocked:save.unlocked,checkpoint:save.checkpoint?{...save.checkpoint}:null};},

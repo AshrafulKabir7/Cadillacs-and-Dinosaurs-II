@@ -1,6 +1,6 @@
 # Validation — October 5, 2026 (arcade feel update)
 
-Tested in Chromium (Playwright 1.62.1) on Windows. **218 browser checks passed: 27 combat/gun/sound checks, 41 story/update checks, 35 sequel/combat/mobile checks, 64 armed-action checks and 51 campaign/audio checks. No uncaught browser exceptions were reported.**
+Tested in Chromium (Playwright 1.62.1) on Windows. **253 browser checks passed: 35 mobile touch checks, 27 combat/gun/sound checks, 41 story/update checks, 35 sequel/combat/mobile checks, 64 armed-action checks and 51 campaign/audio checks. No uncaught browser exceptions were reported.**
 
 ## Chapter length
 
@@ -16,6 +16,10 @@ A separate deterministic player completed **all six Story chapters**, every requ
 | 6 · The Crown Barrier | 7.8 min | 0 |
 
 The test player fights efficiently, grabs and throws when it walks into enemies, and uses specials whenever two enemies are close, so these times are a lower bound for skilled play rather than an estimate of a typical human run. Timings vary by a few tens of seconds with the random sequence; after grabs and throws made fights quicker, Chapter 2 received five more encounters to stay above seven minutes. Chapter 2 was re-timed after that change; the others were timed just before it with otherwise identical code.2 and 7.7 minutes across runs.
+
+## Mobile touch checks (`tests/mobile.cjs`)
+
+Real touch input is sent through Chromium DevTools touch events on emulated phones at 390×844 (portrait), 844×390 and 667×375 (landscape). For each: menus are tapped through to gameplay; holding the stick walks; sliding the thumb across turns the hero; diagonals move on both axes; the stick rim runs; a second finger attacks while moving; releasing stops the hero; jump works; the playfield and controls fit without scrolling, with a playfield at least 370 px wide and an attack button at least 64 px. The desktop page keeps its layout. Physical phones were not tested.
 
 ## Combat, gun and sound checks (`tests/combat.cjs`)
 
@@ -55,7 +59,7 @@ From the repository root:
 1. `npm install --prefix tests`
 2. `npm exec --prefix tests -- playwright install chromium`
 3. In another terminal: `python -m http.server 8766 --bind 127.0.0.1` (any static server works; set `GAME_URL` to use another address)
-4. `node tests/combat.cjs` and `node tests/story.cjs`
+4. `node tests/mobile.cjs`, `node tests/combat.cjs` and `node tests/story.cjs`
 5. `node tests/regression.cjs`
 6. `node tests/armed-actions.cjs`
 7. `node tests/sequel.cjs`
