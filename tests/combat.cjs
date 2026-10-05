@@ -44,7 +44,7 @@ const checks=await page.evaluate(async()=>{
  const AH=ARCADE_HEROES,rec=(id,n)=>AH.frames[AH.heroes[id][n][0]].rec;
  check('Mustapha uses arcade records 259/260 for the rifle stance and 284/288 to carry it',rec('mustapha','gunStand')===259&&rec('mustapha','gunFire')===260&&rec('mustapha','torsoWalk')===284&&rec('mustapha','torsoRun')===288);
  setup();g.test.equip('rifle');ticks(2);g.render();const stand=g.snapshot.player.pose;key('KeyD',true);ticks(10);g.render();const walk=g.snapshot.player.pose;key('ShiftLeft',true);ticks(8);g.render();const run=g.snapshot.player.pose;key('ShiftLeft',false);key('KeyD',false);
- check('Long guns: hip stance, torso-over-legs walk and an upright carry on the run',stand==='armed-ready'&&walk==='armed-walk'&&run==='armed-run');
+ check('Long guns: hip stance, torso-over-legs walk and a horizontal carry on the run',stand==='armed-ready'&&walk==='armed-walk'&&run==='armed-run');
  setup();const t=dummy(330);g.test.equip('gun');g.controls.attack();let pow=false;for(let i=0;i<20;i++){g.step(1/60);if(g.snapshot.effects.includes('pow'))pow=true;}pow=pow&&t.hp<t.maxhp;check('A pistol hit lands and is marked with POW',pow);
 
  // Original sound effects ship with the game.

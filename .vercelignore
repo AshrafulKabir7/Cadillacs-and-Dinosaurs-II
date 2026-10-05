@@ -23,3 +23,8 @@ world-art.js
 assets/original/
 assets/arcade-heroes.png
 *.mp4
+
+docs/
+tools/
+combat-config.json
+assets/scenery/manifest.json

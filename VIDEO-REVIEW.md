@@ -1,3 +1,23 @@
+# Latest reference verification — October 5, 2026
+
+Source: the user-supplied `YTDown.com_YouTube_Media_VQtsqjuc0kA_Cadillacs-And-Dinosaurs-ARCADE-2-players-60FPS_004_360p (1).mp4`. Media probing reports **640×360, 30 fps, 46:15.063**; the filename's 60FPS label is not the actual stream rate.
+
+Sampled the opening selection frames (00:00–00:03) and two-second sequences at 00:39, 00:47, 05:27, 10:00 and 13:48 at six samples per second. This is a review of those sequences, not a claim to have watched every frame of the 46-minute video. Native selection screens were also captured directly from the supplied ROM in MAME for all four heroes.
+
+| Observation | Implemented consequence |
+|---|---|
+| Four large portraits in Jack/Hannah/Mustapha/Mess order, with lower Power/Speed/Skill diamonds | Use original captured art and ratings. Preserve the portrait band and selected stat panel; put free-play difficulty controls in the unused join-in space. |
+| Horizontal gun carry while moving/running | Replace upright running carry with horizontal two-handed torso over moving legs. |
+| Firing stance, directional muzzle, lower weapon/ammo display | Match sockets across pose, gun, projectile and flash; add lower icon/ammo panel and small backward recoil. |
+| Red directional hit sprays | Knife and firearm impacts emit red pixel sprays on biological targets. |
+| Bright explosion frames followed by expanding smoke | Keep the supplied fiery frames and add smoke, fragments and shake. |
+
+At 00:47 Hannah is largely carrying the M16 and jumping; Mustapha fires in the nearby sequence. The reference supports the carrying poses, but does not independently prove every hero/weapon/state combination or every proposed tuning number. Those combinations are tested in the browser and remain fan-game approximations. New scenery and boss concepts are designed for this sequel; the previous game's stages are not reused as its campaign.
+
+The following section records the earlier video review and its historical findings. Where it describes upright running carry or the repeated Fessenden beast, the latest implementation above and `docs/COMBAT-DESIGN.md` supersede it.
+
+---
+
 # Gameplay video review
 
 Reference: the user-supplied `YTDown.com_YouTube_Media_Inhoeri2BQc_Cadillacs-Dinosaurs-Arcade-all-boss-fights_001_1080p.mp4`. The file is a 15:43 boss-fight montage, 1440 × 1080 at 60 fps. It was read locally and is not included in the repository or deployment.

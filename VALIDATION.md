@@ -1,72 +1,59 @@
-# Validation — October 5, 2026 (arcade feel update)
+# Validation — October 5, 2026
 
-Tested in Chromium (Playwright 1.62.1) on Windows. **263 browser checks passed: 45 mobile touch and fullscreen checks, 27 combat/gun/sound checks, 41 story/update checks, 35 sequel/combat/mobile checks, 64 armed-action checks and 51 campaign/audio checks. No uncaught browser exceptions were reported.**
+**388 browser checks passed** in Chromium on Windows, with no uncaught browser exceptions reported. The latest feature suite tests the video-based specification; existing combat, campaign, audio, offline, mobile and fullscreen suites also passed.
 
-## Chapter length
+| Suite | Coverage | Passed |
+|---|---|---:|
+| regression | Campaign, all weapons, audio, offline, portrait mobile | 51 |
+| armed | All heroes and guns, empty guns, interruption, bosses | 64 |
+| combat | Combos, grabs, throws, original animations and sound | 27 |
+| story | Entrances, checkpoints, driving and clone allies | 41 |
+| sequel | Projectiles, objectives, recoil, landscape touch and offline art | 35 |
+| mobile | Touch input, orientation layouts and fullscreen | 45 |
+| specification | Selection, three tiers, sockets, recoil, FX, crowd queue, flanking and rage | 125 |
 
-A separate deterministic player completed **all six Story chapters**, every required objective, every mid-boss and both final boss phases using movement, attack, jump, special, pickup and interact controls. It uses no teleports, forced damage, health changes or completion helpers. `tests/bot.cjs` fails if any chapter clears in under seven simulated minutes.
+## Full campaign completion
 
-| Chapter | Simulated time | Deaths |
-|---|---|---|
-| 1 · The Drowned Harbor | 7.9 min | 0 |
-| 2 · The Green Highway | 7.8 min | 1 |
-| 3 · The Verdant Basin | 7.3 min | 1 |
-| 4 · The Ashen Foundry | 8.6 min | 0 |
-| 5 · The Tide Archive | 8.0 min | 1 |
-| 6 · The Crown Barrier | 7.8 min | 0 |
+A deterministic input-driven player completed all six Easy chapters, including objectives, mid-bosses, the final clone war and both final boss phases. It uses ordinary movement, attack, jump, special, pickup and interaction inputs, without teleports, forced damage or health changes. Each chapter retains six sections and multiple waves. The bot is a progression smoke test, not a guarantee that a human player will find the balance ideal.
 
-The test player fights efficiently, grabs and throws when it walks into enemies, and uses specials whenever two enemies are close, so these times are a lower bound for skilled play rather than an estimate of a typical human run. Timings vary by a few tens of seconds with the random sequence; after grabs and throws made fights quicker, Chapter 2 received five more encounters to stay above seven minutes. Chapter 2 was re-timed after that change; the others were timed just before it with otherwise identical code.2 and 7.7 minutes across runs.
+| Chapter | Simulated duration | Lives lost |
+|---|---:|---:|
+| 1 · Drowned Harbor | 8:01 | 0 |
+| 2 · Coral Causeway | 7:48 | 0 |
+| 3 · Verdant Biodome | 7:31 | 0 |
+| 4 · Geothermal Forge | 8:22 | 0 |
+| 5 · Skyhook Radar Fortress | 8:09 | 0 |
+| 6 · Crown Spire | 8:05 | 0 |
 
-## Mobile touch checks (`tests/mobile.cjs`)
+## Latest checks and visual review
 
-Real touch input is sent through Chromium DevTools touch events on emulated phones at 390×844 (portrait), 844×390 and 667×375 (landscape). For each: menus are tapped through to gameplay; holding the stick walks; sliding the thumb across turns the hero; diagonals move on both axes; the stick rim runs; a second finger attacks while moving; releasing stops the hero; jump works; the playfield and controls fit without scrolling, with a playfield at least 370 px wide and an attack button at least 64 px. Fullscreen is tested both with the browser fullscreen API and with it removed (the iPhone Safari case): the header hides, the playfield fills the screen height, controls still work, and the exit button and pause-menu option restore the page. Orientation locking and Add to Home Screen depend on the phone and were not verifiable in emulation. The desktop page keeps its layout. Physical phones were not tested.
-
-## Combat, gun and sound checks (`tests/combat.cjs`)
-
-- For all four heroes: the combo runs punch, punch, kick, finisher; hitstop holds attacker and victim together; the finisher sends the enemy flying. A missed blow restarts the combo; ordinary hits do not knock down before the finisher.
-- Connecting punches show an impact spark; pistol hits show POW. Knockdowns arc, lie down and rise; defeated enemies are flung before fading.
-- Walking into an enemy grabs them; attack knees; back + attack throws over the shoulder; the thrown body knocks down an enemy in its path; bosses cannot be grabbed.
-- Mustapha uses arcade records 259/260 for the rifle stance and 284/288 to carry it; long guns use the hip stance, torso-over-legs walk and upright running carry.
-- All shipped arcade sound effects load.
-
-## Story and update checks (`tests/story.cjs`)
-
-- Chapter 1 continues from Fessenden's death in the first game; every chapter ending sets up the next; the final chapter is the clone war, and its pylons free four copies.
-- Every chapter has six sections, at least sixteen fights, a mid-boss and a boss.
-- **Off-screen entrances:** 80+ sampled fresh enemies across all chapters, first waves and reinforcement waves, all start beyond the locked screen edges or above the top edge. Bosses walk in from beyond the right edge; boss reinforcements arrive from both edges. No enemy winds up an attack while still off screen.
-- **Running:** every run and walk frame of every hero shares one hip anchor; Shift with only up/down is not a run; running is faster than walking; double-tapping up does not start a run.
-- **Weapons:** for all four heroes, picking up a gun is a crouch with the gun arriving mid-crouch, and the gun stays in both hands while walking, running and jumping. Every armed pose has a grip. A weapon out of reach is not grabbed. Mustapha's jump avoids the torch frame and the legs-only fragment. Gunners no longer use the triceratops frame.
-- **Cadillac:** Chapter 2 starts in the car with the hero at the wheel, parks for the toll fort and resumes for the convoy boss.
-- **Clone war:** freed clones damage a hostile clone without the player; hostile clones damage freed clones; breaking the first pylon frees two copies of the other heroes; a checkpoint after the pylons keeps all four freed clones and the finished objectives.
-- **Checkpoints:** entering a section saves it; resuming keeps earlier objectives complete.
-
-## Existing suites (updated for the new layout)
-
-- `tests/regression.cjs`: four heroes, music cues and boss music, melee and weapon behaviour, crouching pickup, every chapter's encounters and boss, campaign end, unlock persistence, Sound Room, all 27 audio files, offline launch and the portrait mobile layout.
-- `tests/armed-actions.cjs`: every hero with every firearm (point-blank damage, ammo, firing pose, empty-gun behaviour), pickup during a pending punch, the Fessenden beast copy's sonic-driver retreat, Sable's Crown Engine phase and spillway surge, held running and run attacks.
-- `tests/sequel.cjs`: planted firing, overhead misses, burst cancellation, special cost, dash contact, projectile order, crate cover, knockdown/rise, pause input reset, cold pods, sonic lures, valves, radio tuning, the final spillway, boss art loading, landscape touch controls and offline loading.
-
-The fullscreen check now records which element the game asks to make fullscreen (the whole cabinet, so touch controls stay visible). In this environment headless Chromium refused fullscreen whenever a second page was open — the previous version's own test failed the same way — so the check no longer depends on that permission.
-
-## Visual review
-
-Screenshots were inspected for: pickup crouch, armed walking/running for all four heroes, run cycles, enemies entering, the Cadillac with each hero driving, the parked Cadillac, bikers riding and crashing, drop-in entrances, mid-boss intros and health bars, the Mirror Clone, the Fessenden beast copy, the gunner's firing pose, lab clone tanks and the clone war.
+- Original 384×224 selection captures load for all four heroes, in the original portrait order. Keyboard navigation follows that order; Easy, Normal and Arcade Mania reach gameplay, checkpoints and Continue correctly. Original Power/Speed/Skill ratings are restored.
+- Configuration JSON and its offline JavaScript copy match. Each tier changes actual health, recovery, boss decision/recovery timing and melee durability; standard firearm ammo caps remain consistent. Legacy difficulty values migrate.
+- Easy queues excess reinforcements off screen and admits a waiting enemy when a slot opens. Mania flankers cross behind the player, and wounded dinosaurs visibly wait through their rage warning before moving.
+- Every hero and firearm class is checked in both directions for shared muzzle/projectile coordinates, physical recoil and casing rules. Existing tests cover all six guns at point-blank range, empty weapons, pickup cancellation and remaining ammo after drops. An armed attack does not also punch.
+- Knife/bullet blood, bare-handed sparks, mechanical-hit sparks, fire/smoke/fragments, effect expiry and recoil boundaries are tested.
+- All 27 supplied music tracks decode. Stage, boss intro/battle, pause, mute, Sound Room and local-file audio work.
+- Five new environments decode, including offline launch. Lossless WebP runtime copies were verified pixel-for-pixel against the original generated PNGs; source images are unchanged. Scenery runtime transfer is 12.11 MiB instead of a 21.53 MiB base64 JavaScript bundle. Runtime images are requested as ordinary local files.
+- Inspected actual browser screenshots of the restored selector on desktop and portrait phone, all four heroes running with a horizontal shotgun, all five new environments, the Regent/Cinder/Echo/Sable arenas, M16 impact and rocket explosion. Radio messages and lower weapon HUD occupy separate rows.
+- Mobile tests use real multi-touch events in Chromium emulation at 390×844, 844×390 and 667×375. They cover steering, diagonals, running, simultaneous move/attack, release, jump, fullscreen exit and the iPhone-style fullscreen fallback.
 
 ## Reproduce
 
-From the repository root:
+From the repository root, install the optional development dependencies with `npm install --prefix tests` and Chromium with `npm exec --prefix tests -- playwright install chromium`. Serve the root on port 8766 (or set `GAME_URL`). Run:
 
-1. `npm install --prefix tests`
-2. `npm exec --prefix tests -- playwright install chromium`
-3. In another terminal: `python -m http.server 8766 --bind 127.0.0.1` (any static server works; set `GAME_URL` to use another address)
-4. `node tests/mobile.cjs`, `node tests/combat.cjs` and `node tests/story.cjs`
-5. `node tests/regression.cjs`
-6. `node tests/armed-actions.cjs`
-7. `node tests/sequel.cjs`
-8. `node tests/bot.cjs` (add a chapter number, 0–5, to time one chapter)
+```text
+node tests/specification.cjs
+node tests/regression.cjs
+node tests/armed-actions.cjs
+node tests/combat.cjs
+node tests/story.cjs
+node tests/sequel.cjs
+node tests/mobile.cjs
+node tests/bot.cjs
+```
 
-Reports and screenshots go to ignored `tests/results/`. Test dependencies are optional; play and deployment need no installation or build. JavaScript syntax and Git whitespace checks also pass.
+Reports and screenshots live in ignored `tests/results/`. `python tools/build-config.py` synchronizes JSON tuning changes. No test tooling or build step is needed to play or deploy.
 
 ## Limits
 
-Automated completion does not prove ideal balance or replace human playtesting, especially for difficulty over a 45-minute campaign. Arcade difficulty was not timed. Mustapha’s armed poses were confirmed against the video; the other heroes’ gun stances and carrying torsos were chosen from their own records by layout order and pose, without video confirmation. Weapon positions use the measured front hand of each frame and can be a few pixels off. Most sound labels are strong matches; the light-punch sound is a best fit by shape. Copies of the heroes reuse hero animation with a colour filter. Physical controllers, physical phones, Firefox and Safari were not separately tested. Local testing does not establish a successful Vercel deployment.
+The source-video review sampled specified sequences rather than every frame of the full playthrough. This is a fan-game approximation of selected arcade mechanics, not a frame-perfect emulator. The original portrait band and stat panel are retained; difficulty controls replace unused join-in space, and the game remains single-player. New human bosses have a smaller animation set than the recovered original heroes. Full-campaign timing is for Easy; Normal and Mania were checked for their specific behavior but not given a complete human balance pass. Physical phones/controllers, Safari and Firefox were not tested. Local checks and a GitHub push do not establish a successful Vercel production deployment.

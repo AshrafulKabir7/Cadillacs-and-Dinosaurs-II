@@ -1,4 +1,4 @@
-# Hosting Last Eden
+# Hosting Fessenden's Legacy
 
 This is a static HTML/CSS/JavaScript game. Its entry point is `index.html` at the repository root. It needs no backend, database, environment variables, dependency installation or build step.
 

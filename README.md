@@ -2,7 +2,7 @@
 
 An unofficial single-player fan sequel for Mostafa's next adventure. Mustapha, Jack, Hannah and Mess return six months after the first game's ending for six chapters, mid-bosses, six bosses and a final clone war.
 
-Fessenden died when his laboratory blew apart — but his assistant, Dr. Echo, saved his archive and finished his cloning work. Copies of the poachers the gang beat are walking the harbor, a copy of Fessenden's beast guards a raptor nursery, and the Mirror Gang — copies of the four heroes — waits at the Crown dam. [Read the sequel script](STORY.md).
+Fessenden died when his laboratory blew apart — but his assistant, Dr. Echo, saved his archive and finished his cloning work. Copies of the poachers the gang beat are walking the harbor, an armored prehistoric Regent guards a bio-dome nursery, and the Mirror Gang — copies of the four heroes — waits at the Crown dam. [Read the sequel script](STORY.md).
 
 ![Fessenden's Legacy gameplay](preview.png)
 
@@ -14,10 +14,12 @@ For **Vercel**, import this repository, choose **Other**, leave build/install co
 
 ## Arcade feel update
 
-Checked frame by frame against the user’s 15-minute arcade video, using the original game’s own sprite data.
+Compared with sampled sequences from both supplied arcade videos and the original game’s sprite data. The latest full-playthrough reference is 46:15 at 30 fps; see [VIDEO-REVIEW.md](VIDEO-REVIEW.md).
 
 - **The heroes now use the arcade’s own animation frames.** All four heroes are drawn from frame records decoded from the supplied ROM’s sprite tables, anchored at the feet exactly as the arcade places them: 12-frame walk, 9-frame run, jumps, crouch, punches, kicks, finishers, grabs, knees, throws, hurt, knockdown, lying, getting up and victory poses.
-- **Guns are held the arcade way.** Long guns use the original hip stance (Mustapha records 259/260) and are carried on the arcade’s separate torso sprites over the walking legs (284) or running legs (288), upright in front of the chest while running. Handguns use the arm’s-length stance and stay in the hand while walking. Every gun sits at the hand point measured on each frame, at the same scale as the hero, with the weapon sheet’s pre-drawn upright sprites for carrying.
+- **Horizontal firearm handling.** Original ready/firing poses and moving legs now carry each gun level with the hip or shoulder during walking, running and jumping. Muzzles, projectiles and casings share the same measured hand socket. Each round adds bounded backward recoil; the lower HUD shows the original weapon icon and ammunition. Holding a gun never adds a punch.
+- **Original selection portraits and ratings.** Jack, Hannah, Mustapha and Mess appear in their original order, with original portrait art and Power/Speed/Skill panels. Free-play difficulty controls replace the unused join-in panels; this remains a single-player game.
+- **Red impact sprays and explosion smoke.** Knife cuts and firearm hits on living targets spray directional red pixels. Explosions throw fragments and expand into smoke. Machinery uses sparks, and beaten clones retain their green dissolution.
 - **Punches that smash.** The ground combo is the original punch, punch, kick, finisher, and it only continues while blows connect. Each hit has hitstop (attacker and victim hold the impact frame and the victim shakes), an impact starburst from the original effects sheet, and screen shake. Finishers and knockdowns fling enemies back in an arc; they bounce once, slide, lie down and get up. Defeated enemies are flung before they fade. Gun hits show the arcade’s “POW!”.
 - **Grab and throw.** Walk into an ordinary enemy to grab them. J knees; back + J throws them over your shoulder; the fourth J throws forward. A thrown body bowls over anyone in its path.
 - **Original sound effects.** Punch, kick, body-slam, pistol, rifle/shotgun, Uzi/M-16 and explosion sounds come from the supplied arcade sound-effect set, identified by matching each sample against the video’s audio.
@@ -25,9 +27,9 @@ Checked frame by frame against the user’s 15-minute arcade video, using the or
 ## Story and level update
 
 
-- **A story that continues the first game.** Every chapter grows out of Fessenden's lab: copied poachers at the harbor, a pod convoy on the road home, a nursery bred from his pens, a vat forge, Echo's rebuilt laboratory and the Mirror Gang. Each chapter ending leads into the next chapter, and radio dialogue carries the story during play.
+- **A story that continues the first game.** Every chapter grows out of Fessenden's lab: copied poachers at the harbor, a convoy through a coral canyon, an armored-predator nursery in a bio-dome, a geothermal vat forge, Echo's radar fortress and the Mirror Gang. Each chapter ending leads into the next chapter, and radio dialogue carries the story during play.
 - **The last chapter is a clone war.** Fight copies of the other three heroes and then your own copy. Breaking Echo's command pylons frees them; freed clones (gold glow) fight Sable's controlled clones (violet glow, inverted colours) alongside you, including during the final boss.
-- **Chapters last about 7–8 minutes.** Each chapter has six sections, 21–26 fights with several reinforcement waves, a mid-boss and a boss who calls reinforcements at two thirds and one third of its health. A deterministic test player clears each chapter in 7.3–8.6 simulated minutes; human play is usually slower.
+- **Chapters last about 7–8 minutes.** Each chapter has six sections, 21–26 fights with several reinforcement waves, a mid-boss and a boss who calls reinforcements at two thirds and one third of its health. A deterministic test player clears each chapter in 7.5–8.4 simulated minutes; human play is usually slower.
 - **Enemies arrive from off screen.** Each fight locks the screen; enemies walk or run in from beyond either edge, drop from above the top of the screen, or ride in. They cannot attack until they are on screen. Bosses walk in. Weapons come from enemies and crates rather than appearing from nowhere.
 - **Gun pickup.** Picking up a weapon is a short crouch, and only when you stand on it. (Holding and carrying guns is described under Arcade feel above.)
 - **Running.** Running is horizontal only (double-tap ← / → or hold Shift), raises dust and now uses the arcade’s 9-frame run cycle.
@@ -60,13 +62,13 @@ Break containers for supplies; walk over food to heal. Change lanes for charges,
 ## Campaign and saving
 
 1. **The Drowned Harbor** — *Faces from the Lab* — Lot 07 · Heavy, Warden Rook.
-2. **The Green Highway** — *The Pod Convoy* — Lot 31 · Outrider, Iron Convoy.
-3. **The Verdant Basin** — *The Nursery* — Pack Alpha, Fessenden Beast · Copy 01.
-4. **The Ashen Foundry** — *The Vat Forge* — Lot 12 · Brawler, Foreman Cinder.
-5. **The Tide Archive** — *Dr. Echo* — Mirror Clone, Dr. Echo.
-6. **The Crown Barrier** — *Mirror War* — the Mirror Gang, your own clone, Marshal Sable and the Crown Engine.
+2. **The Coral Causeway** — *The Pod Convoy* — Lot 31 · Outrider, Iron Convoy.
+3. **The Verdant Biodome** — *The Nursery* — Pack Alpha, Verdant Regent.
+4. **The Geothermal Forge** — *The Vat Forge* — Lot 12 · Brawler, Foreman Cinder.
+5. **Skyhook Radar Fortress** — *Dr. Echo* — Mirror Clone, Dr. Echo.
+6. **The Crown Spire** — *Mirror War* — the Mirror Gang, your own clone, Marshal Sable and the Crown Engine.
 
-Story gives extra health and gentler damage. Arcade increases enemy health, speed and encounter size. Three lives per attempt; after a game over you continue from the start of the current section.
+**Easy, Normal and Arcade Mania** change health, food frequency, crowd limits, attack slots, recovery and melee-weapon durability. Mania also adds rear flanking, quicker boss decisions and recovery, and telegraphed dinosaur rage. Normal preserves standard firearm ammo caps; those caps also stay consistent on the other tiers. Old Story/Arcade saves map to Easy/Mania. Three lives per attempt; after a game over you continue from the start of the current section.
 
 Progress saves at the start of every section and at chapter completion in browser local storage. Continue resumes at the saved section, with earlier objectives (and freed clones) kept. Cleared chapters unlock for replay. Browser/site origins have separate saves; clearing browser data removes progress.
 
@@ -74,13 +76,16 @@ Audio begins after a click or keypress. SOUND toggles all audio. **Sound Room / 
 
 ## Development
 
+- `combat-config.json`: tunable combat and difficulty source; `python tools/build-config.py` synchronizes its offline JavaScript copy. [COMBAT-DESIGN.md](docs/COMBAT-DESIGN.md) explains firearm state transitions, sockets and effect configuration.
+- [ART-DIRECTION.md](docs/ART-DIRECTION.md): five boss-themed environments, foreground interactions, parallax and exact image-generation prompts.
+- `selection-art.js`: embedded original portraits; `environment-art.js` and `assets/scenery/`: local lossless scenery.
 - `game.js`: combat, input, chapter layout, encounters and entrances, allies, rendering and boss state machines.
 - `campaign.js`, `mission-data.js`: story, chapter sections, fights, mid-bosses, dialogue and required objectives.
 - `arcade-heroes.js`: hero animation frames decoded from the arcade ROM’s sprite tables, with feet origins and hand points (`assets/arcade-heroes.png` is a reference copy). `assets/sfx/`: the selected arcade sound effects.
 - `audio.js`, `soundtrack-data.js`, `assets/audio/`: soundtrack and source manifest.
 - `assets.js`, `hero-art.js`, `combat-art.js`, `weapon-art.js`, `sequel-art.js`: embedded artwork for local-file loading. `sequel-render.js` draws the scenery and human bosses.
 - [STORY.md](STORY.md), [SOURCE-NOTES.md](SOURCE-NOTES.md), [VALIDATION.md](VALIDATION.md), [VIDEO-REVIEW.md](VIDEO-REVIEW.md): story, provenance, testing and reference review.
-- `tests/`: optional development tests, including `tests/combat.cjs` (combat feel, guns, sounds), `tests/story.cjs` (story and levels) and `tests/bot.cjs`, which fails if any chapter clears in under seven minutes. No test dependency is required to play or deploy.
+- `tests/`: optional development tests, including `tests/specification.cjs` (latest feature specification), `tests/combat.cjs` (combat feel, guns, sounds), `tests/story.cjs` (story and levels) and `tests/bot.cjs`, which fails if any chapter clears in under seven minutes. No test dependency is required to play or deploy.
 
 There is no production build step. `LAST_EDEN.snapshot` and explicitly named `LAST_EDEN.test` helpers support testing (the object keeps its earlier name so saves and tests stay compatible). This follows selected arcade mechanics; it is not a frame-perfect recreation or an official sequel.
 

@@ -1,6 +1,6 @@
 # Fessenden's Legacy — sequel script
 
-This is an unofficial continuation of the 1993 arcade game. It starts six months after its ending and builds every chapter on something the gang left behind in the first game.
+This is an unofficial continuation of the 1993 arcade game. It starts six months after its ending and sends the gang through new locations connected by a new cloning conflict.
 
 ## Where the first game ended
 
@@ -10,7 +10,7 @@ Those events are history, not stages to replay. Three things from that night dri
 
 1. **Fessenden's archive survived.** His chief assistant, **Dr. Echo**, walked out before the explosion with his notes and samples.
 2. **The lab sampled everyone who bled in it.** That includes the poachers the gang beat — and the four heroes themselves.
-3. **His last sample was taken after the serum.** Any attempt to clone Fessenden produces the beast he became.
+3. **Echo applies the archive to a new weapon.** The Verdant Regent combines a living dinosaur, Cinder’s armor and a neural collar. Fessenden stays dead; the gang does not fight him again.
 
 ## The new conflict
 
@@ -22,39 +22,39 @@ All heroes follow this story. The chosen hero fights on screen; radio dialogue t
 
 Poachers are unloading refrigerated crates stamped with Fessenden's laboratory seal — and some of the men carrying them are men the gang watched fall in that lab. The heroes fight across the docks, open three cold pods (each holds a sleeping copy of a beaten poacher) and meet **LOT 07 · HEAVY**, a copy of a heavyweight Mess fought in the lab. When it melts, Jack says it plainly: "That was never a man — it was a copy."
 
-**Boss: Warden Rook**, the harbor enforcer who ships the pods. His manifest lists people as numbered stock. The buyer is Sable; the seller is Dr. Echo. The remaining pods are already on a convoy up the Green Highway.
+**Boss: Warden Rook**, the harbor enforcer who ships the pods. His manifest lists people as numbered stock. The buyer is Sable; the seller is Dr. Echo. The remaining pods are already on a convoy up the Coral Causeway.
 
-## Chapter 2 — The Green Highway · *The Pod Convoy*
+## Chapter 2 — The Coral Causeway · *The Pod Convoy*
 
-Jack takes the Cadillac up the same expressway they drove home from the lab. The player rams outriders, recovers two stasis pods and runs down **LOT 31 · OUTRIDER**. At the Skyway toll fort the road is chained shut, so the gang fights through on foot while the Cadillac waits, and Mess cranks the barrier winch. Back in the car for the **Iron Convoy**.
+Jack drives across a coral-covered causeway exposed by the retreating sea. The gang must cross before the returning tide closes the route. The player rams outriders, recovers two stasis pods and runs down **LOT 31 · OUTRIDER**. At the Skyway toll fort the road is chained shut, so the gang fights through on foot while the Cadillac waits, and Mess cranks the barrier winch. Back in the car for the **Iron Convoy**.
 
-A recovered pod holds a raptor hatchling in a control collar, tagged *NURSERY — VERDANT BASIN. STOCK: FESSENDEN'S PENS*. The poachers' old hunting ground is being farmed again.
+A recovered pod holds a raptor hatchling in a control collar, tagged *NURSERY — VERDANT BIODOME. STOCK: FESSENDEN'S PENS*. The coordinates lead to a botanical refinery sealed inside a ruined glass bio-dome.
 
-## Chapter 3 — The Verdant Basin · *The Nursery*
+## Chapter 3 — The Verdant Biodome · *The Nursery*
 
-Echo's handlers raise vat-grown raptors and steer them with sonic lures. The heroes silence three lures, calm **PACK ALPHA**, and reach the nest, where Echo keeps her first attempt to bring Fessenden back.
+Echo's handlers have turned the overgrown bio-dome refinery into a nursery for vat-grown raptors, steered by sonic lures. The heroes silence three lures, calm **PACK ALPHA**, and reach the nest, where Echo keeps her prototype living siege engine.
 
-**Boss: Fessenden Beast · Copy 01** — a copy of the monster Fessenden became at the end of the first game (pink, like the original). A sonic driver keeps it fighting; silence the driver and it crashes away into the swamp. "It never asked to be born."
+**Boss: Verdant Regent** — a prehistoric predator wearing an armored harness and a neural collar, built by Echo and Cinder to guard the hatchery. A sonic driver keeps it fighting; silence the driver and it crashes away into the swamp. "It never asked to be born."
 
-Hannah works out why every copy of Fessenden comes out as the beast, finds that the collars were cast at Cinder's foundry, and finds a vat schematic with four human outlines: **M, J, H, M**.
+Hannah traces the Regent’s collar to Cinder’s geothermal foundry, and finds a vat schematic with four human outlines: **M, J, H, M**.
 
-## Chapter 4 — The Ashen Foundry · *The Vat Forge*
+## Chapter 4 — The Geothermal Forge · *The Vat Forge*
 
-Cinder melts the coast's water pumps into growth vats for Echo and armor for Sable. The heroes shut three coolant valves to stop the vat line and beat **LOT 12 · BRAWLER**, another copy of a first-game opponent.
+Deep below a volcanic shelf, Cinder uses a geothermal generator to melt the coast's water pumps into growth vats for Echo and armor for Sable. The heroes shut three coolant valves to stop the vat line and beat **LOT 12 · BRAWLER**, another copy of a first-game opponent.
 
-**Boss: Foreman Cinder.** Beaten, he tells them the truth: Echo's best stock is the heroes' own blood, scraped off the floor of Fessenden's lab. The four outlines are Mustapha, Jack, Hannah and Mess. The finished vats went to Echo's lab under the Tide Archive.
+**Boss: Foreman Cinder.** Beaten, he tells them the truth: Echo's best stock is the heroes' own blood, scraped off the floor of Fessenden's lab. The four outlines are Mustapha, Jack, Hannah and Mess. The finished vats went to Echo's lab under the Skyhook radar fortress.
 
-## Chapter 5 — The Tide Archive · *Dr. Echo*
+## Chapter 5 — Skyhook Radar Fortress · *Dr. Echo*
 
-Under the pumping station Echo has rebuilt Fessenden's laboratory around his archive. Tanks along the halls hold copies of the four heroes. The gang jams three channels of her command signal and meets the first **Mirror Clone** — a hue-inverted copy of one of them.
+High on a cliff, Echo broadcasts clone commands from the Skyhook poacher radar fortress. Her new laboratory lies beneath its rotating dishes. Tanks along the halls hold copies of the four heroes. The gang jams three channels of her command signal and meets the first **Mirror Clone** — a hue-inverted copy of one of them.
 
 **Boss: Dr. Echo.** On the floor she reveals that the full Mirror Gang has shipped to the Crown dam, and plays Fessenden's last recording: "Genius does not die. It is copied." Hannah pockets Echo's command key: if it controls the clones, it can set them free.
 
-## Chapter 6 — The Crown Barrier · *Mirror War*
+## Chapter 6 — The Crown Spire · *Mirror War*
 
-The Crown dam powers Echo's last vat hall; Sable has made it a fortress.
+The ruined gothic Crown Spire overlooks the dam that powers Echo's last vat hall. Sable has fortified its terraces and wired the command deck into the dam turbines.
 
-1. **The Dam Road** — Sable's clone army, including copies of the heroes in the regular ranks.
+1. **The Spire Approach** — Sable's clone army, including copies of the heroes in the regular ranks.
 2. **The Mirror Gang** — the copies of the other three heroes, one after another.
 3. **You vs. You** — the copy of the hero you chose. "Why are you holding back? …Why am I?"
 4. **Break the Command** — Hannah uses Echo's key on three command pylons. Each one frees copies: the first two Mirror Gang clones, then the third, then your own copy. They fight on your side.

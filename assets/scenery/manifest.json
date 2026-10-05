@@ -1,0 +1,52 @@
+[
+  {
+    "name": "coral-highway",
+    "source": "assets/original/coral-highway.png",
+    "runtime": "assets/scenery/coral-highway.webp",
+    "originalBytes": 3440131,
+    "runtimeBytes": 2491086,
+    "pixelsIdentical": true,
+    "sourceSha256": "4a8cfb1f4360add838e5fdde093567590c1afa1aa532a507110239505db95327",
+    "runtimeSha256": "e0d65f4145d32f74a74526e256aaf470f6ec90ff062efaf65deadaceb793d11b"
+  },
+  {
+    "name": "biodome-refinery",
+    "source": "assets/original/biodome-refinery.png",
+    "runtime": "assets/scenery/biodome-refinery.webp",
+    "originalBytes": 3628033,
+    "runtimeBytes": 2755182,
+    "pixelsIdentical": true,
+    "sourceSha256": "80665a79d2b7ce9746c7211e6a5085eb794dbac1637a23e78f8deca040471c06",
+    "runtimeSha256": "3adb250357ce5096689b505eda901ef7c4f16600876aafbade955fbb88da8389"
+  },
+  {
+    "name": "geothermal-forge",
+    "source": "assets/original/geothermal-forge.png",
+    "runtime": "assets/scenery/geothermal-forge.webp",
+    "originalBytes": 3245599,
+    "runtimeBytes": 2518810,
+    "pixelsIdentical": true,
+    "sourceSha256": "633591d1450466d320228fbffee5fcb4dbec1a6932119938c2122c588ca16fd5",
+    "runtimeSha256": "d482557890f8aa26d212312cf273c77f3f11b0751e29f05852e3c188a81e54d0"
+  },
+  {
+    "name": "radar-fortress",
+    "source": "assets/original/radar-fortress.png",
+    "runtime": "assets/scenery/radar-fortress.webp",
+    "originalBytes": 3323371,
+    "runtimeBytes": 2365026,
+    "pixelsIdentical": true,
+    "sourceSha256": "17d9388eb24bbcf1b9cc515b91d5efea66618c4eefdfb2e369123d9b7df42d50",
+    "runtimeSha256": "c40e58f520f2c98d824235a4c9c54f4e04f9fac4eefaef76ffbf8b481e054038"
+  },
+  {
+    "name": "gothic-overlook",
+    "source": "assets/original/gothic-overlook.png",
+    "runtime": "assets/scenery/gothic-overlook.webp",
+    "originalBytes": 3294663,
+    "runtimeBytes": 2565276,
+    "pixelsIdentical": true,
+    "sourceSha256": "6abe106b167f302d57d2910d96ea8de20f0763d2158c7cd4bc5506bcf65cd405",
+    "runtimeSha256": "e3a9bb8164fd3245fa5c77947082cac1a048c76b1c2913dc61936f90b7b0edd2"
+  }
+]

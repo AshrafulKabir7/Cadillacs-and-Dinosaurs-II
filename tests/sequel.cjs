@@ -12,7 +12,7 @@ const checks=await page.evaluate(()=>{
  const task=level=>{g.start(level);g.test.skipTo(g.snapshot.plan.encounters.findIndex(e=>e.task!==undefined));g.step(1/60);g.test.clearFighters();ticks(110);return g.snapshot.mission.active;};
  for(let hero=0;hero<4;hero++){
   g.start(0,hero);g.test.move(100,350);g.test.equip('gun');g.controls.attack();key('KeyS',true);ticks(10);key('KeyS',false);
-  check(`Hero ${hero+1}: firing plants feet in both axes`,g.snapshot.player.y===350&&g.snapshot.player.x===100);
+  check(`Hero ${hero+1}: firing blocks lane movement and applies only the configured recoil`,g.snapshot.player.y===350&&g.snapshot.player.x===100-COMBAT_CONFIG.weapons.handgun.recoilPixels);
   g.start(0,hero);g.test.move(100,350);const e=target(260);g.test.equip('gun');g.controls.jump();ticks(22);g.controls.attack();ticks(15);
   check(`Hero ${hero+1}: overhead shot misses a grounded enemy`,e.hp===e.maxhp);
  }

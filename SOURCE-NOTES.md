@@ -28,7 +28,7 @@ Official MAME ran without sound for extraction. The supplied set lacked unused b
 - Records were identified for each hero (walk, walking legs, run, running legs, jump, crouch, combo, grab, knee, throw, hurt, flung, lying, get-up, dizzy, victory, gun stances and gun-carrying torsos). Mustapha's were confirmed against the reference video; the other heroes' were chosen from their own record sets by matching layout order and pose (for example Mess's 13 gun stances 716–728 align with Mustapha's 256–268).
 - Separate shadow blocks are dropped (the game draws its own shadow). The front hand of each frame is measured from its skin colours and used to place held weapons; Mustapha's rifle-stance hand (40 px forward, 66 px up) agrees with the video measurement (about 35 and 62).
 
-Weapons are drawn from the supplied sheet at the heroes' scale. Carrying a long gun while running uses the sheet's pre-drawn upright sprites. Hit sparks are the sheet's starburst frames; gun hits use its “POW!” sprites.
+Weapons are drawn from the supplied sheet at the heroes' scale. Running uses horizontal firearm grips over the original moving legs, refined against the later supplied video. Hit sparks are the sheet's starburst frames; gun hits use its “POW!” sprites.
 
 ## Arcade sound effects
 
@@ -77,3 +77,10 @@ The opening follows the original ending: Fessenden injects himself with his seru
 The Cadillac drawing follows the driving section of the reference video (about 03:28–03:46): a long steel-blue convertible with tailfins, a rolled cream top, chrome side trim, a skirted rear wheel and the driver visible behind a wraparound windscreen.
 
 Original game, artwork and music: Capcom, 1993. Characters and setting derive from Mark Schultz's Xenozoic Tales. This unofficial fan project is unaffiliated with the original creators. No ownership of original assets is asserted.
+
+
+## October 5 specification update
+
+`assets/reference/select-{jack,hannah,mustapha,mess}.png` are unmodified native 384×224 screenshots of the original selection screen, captured from the user-supplied ROM set with MAME. `selection-art.js` embeds them for offline play. Runtime canvas crops show the original portraits and stat panels; the free-play interface replaces the coin timer and unused join-in controls. No emulator or ROM is shipped in this project.
+
+Five new scenery PNGs in `assets/original/` were generated with the built-in image-generation tool and copied unmodified. `docs/ART-DIRECTION.md` records each exact prompt and output path. `environment-art.js` lists the local lossless WebP runtime copies in `assets/scenery/`; the runtime copies have identical decoded pixels to the original PNGs. The reference MP4 remains a local research file ignored by Git, deployment and the download package.

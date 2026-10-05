@@ -6,7 +6,7 @@ window.EDEN_CAMPAIGN = [
  {name:'THE DROWNED HARBOR',area:'01 / FACES FROM THE LAB',theme:'harbor',boss:'WARDEN ROOK',kind:'warden',clones:.35,accent:'#efb36d',
   brief:'Six months ago Dr. Fessenden injected himself with his own serum and died when his jungle laboratory blew apart. Jack and Hannah escaped in the Cadillac, and the poacher ring was broken. Tonight Mustapha’s radio crackles: poachers are unloading refrigerated crates at the harbor — crates stamped with Fessenden’s laboratory seal. Some of the men carrying them are men the gang watched fall in that lab.',
   dialog:'MUSTAPHA: I knocked that guy cold in Fessenden’s lab. Same scar. Same hat.\nHANNAH: Then why is he standing on the dock?\nJACK: Let’s go ask him.',
-  end:'Rook’s cargo manifest lists “LOT 07, LOT 12, LOT 31” — people, numbered like stock. The buyer is Marshal Sable, who has taken over the Black Marketeers. The seller signs as Dr. Echo, Fessenden’s chief assistant, who walked out of the lab before it burned. The rest of the pods are already on a convoy heading up the Green Highway.',
+  end:'Rook’s cargo manifest lists “LOT 07, LOT 12, LOT 31” — people, numbered like stock. The buyer is Marshal Sable, who has taken over the Black Marketeers. The seller signs as Dr. Echo, Fessenden’s chief assistant, who walked out of the lab before it burned. The rest of the pods are already on a convoy heading up the Coral Causeway.',
   sections:[
    {name:'THE SILENT DOCKS',say:'MUSTAPHA: Poachers on our docks again. I thought we finished them for good.',enc:[
      {w:[['raider','raider'],['raider','knifer'],['raider','knifer','gunner']]},
@@ -37,12 +37,12 @@ window.EDEN_CAMPAIGN = [
      {w:[['raider','gunner','knifer'],['brute','raider','raider'],['gunner','raider','raider']],from:'B'},
      {boss:true}]}]},
 
- {name:'THE GREEN HIGHWAY',area:'02 / THE POD CONVOY',theme:'highway',drive:true,boss:'IRON CONVOY',kind:'truck',clones:.3,accent:'#d2df7b',
-  brief:'Sable’s convoy is hauling Dr. Echo’s stasis pods up the old expressway — the same road the Cadillac took home from Fessenden’s lab. Jack takes the wheel. Run down the outriders, recover the pods before they reach the toll fort, and get across the Skyway any way you can.',
-  dialog:'JACK: Last time we drove this road, the lab was burning behind us.\nMESS: And now it’s following us home.',
-  end:'Hannah pries open a recovered pod. Inside, a raptor hatchling sleeps in green gel, wearing a control collar. The tag reads: NURSERY — VERDANT BASIN. STOCK: FESSENDEN’S PENS. The poachers’ old hunting grounds, where all of this started, are being farmed again.',
+ {name:'THE CORAL CAUSEWAY',area:'02 / THE POD CONVOY',theme:'highway',drive:true,boss:'IRON CONVOY',kind:'truck',clones:.3,accent:'#d2df7b',
+  brief:'Sable’s convoy is hauling Dr. Echo’s stasis pods through a coral canyon on a highway exposed by the falling tide. Jack takes the wheel. Run down the outriders, recover the pods before they reach the toll fort, and reach the storm gate before the causeway floods.',
+  dialog:'JACK: A road under the sea. Let’s hope the engine stays dry.\nMESS: And let’s hope those ribs in the coral aren’t hungry.',
+  end:'Hannah pries open a recovered pod. Inside, a raptor hatchling sleeps in green gel, wearing a control collar. The tag reads: NURSERY — VERDANT BIODOME. STOCK: FESSENDEN’S PENS. The coordinates point to a refinery sealed inside a ruined glass bio-dome.',
   sections:[
-   {name:'BROKEN EXPRESSWAY',drive:true,say:'JACK: Same road we took home from the lab. Hang on to something.',enc:[
+   {name:'BROKEN EXPRESSWAY',drive:true,say:'JACK: The tide is turning. Hang on to something.',enc:[
      {w:[['biker','biker'],['biker','gunner','biker'],['biker','biker','biker']],from:'L',say:'MESS: Bikes on the bridge behind us!'},
      {w:[['biker','biker'],['biker','biker'],['biker','biker','biker']],from:'R'},
      {w:[['biker','biker'],['biker','gunner'],['biker','gunner','biker']],from:'B'},
@@ -75,12 +75,12 @@ window.EDEN_CAMPAIGN = [
      {w:[['biker','biker','biker'],['biker','gunner'],['biker','biker','gunner']],from:'B'},
      {boss:true}]}]},
 
- {name:'THE VERDANT BASIN',area:'03 / THE NURSERY',theme:'jungle',boss:'FESSENDEN BEAST · COPY 01',kind:'raptor',clones:.4,accent:'#accb6d',
-  brief:'The basin was the poachers’ hunting ground long before Fessenden built his lab. Now Echo’s handlers raise vat-grown raptors here and steer them with sonic lures. Something larger is kept at the nest — Echo’s first attempt to bring Fessenden back. Destroy the lures and find out what she grew.',
+ {name:'THE VERDANT BIODOME',area:'03 / THE NURSERY',theme:'jungle',boss:'VERDANT REGENT',kind:'raptor',clones:.4,accent:'#accb6d',
+  brief:'Echo has converted an abandoned botanical refinery into a sealed dinosaur hatchery. Her handlers pipe nutrients through the cracked bio-dome and steer vat-grown raptors with sonic lures. At the heart of the dome waits the Verdant Regent, a prehistoric predator fitted with Cinder’s armor and Echo’s neural collar. Break the lures and free the creature before she breeds a whole armored pack.',
   dialog:'HANNAH: Collars on the raptors. Somebody is steering them.\nMUSTAPHA: Then let’s break the remote.',
-  end:'Without the driver’s signal, the beast stops fighting and crashes off into the swamp. Echo cloned Fessenden from his last blood sample — taken after he injected the serum — so every copy wakes up as the monster he became. The collars were cast at Cinder’s foundry, and Hannah finds a vat schematic marked with four human outlines: M, J, H and M.',
+  end:'Without the driver’s signal, the beast stops fighting and crashes off into the swamp. The Verdant Regent was Echo’s trial for a living siege engine: dinosaur muscle, steel armor and a command receiver. The collars were cast at Cinder’s foundry, and Hannah finds a vat schematic marked with four human outlines: M, J, H and M.',
   sections:[
-   {name:'THE OLD HUNTING GROUNDS',say:'HANNAH: The poachers hunted here before Fessenden ever built his lab.',enc:[
+   {name:'THE GLASS PERIMETER',say:'HANNAH: The old botanical dome. Echo’s running nutrient pipes through the refinery.',enc:[
      {w:[['raider','knifer'],['raptor','raider'],['raptor','raptor','gunner']]},
      {w:[['raptor','raptor'],['gunner','knifer','raider'],['raider','raptor','knifer']],from:'B'},
      {w:[['raider','raptor','gunner'],['raptor','brute'],['brute','raptor','raptor']],from:'L'},
@@ -105,17 +105,17 @@ window.EDEN_CAMPAIGN = [
      {w:[['raptor','raider','gunner'],['brute','raptor','raptor'],['raptor','raptor','gunner']],task:2},
      {w:[['knifer','gunner','raptor'],['raptor','brute','raider'],['raider','raptor','knifer']],from:'B'},
      {w:[['brute','raptor','gunner'],['raptor','raptor'],['raider','knifer','raptor']],from:'L'}]},
-   {name:'THE BEAST’S NEST',say:'MUSTAPHA: I know that roar. We heard it in the lab, the night Fessenden died.',enc:[
+   {name:'THE REGENT’S NEST',say:'MUSTAPHA: Steel on its back and a radio on its neck. Somebody built that thing to fight.',enc:[
      {w:[['raptor','raider','raptor'],['gunner','raptor'],['brute','raptor','knifer']],from:'L',say:'HANNAH: The handlers are cornered. They’re throwing everything at us.'},
      {w:[['raptor','raptor','gunner'],['brute','raptor'],['brute','raptor','raptor']],from:'B'},
      {boss:true}]}]},
 
- {name:'THE ASHEN FOUNDRY',area:'04 / THE VAT FORGE',theme:'foundry',boss:'FOREMAN CINDER',kind:'cinder',clones:.5,accent:'#eea05c',
-  brief:'Cinder melts the coast’s water pumps into growth vats for Dr. Echo and armor for Sable’s army. The vats on his casting floor are sized for people. Shut the coolant lines that feed the vat moulds, then find out who those four outlines on the schematic are meant for.',
+ {name:'THE GEOTHERMAL FORGE',area:'04 / THE VAT FORGE',theme:'foundry',boss:'FOREMAN CINDER',kind:'cinder',clones:.5,accent:'#eea05c',
+  brief:'Deep beneath the volcanic shelf, Cinder uses a geothermal generator to melt the coast’s water pumps into growth vats for Dr. Echo and armor for Sable’s army. The vats on his casting floor are sized for people. Shut the coolant lines that feed the vat moulds, then find out who those four outlines on the schematic are meant for.',
   dialog:'CINDER: Steel for the Marshal. Glass for the doctor. Everybody pays.\nJACK: Funny. I was going to send you the bill.',
-  end:'Cinder spits out the truth: “The doctor says your blood is the best stock she ever found. She scraped it off the floor of Fessenden’s lab.” Every drop the gang spilled in the first fight was sampled by the lab’s machines. The four outlines are Mustapha, Jack, Hannah and Mess. The finished vats were shipped to Echo’s lab under the Tide Archive.',
+  end:'Cinder spits out the truth: “The doctor says your blood is the best stock she ever found. She scraped it off the floor of Fessenden’s lab.” Every drop the gang spilled in the first fight was sampled by the lab’s machines. The four outlines are Mustapha, Jack, Hannah and Mess. The finished vats were shipped to Echo’s lab beneath the Skyhook radar fortress.',
   sections:[
-   {name:'THE SCRAP YARD',say:'JACK: Those are the coast’s water pumps. He’s melting them down.',enc:[
+   {name:'THE TURBINE DESCENT',say:'JACK: Those are the coast’s water pumps. He’s melting them down.',enc:[
      {w:[['raider','brute'],['knifer','raider','gunner'],['brute','gunner','knifer']]},
      {w:[['brute','raider','raider'],['gunner','knifer'],['raider','brute','gunner']],from:'B'},
      {w:[['knifer','gunner','raider'],['brute','brute'],['mutant','knifer','raider']],from:'L'},
@@ -144,12 +144,12 @@ window.EDEN_CAMPAIGN = [
      {w:[['brute','raider','gunner'],['mutant','knifer','brute'],['mutant','knifer','raider']],from:'B'},
      {boss:true}]}]},
 
- {name:'THE TIDE ARCHIVE',area:'05 / DR. ECHO',theme:'lab',boss:'DR. ECHO',kind:'echo',clones:.8,accent:'#7bd6c9',
-  brief:'Under the old pumping station, Dr. Echo has rebuilt Fessenden’s laboratory around his recovered archive. Her command signal tells every clone what to do. Jam her control channels, get through the vat hall, and stop the woman who finished Fessenden’s work.',
+ {name:'SKYHOOK RADAR FORTRESS',area:'05 / DR. ECHO',theme:'lab',boss:'DR. ECHO',kind:'echo',clones:.8,accent:'#7bd6c9',
+  brief:'On a cliff above the cloud line, Dr. Echo has hidden a new laboratory beneath the Skyhook poacher radar fortress. Rotating dishes spread commands from Fessenden’s recovered archive. Her command signal tells every clone what to do. Jam her control channels, get through the vat hall, and stop the woman who finished Fessenden’s work.',
   dialog:'ECHO: You broke his body. You never broke his work.\nHANNAH: This is Hannah Dundee. We’re coming down to finish it.',
   end:'Echo laughs from the floor. “Too late. The Mirror Gang already shipped to the Crown dam — four of you, with your fists and your memories right up to the night Fessenden died. Sable will send them through every settlement wearing your faces.” She plays one last recording. Fessenden’s voice: “Genius does not die. It is copied.” Hannah pockets Echo’s command key. If it can control the clones, it can set them free.',
   sections:[
-   {name:'THE PUMPING STATION',say:'HANNAH: Echo’s lab is under this station. Fessenden’s whole archive is down there.',enc:[
+   {name:'THE CLIFF ASCENT',say:'HANNAH: Those radar dishes are broadcasting Echo’s orders. Her archive is under the fortress.',enc:[
      {w:[['gunner','knifer'],['raider','mutant'],['mutant','regent','gunner']]},
      {w:[['mutant','raider','gunner'],['knifer','brute'],['regent','knifer','mutant']],from:'B'},
      {w:[['raider','gunner','knifer'],['mutant','mutant'],['brute','mutant','gunner']],from:'L'},
@@ -178,12 +178,12 @@ window.EDEN_CAMPAIGN = [
      {w:[['regent','mutant','gunner'],['brute','regent'],['brute','mutant','gunner']],from:'B'},
      {boss:true}]}]},
 
- {name:'THE CROWN BARRIER',area:'06 / MIRROR WAR',theme:'eden',boss:'MARSHAL SABLE',kind:'sable',clones:1,accent:'#d5ec69',
-  brief:'The Crown dam powers Echo’s last vat hall, and Marshal Sable has turned it into a fortress. Behind the gates waits his clone army and the Mirror Gang — copies of all four heroes. Hannah has Echo’s command key. Beat the copies, break the command pylons and turn Sable’s clones against him.',
+ {name:'THE CROWN SPIRE',area:'06 / MIRROR WAR',theme:'eden',boss:'MARSHAL SABLE',kind:'sable',clones:1,accent:'#d5ec69',
+  brief:'A crumbling gothic skyscraper towers over the Crown dam. Sable has installed Echo’s last vat hall inside the spire and wired its command deck into the dam turbines. Behind the gates waits his clone army and the Mirror Gang — copies of all four heroes. Hannah has Echo’s command key. Beat the copies, break the command pylons and turn Sable’s clones against him.',
   dialog:'SABLE: Why hire an army when you can grow one that never runs out?\nMUSTAPHA: Funny thing about copies. They remember who they’re copied from.',
   end:'The Crown Engine stalls on the spillway. Freed clones drag Sable out of the cockpit while Mess holds the manual release and Mustapha opens the gates. The water drowns the turbines that powered the vats, and the last tanks go dark. Echo’s command signal is gone. For the first time, every copy can choose for itself.',
   sections:[
-   {name:'THE DAM ROAD',say:'SABLE: Welcome to the Crown, heroes. I’ve made a few improvements.',enc:[
+   {name:'THE SPIRE APPROACH',say:'SABLE: Welcome to the Crown, heroes. I’ve made a few improvements.',enc:[
      {w:[['raider','gunner'],['mutant','knifer','raider'],['mirror','mutant','gunner']]},
      {w:[['regent','gunner','raider'],['mutant','brute'],['regent','mirror','knifer']],from:'B'},
      {w:[['knifer','mutant','gunner'],['regent','brute','raider'],['mutant','mirror','regent']],from:'T'},
