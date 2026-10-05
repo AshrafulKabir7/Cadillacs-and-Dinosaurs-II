@@ -1,121 +1,74 @@
-# Last Eden — original sequel script
+# Fessenden's Legacy — sequel script
 
-This is an unofficial continuation of the arcade game's ending. Fessenden is defeated. His laboratory self-destructs; Jack stops to help Hannah, and both survive and return in the Cadillac to rejoin Mustapha and Mess. Those events are history, not stages to replay.
+This is an unofficial continuation of the 1993 arcade game. It starts six months after its ending and builds every chapter on something the gang left behind in the first game.
+
+## Where the first game ended
+
+Jack Tenrec, Hannah Dundee, Mustapha Cairo and Mess O'Bradovich broke the poachers' ring and fought their way into Dr. Fessenden's jungle laboratory, past the mutant dinosaurs he had grown there. Fessenden injected himself with his own serum and became a monster. When he fell, the laboratory blew apart; Jack went back for Hannah and the Cadillac carried them clear.
+
+Those events are history, not stages to replay. Three things from that night drive the sequel:
+
+1. **Fessenden's archive survived.** His chief assistant, **Dr. Echo**, walked out before the explosion with his notes and samples.
+2. **The lab sampled everyone who bled in it.** That includes the poachers the gang beat — and the four heroes themselves.
+3. **His last sample was taken after the serum.** Any attempt to clone Fessenden produces the beast he became.
 
 ## The new conflict
 
-Three months later, storm tides threaten the recovering coast. Marshal Sable, formerly responsible for maintaining its water pumps, has seized the Crown flood barrier. He intends to flood the independent settlements and sell the survivors access to his reservoirs. His power comes from controlling infrastructure, hired fighters and false information. There is no resurrected Fessenden, new mutation serum or laboratory-made final form.
+Echo has finished Fessenden's cloning work. She sells numbered copies ("lots") to **Marshal Sable**, who has taken over the Black Marketeers and wants an army that never runs out. Her **command signal** tells every clone what to do. Her best work is the **Mirror Gang**: copies of all four heroes, with their fists and their memories up to the night Fessenden died.
 
-Last Eden is the name Hannah gives a refuge on a dry ridge. It becomes a shared shelter for people and migrating dinosaurs. The four friends have one night to warn the coast, open its evacuation route and restore the barrier's missing governor before dawn.
+All heroes follow this story. The chosen hero fights on screen; radio dialogue tells what the rest of the gang is doing. Copies dissolve into green gel when beaten, which is how the gang first realises what they are fighting.
 
-All heroes follow this story. The chosen hero fights on screen; the chapter dialogue describes what the whole group accomplishes between encounters.
+## Chapter 1 — The Drowned Harbor · *Faces from the Lab*
 
-## Opening — the garage
+Poachers are unloading refrigerated crates stamped with Fessenden's laboratory seal — and some of the men carrying them are men the gang watched fall in that lab. The heroes fight across the docks, open three cold pods (each holds a sleeping copy of a beaten poacher) and meet **LOT 07 · HEAVY**, a copy of a heavyweight Mess fought in the lab. When it melts, Jack says it plainly: "That was never a man — it was a copy."
 
-Rain drums on the Cadillac's roof. Jack has repaired the last damage from the laboratory escape. Mess is carrying pump parts. Mustapha has just promised himself a quiet evening. Hannah's borrowed radio breaks through the static: the Crown reservoir is rising, but its official flood-warning channel is silent.
+**Boss: Warden Rook**, the harbor enforcer who ships the pods. His manifest lists people as numbered stock. The buyer is Sable; the seller is Dr. Echo. The remaining pods are already on a convoy up the Green Highway.
 
-Before the message finishes, armed dock guards seize the transmitter and drive toward the harbor.
+## Chapter 2 — The Green Highway · *The Pod Convoy*
 
-**Hannah:** Those tide readings are real. We have one night.
+Jack takes the Cadillac up the same expressway they drove home from the lab. The player rams outriders, recovers two stasis pods and runs down **LOT 31 · OUTRIDER**. At the Skyway toll fort the road is chained shut, so the gang fights through on foot while the Cadillac waits, and Mess cranks the barrier winch. Back in the car for the **Iron Convoy**.
 
-**Mustapha:** Then somebody picked the wrong night to steal our radio.
+A recovered pod holds a raptor hatchling in a control collar, tagged *NURSERY — VERDANT BASIN. STOCK: FESSENDEN'S PENS*. The poachers' old hunting ground is being farmed again.
 
-## Chapter 1 — The Drowned Harbor
+## Chapter 3 — The Verdant Basin · *The Nursery*
 
-The route passes the silent docks, the lighthouse relay and Rook's blockade. The player restores three relay consoles, carrying the warning district by district while the main transmitter remains missing. The guards have confiscated fuel and maps as well as the radio. Their ordinary raiders flank the heroes while armed poachers hold the long lanes.
+Echo's handlers raise vat-grown raptors and steer them with sonic lures. The heroes silence three lures, calm **PACK ALPHA**, and reach the nest, where Echo keeps her first attempt to bring Fessenden back.
 
-**Warden Rook** is Sable's dock enforcer. He uses a close combination, a committed baton rush and a warned ground strike. His orders reveal the commissioner's name. The stolen transmitter and a floodgate governor leave on an armored tanker.
+**Boss: Fessenden Beast · Copy 01** — a copy of the monster Fessenden became at the end of the first game (pink, like the original). A sonic driver keeps it fighting; silence the driver and it crashes away into the swamp. "It never asked to be born."
 
-**Rook:** There's no evacuation order. Go home.
+Hannah works out why every copy of Fessenden comes out as the beast, finds that the collars were cast at Cinder's foundry, and finds a vat schematic with four human outlines: **M, J, H, M**.
 
-**Hannah:** That's what happens when you steal the warning.
+## Chapter 4 — The Ashen Foundry · *The Vat Forge*
 
-**Jack:** He's buying time. Get in the car.
+Cinder melts the coast's water pumps into growth vats for Echo and armor for Sable. The heroes shut three coolant valves to stop the vat line and beat **LOT 12 · BRAWLER**, another copy of a first-game opponent.
 
-The gang needs both pieces of cargo: the radio can warn the settlements, and the governor can meter water through the barrier safely.
+**Boss: Foreman Cinder.** Beaten, he tells them the truth: Echo's best stock is the heroes' own blood, scraped off the floor of Fessenden's lab. The four outlines are Mustapha, Jack, Hannah and Mess. The finished vats went to Echo's lab under the Tide Archive.
 
-## Chapter 2 — The Green Highway
+## Chapter 5 — The Tide Archive · *Dr. Echo*
 
-Jack takes the Cadillac along the broken expressway. Mustapha calls the gaps in the road, Hannah tracks the tanker signal, and Mess clears its escorts. The chapter is a vehicle pursuit, with steering, ramming, boost and an armored transport boss. The player steers into three dropped cargo modules: a pressure sensor, the governor and its service map.
+Under the pumping station Echo has rebuilt Fessenden's laboratory around his archive. Tanks along the halls hold copies of the four heroes. The gang jams three channels of her command signal and meets the first **Mirror Clone** — a hue-inverted copy of one of them.
 
-**Mess:** How much water can one man steal?
+**Boss: Dr. Echo.** On the floor she reveals that the full Mirror Gang has shipped to the Crown dam, and plays Fessenden's last recording: "Genius does not die. It is copied." Hannah pockets Echo's command key: if it controls the clones, it can set them free.
 
-**Jack:** Enough to make everyone else pay for it.
+## Chapter 6 — The Crown Barrier · *Mirror War*
 
-The **Iron Convoy** has volleys, a rush and marked bombardment. After the escort is stopped, Hannah recovers the transmitter and extends the dock relays' evacuation warning to the inland settlements. Jack secures the governor, but its drive coupling is damaged.
+The Crown dam powers Echo's last vat hall; Sable has made it a fortress.
 
-The tanker's map reveals a second part of Sable's plan. Sonic beacons have driven migrating dinosaurs onto the only safe ridge, forcing the refugees back toward the lowlands.
+1. **The Dam Road** — Sable's clone army, including copies of the heroes in the regular ranks.
+2. **The Mirror Gang** — the copies of the other three heroes, one after another.
+3. **You vs. You** — the copy of the hero you chose. "Why are you holding back? …Why am I?"
+4. **Break the Command** — Hannah uses Echo's key on three command pylons. Each one frees copies: the first two Mirror Gang clones, then the third, then your own copy. They fight on your side.
+5. **The Clone War** — freed clones (gold glow) and Sable's controlled clones (violet glow, inverted colours) fight each other while you fight alongside.
+6. **The Crown Floodgate** — **Marshal Sable**, who calls in more copies, then boards the **Crown Engine**. Freed clones fight his reinforcements. After the engine stalls, the hero opens the spillway; the water drowns the turbines that power the vats and Echo's signal goes dark.
 
-## Chapter 3 — The Verdant Basin
+## Ending — Nobody's copy
 
-Hired hunters defend the beacon trail. Ordinary dinosaurs calm and leave after being subdued. At the final nest, **Thornmaw** charges and leaps to protect its young; it does not use manufactured acid or mutant powers.
+The vat hall is flooded and Echo's archive is ash. The freed clones build Sable's cell themselves; none of them go back into a tank. Your clone says it needs its own name.
 
-**Hannah:** It isn't hunting us. We're between it and its nest.
-
-**Mess:** Then we move the men who put us here.
-
-The player destroys three trail lures along the passage. At the nest, a fourth sonic driver must be destroyed during the boss encounter. Reducing Thornmaw's health only staggers it; silencing the driver makes it retreat alive. Its young follow the herd along the reopened passage. Families cross behind them.
-
-**Hannah:** There. Above the flood line. Last Eden.
-
-**Mustapha:** Good name. Now let's make sure it's still here tomorrow.
-
-The governor still needs a coupling. Jack recognizes the manufacturer's stamp: Cinder's foundry has the last working press capable of supplying one.
-
-## Chapter 4 — The Ashen Foundry
-
-Sable's men are melting down communal water pumps to build an armored maintenance crawler. The heroes cross the scrap yard and machine shop before reaching **Foreman Cinder** at the furnace floor. The player must close the coolant bypass, furnace feed and coupling-press valves. Each requires a short uninterrupted hold at its console. Vents warn before discharging and stop after the active valve is secured. Cinder fights with heavy cleaves, a charge and furnace bursts.
-
-**Cinder:** Water belongs to whoever can hold the gate.
-
-**Jack:** Funny. I was about to take it off your hands.
-
-After the fight, Mess holds the damaged press open while Jack retrieves a coupling. The repaired governor contains a service diagram: a pressure tunnel leads directly into Crown. Its remote lock is controlled by the old tide archive.
-
-Mustapha hears floodwater hit the lower road. The route home is closing.
-
-## Chapter 5 — The Tide Archive
-
-The archive is a pumping station and radio relay. **Signal Captain Echo**, Sable's communications officer, sends convincing false evacuation orders while jamming Hannah's frequency. The heroes fight through the station, its waterside approach and the relay room.
-
-**Echo, on the radio:** Turn back. The ridge is closed.
-
-**Hannah:** This is Hannah Dundee. Stay on the high road. We're coming.
-
-Echo uses ranged volleys, a jumping attack and calls hired reinforcements. The player retunes three radio consoles to the displayed ridge, shelter and tunnel channels, then breaks Echo's defense to secure the real broadcast. Hannah gets acknowledgments from the settlements; they are opening their shelters. Jack releases the service-tunnel lock.
-
-Sable makes an offer over the recovered frequency.
-
-**Sable:** Four seats at the top. You can still get out.
-
-Jack switches off the receiver. The Cadillac enters the tunnel.
-
-## Chapter 6 — The Crown Barrier
-
-The service tunnel opens onto the reservoir walkway. The player operates the downstream gate, relief channel and governor socket on the approach. Last Eden is visible above the far bank. At the floodgate, **Marshal Sable** tries to hold the heroes off with gunfire, close attacks and guards.
-
-**Sable:** They'll thank the man who decides who survives.
-
-**Mustapha:** Let's take that decision away from you.
-
-When his first health bar is depleted, Sable boards the **Crown Engine**. This is a second playable boss phase: an armored tracked floodgate crawler with a visible cockpit, hydraulic hammer and cannon. It is not a biological transformation.
-
-Its attack cycle is a marked hammer shockwave, a spillway surge, a three-lane cannon volley and a committed charge. Jump the shockwave; change lanes for the surge, which cannot be jumped. Strike during recovery. Damaging the crawler below half health produces smoke.
-
-Destroying the drive stops Sable from tearing out the gate. The chapter stays playable: the hero must reach and hold the final spillway release to finish. Jack checks the installed governor. Mess holds the manual release, Hannah coordinates downstream shelters and Mustapha opens the spillway. Water flows into the old riverbed a gate at a time.
-
-## Ending — no toll at the well
-
-Morning reaches the ridge. A family moves its cart aside to let Thornmaw's young pass. The river below is moving again. The settlements take custody of Sable and keep the water keys themselves.
-
-Hannah hangs the repaired radio beside Last Eden's first public well. Jack checks the Cadillac. Mess closes the tool box; Mustapha watches the first bucket come up.
-
-**Mess:** Tell me we're finally going home.
-
-**Mustapha:** After breakfast. Saving the world makes me hungry.
-
-The four drive home together. Last Eden remains a refuge open to the coast, with no ruler charging admission. All six chapters unlock for replay; this campaign has one complete ending.
+**Mustapha:** Take "Mostafa". Nobody spells it right anyway.
+**Mess:** Can we go home now? Before anybody grows a fifth one of me?
+**Jack:** Everybody in. The Cadillac seats four — the copies can follow in the truck.
 
 ## Playable scope
 
-Chapter briefings, dialogue, objectives and completion/ending text are in `campaign.js`, `mission-data.js` and `game.js`. All 20 mission tasks are required in play; their progress appears on the HUD. The garage scene, extra lines and inter-chapter actions above are the extended scenario; they are presented through text transitions, not fully animated cinematics. The six boss encounters and both final phases are playable.
+Briefings, chapter endings and the ending are text panels. Section openings, fights, objectives and mid-boss defeats carry radio dialogue during play. The objectives (cold pods, stasis pods, toll winch, sonic lures, coolant valves, command channels, command pylons and the final spillway), all mid-bosses, all six bosses, Sable's second phase and the freed-clone allies are playable. Chapter content is in `campaign.js` and `mission-data.js`.

@@ -2,6 +2,16 @@
 
 The four playable heroes and regular enemy atlases were retained unchanged in this update. The new environments and four human stage bosses use original generated pixel art. Thornmaw uses the existing dinosaur artwork; the Iron Convoy and Crown Engine remain canvas drawings.
 
+## Fessenden's Legacy additions
+
+No new image files were generated for this update. New visuals are drawn in code or derived at load time from the retained atlases:
+
+- **Cadillac:** the arcade's steel-blue finned convertible (rolled cream top, chrome spear and bumpers, skirted rear wheel, whitewall tires, wraparound windscreen) with the chosen hero at the wheel, a parked version for on-foot sections and boost flames.
+- **Story props:** Fessenden-sealed cold pods with sleeping copies, egg racks, unfinished vats, clone tanks holding tinted copies of the four heroes and violet command pylons.
+- **Copies of the heroes:** recovered hero animation with a hue-inverted violet-glow filter for hostile clones and a gold glow for freed clones. Beaten copies dissolve into green gel.
+- **Hero frames:** decoded from the arcade ROM sprite tables into `arcade-heroes.js` (not generated), including the original gun stances and gun-carrying torsos; see [SOURCE-NOTES.md](SOURCE-NOTES.md).
+- **Recast boss art:** the generated Echo sprite is now Dr. Echo, Fessenden's former assistant; the large recovered tyrannosaur creature is tinted pink as the copy of Fessenden's final form.
+
 ## Delivered assets
 
 - `assets/original/last-eden-environments.png`: 1536 × 1024, six environments in a 2 × 3 grid.

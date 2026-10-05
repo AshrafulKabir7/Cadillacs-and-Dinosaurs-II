@@ -26,9 +26,10 @@
   function scene(g,index,camera,time){
     g.fillStyle=colors[index];g.fillRect(0,0,768,432);if(!landscape.complete||!landscape.naturalWidth)return;
     const col=index%2,row=Math.floor(index/2),pw=landscape.width/2,ph=landscape.height/3;
-    const sx=col*pw,sy=row*ph,pan=Math.min(180,camera*.045);
+    const sx=col*pw,sy=row*ph,pan=camera*.05,first=Math.floor(pan/948);
     g.imageSmoothingEnabled=false;
-    g.drawImage(landscape,sx,sy,pw,ph*.76,-pan,68,948,216);
+    // The distant layer keeps drifting across long chapters; alternate copies are mirrored so the seams match.
+    for(let k=first;k<=first+1;k++){g.save();g.translate(Math.round(k*948-pan+(k%2?948:0)),68);if(k%2)g.scale(-1,1);g.drawImage(landscape,sx,sy,pw,ph*.76,0,0,948,216);g.restore();}
     const shift=camera%768;
     for(let x=-shift,i=Math.floor(camera/768);x<768;x+=768,i++){
       g.save();g.translate(x+(i%2?768:0),284);if(i%2)g.scale(-1,1);
