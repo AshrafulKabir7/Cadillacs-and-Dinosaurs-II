@@ -16,8 +16,9 @@ const BASE=process.env.GAME_URL||'http://127.0.0.1:8766';
     const armedPose=g.snapshot.player.pose==='fire';ticks(50);
     const expected=damage*shots*(hero===2?1.25:1);
     results.push([`Hero ${hero+1}: ${weapon} hits at point-blank range without extra melee damage`,armedPose&&g.snapshot.player.ammo===ammo-shots&&Math.abs(e.maxhp-e.hp-expected)<.01&&g.snapshot.player.pendingStrike===null]);
-    e.state='recover';e.timer=1000;ticks(90);g.test.equip(weapon,0);const hp=e.hp;for(let i=0;i<4;i++){g.controls.attack();ticks(25);}
-    results.push([`Hero ${hero+1}: empty ${weapon} never punches or auto-discards`,e.hp===hp&&g.snapshot.player.weapon===weapon&&g.snapshot.player.ammo===0]);
+    // An empty gun is hurled at the enemy as soon as the hero is free, never silently swapped for a punch.
+    e.state='recover';e.timer=1000;ticks(90);g.test.equip(weapon,0);g.step(1/60);const thrown=g.snapshot.bullets.some(b=>b.kind==='thrown'&&b.weapon===weapon),pose=g.snapshot.player.attackKind;ticks(40);
+    results.push([`Hero ${hero+1}: empty ${weapon} is thrown at the enemy instead of punching or lingering`,thrown&&pose==='throw'&&g.snapshot.player.weapon===null&&g.snapshot.player.ammo===0&&g.snapshot.player.pendingStrike===null]);
    }
    g.start(0,hero);g.test.move(100,346);const e=target(145);g.controls.attack();g.test.drop('gun',100,346);g.controls.pickup();const crouch=g.snapshot.player.pickup>0;ticks(25);const punched=e.hp<e.maxhp;g.controls.attack();ticks(25);
    results.push([`Hero ${hero+1}: picking up a gun crouches, cancels a pending punch and then fires`,crouch&&!punched&&g.snapshot.player.weapon==='gun'&&Math.abs(e.maxhp-e.hp-32*(hero===2?1.25:1))<.01]);

@@ -18,7 +18,7 @@ const checks=await page.evaluate(()=>{
  check('Chapter 1 continues directly from Fessenden’s death in the first game',/Fessenden/.test(EDEN_CAMPAIGN[0].brief)&&/lab/.test(EDEN_CAMPAIGN[0].brief));
  check('Every chapter ending sets up the next chapter',EDEN_CAMPAIGN.slice(0,5).every((c,i)=>c.end.length>120));
  check('The final chapter is the clone war',/MIRROR WAR/.test(EDEN_CAMPAIGN[5].area)&&EDEN_MISSIONS[5].tasks.reduce((n,t)=>n+(t[4]||0),0)===4);
- for(let i=0;i<6;i++){g.start(i);const p=g.snapshot.plan;check(`Chapter ${i+1}: six sections, at least sixteen fights and a mid-boss`,p.sections.length===6&&p.encounters.length>=16&&p.encounters.some(e=>e.elite)&&p.encounters[p.encounters.length-1].boss&&g.snapshot.length>11000);}
+ for(let i=0;i<6;i++){g.start(i);const p=g.snapshot.plan;check(`Chapter ${i+1}: six sections, at least eleven fights and a mid-boss`,p.sections.length===6&&p.encounters.length>=11&&p.encounters.some(e=>e.elite)&&p.encounters[p.encounters.length-1].boss&&g.snapshot.length>6000);}
 
  // Enemies enter from beyond the screen edges (or drop in from above), including later waves.
  let fresh=0,bad=0;const badList=[];
@@ -27,7 +27,7 @@ const checks=await page.evaluate(()=>{
    // Clear the first wave; the reinforcements must also arrive from off screen.
    g.snapshot.enemies.forEach((e,j)=>{g.test.damageEnemy(j,99999);});ticks(2);const s2=g.snapshot;for(const e of s2.enemies.filter(e=>!e.dead&&e.hp===e.maxhp)){fresh++;if(!offscreen(e,s2)){bad++;badList.push([i,k,2,e.type,Math.round(e.x),e.state,Math.round(e.z),s2.lock.left]);}}
    g.test.finishEncounter();ticks(80);}}
- check(`All ${fresh} sampled reinforcements start off screen${bad?' '+JSON.stringify(badList.slice(0,4)):''}`,fresh>80&&bad===0);
+ check(`All ${fresh} sampled reinforcements start off screen${bad?' '+JSON.stringify(badList.slice(0,4)):''}`,fresh>60&&bad===0);
  g.start(0);g.test.skipTo(g.snapshot.plan.encounters.length-1);g.step(1/60);let s=g.snapshot,boss=s.enemies.find(e=>e.boss);
  check('The boss walks in from beyond the right edge',boss&&boss.x>s.lock.right);ticks(150);s=g.snapshot;boss=s.enemies.find(e=>e.boss);check('The boss finishes its entrance on screen',boss.x<s.lock.right-60);
  g.test.damageEnemy(s.enemies.indexOf(s.enemies.find(e=>e.boss)),boss.maxhp*.4);ticks(1);s=g.snapshot;

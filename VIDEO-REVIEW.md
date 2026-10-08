@@ -1,3 +1,16 @@
+# Second handling review — October 8, 2026 (afternoon)
+
+Sources: the full playthrough at 40:25–41:35 (knives against the final beast), the boss-fight video at 04:15–04:31 (rifle) and 01:44–01:52 (handgun), and the atlas frames themselves, rendered on a common baseline with their recorded anchors.
+
+| Observation | Found in this game | Implemented consequence |
+|---|---|---|
+| Rifle held level at the hip in both hands, about three quarters of the hero's height long; handgun carried low in the swinging hand on the walk and raised only to fire; knife small, held point-up beside the hip. | Weapon sprites drawn at the hero scale were up to twice the arcade size (rifle 93 % of body height, knife 58 px); the handgun stayed raised while walking. | Per-weapon sprite scales; handgun carried in the ordinary walk/run hand; knife at half size. |
+| The arcade draws a torso-only record over separate leg records when a long gun is carried; the two meet at the hips. | The walking torso was clipped at a fixed hip line that removed the top of the leg records, leaving an 11 px gap through the body while running. | Torso-only records are drawn whole over the legs; only full-body stances are clipped, and running uses the arcade's running torso. |
+| The heavy walks upright. | His walk cycle contained a 48 px-tall crouch fragment, so he sank into the road every third frame. | Walk cycle uses his two standing strides. |
+| A knocked-down knifer lands on his back and gets up. | His knocked-down record was the 205 px motorcycle-wreck sprite, and the launch arc plus a high bounce carried him far; together it read as rolling away across the screen. | Kneeling frame for the knockdown, launch speed cut by a quarter, bounce reduced, tilt instead of spin for ordinary knockdowns. |
+| An empty gun is thrown at the enemy. | An empty gun stayed in the hand with an EMPTY prompt. | The hero hurls it as soon as the last shot's recoil ends. |
+| Top bar: portrait, lives, score, name and rank, yellow health bar, the enemy's name and bar; INSERT COIN / JOIN-IN in the other player slots; coin continues count down from ten with the hero on the ground. | A custom status bar with chapter titles; game over went straight to a restart panel. | Cabinet-style bar, CREDIT counter and a ten-second coin continue that respawns in place. |
+
 # Handling review — October 8, 2026
 
 Sources: the boss-fight video at 03:28–03:46 (1440 × 1080, 60 fps) and the full playthrough's highway stage at roughly 05:45–07:15 (640 × 360, 30 fps), sampled at one and ten frames per second. This pass compared the Cadillac section and the hero's basic movement with the game, not every frame of either video.

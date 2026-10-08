@@ -38,7 +38,7 @@ fs.mkdirSync('tests/results',{recursive:true});
   for(let hero=0;hero<4;hero++)for(const dir of [-1,1])for(const type of ['gun','shotgun','uzi','m16','bazooka']){
    g.start(0,hero,'normal');g.test.move(170,345);key(dir<0?'KeyA':'KeyD',true);ticks(1);key(dir<0?'KeyA':'KeyD',false);g.test.move(170,345);g.test.equip(type);
    const before=g.snapshot.player.x,profile=Object.values(COMBAT_CONFIG.weapons).find(w=>w.types.includes(type));g.controls.attack();g.render();let s=g.snapshot;
-   const shot=s.bullets[0],expected=s.player.x+dir*(s.gunSocket.x+({gun:34,shotgun:60,uzi:45,m16:81,bazooka:81}[type])*(1-profile.grip)*1.35);
+   const shot=s.bullets[0],expected=s.player.x+dir*(s.gunSocket.x+({gun:34,shotgun:60,uzi:45,m16:81,bazooka:81}[type])*(1-profile.grip)*1.35*({gun:.78,shotgun:.85,uzi:.8,m16:.78,bazooka:.85}[type]));
    test(`Hero ${hero} ${type} facing ${dir}: muzzle, projectile and recoil align`,Math.abs(s.player.x-(before-dir*profile.recoilPixels))<.001&&Math.abs(shot.x-expected)<.001&&Math.sign(shot.vx)===dir&&shot.z===s.gunSocket.y&&s.player.pose==='fire');
    test(`Hero ${hero} ${type} facing ${dir}: shell behavior matches weapon`,s.particles.filter(p=>p.kind==='shell').length===(profile.shells?1:0));
   }

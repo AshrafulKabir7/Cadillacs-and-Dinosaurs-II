@@ -149,7 +149,7 @@
       ]
     },
     "run": {
-      "twoHanded": "torsoWalk",
+      "twoHanded": "torsoRun",
       "handgun": "pistolStand",
       "legs": "legsRun",
       "offset": [

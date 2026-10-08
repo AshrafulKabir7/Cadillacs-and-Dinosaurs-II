@@ -42,5 +42,7 @@ for(let level=0;level<6;level++){
 }
 fs.writeFileSync('tests/results/bot-report.json',JSON.stringify(results,null,2));await browser.close();
 if(results.some(r=>r.state!=='clear'))throw new Error('A chapter did not complete: '+JSON.stringify(results.filter(r=>r.state!=='clear')));
-if(results.some(r=>r.seconds<420))throw new Error('A chapter finished in under seven minutes: '+results.filter(r=>r.seconds<420).map(r=>r.level+':'+r.seconds+'s').join(', '));
+// Chapters are meant to take a player four to five minutes; the bot is quicker than a person, so it must land between
+// two and a half and five minutes.
+if(results.some(r=>r.seconds<150||r.seconds>300))throw new Error('A chapter is outside the 2.5–5 minute window: '+results.filter(r=>r.seconds<150||r.seconds>300).map(r=>r.level+':'+r.seconds+'s').join(', '));
 })().catch(e=>{console.error(e);process.exit(1);});
