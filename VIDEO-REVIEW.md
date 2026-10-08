@@ -1,3 +1,14 @@
+# Handling review — October 8, 2026
+
+Sources: the boss-fight video at 03:28–03:46 (1440 × 1080, 60 fps) and the full playthrough's highway stage at roughly 05:45–07:15 (640 × 360, 30 fps), sampled at one and ten frames per second. This pass compared the Cadillac section and the hero's basic movement with the game, not every frame of either video.
+
+| Observation in the arcade | Found in this game | Implemented consequence |
+|---|---|---|
+| The car keeps rolling the whole time: the desert, cacti and rocks stream past under it even while riders fight alongside, and the car itself holds a lane position rather than sliding to the edge of the screen. | The car auto-advanced at a fixed speed into the right edge of the locked screen and sat there with its nose cut off; the road stood still during fights. | Velocity-based handling with throttle, brake, coast and a standstill while locked; the scenery scrolls at road speed throughout driving sections; the whole car always stays on screen. |
+| Riders pull up beside the car at motorcycle speed, ride level with it, then swing in or shoot; a beaten bike leaves a fireball. | Riders behaved like foot gunners: slow approach, standing off at long range, no swerve, no explosion. | Rider speed 150, alongside range, alternating shoot / swerve, explosion on defeat; foot gunners in driving sections ride instead. |
+| Rammed enemies are flung away in one impact; the car bounces. | Contact dealt a stream of small hits every tick. | One impact per contact scaled by speed, with a bounce and shake. |
+| Walking and running are perfectly even at the cabinet's 59.6 Hz. | On this 72 Hz / 141 Hz machine the fixed 60 Hz accumulator skipped one update every few frames (measured walk deltas 3,3,3,3,3,0 px). | Variable-step simulation; measured deltas are now uniform at every refresh rate. |
+
 # Latest reference verification — October 5, 2026
 
 Source: the user-supplied `YTDown.com_YouTube_Media_VQtsqjuc0kA_Cadillacs-And-Dinosaurs-ARCADE-2-players-60FPS_004_360p (1).mp4`. Media probing reports **640×360, 30 fps, 46:15.063**; the filename's 60FPS label is not the actual stream rate.

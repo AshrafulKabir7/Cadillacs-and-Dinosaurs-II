@@ -23,9 +23,11 @@ for(let level=0;level<6;level++){
    if(task.kind==='beacon'){if(Math.abs(dd)<70&&Math.abs(task.y-v.y)<25){fight=true;if(Math.sign(dd)!==v.dir)dx=Math.sign(dd);}}
    else if(task.kind==='tuner'){operate=dx===0&&dy===0&&n%8===0;}
    else operate=dx===0&&dy===0;
-  }else if(e){const dd=e.x-v.x,range=s.driving?45:v.weapon&&firearms.includes(v.weapon)?180:48;
+  }else if(e){const dd=e.x-v.x,range=s.driving?70:v.weapon&&firearms.includes(v.weapon)?180:48;
    dx=Math.abs(dd)>range?Math.sign(dd):Math.sign(dd)!==v.dir?Math.sign(dd):0;dy=Math.abs(e.y-v.y)>7?Math.sign(e.y-v.y):0;
-   fight=Math.abs(dd)<range+12&&Math.abs(e.y-v.y)<26;
+   // In the Cadillac the bash reaches a rider alongside the bumper, and a boost turns an approach into a ram.
+   fight=Math.abs(dd)<(s.driving?165:range+12)&&Math.abs(e.y-v.y)<26;
+   if(s.driving&&dd>140&&dd<420&&Math.abs(e.y-v.y)<26&&n%20===0)g.controls.jump();
    if(e.state==='windup'&&Math.abs(dd)<130&&v.z===0&&n%8===0)g.controls.jump();
    if(targets.filter(t=>Math.hypot(t.x-v.x,t.y-v.y)<120).length>1&&v.hp>25&&v.specialCd<=0)g.controls.special();
   }else if(s.lock)dx=0;

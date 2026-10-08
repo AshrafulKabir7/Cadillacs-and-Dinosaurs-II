@@ -179,9 +179,9 @@ window.EDEN_CAMPAIGN = [
      {boss:true}]}]},
 
  {name:'THE CROWN SPIRE',area:'06 / MIRROR WAR',theme:'eden',boss:'MARSHAL SABLE',kind:'sable',clones:1,accent:'#d5ec69',
-  brief:'A crumbling gothic skyscraper towers over the Crown dam. Sable has installed Echo’s last vat hall inside the spire and wired its command deck into the dam turbines. Behind the gates waits his clone army and the Mirror Gang — copies of all four heroes. Hannah has Echo’s command key. Beat the copies, break the command pylons and turn Sable’s clones against him.',
+  brief:'A crumbling gothic skyscraper towers over the Crown dam. Sable has installed Echo’s last vat hall inside the spire and wired its command deck into the dam turbines. Behind the gates waits his clone army and the Mirror Gang — copies of all four heroes. Hannah has Echo’s command key. Beat the copies, break the command pylons and turn Sable’s clones against him. One tank in that hall is still sealed, and the manifest only calls it LOT 00.',
   dialog:'SABLE: Why hire an army when you can grow one that never runs out?\nMUSTAPHA: Funny thing about copies. They remember who they’re copied from.',
-  end:'The Crown Engine stalls on the spillway. Freed clones drag Sable out of the cockpit while Mess holds the manual release and Mustapha opens the gates. The water drowns the turbines that powered the vats, and the last tanks go dark. Echo’s command signal is gone. For the first time, every copy can choose for itself.',
+  end:'The Crown Engine stalls on the spillway and the freed clones drag Sable out of the cockpit. When the water drowns the turbines, the last tank in the vat hall cracks open — and what climbs out was never one of the gang. Echo grew Fessenden himself from the archive’s own sample and dosed the copy with his serum: the beast from the jungle lab, back for one more round. It dies the way the other copies did, into green gel, and this time there is nothing left to copy. Echo’s command signal is gone. For the first time, every copy can choose for itself.',
   sections:[
    {name:'THE SPIRE APPROACH',say:'SABLE: Welcome to the Crown, heroes. I’ve made a few improvements.',enc:[
      {w:[['raider','gunner'],['mutant','knifer','raider'],['mirror','mutant','gunner']]},

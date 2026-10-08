@@ -10,7 +10,7 @@ Those events are history, not stages to replay. Three things from that night dri
 
 1. **Fessenden's archive survived.** His chief assistant, **Dr. Echo**, walked out before the explosion with his notes and samples.
 2. **The lab sampled everyone who bled in it.** That includes the poachers the gang beat — and the four heroes themselves.
-3. **Echo applies the archive to a new weapon.** The Verdant Regent combines a living dinosaur, Cinder’s armor and a neural collar. Fessenden stays dead; the gang does not fight him again.
+3. **Echo applies the archive to a new weapon.** The Verdant Regent combines a living dinosaur, Cinder’s armor and a neural collar. Fessenden himself stays dead. What waits in the last sealed tank, listed on every manifest only as **LOT 00**, is a copy grown from the archive’s own sample — and Echo gave it his serum.
 
 ## The new conflict
 
@@ -60,10 +60,11 @@ The ruined gothic Crown Spire overlooks the dam that powers Echo's last vat hall
 4. **Break the Command** — Hannah uses Echo's key on three command pylons. Each one frees copies: the first two Mirror Gang clones, then the third, then your own copy. They fight on your side.
 5. **The Clone War** — freed clones (gold glow) and Sable's controlled clones (violet glow, inverted colours) fight each other while you fight alongside.
 6. **The Crown Floodgate** — **Marshal Sable**, who calls in more copies, then boards the **Crown Engine**. Freed clones fight his reinforcements. After the engine stalls, the hero opens the spillway; the water drowns the turbines that power the vats and Echo's signal goes dark.
+7. **The Last Copy** — the power dies and the sealed tank cracks. **LOT 00 · FESSENDEN** climbs out: a copy of the doctor grown from the archive's own sample and dosed with his serum, the pink beast from the end of the jungle lab. "It isn't him. It's a copy. Copies can be deleted." The freed clones fight beside the hero; when it falls it dissolves like every other copy, and there is nothing left to grow another from.
 
 ## Ending — Nobody's copy
 
-The vat hall is flooded and Echo's archive is ash. The freed clones build Sable's cell themselves; none of them go back into a tank. Your clone says it needs its own name.
+The vat hall is flooded, Echo's archive is ash, and a green stain on the spillway is all that is left of Fessenden's last copy. The freed clones build Sable's cell themselves; none of them go back into a tank. Your clone says it needs its own name.
 
 **Mustapha:** Take "Mostafa". Nobody spells it right anyway.
 **Mess:** Can we go home now? Before anybody grows a fifth one of me?
@@ -71,4 +72,4 @@ The vat hall is flooded and Echo's archive is ash. The freed clones build Sable'
 
 ## Playable scope
 
-Briefings, chapter endings and the ending are text panels. Section openings, fights, objectives and mid-boss defeats carry radio dialogue during play. The objectives (cold pods, stasis pods, toll winch, sonic lures, coolant valves, command channels, command pylons and the final spillway), all mid-bosses, all six bosses, Sable's second phase and the freed-clone allies are playable. Chapter content is in `campaign.js` and `mission-data.js`.
+Briefings, chapter endings and the ending are text panels. Section openings, fights, objectives and mid-boss defeats carry radio dialogue during play. The objectives (cold pods, stasis pods, toll winch, sonic lures, coolant valves, command channels, command pylons and the final spillway), all mid-bosses, all six bosses, Sable's second phase, the last copy of Fessenden and the freed-clone allies are playable. Chapter content is in `campaign.js` and `mission-data.js`.

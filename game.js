@@ -62,7 +62,8 @@ const WEAPONS = {
   dynamite: {name:'DYNAMITE', ammo:2, cooldown:.5, damage:125, thrown:true, sprite:[4,486,43,26]},
   stone: {name:'STONE', ammo:1, cooldown:.4, damage:32, thrown:true, sprite:[15,455,17,19]}
 };
-const STAGE_TRACKS = [['06','07','08'],['16','17','22'],['13','14','07'],['20','21','22'],['08','17','20'],['25','13','14']];
+// The final chapter uses the original game's last-stage themes; its last copy gets the original final boss theme.
+const STAGE_TRACKS = [['06','07','08'],['16','17','22'],['13','14','07'],['20','21','22'],['08','17','20'],['29','20','30']];
 const BOSS_TRACKS = ['10','19','15','24','24','15'];
 const stageMusic = () => STAGE_TRACKS[levelIndex][Math.min(2,Math.floor(Math.max(0,sectionIndex)/2))];
 // Heavy weapons carried by one enemy in every third fight; they drop it when beaten.
@@ -71,6 +72,10 @@ const CARRIED = [['shotgun','gun','rod'],['uzi','grenade','club'],['rifle','club
 const CLONE_FILTER='hue-rotate(180deg) saturate(1.3) brightness(.92) drop-shadow(0 0 3px #b16cff)';
 const ALLY_FILTER='sepia(.3) saturate(1.25) brightness(1.05) drop-shadow(0 0 4px #ffd257)';
 const CAR_SCALE=1.15,CAR_REACH=128;
+// Cadillac handling: the car carries momentum, leans into lane changes, and the road streams under it (`road` is the
+// extra scenery scroll that keeps the highway moving even while the screen is locked for a fight).
+const CAR={accel:720,drag:420,top:275,reverse:-175,cruise:95,laneAccel:1150,laneTop:185,road:330,boost:260};
+let road=0;
 let effects = [], lastHitEnemy = null, bossIntro = 0, dashTime = 0, dashKey = '', lastDirection = {key:'',time:0};
 function keyedImage(source, key) {
   const img = new Image(), surface = document.createElement('canvas');
@@ -95,16 +100,17 @@ function music(dt) {
   soundtrack.update(settings.music,state==='paused'||document.hidden,settings.volume??.52);
   if(state==='paused'||state==='guide')return;
   let key=state, sequence;
-  if(['menu','chapters','credits'].includes(state)) sequence=[{id:'01',loop:false},{id:'02',loop:false},'01'];
+  if(['menu','chapters'].includes(state)) sequence=[{id:'01',loop:false},{id:'02',loop:false},'01'];
+  else if(state==='credits')sequence=['38'];
   else if(state==='select')sequence=['03'];
   else if(state==='brief')sequence=[{id:levelIndex===0?'04':'05',loop:false},stageMusic()];
   else if(state==='play') {
     const boss=enemies.find(e=>e.boss&&!e.dead);
     key=`play-${levelIndex}-${boss?`boss-${boss.phase}`:Math.floor(Math.max(0,sectionIndex)/2)}`;
-    sequence=boss?[{id:levelIndex===3||levelIndex===4?'23':levelIndex===2?'18':'09',seconds:3.2},BOSS_TRACKS[levelIndex]]:[stageMusic()];
+    sequence=boss?boss.type==='fessenden'?['32']:[{id:levelIndex===3||levelIndex===4?'23':levelIndex===2?'18':'09',seconds:3.2},BOSS_TRACKS[levelIndex]]:[stageMusic()];
   } else if(state==='clear')sequence=[{id:'11',loop:false},{id:['26','27','28'][levelIndex%3],loop:false},'06'];
-  else if(state==='ending')sequence=[{id:'28',loop:false},'06'];
-  else if(state==='gameover')sequence=['02'];
+  else if(state==='ending')sequence=[{id:'33',loop:false},'06'];
+  else if(state==='gameover')sequence=[{id:'35',loop:false},{id:'37',loop:false}];
   if(sequence)soundtrack.cue(key+(state==='brief'||state==='clear'?levelIndex:''),sequence);
 }
 function dropWeapon() {
@@ -266,9 +272,9 @@ function placeProps(from){
 function startStage(i,opts={}){
   if(typeof opts==='boolean')opts={skipBrief:opts};
   levelIndex=i;level=LEVELS[i];plan=buildPlan(i);level.length=plan.length;const hero=HEROES[selected],hp=hero.hp*rules().playerHealth;
-  player={x:130,y:352,z:0,vz:0,dir:1,hp,maxhp:hp,hurt:0,inv:1.5,attack:0,attackTotal:.38,special:0,specialCd:0,comboStep:0,weapon:null,ammo:0,move:false,run:false,anim:0,boost:0,boostCd:0,recoil:0,knocked:false,attackKind:"combo",pendingStrike:null,moveState:null,freeze:0,comboWin:0,comboHit:false,grab:null,grabCd:0,pickup:0,pickTarget:null,land:0,walkDist:0,runDist:0,roll:0};
+  player={x:130,y:352,z:0,vz:0,dir:1,hp,maxhp:hp,hurt:0,inv:1.5,attack:0,attackTotal:.38,special:0,specialCd:0,comboStep:0,weapon:null,ammo:0,move:false,run:false,anim:0,boost:0,boostCd:0,recoil:0,knocked:false,attackKind:"combo",pendingStrike:null,moveState:null,freeze:0,comboWin:0,comboHit:false,grab:null,grabCd:0,pickup:0,pickTarget:null,land:0,walkDist:0,runDist:0,roll:0,vx:0,vy:0,bank:0,bump:0,dust:0};
   enemies=[];allies=[];objects=[];drops=[];particles=[];bullets=[];zones=[];floating=[];effects=[];bossIntro=0;lastHitEnemy=null;dashTime=0;wave=0;lock=null;bossSpawned=false;cleared=false;stageTimer=0;combo=0;comboTimer=0;shake=0;flash=0;hitstop=0;
-  encIndex=0;encounter=null;sectionIndex=-1;radio=null;radioQueue=[];alliesFreed=0;parkedCar=null;initMission();
+  encIndex=0;encounter=null;sectionIndex=-1;radio=null;radioQueue=[];alliesFreed=0;parkedCar=null;road=0;initMission();
   const start=clamp(opts.section|0,0,plan.sections.length-1),sec=plan.sections[start];
   if(start>0){
     player.x=sec.x+40;encIndex=sec.first;
@@ -285,7 +291,7 @@ function startStage(i,opts={}){
 function enterSection(k,quiet=false){
   sectionIndex=k;const s=plan.sections[k];
   if(!!s.drive!==driving){
-    driving=!!s.drive;flash=.45;shake=5;player.z=0;player.vz=0;player.pickup=0;
+    driving=!!s.drive;flash=.45;shake=5;player.z=0;player.vz=0;player.pickup=0;player.vx=0;player.vy=0;player.bank=0;player.bump=0;
     if(driving){dropWeapon();parkedCar=null;toast='BACK IN THE CADILLAC!';}
     else{parkedCar={x:player.x-30,y:clamp(player.y,300,380)};toast='ON FOOT · THE CADILLAC WAITS HERE';}
     toastTime=3.5;
@@ -297,7 +303,7 @@ function pause(){if(state==='play'){state='paused';resetInput();panel(`<section 
 function resume(){state='play';panel('');resetInput();canvas.focus();}
 function gameover(){state='gameover';save.best=Math.max(save.best,score);persist();const at=Math.max(0,sectionIndex);panel(`<section class="panel small-panel"><p class="eyebrow">THE FIGHT ISN'T OVER</p><h2>CONTINUE?</h2><p>The gang regroups at the start of section ${at+1}: ${plan.sections[at].name}. No coins needed.<br>Score ${score.toString().padStart(6,'0')} · Best combo ${bestCombo}</p><div class="menu-buttons"><button id="retry" class="primary">TRY AGAIN →</button><button id="quit" class="secondary">MAIN MENU</button></div></section>`);bindButton('retry',()=>{lives=3;startStage(levelIndex,{section:at});});bindButton('quit',menu);}
 function stageClear(){if(cleared)return;cleared=true;state='clear';score+=2500+Math.floor(player.hp*10);save.unlocked=Math.max(save.unlocked,Math.min(5,levelIndex+1));save.best=Math.max(save.best,score);sfx('clear');save.checkpoint=levelIndex<5?{level:levelIndex+1,section:0,hero:selected,difficulty,score,lives}:null;persist();panel(`<section class="panel small-panel"><p class="eyebrow">CHAPTER 0${levelIndex+1} COMPLETE</p><h2>${levelIndex===5?'THE COPIES ARE FREE.':'KEEP THE ENGINE RUNNING.'}</h2><p>${level.end}</p><p style="color:var(--acid)">SCORE ${score.toString().padStart(6,'0')} · BEST COMBO ${bestCombo} · ${Math.floor(stageTimer/60)}:${Math.floor(stageTimer%60).toString().padStart(2,'0')}</p><div class="menu-buttons"><button id="next" class="primary">${levelIndex===5?'SEE THE ENDING':'NEXT CHAPTER'} →</button></div></section>`);bindButton('next',()=>levelIndex<5?startStage(levelIndex+1):ending());}
-function ending(){state='ending';save.checkpoint=null;persist();const me=HEROES[selected];panel(`<section class="panel small-panel"><p class="eyebrow">FESSENDEN’S LEGACY · THE END</p><h2>NOBODY’S COPY.</h2><p>Morning finds the Crown dam quiet. The vat hall is flooded, Echo’s archive is ash, and Marshal Sable sits in a cell the freed clones built themselves. Not one of the copies goes back into a tank.</p><p>The Mirror Gang stands at the edge of the spillway, watching the river run free. Your clone looks a lot like you — a little younger, a lot less sure. “Guess I need my own name,” it says.</p><p style="color:var(--acid)">MUSTAPHA: Take “Mostafa”. Nobody spells it right anyway.<br>MESS: Can we go home now? Before anybody grows a fifth one of me?<br>JACK: Everybody in. The Cadillac seats four — the copies can follow in the truck.</p><p>${me.name} drives home with the gang · ${kills} enemies defeated · ${Math.floor(runTime/60)} minutes · score ${score}<br>All six chapters are now available.</p><div class="menu-buttons"><button id="chapters" class="primary">PLAY A CHAPTER →</button><button id="credits" class="secondary">CREDITS</button><button id="quit" class="secondary">MAIN MENU</button></div></section>`);bindButton('chapters',chapters);bindButton('credits',credits);bindButton('quit',menu);}
+function ending(){state='ending';save.checkpoint=null;persist();const me=HEROES[selected];panel(`<section class="panel small-panel"><p class="eyebrow">FESSENDEN’S LEGACY · THE END</p><h2>NOBODY’S COPY.</h2><p>Morning finds the Crown dam quiet. The vat hall is flooded, Echo’s archive is ash, and a green stain on the spillway is all that is left of Fessenden’s last copy. Marshal Sable sits in a cell the freed clones built themselves. Not one of the copies goes back into a tank.</p><p>The Mirror Gang stands at the edge of the spillway, watching the river run free. Your clone looks a lot like you — a little younger, a lot less sure. “Guess I need my own name,” it says.</p><p style="color:var(--acid)">MUSTAPHA: Take “Mostafa”. Nobody spells it right anyway.<br>MESS: Can we go home now? Before anybody grows a fifth one of me?<br>JACK: Everybody in. The Cadillac seats four — the copies can follow in the truck.</p><p>${me.name} drives home with the gang · ${kills} enemies defeated · ${Math.floor(runTime/60)} minutes · score ${score}<br>All six chapters are now available.</p><div class="menu-buttons"><button id="chapters" class="primary">PLAY A CHAPTER →</button><button id="credits" class="secondary">CREDITS</button><button id="quit" class="secondary">MAIN MENU</button></div></section>`);bindButton('chapters',chapters);bindButton('credits',credits);bindButton('quit',menu);}
 function credits(){state='credits';panel(`<section class="panel small-panel"><p class="eyebrow">THANKS FOR PLAYING</p><h2>FOR THE OLD ARCADE DAYS.</h2><p>An unofficial fan sequel created for Mostafa's next adventure. It continues the story of Capcom's 1993 arcade game after Dr. Fessenden's defeat. Original character graphics were recovered from the arcade ROM files supplied by the user.</p><p>New story, levels, encounters, combat engine and boss behaviors were created for this game. Original soundtrack supplied by the user. New scenery and human boss artwork were generated for this sequel; the original heroes and regular enemy artwork are retained. Original Cadillacs and Dinosaurs arcade game and artwork: Capcom. Characters and setting derive from Xenozoic Tales by Mark Schultz.</p><div class="menu-buttons"><button id="quit" class="primary">MAIN MENU →</button></div></section>`);bindButton('quit',menu);}
 const BASE_HP={brute:125,gunner:68,raptor:90,knifer:82,mutant:138,biker:125,regent:150,slicer:160,mirror:150};
 const BOSS_HP=[760,860,840,940,940,800];
@@ -312,6 +318,8 @@ function spawnEnemy(x,y,type='raider',boss=false) {
 }
 // Reinforcements walk or run in from beyond the screen edges, or drop from above, one after another.
 function arrive(type,side,j){
+  // Nobody stands on a moving highway: foot gunners in the driving sections ride in as armed bikers instead.
+  if(driving&&type==='gunner')type='biker';
   const L=lock||{left:camera,right:camera+W},lane=clamp(296+((j*41+wave*23+(encounter?.next||0)*17)%92),290,388);let e;
   if(side==='T'&&!driving&&type!=='biker'){const x=L.left+150+((j*173+wave*61)%(W-300));e=spawnEnemy(x,lane,type);e.z=lane+70;e.vz=0;e.state='drop';}
   else{const s=side==='L'?-1:1,x=s>0?L.right+70+j*80:L.left-70-j*80;e=spawnEnemy(x,lane,type);e.state='enter';e.dir=-s;e.onstage=false;e.enterX=s>0?L.right-110-j*46:L.left+110+j*46;}
@@ -367,7 +375,16 @@ function completeObjective(){
   const task=mission.spec.tasks[t.taskIndex];if(task?.[3])say(task[3]);if(task?.[4])freeClones(task[4]);
   if(t.kind==='valve')zones=zones.filter(z=>z.style!=='vent');
   if(t.bossTask&&levelIndex===2){for(const e of enemies)if(e.boss&&!e.dead){e.hp=1;e.state='flee';e.timer=1.8;e.inv=3;e.z=0;e.dir=1;clearEnemyHazards(e.id);}say('HANNAH: The driver is dead. Let it go — it never asked to be born.');}
-  if(t.bossTask&&levelIndex===5)say('MUSTAPHA: Spillway open! The turbines are drowning — the vats are going dark!');
+  if(t.bossTask&&levelIndex===5){say('MUSTAPHA: Spillway open! The turbines are drowning — the vats are going dark!');spawnLastCopy();}
+}
+// The last tank in the vat hall never held one of the gang. Echo grew a copy of Fessenden himself from the archive's
+// own sample and dosed it with his serum; when the power dies, the tank cracks and the beast from the jungle lab is back.
+function spawnLastCopy(){
+  if(!lock)lock={left:camera,right:camera+W};encounter={spec:{boss:true},next:0,timer:0};bossSpawned=true;cleared=false;
+  const b=spawnEnemy(lock.right+210,352,'fessenden',true);b.hp=b.maxhp=1150*rules().enemyHealth;b.name='LOT 00 · FESSENDEN';b.phase=3;b.calls=0;
+  b.timer=3.2;b.state='intro';b.inv=3.2;b.enterX=lock.right-240;b.dir=-1;b.clone=true;bossIntro=3.2;
+  flash=.8;shake=14;toast='THE LAST TANK CRACKS OPEN';toastTime=4.5;sfx('explosion');effects.push({x:lock.right-120,y:352,age:0,life:.8,type:'explosion'});explosionParticles(lock.right-120,352);
+  say('HANNAH: That tank was never one of ours. She grew HIM. Fessenden — serum and all.');say('JACK: It isn’t him. It’s a copy. Copies can be deleted.');
 }
 function damageObjective(power,x=player.x,y=player.y,range=90,dir=player.dir){
   const t=mission?.active;if(!t||t.kind!=='beacon'||t.done)return false;
@@ -387,8 +404,13 @@ function drawMissionItem(t){
   const x=t.x-camera,y=t.y;if(x<-100||x>W+100)return;shadow(ctx,x,y,25);
   const glow=t.done?'#a9de9a':t.kind==='beacon'?'#efaa71':levelIndex===5&&t.kind==='gate'?'#c08cff':'#7fdfd5';
   if(t.kind==='cargo'){
-    rect(ctx,x-35,y-36,70,36,'#223332');rect(ctx,x-31,y-33,62,29,t.done?'#557363':'#968a5b');rect(ctx,x-5,y-34,10,32,'#d3c798');rect(ctx,x-25,y-23,19,9,'#304843');
-    rect(ctx,x+10,y-28,14,18,t.done?'#2c4a3c':'#5fd39a');rect(ctx,x+13,y-25,8,12,'#bff3d6');
+    // A convoy flatbed keeping pace with the Cadillac; ramming it knocks the stasis pod loose.
+    const spin=road/9;shadow(ctx,x,y,62);
+    rect(ctx,x-62,y-16,124,7,'#2d3a3a');rect(ctx,x-58,y-27,116,12,'#55655f');rect(ctx,x-58,y-27,116,3,'#8a9a90');rect(ctx,x+58,y-22,26,4,'#6d7d78');
+    for(const wx of [-40,38]){circle(ctx,x+wx,y-7,12,'#141a1e');circle(ctx,x+wx,y-7,7,'#9aa5ad');circle(ctx,x+wx,y-7,3,'#2a3238');rect(ctx,x+wx+Math.cos(spin)*5-1,y-7+Math.sin(spin)*5-1,2,2,'#3a434a');}
+    rect(ctx,x-35,y-63,70,36,'#223332');rect(ctx,x-31,y-60,62,29,t.done?'#557363':'#968a5b');rect(ctx,x-5,y-61,10,32,'#d3c798');rect(ctx,x-25,y-50,19,9,'#304843');
+    rect(ctx,x+10,y-55,14,18,t.done?'#2c4a3c':'#5fd39a');rect(ctx,x+13,y-52,8,12,'#bff3d6');
+    for(const sx of [-33,27]){rect(ctx,x+sx,y-30,6,4,'#8a9a90');}
   }else if(t.kind==='pod'){
     // Refrigerated clone pod from Fessenden's lab: frosted glass, green gel and a sleeping copy.
     rect(ctx,x-24,y-12,48,12,'#2a3a3f');rect(ctx,x-20,y-92,40,82,'#0c2224');
@@ -415,10 +437,11 @@ function drawMissionItem(t){
   rect(ctx,x-30,y-76-tall,60,4,'#10222b');rect(ctx,x-30,y-76-tall,60*(t.kind==='beacon'?t.hp/t.maxhp:t.progress),4,glow);
 }
 function missionHud(){
-  if(!mission)return;rect(ctx,14,125,290,28,'#101f25d9');label(`${mission.spec.verb.toUpperCase()} ${mission.completed}/${mission.total}`,23,144,10,'#afded4');
-  if(allies.length)label(`FREED CLONES ×${allies.filter(a=>a.state!=='retreat').length}`,23,164,10,'#ffe08a');
-  const t=mission.active;if(t&&(t.x-camera<30||t.x-camera>W-30))label(t.x<player.x?'← OBJECTIVE':'OBJECTIVE →',t.x<player.x?24:W-24,186,11,'#99e5d8',t.x<player.x?'left':'right');
-  if(radio){rect(ctx,15,H-106,W-30,25,'#0d202bf0');label(radio.text,W/2,H-89,10,'#c8e7d4','center');}
+  if(!mission)return;rect(ctx,14,147,290,28,'#101f25d9');label(`${mission.spec.verb.toUpperCase()} ${mission.completed}/${mission.total}`,23,166,10,'#afded4');
+  if(allies.length)label(`FREED CLONES ×${allies.filter(a=>a.state!=='retreat').length}`,23,186,10,'#ffe08a');
+  const t=mission.active;if(t&&(t.x-camera<30||t.x-camera>W-30))label(t.x<player.x?'← OBJECTIVE':'OBJECTIVE →',t.x<player.x?24:W-24,208,11,'#99e5d8',t.x<player.x?'left':'right');
+  // Radio chatter runs in a strip under the status bar, over the sky, so it never hides the fighters or the car.
+  if(radio){rect(ctx,0,68,W,24,'#0d202bee');rect(ctx,0,91,W,1,'#3f5c57');label('RADIO',14,84,8,'#7fb09a');label(radio.text,W/2+16,84,10,'#c8e7d4','center');}
 }
 
 function spawnBoss() {
@@ -511,12 +534,15 @@ function damageEnemy(e,amount,knock=0,forceDown=false,byAlly=false,opts=null) {
     // Beaten copies of the heroes stagger away instead of dissolving; the final chapter frees them.
     if(e.type==='mirror'&&e.elite){e.state='flee';e.timer=1.6;e.hp=1;e.inv=3;e.dir=1;score+=1500;kills++;clearEnemyHazards(e.id);if(e.after)say(e.after);return true;}
     if(e.boss){e.dead=1;e.z=0;e.state='dead';}else{e.dying=true;e.inv=99;if(e.state!=='fly')launch(e,kdir,1.4,opts?.fling);}
+    // A beaten rider's bike goes up in a fireball, as in the arcade's highway stage.
+    if(e.type==='biker'){effects.push({x:e.x,y:e.y,age:0,life:.6,type:'explosion'});explosionParticles(e.x,e.y);sfx('explosion');shake=Math.max(shake,9);}
     clearEnemyHazards(e.id);score+=e.boss?2000:e.elite?1200:250;kills++;
     if(e.clone){e.dissolve=true;burst(e.x,e.y-40,'#8af0b0',16);}
     if(e.after)say(e.after);
     if(e.boss&&e.type==='sable'&&e.phase===2){mission.total=4;createObjective('gate','FINAL SPILLWAY RELEASE',lock.right-250,354,0,true);}
     if(e.boss)return true;
-    if(e.loot)drops.push({x:e.x,y:e.y,type:e.loot,life:60});
+    if(driving){if(e.elite||Math.random()<rules().foodChance*1.5)drops.push({x:e.x,y:e.y,type:'food',life:60});}
+    else if(e.loot)drops.push({x:e.x,y:e.y,type:e.loot,life:60});
     else if(e.type==='gunner')drops.push({x:e.x,y:e.y,type:levelIndex>2?'uzi':'gun',life:60});
     else if(e.type==='knifer')drops.push({x:e.x,y:e.y,type:'knife',life:60});
     else if(e.elite||Math.random()<rules().foodChance)drops.push({x:e.x,y:e.y,type:'food',life:60});
@@ -526,7 +552,8 @@ function damageEnemy(e,amount,knock=0,forceDown=false,byAlly=false,opts=null) {
 
 function damagePlayer(amount,fromX,ignoreAir=false) {
   if(player.inv>0||(!ignoreAir&&player.z>28)||player.special>0||player.boost>0)return;
-  player.hp-=amount*rules().damageTaken;player.hurt=amount>=20?.85:.3;player.knocked=amount>=20;
+  // In the Cadillac a hit is a jolt, not a knockdown: the car keeps rolling.
+  player.hp-=amount*rules().damageTaken;player.hurt=driving?.3:amount>=20?.85:.3;player.knocked=!driving&&amount>=20;
   player.inv=amount>=20?1.25:.65;player.x+=fromX<player.x?23:-23;player.attack=0;player.pendingStrike=null;player.moveState=null;player.freeze=0;releaseGrab();player.z=0;player.vz=0;combo=0;comboTimer=0;player.pickup=0;player.pickTarget=null;
   player.burst=null;if(player.knocked)dropWeapon();shake=6;flash=.06;sfx('hurt');burst(player.x,player.y-45,'#eea575',8);
   if(player.hp<=0){lives--;if(lives>0){player.hp=player.maxhp;player.inv=3;player.hurt=0;player.knocked=false;dropWeapon();toast=`${lives} LIVES REMAINING`;toastTime=3;checkpoint();}else gameover();}
@@ -598,7 +625,7 @@ function attack() {
   if(state!=='play'||player.hurt>0||player.attack>0||player.special>0||bossIntro>0||player.pickup>0)return;
   if(player.grab){grabAttack();return;}
   if(!driving&&!player.weapon&&player.z===0){const d=nearbyDrop(30,18,true);if(d){startPickup(d);return;}}
-  if(driving){player.attack=.5;player.attackTotal=.5;player.boost=.5;meleeStrike(CAR_REACH+45,48,true);sfx('hit');return;}
+  if(driving){player.attack=.5;player.attackTotal=.5;player.boost=.5;meleeStrike(CAR_REACH+45,62,true);sfx('hit');return;}
   if(weaponAttack())return;
   const h=HEROES[selected];
   if(player.z<=8&&!player.run){const step=player.comboWin>0&&player.comboHit?(player.comboStep+1)%4:0;player.comboStep=step;startMove(['p1','p2','kick','fin'][step]);return;}
@@ -629,29 +656,30 @@ function pickup() {
 }
 
 function bossMove(e) {
-  const patterns={warden:['jab','charge','slam'],truck:['volley','charge','bombard'],raptor:['charge','leap','charge'],cinder:['cleave','charge','fire'],echo:['volley','leap','summon'],sable:e.phase===2?['slam','flood','volley','charge']:['volley','jab','summon']};
+  const patterns={warden:['jab','charge','slam'],truck:['volley','charge','bombard'],raptor:['charge','leap','charge'],cinder:['cleave','charge','fire'],echo:['volley','leap','summon'],sable:e.phase===2?['slam','flood','volley','charge']:['volley','jab','summon'],fessenden:e.hp<e.maxhp*.5?['charge','cleave','leap','slam','charge','summon']:['cleave','charge','slam','leap']};
   e.action=patterns[e.type][e.attackNo++%patterns[e.type].length];e.state='windup';e.timer=['charge','leap'].includes(e.action)?.85:.72;
+  const beast=e.type==='fessenden';
   e.dir=Math.sign(player.x-e.x)||-1;e.targetX=player.x;e.targetY=player.y;e.startX=e.x;e.startY=e.y;
   if(e.action==='flood'){for(const offset of [-95,0,95])zones.push({owner:e.id,x:player.x+offset,y:player.y,r:58,t:1.25,total:1.25,friendly:false,damage:30,air:false,style:'flood'});e.timer=1.25;}
   if(['slam','pulse','acid','cleave','fire','bombard'].includes(e.action)){
-    const x=e.action==='cleave'?e.x+e.dir*72:e.action==='fire'?e.x+e.dir*130:player.x;
-    zones.push({owner:e.id,x,y:e.action==='cleave'?e.y:player.y,r:e.action==='slam'?112:e.action==='fire'?95:75,t:e.timer,total:e.timer,friendly:false,damage:e.phase===2?32:24,air:e.action!=='acid',style:e.action});
+    const x=e.action==='cleave'?e.x+e.dir*(beast?118:72):e.action==='fire'?e.x+e.dir*130:player.x;
+    zones.push({owner:e.id,x,y:e.action==='cleave'?e.y:player.y,r:e.action==='slam'?(beast?135:112):e.action==='fire'?95:beast?98:75,t:e.timer,total:e.timer,friendly:false,damage:e.phase===2?32:beast?30:24,air:e.action!=='acid',style:e.action});
   }
-  toast={flood:'CHANGE LANES · SPILLWAY SURGE',charge:'SIDESTEP THE CHARGE',leap:'MOVE AWAY FROM THE LANDING',slam:'JUMP THE SHOCKWAVE',cleave:'BACK AWAY FROM THE CLEAVE',acid:'LEAVE THE MARKED AREA',spines:'CHANGE LANES',volley:'CHANGE LANES',fire:'JUMP OR STEP ASIDE',pulse:'JUMP THE PULSE',summon:'REINFORCEMENTS INCOMING',jab:'DODGE THE COMBO',bombard:'KEEP MOVING'}[e.action];toastTime=1.3;
+  toast={flood:'CHANGE LANES · SPILLWAY SURGE',charge:'SIDESTEP THE CHARGE',leap:'MOVE AWAY FROM THE LANDING',slam:beast?'JUMP THE STOMP':'JUMP THE SHOCKWAVE',cleave:beast?'BACK AWAY FROM THE JAWS':'BACK AWAY FROM THE CLEAVE',acid:'LEAVE THE MARKED AREA',spines:'CHANGE LANES',volley:'CHANGE LANES',fire:'JUMP OR STEP ASIDE',pulse:'JUMP THE PULSE',summon:'REINFORCEMENTS INCOMING',jab:'DODGE THE COMBO',bombard:'KEEP MOVING'}[e.action];toastTime=1.3;
 }
 
 function executeBoss(e) {
   e.strikeFlash=.23;
   if(e.action==='volley'||e.action==='spines')for(let j=-1;j<=1;j++){shoot(e.x+e.dir*35,e.y+j*32,e.dir,false,20,330,e.id);}
-  if(e.action==='charge'){e.state='charge';e.timer=.65;e.vx=e.dir*(e.type==='truck'?420:450);e.hitList=[];return;}
+  if(e.action==='charge'){e.state='charge';e.timer=.65;e.vx=e.dir*(e.type==='truck'?420:e.type==='fessenden'?520:450);e.hitList=[];return;}
   if(e.action==='leap'){e.state='leap';e.timer=.85;e.startX=e.x;e.startY=e.y;return;}
   if(e.action==='jab')for(const v of fighters())if(Math.abs(v.x-e.x)<115&&Math.abs(v.y-e.y)<39)strike(v,24,e.x);
   // Reinforcements walk in from both edges; in the final chapter they are copies of the heroes.
   if(e.action==='summon'&&enemies.filter(v=>!v.dead&&!v.boss).length<2){const types=levelIndex===5?['mirror','mirror']:['knifer','gunner'];arrive(types[0],'R',0);arrive(types[1],'L',1);}
-  e.state='recover';e.timer=e.type==='sable'&&e.phase===2?.7:1.1;
+  e.state='recover';e.timer=e.type==='sable'&&e.phase===2?.7:e.type==='fessenden'?.95:1.1;
 }
-const ENEMY_SPEED={brute:60,raptor:138,mutant:102,knifer:115,regent:110,slicer:96};
-function enemySpeed(e){return (e.boss?e.phase===2?105:80:e.type==='mirror'?HEROES[e.hero].speed*(e.elite?.72:.58):ENEMY_SPEED[e.type]||94)*rules().enemySpeed*(e.rage>0&&!(e.rageWarning>0)?CFG.fx.rage.speed:1);}
+const ENEMY_SPEED={brute:60,raptor:138,mutant:102,knifer:115,regent:110,slicer:96,biker:150};
+function enemySpeed(e){return (e.boss?e.phase===2?105:e.phase===3?118:80:e.type==='mirror'?HEROES[e.hero].speed*(e.elite?.72:.58):ENEMY_SPEED[e.type]||94)*rules().enemySpeed*(e.rage>0&&!(e.rageWarning>0)?CFG.fx.rage.speed:1);}
 function meleeDamage(e){return ['brute','mutant','regent'].includes(e.type)?24:e.type==='slicer'?22:e.type==='mirror'?e.elite?18:14:14;}
 // Enemies go for whoever is closest: the player or a freed clone.
 function hostileTarget(e){let best=player,bd=Math.hypot(player.x-e.x,(player.y-e.y)*1.4)*.85;for(const a of allies){if(a.hp<=0||a.state==='down'||a.state==='retreat')continue;const d=Math.hypot(a.x-e.x,(a.y-e.y)*1.4);if(d<bd){bd=d;best=a;}}return best;}
@@ -659,7 +687,7 @@ function markStage(e){if(!e.onstage&&(!lock||(e.x>lock.left+18&&e.x<lock.right-1
 
 function updateEnemy(e,dt) {
   if(e.waiting){if(enemies.filter(v=>v!==e&&!v.dead&&!v.dying&&!v.waiting&&v.state!=='flee').length>=rules().crowdLimit)return;e.waiting=false;}
-  e.rageCooldown=Math.max(0,(e.rageCooldown||0)-dt);e.rage=Math.max(0,(e.rage||0)-dt);e.rageWarning=Math.max(0,(e.rageWarning||0)-dt);
+  e.rageCooldown=Math.max(0,(e.rageCooldown||0)-dt);e.rage=Math.max(0,(e.rage||0)-dt);e.rageWarning=Math.max(0,(e.rageWarning||0)-dt);e.rammed=Math.max(0,(e.rammed||0)-dt);
   if(rules().dinosaurRage&&e.type==='raptor'&&e.onstage&&!e.dead&&!e.dying&&e.hp<e.maxhp*CFG.fx.rage.threshold&&e.state==='walk'&&!e.rageCooldown){e.rage=CFG.fx.rage.duration+CFG.fx.rage.warning;e.rageWarning=CFG.fx.rage.warning;e.rageCooldown=CFG.fx.rage.cooldown;toast='DINOSAUR RAGE · KEEP YOUR DISTANCE';toastTime=1.6;}
   if(e.rageWarning>0)return;
   if(e.freeze>0){e.freeze-=dt;e.inv=Math.max(0,e.inv-dt);e.hurt=Math.max(e.hurt,.02);return;}
@@ -690,9 +718,9 @@ function updateEnemy(e,dt) {
   if(e.state==='windup'){
     if(e.timer<=0){if(e.boss)executeBoss(e);else{
       const v=e.target&&(e.target===player||allies.includes(e.target))?e.target:player;
+      if(e.action==='rush'){e.state='charge';e.timer=.55;e.vx=e.dir*(e.type==='mirror'?380:e.type==='biker'?340:300);e.hitList=[];return;}
       if(['gunner','biker'].includes(e.type)){const reach=e.type==='gunner'?66:30;shoot(e.x+e.dir*reach,e.y,e.dir,false,14,340,e.id);if(e.type==='gunner'&&!driving)effects.push({type:'muzzle',x:e.x+e.dir*reach,y:e.y-62,dir:e.dir,age:0,life:.07});sfx('enemygun');}
       else if(e.action==='knife'){bullets.push({x:e.x+e.dir*30,y:e.y,z:48,vx:e.dir*330,vy:0,friendly:false,damage:17,owner:e.id,life:1.5,kind:'thrown',weapon:'knife',age:0});}
-      else if(e.action==='rush'){e.state='charge';e.timer=.55;e.vx=e.dir*(e.type==='mirror'?380:300);e.hitList=[];return;}
       else if(e.action==='leap'){e.state='leap';e.timer=.85;e.startX=e.x;e.startY=e.y;e.targetX=clamp(v.x,(lock?.left??camera)+40,(lock?.right??camera+W)-40);e.targetY=v.y;return;}
       else{e.strikeFlash=.2;if(Math.abs(e.x-v.x)<(e.elite?95:85)&&Math.abs(e.y-v.y)<35)strike(v,meleeDamage(e)*(e.rage>0?CFG.fx.rage.damage:1),e.x);}
       e.state='recover';e.timer=e.type==='brute'?.8:e.elite?.45:.5;
@@ -712,7 +740,8 @@ function updateEnemy(e,dt) {
   if(!e.onstage&&lock){const inside=e.x>lock.right?lock.right-70:lock.left+70;e.dir=Math.sign(inside-e.x)||e.dir;e.x=approach(e.x,inside,enemySpeed(e)*1.2*dt);e.moving=true;markStage(e);return;}
   const t=e.boss?player:hostileTarget(e);
   e.dir=Math.sign(t.x-e.x)||e.dir;const distance=Math.abs(t.x-e.x),dy=Math.abs(t.y-e.y);
-  const speed=enemySpeed(e),range=['gunner','biker'].includes(e.type)?235:e.boss?120:53*Math.min(1.3,e.scale||1);
+  // Riders pull up alongside the Cadillac's bumper, then alternate between shooting and swerving into it.
+  const speed=enemySpeed(e),range=e.type==='gunner'?235:e.type==='biker'?178:e.boss?(e.type==='fessenden'?150:120):53*Math.min(1.3,e.scale||1);
   const flank=!e.boss&&e.id<rules().flankChance&&enemies.some(o=>o!==e&&!o.dead&&!o.waiting&&Math.abs(o.x-t.x)<rules().flankDistance&&Math.abs(o.y-t.y)<24);
   const canAttack=e.boss||enemies.filter(o=>o!==e&&!o.dead&&['windup','charge','leap'].includes(o.state)).length<rules().attackSlots;
   e.flankCooldown=Math.max(0,(e.flankCooldown||0)-dt);
@@ -731,6 +760,7 @@ function updateEnemy(e,dt) {
     const lunge=(e.type==='brute'&&distance>95&&distance<250)||(e.type==='slicer'&&distance>100&&distance<240)||(e.type==='mirror'&&e.elite&&distance>110&&distance<270);
     const leap=(e.type==='regent'&&distance>90&&distance<210)||(e.type==='mirror'&&e.elite&&distance>140&&distance<300&&e.attackNo%3===2);
     if(e.type==='knifer'&&distance>115&&distance<280){e.action='knife';e.state='windup';e.timer=.6;e.target=t;return;}
+    if(e.type==='biker'&&e.attackNo%2===1&&distance<320){e.action='rush';e.state='windup';e.timer=.45;e.target=t;e.attackNo++;return;}
     if(leap){e.action='leap';e.state='windup';e.timer=.6;e.target=t;e.attackNo++;return;}
     if(lunge){e.action='rush';e.state='windup';e.timer=e.type==='brute'?.75:.55;e.target=t;e.attackNo++;return;}
   }
@@ -751,15 +781,18 @@ function update(dt) {
   // Running is a horizontal sprint; lane changes while running are slower so the stride stays readable.
   player.run=!driving&&!!dx&&player.pickup<=0&&(down('ShiftLeft','ShiftRight','TouchRun')||(dashTime>0&&down(dashKey)));player.move=!!(dx||dy);
   if(dx&&player.attack<=0&&player.pickup<=0&&!player.grab)player.dir=dx;
-  const px=player.x,py=player.y;
-  if(player.hurt<=0&&player.special<=0&&bossIntro<=0&&player.pickup<=0&&!frozen&&!player.grab){
-    const speed=driving?205:h.speed*(player.run?FIREARMS.has(player.weapon)?1.5:1.68:1),lane=driving?205*.64:h.speed*.64*(player.run?.5:1);
-    const drag=player.attack>0&&player.z<=0&&!driving?0:1;
-    player.x+=(dx*speed*drag+(driving&&dx>=0?105*(player.boost>0?2.5:1):0))*dt;player.y+=dy*lane*drag*dt;
+  const px=player.x,py=player.y,camBefore=camera;
+  if(driving)updateCar(dt,dx,dy,bossIntro<=0&&!frozen);
+  else if(player.hurt<=0&&player.special<=0&&bossIntro<=0&&player.pickup<=0&&!frozen&&!player.grab){
+    const speed=h.speed*(player.run?FIREARMS.has(player.weapon)?1.5:1.68:1),lane=h.speed*.64*(player.run?.5:1);
+    const drag=player.attack>0&&player.z<=0?0:1;
+    player.x+=dx*speed*drag*dt;player.y+=dy*lane*drag*dt;
     if(dx&&dy&&!player.run){player.x-=dx*speed*drag*dt*.22;player.y-=dy*lane*drag*dt*.22;}
     if(player.attack>0&&player.attackKind==='dash'){player.x+=(player.dashVelocity||0)*dt;player.dashVelocity=approach(player.dashVelocity,0,600*dt);}
   }
-  player.x=clamp(player.x,lock?lock.left+30:camera+25,lock?lock.right-(driving?150:30):level.length+130);player.y=clamp(player.y,284,393);
+  // The whole car stays on screen: its tail and nose reach about 160 px either side of the driver.
+  const edge=driving?165:30,cx=clamp(player.x,lock?lock.left+edge:camera+(driving?165:25),lock?lock.right-edge:level.length+130);
+  if(driving&&cx!==player.x)player.vx*=.2;player.x=cx;player.y=clamp(player.y,284,393);if(driving&&(player.y===284||player.y===393))player.vy=0;
   const moved=Math.hypot(player.x-px,player.y-py);player.roll+=player.x-px;
   if(player.run&&player.z===0){const before=player.runDist;player.runDist+=moved;if(Math.floor(player.runDist/68)>Math.floor(before/68))particles.push({x:player.x-player.dir*14,y:player.y-3,vx:-player.dir*rand(20,50),vy:-rand(15,35),life:.35,size:rand(3,5),color:'#b9b28f',float:true});}
   else if(player.move)player.walkDist+=moved;
@@ -771,10 +804,14 @@ function update(dt) {
   else{if(down('KeyJ','KeyZ','Space'))attack();if(tap('KeyK','KeyX'))jump();}
   if(tap('KeyL','KeyC'))special();if(tap('KeyE','KeyV'))pickup();
   updateBurst(dt);updateMission(dt);
-  for(const d of [...drops]){d.life-=dt;if(d.type==='food'&&!d.claimed&&Math.hypot(d.x-player.x,d.y-player.y)<27){player.hp=Math.min(player.maxhp,player.hp+45);popup(player.x,player.y-90,'+45 HEALTH','#d5ec69');drops.splice(drops.indexOf(d),1);sfx('pickup');}else if(d.life<=0&&!d.claimed)drops.splice(drops.indexOf(d),1);}
+  for(const d of [...drops]){d.life-=dt;
+    // On the highway, dropped food slides back with the road; the Cadillac scoops it up by driving over it.
+    if(driving){d.x-=CAR.road*dt;if(d.x<camera-90){drops.splice(drops.indexOf(d),1);continue;}}
+    const reach=driving?Math.abs(d.x-player.x)<110&&Math.abs(d.y-player.y)<32:Math.hypot(d.x-player.x,d.y-player.y)<27;
+    if(d.type==='food'&&!d.claimed&&reach){player.hp=Math.min(player.maxhp,player.hp+45);popup(player.x,player.y-90,'+45 HEALTH','#d5ec69');drops.splice(drops.indexOf(d),1);sfx('pickup');}else if(d.life<=0&&!d.claimed)drops.splice(drops.indexOf(d),1);}
   for(const e of enemies)updateEnemy(e,dt);enemies=enemies.filter(e=>!e.remove);
   for(const a of allies)updateAlly(a,dt);allies=allies.filter(a=>!a.remove);
-  if(driving)for(const e of enemies)if(!e.dead&&e.onstage&&Math.abs(e.x-player.x)<CAR_REACH&&Math.abs(e.y-player.y)<29&&e.state!=='intro')damageEnemy(e,player.boost>0?28:13,25,true);
+  if(driving)ramEnemies();
   updateProjectiles(dt);
   for(const z of zones){if(z.cancelled)continue;z.t-=dt;if(z.t<=0){burst(z.x,z.y-20,z.friendly?'#efb36d':'#c7ea91',24);effects.push({x:z.x,y:z.y,age:0,life:.55,type:'explosion'});shake=7;if(z.friendly){for(const e of enemies)if(Math.hypot((e.x-z.x)*.8,e.y-z.y)<z.r)damageEnemy(e,z.damage,Math.sign(e.x-z.x)*35,true);}else for(const v of fighters())if(Math.hypot((v.x-z.x)*.8,v.y-z.y)<z.r&&(!z.air||v.z<25))strike(v,z.damage,z.x,!z.air);}}
   zones=zones.filter(z=>!z.cancelled&&z.t>0);
@@ -787,7 +824,39 @@ function update(dt) {
   if(lock&&encounterSpawned()&&enemies.length===0&&!mission.active){const boss=encounter.spec.boss;lock=null;encounter=null;if(boss){stageClear();return;}toast='GO →';toastTime=2.5;score+=500;}
   if(plan.sections[sectionIndex+1]&&player.x>=plan.sections[sectionIndex+1].x)enterSection(sectionIndex+1);
   if(!lock&&!encounter&&encIndex<plan.encounters.length&&player.x>=plan.encounters[encIndex].x)startEncounter(plan.encounters[encIndex++]);
-  const target=lock?lock.left:clamp(player.x-255,0,level.length-W+180);camera=approach(camera,target,500*dt);pressed.clear();
+  const target=lock?lock.left:clamp(player.x-255,0,level.length-W+180);camera=approach(camera,target,500*dt);
+  // The highway always streams past at road speed: whatever the camera did not cover, the scenery scroll makes up.
+  if(driving){const flow=Math.max(0,CAR.road*dt-(camera-camBefore));road+=flow;player.roll+=flow;roadDust(flow);}
+  pressed.clear();
+}
+// The Cadillac carries momentum. Throttle (→) builds speed, brake (←) backs off, and releasing both coasts to a slow
+// cruise between fights or to a standstill while the screen is locked, so the car never drifts into the edge by itself.
+function updateCar(dt,dx,dy,control){
+  const target=!control?0:dx>0?CAR.top:dx<0?CAR.reverse:lock?0:CAR.cruise;
+  player.vx=approach(player.vx,target,(dx&&control?CAR.accel:CAR.drag)*dt);
+  player.vy=approach(player.vy,control?dy*CAR.laneTop:0,CAR.laneAccel*dt);
+  player.x+=(player.vx+(player.boost>0?CAR.boost:0))*dt;player.y+=player.vy*dt;
+  player.bank=approach(player.bank,player.vy/CAR.laneTop,5*dt);player.bump=Math.max(0,player.bump-dt);
+}
+// Dust kicks up behind the rear wheel as the road passes; boosting adds exhaust flame at the tail.
+function roadDust(flow){
+  player.dust+=flow;if(player.dust<34)return;player.dust=0;const s=CAR_SCALE;
+  particles.push({x:player.x-96*s,y:player.y-2+rand(-2,2),vx:-rand(60,120),vy:-rand(12,30),life:rand(.3,.5),size:rand(3,6),color:'#c9bb95',float:true});
+  if(player.boost>0)for(let i=0;i<2;i++)particles.push({x:player.x-150*s,y:player.y-24*s+rand(-4,4),vx:-rand(180,300),vy:rand(-20,20),life:rand(.12,.22),size:rand(3,5),color:i?'#ffb33b':'#ff6a3b',float:true});
+}
+// Running into an enemy is one impact, not a stream of hits: the faster the car, the harder they are flung. A rider
+// already swerving into the car gets to land the hit unless the Cadillac is boosting.
+function ramEnemies(){
+  for(const e of enemies){
+    if(e.dead||e.dying||!e.onstage||e.delay>0||e.rammed>0||['intro','fly','down','rise','held'].includes(e.state))continue;
+    if(e.state==='charge'&&player.boost<=0)continue;
+    if(Math.abs(e.x-player.x)>=CAR_REACH||Math.abs(e.y-player.y)>=29)continue;
+    const speed=Math.abs(player.vx)+(player.boost>0?CAR.boost:0),dir=Math.sign(e.x-player.x)||player.dir,heavy=speed>120;
+    e.rammed=.5;
+    // A full-speed ram takes most of a rider's health; a boosted one finishes him, as the arcade car does.
+    if(!damageEnemy(e,heavy?60+speed*.2:12,dir*30,heavy,false,{heavy,fling:heavy?{vx:dir*(200+speed*.55),vz:260+speed*.35}:null}))continue;
+    player.bump=.3;shake=Math.max(shake,heavy?7:3);if(heavy)sfx('slam');
+  }
 }
 
 function rect(g,x,y,w,h,c){g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
@@ -838,11 +907,13 @@ function wheel(g,x,y,roll){
 }
 // Jack's Cadillac, as in the original arcade driving stage: a long steel-blue convertible with tailfins,
 // a rolled cream top, a skirted rear wheel and the driver visible behind the wraparound windscreen.
-function car(g,x,y,scale=1,boost=false,t=0,hero=-1,roll=0){
+function car(g,x,y,scale=1,boost=false,t=0,hero=-1,roll=0,bank=0,bump=0){
   g.save();g.translate(Math.round(x),Math.round(y));g.scale(scale,scale);
   shadow(g,0,1,142);
+  // A driven car leans into lane changes, lifts its nose under boost, rumbles on the road and bounces on impacts.
+  const moving=hero>=0;if(moving){g.rotate(bank*.05+(boost?-.02:0));g.translate(0,-Math.sin(Math.min(1,bump/.3)*Math.PI)*7);}
   wheel(g,-80,-18,roll);
-  g.translate(0,Math.round(boost?Math.sin(t*34)*1.4:Math.sin(t*7)*.5));
+  g.translate(0,Math.round(boost?Math.sin(t*34)*1.4:moving?Math.sin(t*23)*.8:0));
   // Cockpit: seats, the driver, then the door line over the lap.
   poly(g,[[-66,-39],[-62,-49],[-16,-50],[6,-44],[6,-38],[-66,-38]],'#2a2321');
   rect(g,-62,-55,11,17,'#c9ad74');rect(g,-60,-53,7,13,'#e2c992');rect(g,-24,-57,10,19,'#c9ad74');rect(g,-22,-55,6,15,'#e2c992');
@@ -908,7 +979,7 @@ function drawBiker(e,x,y,f,scale,filter){
 }
 function drawFighter(e) {
   if(e.waiting||(e.delay>0&&!e.onstage&&e.state!=='drop'))return;
-  const x=e.x-camera+(e.freeze>0?(Math.floor(time*50)%2?2:-2):0),y=e.y-e.z;if(x<-280||x>W+280)return;ctx.save();shadow(ctx,e.x-camera,e.y,e.boss?42:25*Math.min(1.5,e.scale||1));
+  const x=e.x-camera+(e.freeze>0?(Math.floor(time*50)%2?2:-2):0),y=e.y-e.z;if(x<-280||x>W+280)return;ctx.save();shadow(ctx,e.x-camera,e.y,e.boss?(e.type==='fessenden'?78:42):25*Math.min(1.5,e.scale||1));
   if(e.dead)ctx.globalAlpha=clamp(e.dead/.75,0,1);
   if(e.rage>0){rect(ctx,x-21,y-117,42,15,'#611f29');label(e.rageWarning>0?'! RAGE !':'RAGE',x,y-106,10,'#ffc16e','center');}
   const glow=e.clone&&!e.dead&&!e.boss?' drop-shadow(0 0 2px #7dffb0)':'',gel=' sepia(1) hue-rotate(70deg) saturate(3) brightness(1.2)';
@@ -917,13 +988,14 @@ function drawFighter(e) {
   else if(e.type==='truck')truck(ctx,e,x,y);
   else if(e.boss&&SEQUEL_RENDER.boss(ctx,e,x,y)){}
   else {
-    const name=e.type==='warden'||e.type==='slicer'||e.type==='echo'?'echo':e.type==='cinder'?'brute':e.type==='raptor'&&e.boss?'raptor':e.type==='raptor'&&e.state==='flee'?'calmraptor':e.type==='sable'?'gunner':e.type==='biker'?'knifer':e.type;
+    const name=e.type==='warden'||e.type==='slicer'||e.type==='echo'?'echo':e.type==='cinder'?'brute':e.type==='raptor'&&e.boss?'raptor':e.type==='raptor'&&e.state==='flee'?'calmraptor':e.type==='sable'?'gunner':e.type==='biker'?'knifer':e.type==='fessenden'?'thornmaw':e.type;
     const data=COMBAT_ART.groups[name]||COMBAT_ART.groups.raider;
     const flying=e.state==='fly',action=e.dead||e.state==='down'||flying?'down':e.hurt>0||e.state==='held'?'hurt':['windup','charge','leap'].includes(e.state)||e.strikeFlash>0?'attack':e.state==='rise'?'rise':'walk';
     const seq=data[action]||data.walk;const n=seq[action==='rise'?Math.min(seq.length-1,Math.floor((.32-e.timer)/.32*seq.length)):action==='walk'&&!e.moving?0:Math.floor(e.anim*(action==='walk'?8:5))%seq.length];
-    const f=COMBAT_ART.frames[n];const scale=e.boss?(e.type==='raptor'?1.85:1.65):e.scale||(e.type==='raptor'?1.1:1.3);
-    // The Regent uses the familiar dinosaur anatomy, with a new armor harness and control collar.
-    let filter=e.type==='raptor'&&e.boss?'hue-rotate(18deg) saturate(.85)':e.type==='echo'?'hue-rotate(100deg)':e.type==='cinder'?'hue-rotate(325deg)':e.type==='warden'?'hue-rotate(335deg)':'none';
+    const f=COMBAT_ART.frames[n];const scale=e.boss?(e.type==='raptor'?1.85:e.type==='fessenden'?1.5:1.65):e.scale||(e.type==='raptor'?1.1:1.3);
+    // The Regent uses the familiar dinosaur anatomy, with a new armor harness and control collar. Fessenden's copy is
+    // the serum beast from the end of the first game, in its pink skin.
+    let filter=e.type==='raptor'&&e.boss?'hue-rotate(18deg) saturate(.85)':e.type==='fessenden'?'hue-rotate(292deg) saturate(1.25) brightness(1.08)':e.type==='echo'?'hue-rotate(100deg)':e.type==='cinder'?'hue-rotate(325deg)':e.type==='warden'?'hue-rotate(335deg)':'none';
     filter=e.dissolve?gel:filter+glow;if(e.hurt>0)filter+=' brightness(1.6)';
     if(e.type==='biker')drawBiker(e,x,y,f,scale,filter);
     else if(flying){ctx.save();ctx.translate(Math.round(x),Math.round(y-8));ctx.rotate((e.thrown?e.spin*10:e.vz>0?-.3:.18)*e.dir);drawCombat(ctx,f,0,8,scale,e.dir,filter);ctx.restore();}
@@ -936,7 +1008,7 @@ function drawFighter(e) {
     }
     if(e.type==='knifer'&&e.state==='windup')weaponSprite(ctx,'knife',x+e.dir*32,y-45,1,e.dir);
   }
-  if(e.state==='windup'){label('!',x,y-(e.boss?158:112*Math.min(1.4,e.scale||1)),24,'#ffbf71','center');}
+  if(e.state==='windup'){label('!',x,y-(e.boss?(e.type==='fessenden'?212:158):112*Math.min(1.4,e.scale||1)),24,'#ffbf71','center');}
   if(!e.boss&&!e.elite&&e.hp<e.maxhp&&!e.dead&&e.state!=='flee'){rect(ctx,x-23,e.y-112,46,4,'#172e24');rect(ctx,x-23,e.y-112,46*e.hp/e.maxhp,4,'#e7b16e');}
   if(e.state==='leap'){ctx.strokeStyle='#ffbf71';ctx.beginPath();ctx.ellipse(e.targetX-camera,e.targetY,e.boss?55:40,e.boss?20:15,0,0,Math.PI*2);ctx.stroke();}
   ctx.restore();
@@ -966,7 +1038,7 @@ function drawPlayer() {
   const x=player.x-camera,y=player.y-player.z;ctx.save();shadow(ctx,x,player.y,driving?96:27);
   if(player.inv>0&&Math.floor(time*16)%2===0)ctx.globalAlpha=.65;
   player.pose='idle';
-  if(driving){player.pose='driving';car(ctx,x,y,CAR_SCALE,player.boost>0||player.special>0,time,selected,player.roll);}
+  if(driving){player.pose='driving';car(ctx,x,y,CAR_SCALE,player.boost>0||player.special>0,time,selected,player.roll,player.bank,player.bump);}
   else {
     const data=A[HEROES[selected].id],armed=FIREARMS.has(player.weapon),long=LONG_GUNS.has(player.weapon),dir=player.dir;
     const walkI=Math.floor(player.walkDist/10),runI=Math.floor(player.runDist/22);
@@ -1045,21 +1117,25 @@ function label(text,x,y,size=12,color='#ecebcf',align='left'){ctx.font=`bold ${s
 function hud(){rect(ctx,0,0,W,68,'#0c1d19dc');rect(ctx,0,67,W,1,'#678258');const h=HEROES[selected];const fr=A[h.id].frames[0];ctx.save();ctx.beginPath();ctx.rect(16,12,42,45);ctx.clip();drawFrame(ctx,fr,38,117,1.25,1);ctx.restore();rect(ctx,16,12,42,2,h.color);label(h.name,70,23,12,h.color);rect(ctx,70,31,182,10,'#374a35');rect(ctx,71,32,180*clamp(player.hp/player.maxhp,0,1),8,h.color);label(`${Math.ceil(player.hp)} / ${Math.ceil(player.maxhp)}   × ${lives}`,70,56,10,'#c1cba6');label(level.area,285,23,10,'#b0c19f');label(level.name,285,43,13,'#e6e7c8');label('SCORE '+score.toString().padStart(7,'0'),W-53,23,12,'#e1e6ba','right');label(driving?'CADILLAC · RAM / BOOST':player.weapon?(WEAPONS[player.weapon]?.name||player.weapon.toUpperCase())+' · '+player.ammo:'BARE HANDS',W-53,43,10,'#adc197','right');
  if(player.weapon&&!driving){rect(ctx,15,H-72,160,33,'#071a20e8');rect(ctx,15,H-72,160,1,'#758f90');weaponSprite(ctx,player.weapon,43,H-56,.6,1);label(WEAPONS[player.weapon].name,79,H-59,8,'#f4dda0');label(String(player.ammo).padStart(2,'0')+(WEAPONS[player.weapon].melee?' HITS':' SHOTS'),79,H-46,11,player.ammo?'#f5f0d2':'#ff725e');}
  const b=enemies.find(e=>e.boss&&!e.dead)||enemies.find(e=>e.elite&&!e.dead&&e.state!=='flee'&&e.onstage);
- if(b){rect(ctx,193,H-41,382,24,'#0e231bdd');rect(ctx,203,H-30,362,7,'#384a35');rect(ctx,204,H-29,360*Math.max(0,b.hp/b.maxhp),5,b.phase===2?'#d5ec69':b.elite?'#c99cff':'#e9a56b');label(b.elite?b.name:b.type==='sable'&&b.phase===2?'SABLE / CROWN ENGINE':level.boss,W/2,H-35,10,'#efdfb8','center');}
+ if(b){rect(ctx,193,H-41,382,24,'#0e231bdd');rect(ctx,203,H-30,362,7,'#384a35');rect(ctx,204,H-29,360*Math.max(0,b.hp/b.maxhp),5,b.type==='fessenden'?'#ff8bd0':b.phase===2?'#d5ec69':b.elite?'#c99cff':'#e9a56b');label(b.elite?b.name:b.type==='sable'&&b.phase===2?'SABLE / CROWN ENGINE':b.name||level.boss,W/2,H-35,10,'#efdfb8','center');}
  else{rect(ctx,18,H-19,130,3,'#2c4534');rect(ctx,18,H-19,130*clamp(player.x/level.length,0,1),3,'#9aad6b');label(`CH 0${levelIndex+1} · ${sectionIndex+1}/${plan.sections.length} ${plan.sections[sectionIndex]?.name||''}`,18,H-25,9,'#b8c59d');}
- if(combo>=2){label(combo+' HIT',W-22,102,27,'#d5ec69','right');label('COMBO',W-25,116,10,'#b7c69c','right');}
- if(toastTime>0){rect(ctx,W/2-250,78,500,25,'#153023dc');label(toast,W/2,95,11,'#e0e8a8','center');}
- if(player.specialCd>0){label('SPECIAL '+Math.ceil(player.specialCd)+'s',18,112,10,'#a6b797');}else label(driving?'L · RAM READY':'L · '+h.special.toUpperCase(),18,112,9,'#d5ec69');}
+ if(combo>=2){label(combo+' HIT',W-22,124,27,'#d5ec69','right');label('COMBO',W-25,138,10,'#b7c69c','right');}
+ if(toastTime>0){rect(ctx,W/2-250,100,500,25,'#153023dc');label(toast,W/2,117,11,'#e0e8a8','center');}
+ // Boss arrival card: the name hangs over the arena while the boss walks in.
+ if(bossIntro>0&&b){const a=Math.min(1,bossIntro*2,(2.4-Math.min(2.4,bossIntro))*1.5);ctx.save();ctx.globalAlpha=Math.max(0,a);rect(ctx,0,196,W,58,'#07110dcc');rect(ctx,0,196,W,2,b.type==='fessenden'?'#ff8bd0':'#e9a56b');rect(ctx,0,252,W,2,b.type==='fessenden'?'#ff8bd0':'#e9a56b');label(b.name||level.boss,W/2,228,24,b.type==='fessenden'?'#ffc3e6':'#ffe2b0','center');label(b.type==='fessenden'?'THE LAST COPY FROM THE ARCHIVE':level.area.split('/')[1].trim(),W/2,245,9,'#c9d4b8','center');ctx.restore();}
+ if(player.specialCd>0){label('SPECIAL '+Math.ceil(player.specialCd)+'s',18,134,10,'#a6b797');}else label(driving?'L · RAM READY':'L · '+h.special.toUpperCase(),18,134,9,'#d5ec69');}
 function render(){ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,W,H);ctx.save();if(shake>0)ctx.translate(rand(-shake,shake),rand(-shake/2,shake/2));
  if(!started||['menu','select','chapters','credits'].includes(state)){background(ctx,0,time*9,time);rect(ctx,0,0,W,H,'#0a221ec0');car(ctx,180,410,.95,false,time,1,time*60);HEROES.forEach((h,i)=>{if(i!==1)drawFrame(ctx,A[h.id].frames[0],400+i*90,424,1.1,1);});rect(ctx,0,0,W,H,'#05131030');}
- else{background(ctx,levelIndex,camera,time);drawProps();for(const z of zones){const x=z.x-camera;ctx.fillStyle=z.style==='flood'?'#5bbfda55':z.friendly?'#efb36638':'#e77d5a30';ctx.beginPath();ctx.ellipse(x,z.y,z.r,z.r*.4,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle=z.style==='flood'?'#8fe4ed':z.friendly?'#e8bd76':'#efa36b';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,z.y,z.r*(z.t/z.total),z.r*.4*(z.t/z.total),0,0,Math.PI*2);ctx.stroke();}
+ else{background(ctx,levelIndex,camera+road,time);drawProps();for(const z of zones){const x=z.x-camera;ctx.fillStyle=z.style==='flood'?'#5bbfda55':z.friendly?'#efb36638':'#e77d5a30';ctx.beginPath();ctx.ellipse(x,z.y,z.r,z.r*.4,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle=z.style==='flood'?'#8fe4ed':z.friendly?'#e8bd76':'#efa36b';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,z.y,z.r*(z.t/z.total),z.r*.4*(z.t/z.total),0,0,Math.PI*2);ctx.stroke();}
  const draws=[...objects.filter(o=>o.hp>0).map(o=>({y:o.y,fn:()=>drawObject(o)})),...drops.map(d=>({y:d.y,fn:()=>drawDrop(d)})),...enemies.map(e=>({y:e.y,fn:()=>drawFighter(e)})),...allies.map(a=>({y:a.y,fn:()=>drawAlly(a)})),{y:player.y,fn:drawPlayer}];
  if(parkedCar&&!driving)draws.push({y:parkedCar.y,fn:()=>car(ctx,parkedCar.x-camera,parkedCar.y,CAR_SCALE,false,0,-1,0)});
  for(const item of mission?.items||[])draws.push({y:item.y,fn:()=>drawMissionItem(item)});draws.sort((a,b)=>a.y-b.y);draws.forEach(d=>d.fn());drawEffects();drawParticles();for(const f of floating)label(f.text,f.x-camera,f.y,12,f.color,'center');hud();missionHud();
- if(lock&&!bossSpawned){label(enemies.length?'CLEAR THE AREA':'COMPLETE THE OBJECTIVE',W/2,123,9,'#d4cf9e','center');}else if(!bossSpawned&&!lock&&toastTime<=0){label('GO →',W-38,220,19,'#d5ec69','right');}if(state!=='play')rect(ctx,0,0,W,H,'#0b1a1688');}
+ if(lock&&!bossSpawned){label(enemies.length?'CLEAR THE AREA':'COMPLETE THE OBJECTIVE',W/2,145,9,'#d4cf9e','center');}else if(!bossSpawned&&!lock&&toastTime<=0){label('GO →',W-38,220,19,'#d5ec69','right');}if(state!=='play')rect(ctx,0,0,W,H,'#0b1a1688');}
  if(flash>0)rect(ctx,0,0,W,H,`rgba(226,239,170,${Math.min(.5,flash)})`);ctx.restore();}
-let accumulator=0;
-function frame(now){const elapsed=Math.min(.1,Math.max(0,(now-last)/1000||1/60));last=now;accumulator+=elapsed;while(accumulator>=1/60){update(1/60);accumulator-=1/60;}render();requestAnimationFrame(frame);}
+// The simulation advances by the real elapsed time of every displayed frame, split into steps no longer than
+// about a sixtieth of a second. A fixed 60 Hz accumulator skipped or doubled updates on 72, 120 and 144 Hz
+// displays, which showed as a hitch in the hero's walk several times a second.
+function frame(now){const elapsed=Math.min(.1,Math.max(0,(now-last)/1000||1/60));last=now;const steps=Math.max(1,Math.round(elapsed*60)),dt=elapsed/steps;for(let i=0;i<steps;i++)update(dt);render();requestAnimationFrame(frame);}
 window.addEventListener('keydown',e=>{const use=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyW','KeyA','KeyS','KeyD','KeyJ','KeyK','KeyL','KeyZ','KeyX','KeyC','KeyE','KeyV','ShiftLeft','ShiftRight','Enter','Escape','KeyP'];if(use.includes(e.code)&&(state==='play'||['ArrowLeft','ArrowRight','Enter','Escape','KeyP'].includes(e.code)))e.preventDefault();unlockAudio();if(e.code==='Escape'||e.code==='KeyP'){if(!e.repeat){if(state==='play'||state==='paused')pause();else if(e.code==='Escape'&&['select','chapters','guide','credits','jukebox'].includes(state))menu();}return;}if(!e.repeat&&['ArrowLeft','ArrowRight','KeyA','KeyD'].includes(e.code)){const now=performance.now()/1000;if(lastDirection.key===e.code&&now-lastDirection.time<.28){dashTime=1.6;dashKey=e.code;}lastDirection={key:e.code,time:now};}if(!keys.has(e.code))pressed.add(e.code);keys.add(e.code);if(e.code==='Enter'&&!e.repeat){if(state==='menu')characterSelect(0);else if(state==='select')document.getElementById('begin')?.click();else if(state==='brief')document.getElementById('enter-stage')?.click();else if(state==='clear')document.getElementById('next')?.click();else if(state==='gameover')document.getElementById('retry')?.click();}if(state==='select'&&!e.repeat&&['ArrowLeft','ArrowRight'].includes(e.code)){selected=SELECT_ORDER[(SELECT_ORDER.indexOf(selected)+(e.code==='ArrowRight'?1:3))%4];characterSelect();}});
 window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',()=>{resetInput();if(state==='play')pause();});document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='play')pause();});
 function touchKey(code,on){if(on&&!touchKeys.has(code)){touchKeys.add(code);if(!keys.has(code))pressed.add(code);keys.add(code);}else if(!on&&touchKeys.has(code)){touchKeys.delete(code);keys.delete(code);}}
@@ -1109,7 +1185,7 @@ for(const ev of ['fullscreenchange','webkitfullscreenchange'])document.addEventL
 // Launched from the home screen: already fullscreen.
 if(TOUCH&&(matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches||navigator.standalone))root.classList.add('is-full','standalone');
 // A narrow, explicit test interface keeps campaign checks reproducible.
-window.LAST_EDEN={render, get state(){return state;},get snapshot(){return {difficulty:normalizeDifficulty(difficulty),difficultyRules:{...rules()},particles:particles.map(p=>({...p})),gunSocket:player?.weapon&&weaponClass(player.weapon)?gunMount():null,mission:mission?{completed:mission.completed,total:mission.total,active:mission.active?{...mission.active}:null}:null,artReady:SEQUEL_RENDER.ready,posesReady:ahSheet.complete,state,level:levelIndex,wave,score,lives,section:sectionIndex,encounter:encIndex,driving,camera,length:level.length,plan:plan?{sections:plan.sections.map(s=>({...s})),encounters:plan.encounters.map(e=>({x:e.x,section:e.section,task:e.task,boss:!!e.boss,elite:e.elite?.name||null}))}:null,lock:lock?{...lock}:null,bullets:bullets.map(b=>({...b})),zones:zones.map(z=>({...z})),effects:effects.map(f=>f.type),audio:soundtrack.status,player:player?{...player,pickTarget:null,grab:player.grab?{t:player.grab.t,hits:player.grab.hits,type:player.grab.e.type}:null,moveState:player.moveState?{name:player.moveState.name,k:player.moveState.k}:null}:null,enemies:enemies.map(e=>({...e,target:null,hitList:null})),allies:allies.map(a=>({...a,target:null})),objects:objects.map(o=>({...o})),drops:drops.map(d=>({...d})),unlocked:save.unlocked,checkpoint:save.checkpoint?{...save.checkpoint}:null};},
+window.LAST_EDEN={render, get state(){return state;},get snapshot(){return {difficulty:normalizeDifficulty(difficulty),road,difficultyRules:{...rules()},particles:particles.map(p=>({...p})),gunSocket:player?.weapon&&weaponClass(player.weapon)?gunMount():null,mission:mission?{completed:mission.completed,total:mission.total,active:mission.active?{...mission.active}:null}:null,artReady:SEQUEL_RENDER.ready,posesReady:ahSheet.complete,state,level:levelIndex,wave,score,lives,section:sectionIndex,encounter:encIndex,driving,camera,length:level.length,plan:plan?{sections:plan.sections.map(s=>({...s})),encounters:plan.encounters.map(e=>({x:e.x,section:e.section,task:e.task,boss:!!e.boss,elite:e.elite?.name||null}))}:null,lock:lock?{...lock}:null,bullets:bullets.map(b=>({...b})),zones:zones.map(z=>({...z})),effects:effects.map(f=>f.type),audio:soundtrack.status,player:player?{...player,pickTarget:null,grab:player.grab?{t:player.grab.t,hits:player.grab.hits,type:player.grab.e.type}:null,moveState:player.moveState?{name:player.moveState.name,k:player.moveState.k}:null}:null,enemies:enemies.map(e=>({...e,target:null,hitList:null})),allies:allies.map(a=>({...a,target:null})),objects:objects.map(o=>({...o})),drops:drops.map(d=>({...d})),unlocked:save.unlocked,checkpoint:save.checkpoint?{...save.checkpoint}:null};},
  start:(i=0,hero=0,mode='story',section=0)=>{selected=clamp(hero,0,3);difficulty=normalizeDifficulty(mode);score=0;lives=3;startStage(clamp(i,0,5),{skipBrief:true,section});},step:(dt=1/60)=>update(dt),controls:{attack,jump,special,pickup},
  test:{damageObjective:n=>damageObjective(n,mission.active?.x,mission.active?.y,100,1),completeObjective,equip:(type,ammo)=>{player.pendingStrike=null;player.attack=0;player.pickup=0;player.weapon=type;player.ammo=type?ammo??WEAPONS[type].ammo:0;},spawnEnemy,drop:(type,x,y)=>drops.push({type,x,y,life:90}),move:(x,y)=>{player.x=x;player.y=y;},damageEnemy:(i,n)=>damageEnemy(enemies[i],n),damagePlayer:n=>damagePlayer(n,player.x-40),
   clearFighters:()=>{if(encounter&&!encounter.spec.boss){encounter.next=(encounter.spec.w||[]).length;encounter.eliteSpawned=true;}enemies.forEach(e=>{e.waiting=false;e.inv=0;e.delay=0;if(e.state==='drop'){e.z=0;e.state='walk';}damageEnemy(e,9999);if(e.phase===2&&e.hp>0){e.inv=0;damageEnemy(e,9999);}});},

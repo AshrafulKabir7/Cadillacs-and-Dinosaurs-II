@@ -270,5 +270,95 @@
     "duration": 15.954603,
     "bytes": 320306,
     "duplicates": []
+  },
+  {
+    "id": "29",
+    "title": "The True Form of Evil (Stage 8-1)",
+    "file": "assets/audio/29.mp3",
+    "source": "29. The True Form of Evil (Stage 8-1).mp3",
+    "sourceSha256": "f06f1268c3f79d61bbd91f217de5850543681ff791919b845a718822a433e9e2",
+    "duration": 220.177891,
+    "bytes": 7499425,
+    "duplicates": []
+  },
+  {
+    "id": "30",
+    "title": "The Madness that Lurks Underground (Stage 8-3)",
+    "file": "assets/audio/30.mp3",
+    "source": "30. The Madness that Lurks Underground (Stage 8-3).mp3",
+    "sourceSha256": "f9a339c8c78d0d45bda1291d2e39c4ecaa66e92a013153602e5932a6b90292f4",
+    "duration": 111.226576,
+    "bytes": 3768662,
+    "duplicates": []
+  },
+  {
+    "id": "32",
+    "title": "Final Boss",
+    "file": "assets/audio/32.mp3",
+    "source": "32. Final Boss.mp3",
+    "sourceSha256": "b31bcf2a91c147c98a6e6ee5fe31966d03e37c90efb3fe73e710e06375ea3579",
+    "duration": 101.7922,
+    "bytes": 3800740,
+    "duplicates": []
+  },
+  {
+    "id": "33",
+    "title": "Return (Ending 1)",
+    "file": "assets/audio/33.mp3",
+    "source": "33. Return (Ending 1).mp3",
+    "sourceSha256": "1fcdae8a913f6fb54dc12acd56429b9c75cdf59c164a64a2638079eedfb62fa0",
+    "duration": 107.481587,
+    "bytes": 3697049,
+    "duplicates": []
+  },
+  {
+    "id": "34",
+    "title": "Time Over",
+    "file": "assets/audio/34.mp3",
+    "source": "34. Time Over.mp3",
+    "sourceSha256": "b06bc3b04dd6e4c3f9c5e61d3f0e9da8ae2dafa06c76c2b3a39a5531037090ee",
+    "duration": 3.645646,
+    "bytes": 119091,
+    "duplicates": []
+  },
+  {
+    "id": "35",
+    "title": "Continue 1",
+    "file": "assets/audio/35.mp3",
+    "source": "35. Continue 1.mp3",
+    "sourceSha256": "cc1ec35eccf686180ac32209148325f45b65106e6c591110f2473c2dec2b2ab0",
+    "duration": 36.32424,
+    "bytes": 1295350,
+    "duplicates": []
+  },
+  {
+    "id": "36",
+    "title": "Continue 2",
+    "file": "assets/audio/36.mp3",
+    "source": "36. Continue 2.mp3",
+    "sourceSha256": "60462df35fa080e83941d399d9c5e607a82dbba3914b63cc9028c41d0c0126af",
+    "duration": 30.947075,
+    "bytes": 1100981,
+    "duplicates": []
+  },
+  {
+    "id": "37",
+    "title": "Game Over",
+    "file": "assets/audio/37.mp3",
+    "source": "37. Game Over.mp3",
+    "sourceSha256": "5f09a1bbd447fc83cdc1c2379b9380bae04585f43d5bee8d582ab5ffd1757942",
+    "duration": 4.87424,
+    "bytes": 166792,
+    "duplicates": []
+  },
+  {
+    "id": "38",
+    "title": "Name Entry",
+    "file": "assets/audio/38.mp3",
+    "source": "38. Name Entry.mp3",
+    "sourceSha256": "c0fff44f17d8f2e950f841935d6e2c5f003fdbd7d6a14105456fed844e5c3b43",
+    "duration": 34.583583,
+    "bytes": 1113878,
+    "duplicates": []
   }
 ]
