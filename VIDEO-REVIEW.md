@@ -1,3 +1,14 @@
+# Third review — October 8, 2026 (evening): gun stances, weapons and items
+
+Sources: the user's four reference captures (Mustapha with the Uzi and the shotgun, Hannah firing the handgun, Hannah and Mustapha with the bazooka), the RQ87 weapon page's native-resolution captures of Jack with every weapon, the Namu item list, and the ROM records rendered with the ROM's own palette table.
+
+| Observation | Found in this game | Implemented consequence |
+|---|---|---|
+| Jack holds a long gun with both hands in front of his chest and fires the handgun with the arm extended; the arcade draws his gun poses as torso records over his leg records. | Jack's "gun stances" were a boxing guard and a punch frame, so a rifle floated beside a fist. | His real torso records (86, 91, 93–96) decoded from the ROM and composed over his legs. |
+| The bazooka rests on the shoulder: the rear hand beside the head holds the tube's end, the front hand underneath, the tube level at head height. | The bazooka was held like a rifle at the chest. | Shouldered-bazooka records for all four heroes (264, 94, 1565, 726), grip at the rear of the tube. |
+| Food is drawn: a barbecue roast, a sizzling steak, lobster, sushi, hamburger, pizza slice, hot dog, salad, cake, fries, pudding, parfait, donut, coffee, croissant, gum and chocolate; score items include gold bars, diamonds, a dinosaur skull, an ammonite, pearls, a pouch, a necklace, a ring and sunglasses. | Three hand-drawn rectangles labelled burger, barbecue and steak. | The arcade's item records, coloured with the ROM's object palettes, with the cabinet's recovery shares and points. |
+| All fourteen weapons appear in the arcade (plus the Butcher's knife, barrels and ammunition). | Torch and stone never appeared in containers, and there was no ammunition item. | Containers now hold every weapon, ammunition and score items. The Butcher's knife and throwable barrels remain unimplemented. |
+
 # Second handling review — October 8, 2026 (afternoon)
 
 Sources: the full playthrough at 40:25–41:35 (knives against the final beast), the boss-fight video at 04:15–04:31 (rifle) and 01:44–01:52 (handgun), and the atlas frames themselves, rendered on a common baseline with their recorded anchors.

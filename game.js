@@ -132,7 +132,7 @@ function explode(x,y,damage,friendly=true,r=96) {
 }
 function breakObject(o,power) {
   o.hp-=power;burst(o.x,o.y-30,'#c3925d',10);
-  if(o.hp<=0){if(o.content!=='food'||Math.random()<rules().propFoodChance)drops.push({x:o.x,y:o.y,type:o.content,food:['burger','bbq','steak'][Math.floor(o.x/520)%3],life:90});score+=100;}
+  if(o.hp<=0){if(o.content!=='food'||Math.random()<rules().propFoodChance){const c=o.content;drops.push(c==='food'?foodDrop(o.x,o.y):c==='bonus'?bonusDrop(o.x,o.y):c==='ammo'?{x:o.x,y:o.y,type:'ammo',food:'ammo',life:999}:{x:o.x,y:o.y,type:c,life:90});}score+=100;}
 }
 function weaponAttack() {
   const w=WEAPONS[player.weapon];if(!w)return false;player.moveState=null;
@@ -164,7 +164,8 @@ function meleeStrike(range,power,knockdown=false,struck=null,opts=null) {
 function emitGunRound(type){
   const w=WEAPONS[type],profile=weaponClass(type);
   player.x=clamp(player.x-player.dir*profile.recoilPixels,lock?lock.left+24:24,lock?lock.right-24:level.length-24);
-  const mount=gunMount(),muzzle=mount.x+w.sprite[2]*(1-profile.grip)*weaponScale(type);
+  // Frames that already contain the gun (Jack's arcade pistol-firing torso) place the muzzle at the hand point itself.
+  const mount=gunMount(),muzzle=mount.x+(mount.gunDrawn?0:w.sprite[2]*(1-profile.grip)*weaponScale(type));
   bullets.push({x:player.x+player.dir*muzzle,sweepFrom:player.x,y:player.y,z:mount.y+player.z,vx:player.dir*(w.explosive?450:860),vy:0,friendly:true,damage:w.damage*(selected===2?1.25:1),life:w.spread?.33:1.15,kind:w.explosive?'rocket':'bullet',weapon:type,spread:w.spread||25,pierce:w.pierce||1,hits:[],age:0});
   player.ammo--;player.recoil=w.recoil||0;
   // Burst weapons play one burst sample per trigger pull.
@@ -282,11 +283,12 @@ function buildPlan(i){
   return {sections,encounters,length:encounters[encounters.length-1].x+560};
 }
 function placeProps(from){
-  const loot=['food','gun','food','rod','shotgun','food','uzi','grenade','food','rifle','club','food','m16','dynamite','food','bazooka','knife','food'];let n=levelIndex*3;
+  // Every arcade weapon turns up in the containers, plus food, score items and ammunition.
+  const loot=['food','gun','bonus','rod','shotgun','food','uzi','grenade','food','rifle','club','ammo','m16','dynamite','food','bazooka','knife','torch','food','stone','bonus','food'];let n=levelIndex*3;
   plan.sections.forEach((s,si)=>{if(si<from||s.drive)return;const end=plan.sections[si+1]?.x??level.length-300;
     for(let x=si===0?300:s.x+260;x<end-120;x+=520){objects.push({x,y:306+(n*37)%80,hp:28,type:n%3===0?'crate':'barrel',content:loot[n%loot.length]});n++;}});
   const s=plan.sections[from];if(s.drive)return;
-  const x=from?s.x+120:230;drops.push({x,y:360,type:levelIndex===0&&from===0?'gun':'shotgun',life:999});drops.push({x:x+40,y:375,type:'food',life:999});
+  const x=from?s.x+120:230;drops.push({x,y:360,type:levelIndex===0&&from===0?'gun':'shotgun',life:999});drops.push(foodDrop(x+40,375,999,true));
 }
 function startStage(i,opts={}){
   if(typeof opts==='boolean')opts={skipBrief:opts};
@@ -561,11 +563,12 @@ function damageEnemy(e,amount,knock=0,forceDown=false,byAlly=false,opts=null) {
     if(e.after)say(e.after);
     if(e.boss&&e.type==='sable'&&e.phase===2){mission.total=4;createObjective('gate','FINAL SPILLWAY RELEASE',lock.right-250,354,0,true);}
     if(e.boss)return true;
-    if(driving){if(e.elite||Math.random()<rules().foodChance*1.5)drops.push({x:e.x,y:e.y,type:'food',life:60});}
+    if(driving){if(e.elite||Math.random()<rules().foodChance*1.5)drops.push(foodDrop(e.x,e.y,60,!!e.elite));}
     else if(e.loot)drops.push({x:e.x,y:e.y,type:e.loot,life:60});
     else if(e.type==='gunner')drops.push({x:e.x,y:e.y,type:levelIndex>2?'uzi':'gun',life:60});
     else if(e.type==='knifer')drops.push({x:e.x,y:e.y,type:'knife',life:60});
-    else if(e.elite||Math.random()<rules().foodChance)drops.push({x:e.x,y:e.y,type:'food',life:60});
+    else if(e.elite||Math.random()<rules().foodChance)drops.push(foodDrop(e.x,e.y,999,!!e.elite));
+    else if(Math.random()<.08)drops.push(bonusDrop(e.x,e.y));
   }
   return true;
 }
@@ -609,14 +612,14 @@ function drawContinue(){
 }
 
 function shoot(x,y,dir,friendly=true,damage=18,speed=620,owner=null){bullets.push({x,y,owner,z:driving?28:48,vx:dir*speed,vy:0,friendly,damage,life:1.5,color:friendly?'#fff4af':'#ef8f68'});}
-const nearbyDrop=(rx,ry,weaponsOnly)=>{let best=null,dist=1e9;for(const d of drops){if(d.claimed||(weaponsOnly&&d.type==='food'))continue;const dx=Math.abs(d.x-player.x),dy=Math.abs(d.y-player.y);if(dx<rx&&dy<ry&&dx+dy<dist){dist=dx+dy;best=d;}}return best;};
+const nearbyDrop=(rx,ry,weaponsOnly)=>{let best=null,dist=1e9;for(const d of drops){if(d.claimed||(weaponsOnly&&PICKUPS.has(d.type)))continue;const dx=Math.abs(d.x-player.x),dy=Math.abs(d.y-player.y);if(dx<rx&&dy<ry&&dx+dy<dist){dist=dx+dy;best=d;}}return best;};
 // Picking something up is a short crouch; the item reaches the hand halfway through it.
 function startPickup(d){player.moveState=null;player.pickup=.26;player.pickTarget=d;d.claimed=true;player.attack=0;player.pendingStrike=null;player.burst=null;player.dashVelocity=0;player.attackKind='ready';if(Math.abs(d.x-player.x)>6)player.dir=Math.sign(d.x-player.x);}
 function updatePickup(dt){
   if(player.pickup<=0)return;const before=player.pickup;player.pickup=Math.max(0,player.pickup-dt);
   if(before>.12&&player.pickup<=.12){
     const d=player.pickTarget;player.pickTarget=null;if(!d||!drops.includes(d))return;drops.splice(drops.indexOf(d),1);sfx('pickup');score+=75;
-    if(d.type==='food'){player.hp=Math.min(player.maxhp,player.hp+45);popup(player.x,player.y-96,'+45 HEALTH','#d5ec69');}
+    if(PICKUPS.has(d.type)){consumeItem(d);}
     else{dropWeapon();player.weapon=d.type;player.ammo=d.ammo??Math.max(1,Math.round((WEAPONS[d.type]?.ammo??1)*(WEAPONS[d.type]?.melee?rules().meleeDurability:1)));toast=`${WEAPONS[player.weapon]?.name||player.weapon} · ${player.ammo} ${WEAPONS[player.weapon]?.melee?'HITS':'SHOTS'}`;toastTime=2;}
   }
 }
@@ -857,7 +860,7 @@ function update(dt) {
     // On the highway, dropped food slides back with the road; the Cadillac scoops it up by driving over it.
     if(driving){d.x-=CAR.road*dt;if(d.x<camera-90){drops.splice(drops.indexOf(d),1);continue;}}
     const reach=driving?Math.abs(d.x-player.x)<110&&Math.abs(d.y-player.y)<32:Math.hypot(d.x-player.x,d.y-player.y)<27;
-    if(d.type==='food'&&!d.claimed&&reach){player.hp=Math.min(player.maxhp,player.hp+45);popup(player.x,player.y-90,'+45 HEALTH','#d5ec69');drops.splice(drops.indexOf(d),1);sfx('pickup');}else if(d.life<=0&&!d.claimed)drops.splice(drops.indexOf(d),1);}
+    if(PICKUPS.has(d.type)&&!d.claimed&&reach){consumeItem(d);}else if(d.life<=0&&!d.claimed)drops.splice(drops.indexOf(d),1);}
   for(const e of enemies)updateEnemy(e,dt);enemies=enemies.filter(e=>!e.remove);
   for(const a of allies)updateAlly(a,dt);allies=allies.filter(a=>!a.remove);
   if(driving)ramEnemies();
@@ -1068,13 +1071,16 @@ const FIREARMS=new Set(['gun','uzi','shotgun','rifle','m16','bazooka']);
 function heroActionFrame(action,index=0){const data=HERO_ART[HEROES[selected].id],seq=data[action];return HERO_ART.frames[seq[index%seq.length]];}
 function drawHeroAction(g,f,x,y,scale,dir){if(!heroSheet.complete)return;g.save();g.translate(Math.round(x),Math.round(y));g.scale(-dir*scale,scale);g.drawImage(heroSheet,f.x,f.y,f.w,f.h,-f.anchor,-f.h,f.w,f.h);g.restore();}
 const AH=window.ARCADE_HEROES,ahSheet=new Image();ahSheet.src=AH.sheet;
+// A second sheet holds the armed stances decoded later (Jack's real gun torsos and every hero's shouldered bazooka).
+const ahSheet2=new Image();if(AH.sheet2)ahSheet2.src=AH.sheet2;
+const stanceKind=()=>player.weapon==='bazooka'?'launcher':LONG_GUNS.has(player.weapon)?'twoHanded':'handgun';
 const ahFrame=(id,name,i=0)=>{const list=AH.heroes[id][name];return AH.frames[list[((i%list.length)+list.length)%list.length]];};
 const myFrame=(name,i=0)=>ahFrame(HEROES[selected].id,name,i);
-function drawAH(g,f,x,y,dir,filter='none',scale=1.35){if(!f||!ahSheet.complete)return;g.save();g.imageSmoothingEnabled=false;g.translate(Math.round(x),Math.round(y));g.scale(-dir*scale,scale);g.filter=filter;g.drawImage(ahSheet,f.x,f.y,f.w,f.h,-f.anchor,-f.oy,f.w,f.h);g.restore();}
+function drawAH(g,f,x,y,dir,filter='none',scale=1.35){const img=f?.s===2?ahSheet2:ahSheet;if(!f||!img.complete)return;g.save();g.imageSmoothingEnabled=false;g.translate(Math.round(x),Math.round(y));g.scale(-dir*scale,scale);g.filter=filter;g.drawImage(img,f.x,f.y,f.w,f.h,-f.anchor,-f.oy,f.w,f.h);g.restore();}
 const LONG_GUNS=new Set(Object.values(CFG.weapons).filter(w=>w.twoHanded).flatMap(w=>w.types));
 // Hand coordinates in original frame space; facing is applied only here.
 function handPoint(f,dir,scale=CFG.sockets.scale,offset=[0,0]){const h=f?.hand||[-26,-60];return {x:(-h[0]+offset[0])*scale*dir,y:(h[1]+offset[1])*scale};}
-function gunMount(){const spec=CFG.sockets.recoil,f=myFrame(spec[LONG_GUNS.has(player.weapon)?'twoHanded':'handgun']),p=handPoint(f,1,CFG.sockets.scale,spec.offset);return {x:p.x,y:-p.y};}
+function gunMount(){const spec=CFG.sockets.recoil,f=myFrame(spec[stanceKind()]),p=handPoint(f,1,CFG.sockets.scale,spec.offset);return {x:p.x,y:-p.y,gunDrawn:!!f?.gunDrawn};}
 function drawArmedComposite(g,torso,legs,x,y,dir){
  // The arcade's own walking and running torsos are torso-only records whose bottom edge meets the top of the
  // separate leg records, so they are simply drawn one over the other. Only a full-body ready pose used as a torso
@@ -1094,7 +1100,7 @@ function drawPlayer() {
   else {
     const data=A[HEROES[selected].id],armed=FIREARMS.has(player.weapon),long=LONG_GUNS.has(player.weapon),dir=player.dir;
     const walkI=Math.floor(player.walkDist/10),runI=Math.floor(player.runDist/22);
-    const hold=(f,type,grip,angle=0,kick=0,offset=[0,0])=>{const p=handPoint(f,dir,CFG.sockets.scale,offset);weaponSprite(ctx,type,x+p.x-dir*kick,y+p.y,weaponScale(type),dir,angle,grip);};
+    const hold=(f,type,grip,angle=0,kick=0,offset=[0,0])=>{if(f?.gunDrawn)return;const p=handPoint(f,dir,CFG.sockets.scale,offset);weaponSprite(ctx,type,x+p.x-dir*kick,y+p.y,weaponScale(type),dir,angle,grip);};
     if(player.pickup>0){
       // Crouch to collect; the weapon is in hand once the crouch is half done.
       player.pose='pickup';const f=myFrame('crouch');drawAH(ctx,f,x,y,dir);
@@ -1105,13 +1111,14 @@ function drawPlayer() {
     }else if(armed&&player.hurt<=0&&player.special<=0){
       const firing=player.attack>0&&player.attackKind==='fire',recoiling=firing&&player.recoil>1,air=player.z>0;
       const pose=firing?(recoiling?'recoil':'recovery'):air?'jump':player.move?(player.run?'run':'walk'):'idle';
-      const spec=CFG.sockets[pose],f=myFrame(spec[long?'twoHanded':'handgun']);
+      const spec=CFG.sockets[pose],f=myFrame(spec[stanceKind()]);
       player.pose=firing?'fire':air?'armed-jump':player.move?(player.run?'armed-run':'armed-walk'):'armed-ready';
       if(!long&&player.move&&!air&&!firing){
         // A handgun stays in the swinging hand on the ordinary walk and run, as in the arcade; it is only raised to fire.
         const wf=myFrame(player.run?'run':'walk',player.run?runI:walkI);drawAH(ctx,wf,x,y,dir);hold(wf,player.weapon,.35,.5*dir);
       }else{
         if(air||player.move){const legs=air?myFrame('jump',player.vz>0?1:2):myFrame(player.run?'legsRun':'legsWalk',player.run?runI:walkI);drawArmedComposite(ctx,f,legs,x,y,dir);}
+        else if(f.h<50)drawArmedComposite(ctx,f,myFrame('legsStand'),x,y,dir); // arcade torso-only stances stand on the standing legs
         else drawAH(ctx,f,x,y,dir);
         hold(f,player.weapon,weaponClass(player.weapon).grip,0,0,spec.offset);
       }
@@ -1141,15 +1148,28 @@ function drawPlayer() {
   ctx.restore();
 }
 function drawObject(o){if(o.hp<=0)return;const x=o.x-camera;if(x<-60||x>W+60)return;shadow(ctx,x,o.y,23);if(o.type==='barrel'){drawFrame(ctx,A.enemies['5'][0],x,o.y,1,1);}else{rect(ctx,x-23,o.y-46,46,46,'#3b4c33');rect(ctx,x-21,o.y-44,42,40,'#9b7b4c');for(let j=0;j<3;j++)rect(ctx,x-18+j*13,o.y-42,2,38,'#5e603e');rect(ctx,x-23,o.y-43,46,6,'#bf9959');rect(ctx,x-23,o.y-9,46,6,'#bf9959');}}
+// Food, score items and ammunition are the arcade's own item sprites, set on the ground at their bottom centre.
+const ITEMS=window.ARCADE_ITEMS||{frames:{}},itemSheet=new Image();if(ITEMS.sheet)itemSheet.src=ITEMS.sheet;
+const PICKUPS=new Set(['food','bonus','ammo']);
+const FOOD_WEIGHTS=[['hamburger',12],['hotdog',10],['pizza',10],['salad',8],['steak',6],['barbecue',4],['roast',4],['lobster',4],['sushi',3],['cake',5],['fries',6],['pudding',4],['parfait',4],['donut',8],['coffee',6],['croissant',6],['gum',5],['chocolate',5]];
+const BONUS_WEIGHTS=[['sunglasses',10],['necklace',6],['ring',6],['pouch',5],['pearls',4],['ammonite',4],['skull',2],['goldbar',3],['diamond',2]];
+function pickWeighted(list){let t=0;for(const [,w] of list)t+=w;let r=Math.random()*t;for(const [k,w] of list){r-=w;if(r<=0)return k;}return list[0][0];}
+// Food never times out on the ground (as in the arcade); `rich` picks from the big meals for elite drops and section starts.
+function foodDrop(x,y,life=999,rich=false){return {x,y,type:'food',food:pickWeighted(rich?FOOD_WEIGHTS.filter(f=>(ITEMS.frames[f[0]]?.heal||0)>=48):FOOD_WEIGHTS),life};}
+function bonusDrop(x,y,life=999){return {x,y,type:'bonus',food:pickWeighted(BONUS_WEIGHTS),life};}
+function consumeItem(d){
+  const f=ITEMS.frames[d.food]||ITEMS.frames.hamburger||{heal:48,score:1000};const i=drops.indexOf(d);if(i>=0)drops.splice(i,1);d.claimed=true;sfx('pickup');
+  if(d.type==='food'){const heal=Math.round(player.maxhp*(f.heal||48)/100);
+    // Eaten at full health, a meal is worth its points instead, as on the cabinet.
+    if(player.hp>=player.maxhp-.5){score+=f.score||1000;popup(player.x,player.y-96,'+'+(f.score||1000),'#ffe08a');}else{player.hp=Math.min(player.maxhp,player.hp+heal);popup(player.x,player.y-96,d.food.toUpperCase()+' +'+heal,'#d5ec69');}}
+  else if(d.type==='bonus'){score+=f.score||1000;popup(player.x,player.y-96,'+'+(f.score||1000),'#ffe08a');}
+  else if(d.type==='ammo'){const w=WEAPONS[player.weapon];if(w&&!w.melee&&!w.thrown){player.ammo=w.ammo;popup(player.x,player.y-96,'AMMO FULL','#9ad1ff');}else{score+=1000;popup(player.x,player.y-96,'+1000','#ffe08a');}}
+}
 function drawDrop(d) {
   if(d.claimed)return;const x=d.x-camera,y=d.y+Math.sin(time*4+d.x)*2;if(x<-60||x>W+60)return;shadow(ctx,x,d.y,16);
-  if(d.type==='food'){const food=d.food||['burger','bbq','steak'][Math.floor(Math.abs(d.x))%3];rect(ctx,x-15,y-3,30,3,'#e4ddb0');
-   if(food==='burger'){rect(ctx,x-12,y-13,24,10,'#d7a957');rect(ctx,x-10,y-18,20,7,'#edc36c');rect(ctx,x-12,y-11,24,3,'#518b40');rect(ctx,x-11,y-8,22,3,'#703728');rect(ctx,x-5,y-17,2,1,'#fff4c3');}
-   else if(food==='bbq'){rect(ctx,x+7,y-15,12,4,'#eedfc4');rect(ctx,x+17,y-17,4,8,'#fff2d4');poly(ctx,[[x-13,y-17],[x+2,y-21],[x+10,y-15],[x+5,y-6],[x-10,y-6]],'#a94f30');rect(ctx,x-9,y-17,13,3,'#ee9852');}
-   else{poly(ctx,[[x-13,y-17],[x+5,y-20],[x+14,y-12],[x+10,y-5],[x-10,y-5]],'#e7ba90');poly(ctx,[[x-10,y-15],[x+5,y-17],[x+11,y-11],[x+8,y-7],[x-9,y-7]],'#ae493c');rect(ctx,x-2,y-15,3,7,'#efc4a0');}}
-
+  if(PICKUPS.has(d.type)){const f=ITEMS.frames[d.food]||ITEMS.frames.hamburger;if(f&&itemSheet.complete){const S=1.35;ctx.imageSmoothingEnabled=false;ctx.drawImage(itemSheet,f.x,f.y,f.w,f.h,Math.round(x-f.w*S/2),Math.round(y-f.h*S),Math.round(f.w*S),Math.round(f.h*S));}}
   else weaponSprite(ctx,d.type==='grenade'?'grenade':d.type,x,y-12,.85*(WEAPONS[d.type]?.scale||1),1);
-  if(Math.hypot(d.x-player.x,d.y-player.y)<65&&d.type!=='food')label((TOUCH?'HIT / PICK · ':'J / E · ')+(WEAPONS[d.type]?.name||d.type.toUpperCase()),x,y-35,10,'#f0e0a8','center');
+  if(Math.hypot(d.x-player.x,d.y-player.y)<65&&!PICKUPS.has(d.type))label((TOUCH?'HIT / PICK · ':'J / E · ')+(WEAPONS[d.type]?.name||d.type.toUpperCase()),x,y-35,10,'#f0e0a8','center');
 }
 // Story set dressing along the back of the floor: Fessenden's cold pods at the harbor, egg racks in the
 // nursery, unfinished vats in the foundry and, in Echo's halls, tanks holding copies of the four heroes.
@@ -1258,7 +1278,7 @@ if(TOUCH&&(matchMedia('(display-mode: fullscreen)').matches||matchMedia('(displa
 // A narrow, explicit test interface keeps campaign checks reproducible.
 window.LAST_EDEN={render, get state(){return state;},get snapshot(){return {difficulty:normalizeDifficulty(difficulty),road,coins,continueTimer,difficultyRules:{...rules()},particles:particles.map(p=>({...p})),gunSocket:player?.weapon&&weaponClass(player.weapon)?gunMount():null,mission:mission?{completed:mission.completed,total:mission.total,active:mission.active?{...mission.active}:null}:null,artReady:SEQUEL_RENDER.ready,posesReady:ahSheet.complete,state,level:levelIndex,wave,score,lives,section:sectionIndex,encounter:encIndex,driving,camera,length:level.length,plan:plan?{sections:plan.sections.map(s=>({...s})),encounters:plan.encounters.map(e=>({x:e.x,section:e.section,task:e.task,boss:!!e.boss,elite:e.elite?.name||null}))}:null,lock:lock?{...lock}:null,bullets:bullets.map(b=>({...b})),zones:zones.map(z=>({...z})),effects:effects.map(f=>f.type),audio:soundtrack.status,player:player?{...player,pickTarget:null,grab:player.grab?{t:player.grab.t,hits:player.grab.hits,type:player.grab.e.type}:null,moveState:player.moveState?{name:player.moveState.name,k:player.moveState.k}:null}:null,enemies:enemies.map(e=>({...e,target:null,hitList:null})),allies:allies.map(a=>({...a,target:null})),objects:objects.map(o=>({...o})),drops:drops.map(d=>({...d})),unlocked:save.unlocked,checkpoint:save.checkpoint?{...save.checkpoint}:null};},
  start:(i=0,hero=0,mode='story',section=0)=>{selected=clamp(hero,0,3);difficulty=normalizeDifficulty(mode);score=0;lives=3;startStage(clamp(i,0,5),{skipBrief:true,section});},step:(dt=1/60)=>update(dt),controls:{attack,jump,special,pickup,coin:insertCoin},
- test:{damageObjective:n=>damageObjective(n,mission.active?.x,mission.active?.y,100,1),completeObjective,equip:(type,ammo)=>{player.pendingStrike=null;player.attack=0;player.pickup=0;player.weapon=type;player.ammo=type?ammo??WEAPONS[type].ammo:0;},spawnEnemy,drop:(type,x,y)=>drops.push({type,x,y,life:90}),move:(x,y)=>{player.x=x;player.y=y;},damageEnemy:(i,n)=>damageEnemy(enemies[i],n),damagePlayer:n=>damagePlayer(n,player.x-40),
+ test:{damageObjective:n=>damageObjective(n,mission.active?.x,mission.active?.y,100,1),completeObjective,equip:(type,ammo)=>{player.pendingStrike=null;player.attack=0;player.pickup=0;player.weapon=type;player.ammo=type?ammo??WEAPONS[type].ammo:0;},spawnEnemy,drop:(type,x,y,food)=>drops.push({type,x,y,life:999,food:food||(type==='food'?'hamburger':type==='bonus'?'goldbar':type==='ammo'?'ammo':undefined)}),move:(x,y)=>{player.x=x;player.y=y;},damageEnemy:(i,n)=>damageEnemy(enemies[i],n),damagePlayer:n=>damagePlayer(n,player.x-40),
   clearFighters:()=>{if(encounter&&!encounter.spec.boss){encounter.next=(encounter.spec.w||[]).length;encounter.eliteSpawned=true;}enemies.forEach(e=>{e.waiting=false;e.inv=0;e.delay=0;if(e.state==='drop'){e.z=0;e.state='walk';}damageEnemy(e,9999);if(e.phase===2&&e.hp>0){e.inv=0;damageEnemy(e,9999);}});},
   finishEncounter:()=>{completeObjective();LAST_EDEN.test.clearFighters();completeObjective();},
   skipTo:n=>{const enc=plan.encounters[n];lock=null;encounter=null;enemies=[];if(mission.active&&!mission.active.done)mission.active=null;encIndex=n;player.x=enc.x;camera=clamp(player.x-255,0,level.length-W+180);while(plan.sections[sectionIndex+1]&&player.x>=plan.sections[sectionIndex+1].x)enterSection(sectionIndex+1);},

@@ -1,3 +1,12 @@
+# Validation — October 8, 2026 (third pass)
+
+**423 browser checks passed** in Chromium on Windows, with no uncaught browser exceptions reported. The third pass added ten checks to the polish suite for the decoded gun stances (Jack's torso records and the gun-in-hand firing frame, the shouldered bazooka for every hero) and the arcade items (recovery shares, points at full health, ammunition refills, container loot). The full-campaign bot completed all six chapters again (2:45–4:13, no deaths) with the new items in play.
+
+## Headless captures inspected in the third pass
+
+- Every hero with every gun (idle, firing, walking) at 2× zoom: Jack now holds long guns with both hands in front of the chest and fires the handgun from the arcade frame that contains the pistol (no doubled gun, muzzle flash at the hand point); all four shoulder the bazooka with the tube beside the head.
+- The arcade food and score items laid out on the dock, then collected by walking over them (+10,000 popups for meals eaten at full health, score 020000).
+
 # Validation — October 8, 2026 (second pass)
 
 **413 browser checks passed** in Chromium on Windows, with no uncaught browser exceptions reported. The suites were updated for the shorter chapters, the thrown empty gun and the arcade continue; the polish suite from the morning pass also passed unchanged.

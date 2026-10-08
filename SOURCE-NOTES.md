@@ -30,6 +30,15 @@ Official MAME ran without sound for extraction. The supplied set lacked unused b
 
 Weapons are drawn from the supplied sheet at the heroes' scale. Running uses horizontal firearm grips over the original moving legs, refined against the later supplied video. Hit sparks are the sheet's starburst frames; gun hits use its “POW!” sprites.
 
+## Armed stances and items decoded on October 8, 2026
+
+A second decoding pass (the ROM set was again only read) added nine frames on a second hero sheet (`ARCADE_HEROES.sheet2`) and the item sheet `arcade-items.js`:
+
+- The tile format was re-verified against the shipped atlas (99.8 % transparency agreement): every 8-byte row of a 128-byte tile holds the four bitplanes of pixels 0–7 and then of pixels 8–15, most significant bit first; pen 15 is transparent.
+- The object palette table starts at 0xB7A52 in the byte-swapped program (32 palettes of 16 RGB444 words, one set per 0x1000 bytes). Palettes 0–3 are Jack, Hannah, Mustapha and Mess, palette 6 the weapons and palette 7 the food; the earlier atlas-derived hero palettes match it exactly.
+- Jack's real gun poses are torso records drawn over his standing or moving leg records, exactly as the arcade composes them: 93 handgun ready, 86 handgun firing (this record contains the pistol, so no separate weapon sprite is drawn for it), 95/96 two-handed ready and recoil, 91 running torso, 94 shouldered bazooka. The shouldered bazooka records for the others are 264 (Mustapha), 726 (Mess) and 1565 (Hannah); the rear hand beside the head is the grip point.
+- Food, score items and ammunition come from records 2646–2694, 2191, 2723, 2775 and 2130, coloured with the ROM's own object palettes; their recovery values follow the arcade (barbecue 100 %, steak 80 %, lobster and sushi 64 %, hamburger/pizza/hot dog 48 %, salad, cake, fries, pudding and parfait 32 %, donut, coffee, croissant, gum and chocolate 16 %). A meal eaten at full health pays its points instead.
+
 ## Arcade sound effects
 
 The user's `Arcade - Cadillacs & Dinosaurs - Miscellaneous - Sound Effects.zip` contains 36 unlabelled WAV files. They were extracted to a scratch folder (the zip is unchanged) and labelled by cross-correlating each against the reference video's audio; [VIDEO-REVIEW.md](VIDEO-REVIEW.md) lists the matches. Eight are shipped as small mono MP3s in `assets/sfx/`: punch (0064), kick (007E), slam (0072), pistol (0076), rifle (0068), uzi (0085), explosion (0066) and machine gun (005D). Other effects remain synthesized.

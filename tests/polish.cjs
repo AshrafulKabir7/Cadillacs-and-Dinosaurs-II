@@ -68,6 +68,22 @@ const checks=await page.evaluate(()=>{
  g.test.clearFighters();ticks(90);
  check('Beating the last copy ends the chapter and leads to the ending',g.state==='clear');
  check('The chapter ending and story text describe Fessenden’s copy',/Fessenden himself/.test(EDEN_CAMPAIGN[5].end)&&/LOT 00/.test(EDEN_CAMPAIGN[5].brief));
+
+ // Arcade gun stances decoded from the ROM: Jack's are torso records on the second sheet, every hero shoulders the bazooka.
+ const AH=ARCADE_HEROES,fr=(h,n)=>AH.frames[AH.heroes[h][n][0]];
+ check('Jack’s gun stances are his real arcade torso records, not punch frames',['pistolStand','pistolFire','gunStand','gunFire'].every(n=>fr('jack',n).s===2&&fr('jack',n).h<50)&&fr('jack','pistolFire').gunDrawn===true);
+ check('Every hero has a shouldered bazooka stance with the rear hand beside the head',['mustapha','jack','hannah','mess'].every(h=>fr(h,'bazookaStand')&&fr(h,'bazookaStand').hand&&fr(h,'bazookaStand').hand[1]<=-60));
+ g.start(0,1,'normal');ticks(5);g.test.equip('gun',6);g.test.move(300,352);g.controls.attack();g.render();s=g.snapshot;
+ check('Jack fires the handgun from the frame that already holds it, with the muzzle at the hand point',s.gunSocket.gunDrawn===true&&Math.abs(s.bullets[0].x-(s.player.x+s.gunSocket.x))<.001&&s.player.pose==='fire');
+ g.test.equip('bazooka',4);g.render();check('The bazooka is held high on the shoulder',g.snapshot.gunSocket.y>80);
+
+ // Arcade food and score items: heal by the cabinet's shares, pay points at full health, ammunition refills the gun.
+ g.start(0,0,'normal');ticks(100);g.test.move(300,352);g.test.damagePlayer(60);ticks(90);const hurt=g.snapshot.player.hp;g.test.drop('food',300,352,'hamburger');ticks(2);
+ check(`A hamburger restores 48 % of the bar (${Math.round(hurt)} → ${Math.round(g.snapshot.player.hp)})`,Math.round(g.snapshot.player.hp-hurt)===Math.round(g.snapshot.player.maxhp*.48));
+ g.test.drop('food',300,352,'steak');ticks(2);const score0=g.snapshot.score;g.test.drop('food',300,352,'barbecue');ticks(2);check('A barbecue eaten at full health pays 10,000 points instead',g.snapshot.score-score0===10000&&g.snapshot.player.hp===g.snapshot.player.maxhp);
+ g.test.drop('bonus',300,352,'goldbar');ticks(2);check('A gold bar pays 10,000 points',g.snapshot.score-score0===20000);
+ g.test.equip('rifle',1);g.test.drop('ammo',300,352,'ammo');ticks(2);check('Ammunition refills the held gun',g.snapshot.player.ammo===6);
+ check('Every container loot type is an arcade weapon or item',(()=>{g.start(0,0,'normal');return g.snapshot.objects.every(o=>['food','bonus','ammo','gun','rod','shotgun','uzi','grenade','rifle','club','m16','dynamite','bazooka','knife','torch','stone'].includes(o.content));})());
  return out;
 }).catch(e=>[{name:'Polish checks threw: '+e.message,passed:false}]);
 checks.push({name:'No browser exceptions in polish checks',passed:errors.length===0});
