@@ -1115,12 +1115,14 @@ function drawPlayer() {
       player.pose=firing?'fire':air?'armed-jump':player.move?(player.run?'armed-run':'armed-walk'):'armed-ready';
       if(!long&&player.move&&!air&&!firing){
         // A handgun stays in the swinging hand on the ordinary walk and run, as in the arcade; it is only raised to fire.
-        const wf=myFrame(player.run?'run':'walk',player.run?runI:walkI);drawAH(ctx,wf,x,y,dir);hold(wf,player.weapon,.35,.5*dir);
+        const wf=myFrame(player.run?'run':'walk',player.run?runI:walkI);drawAH(ctx,wf,x,y,dir);hold(wf,player.weapon,.35,CFG.sockets.pistolAngles.carry*dir);
       }else{
         if(air||player.move){const legs=air?myFrame('jump',player.vz>0?1:2):myFrame(player.run?'legsRun':'legsWalk',player.run?runI:walkI);drawArmedComposite(ctx,f,legs,x,y,dir);}
         else if(f.h<50)drawArmedComposite(ctx,f,myFrame('legsStand'),x,y,dir); // arcade torso-only stances stand on the standing legs
         else drawAH(ctx,f,x,y,dir);
-        hold(f,player.weapon,weaponClass(player.weapon).grip,0,0,spec.offset);
+        // A handgun at rest is held up beside the head, barrel skyward; only the recoil frame levels it.
+        const angle=!long&&pose!=='recoil'?(CFG.sockets.pistolAngles.ready[HEROES[selected].id]||0)*dir:0;
+        hold(f,player.weapon,weaponClass(player.weapon).grip,angle,0,spec.offset);
       }
     }else {
       const m=player.moveState;let f=null;

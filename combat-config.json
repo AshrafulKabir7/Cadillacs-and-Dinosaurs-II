@@ -130,6 +130,16 @@
   },
   "sockets": {
     "scale": 1.35,
+    "pistolAngles": {
+      "comment": "Radians, positive = barrel down for a right-facing hero. At rest the revolver is held up beside the head with the barrel skyward (Mustapha and Jack raise the fist to the chin; Hannah and Mess hold it forward from the chest); while walking or running it hangs in the lowered hand pointing down; firing levels it.",
+      "ready": {
+        "mustapha": -1.5708,
+        "jack": -1.5708,
+        "hannah": -0.45,
+        "mess": -0.8
+      },
+      "carry": 1.05
+    },
     "coordinates": "Frame hand offsets from feet, original sprites face left; mirror X once for facing direction.",
     "idle": {
       "twoHanded": "gunStand",
