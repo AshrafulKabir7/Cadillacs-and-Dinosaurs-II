@@ -1,3 +1,18 @@
+# Fourth review — October 8, 2026 (night): measured weapon holds
+
+The user's six photos showed every long gun floating at chest height while the rear arm gripped nothing, the bazooka above the head and the knife sticking forward at chin height. This pass measured the arcade instead of estimating it. The boss-fight video's weapon readout was scanned every half second (15 armed spans), the two-player video's readouts every second (55 spans), and each armed frame was resampled to the arcade's 384 × 224 pixels. The hero's ROM record and the exact weapon-sheet sprite were then fitted to the frame by colour agreement, with mirroring searched, and Jack's RQ87 captures (native resolution) were fitted the same way.
+
+| Weapon | Arcade hold (measured) | Agreement |
+|---|---|---|
+| Rifle | Mustapha record 259 standing, 284 torso walking; Jack record 88. The rifle's muzzle sits about 14 px ahead of the front hand and its stock reaches back past the hip to the rear hand. | Six frames, the offset from the front hand within 2 px across both heroes |
+| Uzi | Mustapha full record 267 standing, torso 270 walking; Jack torso 95. In front of the chest, both hands. | Eight frames, within 2 px |
+| Shotgun | Mustapha record 261 standing, torso 285 walking; Jack torso 91. In front of the chest. | Four frames, within 4 px |
+| M-16 | Jack torso 89; Hannah walking frames in the two-player video. | 80 % sprite match |
+| Bazooka | Jack torso 92: on the shoulder, both forearms under the tube. | 87 % sprite match |
+| Knife | Mustapha at 08:36, 08:48 and 10:28: upright in the guarding fist when still, level at the hip, point forward, when walking. | Three still frames agree exactly |
+
+The weapon sheet's sprites matched the arcade at 1:1, so the previous pass's 0.5–0.85 weapon size reduction was wrong and has been removed. Each held weapon is now the exact measured sheet sprite placed from the frame's front-hand grip, in the hero's own facing-left space so it mirrors with the hero. Hannah and Mess use their equivalent stance records with the same grips; there is no footage of Mess armed, and Hannah's was checked only for the M-16.
+
 # Third review — October 8, 2026 (evening): gun stances, weapons and items
 
 Sources: the user's four reference captures (Mustapha with the Uzi and the shotgun, Hannah firing the handgun, Hannah and Mustapha with the bazooka), the RQ87 weapon page's native-resolution captures of Jack with every weapon, the Namu item list, and the ROM records rendered with the ROM's own palette table.

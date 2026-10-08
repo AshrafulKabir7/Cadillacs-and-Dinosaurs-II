@@ -72,7 +72,17 @@ const checks=await page.evaluate(()=>{
  // Arcade gun stances decoded from the ROM: Jack's are torso records on the second sheet, every hero shoulders the bazooka.
  const AH=ARCADE_HEROES,fr=(h,n)=>AH.frames[AH.heroes[h][n][0]];
  check('Jack’s gun stances are his real arcade torso records, not punch frames',['pistolStand','pistolFire','gunStand','gunFire'].every(n=>fr('jack',n).s===2&&fr('jack',n).h<50)&&fr('jack','pistolFire').gunDrawn===true);
- check('Every hero has a shouldered bazooka stance with the rear hand beside the head',['mustapha','jack','hannah','mess'].every(h=>fr(h,'bazookaStand')&&fr(h,'bazookaStand').hand&&fr(h,'bazookaStand').hand[1]<=-60));
+ // Long guns, the Uzi, shotgun and bazooka as measured from the arcade videos: in both hands, at arcade size.
+ const heldFor=(hero,type,walk)=>{g.start(0,hero,'normal');ticks(5);g.test.equip(type,6);g.test.move(300,352);if(walk){key('KeyD',true);ticks(12);}g.render();const h=g.snapshot.held;key('KeyD',false);return h;};
+ check('Every hero holds the rifle across the body: muzzle ahead of the front hand, stock back past the hip to the rear hand',[0,1,2,3].every(h=>{const s=heldFor(h,'rifle');return s&&s.w===74&&s.lx<s.grip[0]-8&&s.lx+s.w>s.grip[0]+40;}));
+ check('The Uzi and shotgun are held in front of the chest in both hands, at the arcade sprite size',[0,1,2,3].every(h=>['uzi','shotgun'].every(t=>{const s=heldFor(h,t);return s&&s.w===(t==='uzi'?40:49)&&s.ly<-40&&s.ly>-80;})));
+ check('Every hero shoulders the bazooka at chest-to-shoulder height',[0,1,2,3].every(h=>{const s=heldFor(h,'bazooka');return s&&s.w===72&&s.ly<=-60;}));
+ check('The held weapon keeps its grip while walking (walking torsos)',[0,1,2,3].every(h=>{const s=heldFor(h,'rifle',true);return s&&s.lx<s.grip[0];}));
+ g.start(0,0,'normal');ticks(5);g.test.equip('knife',10);g.test.move(300,352);ticks(1);g.render();const kIdle=g.snapshot.held;key('KeyD',true);ticks(12);g.render();const kWalk=g.snapshot.held;key('KeyD',false);
+ check('A knife stands upright in the fist at rest and is carried level at the hip when walking (arcade 08:36, 10:28)',kIdle&&kIdle.w===9&&kIdle.h===27&&kWalk&&kWalk.w===32&&kWalk.h===7&&kWalk.ly>kIdle.ly);
+ // With no enemy around, a knife still stabs: it must be able to break a crate (it once did nothing and stalled a sonic lure).
+ g.start(0,0,'normal');ticks(5);g.test.equip('knife',10);const crate=g.snapshot.objects[0];g.test.move(crate.x-50,crate.y);ticks(1);const crateHp=crate.hp;key('KeyD',true);ticks(1);key('KeyD',false);g.controls.attack();ticks(20);
+ check('A knife with nobody to throw at stabs objects instead of doing nothing',g.snapshot.objects[0].hp<crateHp||g.snapshot.objects[0].hp<=0);
  g.start(0,1,'normal');ticks(5);g.test.equip('gun',6);g.test.move(300,352);g.controls.attack();g.render();s=g.snapshot;
  check('Jack fires the handgun from the frame that already holds it, with the muzzle at the hand point',s.gunSocket.gunDrawn===true&&Math.abs(s.bullets[0].x-(s.player.x+s.gunSocket.x))<.001&&s.player.pose==='fire');
  g.test.equip('bazooka',4);g.render();check('The bazooka is held high on the shoulder',g.snapshot.gunSocket.y>80);

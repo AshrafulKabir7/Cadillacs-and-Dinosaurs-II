@@ -48,23 +48,23 @@ function sample(name){
 function sfx(name){if(!settings.sfx)return;unlockAudio();if(SAMPLE_FOR[name]&&sample(SAMPLE_FOR[name]==='pistol'&&name==='enemygun'?'pistol':SAMPLE_FOR[name]))return;if(['gun','shotgun','rocket','explosion','swing'].includes(name)&&audio){const dur=name==='explosion'?.55:name==='rocket'?.25:name==='shotgun'?.2:name==='swing'?.07:.09;const b=audio.createBuffer(1,Math.ceil(audio.sampleRate*dur),audio.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);const n=audio.createBufferSource(),g=audio.createGain(),f=audio.createBiquadFilter();n.buffer=b;f.type='lowpass';f.frequency.value=name==='explosion'?750:name==='swing'?1600:3500;g.gain.value=name==='swing'?.05:.13;n.connect(f).connect(g).connect(audio.destination);n.start();}if(name==='hit'){tone(130,.09,'sawtooth',.09,35);tone(630,.045,'square',.025,60);}if(name==='jump')tone(190,.15,'triangle',.06,550);if(name==='gun')tone(900,.09,'sawtooth',.065,50);if(name==='pickup'){tone(440,.1,'square',.04);setTimeout(()=>tone(660,.1,'square',.04),70);}if(name==='special'){tone(90,.35,'sawtooth',.07,600);tone(440,.25,'triangle',.04,100);}if(name==='hurt')tone(180,.2,'sawtooth',.06,40);if(name==='clear'){[392,494,587,784].forEach((f,i)=>setTimeout(()=>tone(f,.3,'triangle',.05),i*100));}}
 
 const soundtrack = new ArcadeSoundtrack();
-// `scale` sizes each weapon sheet sprite against the arcade: a rifle spans about three quarters of a hero's height,
-// a handgun a quarter and a knife less than that; the previous uniform scale drew them up to twice too large.
+// The weapon sheet is at the arcade's own pixel size (its sprites fit the reference videos 1:1), so weapons are drawn at
+// exactly the heroes' scale.
 const WEAPONS = {
-  gun: {name:'GUN', ammo:6, cooldown:.32, damage:32, sprite:[263,40,34,24], recoil:4, scale:.78},
-  uzi: {name:'UZI', ammo:48, cooldown:.29, damage:15, burst:3, sprite:[506,101,45,29], left:true, recoil:3, scale:.8},
-  shotgun: {name:'SHOTGUN', ammo:6, cooldown:.66, damage:56, spread:56, pierce:3, sprite:[10,154,60,25], left:true, recoil:8, scale:.85},
-  rifle: {name:'RIFLE', ammo:6, cooldown:.74, damage:70, pierce:2, sprite:[10,225,78,21], recoil:7, scale:.8},
-  m16: {name:'M-16A1', ammo:60, cooldown:.28, damage:21, burst:3, sprite:[13,315,81,21], recoil:5, scale:.78},
-  bazooka: {name:'BAZOOKA', ammo:4, cooldown:.85, damage:108, explosive:true, sprite:[7,408,81,22], left:true, recoil:10, scale:.85},
-  knife: {name:'KNIFE', ammo:10, cooldown:.28, damage:33, melee:true, range:96, sprite:[11,754,43,28], scale:.5},
-  rod: {name:'ROD', ammo:8, cooldown:.49, damage:48, melee:true, range:112, sprite:[8,595,68,20], scale:.8},
-  stick: {name:'STICK', ammo:8, cooldown:.32, damage:28, melee:true, range:86, sprite:[11,649,46,22], scale:.8},
-  club: {name:'CLUB', ammo:16, cooldown:.44, damage:42, melee:true, range:108, sprite:[8,711,63,26], scale:.8},
-  torch: {name:'TORCH', ammo:12, cooldown:.46, damage:48, melee:true, range:104, sprite:[854,683,38,54], scale:.75},
-  grenade: {name:'GRENADE', ammo:2, cooldown:.5, damage:100, thrown:true, sprite:[10,513,22,21], scale:.8},
-  dynamite: {name:'DYNAMITE', ammo:2, cooldown:.5, damage:125, thrown:true, sprite:[4,486,43,26], scale:.8},
-  stone: {name:'STONE', ammo:1, cooldown:.4, damage:32, thrown:true, sprite:[15,455,17,19], scale:.8}
+  gun: {name:'GUN', ammo:6, cooldown:.32, damage:32, sprite:[263,40,34,24], recoil:4},
+  uzi: {name:'UZI', ammo:48, cooldown:.29, damage:15, burst:3, sprite:[506,101,45,29], left:true, recoil:3},
+  shotgun: {name:'SHOTGUN', ammo:6, cooldown:.66, damage:56, spread:56, pierce:3, sprite:[10,154,60,25], left:true, recoil:8},
+  rifle: {name:'RIFLE', ammo:6, cooldown:.74, damage:70, pierce:2, sprite:[10,225,78,21], recoil:7},
+  m16: {name:'M-16A1', ammo:60, cooldown:.28, damage:21, burst:3, sprite:[13,315,81,21], recoil:5},
+  bazooka: {name:'BAZOOKA', ammo:4, cooldown:.85, damage:108, explosive:true, sprite:[7,408,81,22], left:true, recoil:10},
+  knife: {name:'KNIFE', ammo:10, cooldown:.28, damage:33, melee:true, range:96, sprite:[11,754,43,28]},
+  rod: {name:'ROD', ammo:8, cooldown:.49, damage:48, melee:true, range:112, sprite:[8,595,68,20]},
+  stick: {name:'STICK', ammo:8, cooldown:.32, damage:28, melee:true, range:86, sprite:[11,649,46,22]},
+  club: {name:'CLUB', ammo:16, cooldown:.44, damage:42, melee:true, range:108, sprite:[8,711,63,26]},
+  torch: {name:'TORCH', ammo:12, cooldown:.46, damage:48, melee:true, range:104, sprite:[854,683,38,54]},
+  grenade: {name:'GRENADE', ammo:2, cooldown:.5, damage:100, thrown:true, sprite:[10,513,22,21]},
+  dynamite: {name:'DYNAMITE', ammo:2, cooldown:.5, damage:125, thrown:true, sprite:[4,486,43,26]},
+  stone: {name:'STONE', ammo:1, cooldown:.4, damage:32, thrown:true, sprite:[15,455,17,19]}
 };
 const weaponScale=type=>CFG.sockets.scale*(WEAPONS[type]?.scale||1);
 // The final chapter uses the original game's last-stage themes; its last copy gets the original final boss theme.
@@ -141,10 +141,10 @@ function weaponAttack() {
   if(player.ammo<=0){throwHeldWeapon();return true;}
   if(w.melee){
     const close=enemies.some(e=>!e.dead&&Math.abs(e.x-player.x)<w.range&&Math.abs(e.y-player.y)<36);
-    // A knife is thrown only when there is someone ahead to throw it at; otherwise the stab just misses and the knife stays in hand.
+    // A knife is thrown only at someone ahead and out of reach; otherwise it stabs.
     const ahead=enemies.some(e=>!e.dead&&e.onstage&&Math.sign(e.x-player.x)===player.dir&&Math.abs(e.x-player.x)<380&&Math.abs(e.y-player.y)<40);
+    // With nobody to throw at, the knife still stabs: it cuts crates, lures and other objectives.
     if(type==='knife'&&!close&&ahead){bullets.push({x:player.x,y:player.y,z:48,vx:player.dir*490,vy:0,friendly:true,damage:45,life:1.2,kind:'thrown',weapon:type,age:0});player.weapon=null;player.ammo=0;}
-    else if(type==='knife'&&!close){sfx('swing');return true;}
     else {meleeStrike(w.range,w.damage*(selected===2?1.25:1),type!=='knife',null,{melee:true,weapon:type,sharp:type==='knife'});if(--player.ammo<=0){player.weapon=type==='rod'?'stick':null;player.ammo=type==='rod'?Math.round(8*rules().meleeDurability):0;}}
     sfx('hit');return true;
   }
@@ -165,7 +165,7 @@ function emitGunRound(type){
   const w=WEAPONS[type],profile=weaponClass(type);
   player.x=clamp(player.x-player.dir*profile.recoilPixels,lock?lock.left+24:24,lock?lock.right-24:level.length-24);
   // Frames that already contain the gun (Jack's arcade pistol-firing torso) place the muzzle at the hand point itself.
-  const mount=gunMount(),muzzle=mount.x+(mount.gunDrawn?0:w.sprite[2]*(1-profile.grip)*weaponScale(type));
+  const mount=gunMount(),muzzle=mount.muzzle;
   bullets.push({x:player.x+player.dir*muzzle,sweepFrom:player.x,y:player.y,z:mount.y+player.z,vx:player.dir*(w.explosive?450:860),vy:0,friendly:true,damage:w.damage*(selected===2?1.25:1),life:w.spread?.33:1.15,kind:w.explosive?'rocket':'bullet',weapon:type,spread:w.spread||25,pierce:w.pierce||1,hits:[],age:0});
   player.ammo--;player.recoil=w.recoil||0;
   // Burst weapons play one burst sample per trigger pull.
@@ -1080,7 +1080,53 @@ function drawAH(g,f,x,y,dir,filter='none',scale=1.35){const img=f?.s===2?ahSheet
 const LONG_GUNS=new Set(Object.values(CFG.weapons).filter(w=>w.twoHanded).flatMap(w=>w.types));
 // Hand coordinates in original frame space; facing is applied only here.
 function handPoint(f,dir,scale=CFG.sockets.scale,offset=[0,0]){const h=f?.hand||[-26,-60];return {x:(-h[0]+offset[0])*scale*dir,y:(h[1]+offset[1])*scale};}
-function gunMount(){const spec=CFG.sockets.recoil,f=myFrame(spec[stanceKind()]),p=handPoint(f,1,CFG.sockets.scale,spec.offset);return {x:p.x,y:-p.y,gunDrawn:!!f?.gunDrawn};}
+// Two-handed weapons as the arcade draws them, measured by fitting ROM records and weapon-sheet sprites to the boss-fight
+// video, the two-player video and native captures. `s` is the exact sheet sprite, `m` whether it is mirrored in the hero's own
+// facing-left space, `rel` its top-left corner from the frame's front-hand grip (arcade pixels). Mustapha and Jack agree within
+// two or three pixels: the long guns run from in front of the front hand back to the rear hand at the hip, the Uzi, shotgun and
+// bazooka sit in front of the chest in both hands.
+const HOLD={
+  rifle:{s:[844,217,74,14],m:true,rel:[-14,-5]},
+  m16:{s:[851,299,72,22],m:true,rel:[-18,-11]},
+  shotgun:{s:[15,160,49,16],m:false,rel:[-15,-7]},
+  uzi:{s:[508,103,40,22],m:false,rel:[-9,-9]},
+  bazooka:{s:[838,390,72,18],m:true,rel:[-10,-11]}
+};
+// A knife stands upright in the guarding fist when still and is carried level at the hip, point forward, on the move
+// (Mustapha in the boss-fight video at 08:36, 08:48 and 10:28).
+const KNIFE_UP={s:[61,752,9,27],m:true,rel:[21,-16]},KNIFE_LEVEL={s:[369,764,32,7],m:true,rel:[-23,-6]};
+const holdClass=t=>t==='rifle'||t==='m16'?'long':t;
+// The arcade stance record each hero uses per weapon class; torso-only records stand on the legs of the current motion.
+const STANCE={
+  mustapha:{long:{idle:'gunStand',fire:'gunFire',walk:'torsoWalk',run:'torsoRun'},shotgun:{idle:'shotStand',fire:'shotStand',walk:'shotTorso',run:'shotTorso'},uzi:{idle:'uziStand',fire:'uziStand',walk:'uziTorso',run:'uziTorso'},bazooka:{idle:'bazStand',fire:'bazStand',walk:'uziTorso',run:'uziTorso'}},
+  jack:{long:{idle:'rifleStand',fire:'rifleStand',walk:'longTorso',run:'longTorso'},shotgun:{idle:'torsoRun',fire:'torsoRun',walk:'torsoRun',run:'torsoRun'},uzi:{idle:'gunStand',fire:'gunFire',walk:'gunStand',run:'gunStand'},bazooka:{idle:'bazTorso',fire:'bazTorso',walk:'bazTorso',run:'bazTorso'}},
+  hannah:{long:{idle:'gunStand',fire:'gunFire',walk:'torsoWalk',run:'torsoRun'},shotgun:{idle:'shotStand',fire:'shotStand',walk:'shotTorso',run:'shotTorso'},uzi:{idle:'uziTorso',fire:'uziTorso',walk:'uziTorso',run:'uziTorso'},bazooka:{idle:'uziTorso',fire:'uziTorso',walk:'uziTorso',run:'uziTorso'}},
+  mess:{long:{idle:'gunStand',fire:'gunFire',walk:'torsoWalk',run:'torsoRun'},shotgun:{idle:'shotStand',fire:'shotStand',walk:'shotTorso',run:'shotTorso'},uzi:{idle:'uziStand',fire:'uziStand',walk:'uziTorso',run:'uziTorso'},bazooka:{idle:'bazStand',fire:'bazStand',walk:'uziTorso',run:'uziTorso'}}
+};
+const stanceFrame=(type,pose)=>{const st=STANCE[HEROES[selected].id][holdClass(type)];return myFrame(st[pose]||st.idle);};
+const gripOf=f=>f?.grip||f?.hand||[-26,-60];
+const placeHeld=(spec,f,kick=0)=>{const g=gripOf(f);return {lx:g[0]+spec.rel[0]+kick,ly:g[1]+spec.rel[1]};};
+// Draw a held sprite in the hero's own space (feet origin, facing left), so it mirrors with the hero exactly.
+let lastHeld=null;
+function drawHeld(g,spec,f,x,y,dir,kick=0){
+  if(!weaponArt.ready||!f)return;const {lx,ly}=placeHeld(spec,f,kick),[sx,sy,sw,sh]=spec.s,S=CFG.sockets.scale;lastHeld={sprite:spec.s,lx,ly,w:sw,h:sh,grip:gripOf(f)};
+  g.save();g.imageSmoothingEnabled=false;g.translate(Math.round(x),Math.round(y));g.scale(-dir*S,S);g.translate(lx+(spec.m?sw:0),ly);g.scale(spec.m?-1:1,1);g.drawImage(weaponArt,sx,sy,sw,sh,0,0,sw,sh);g.restore();
+}
+// Average row of the barrel at the forward end of each held sprite, read once from the sheet.
+const barrelRow={};
+function muzzleRow(type){
+  if(barrelRow[type]!==undefined)return barrelRow[type];const h=HOLD[type],[sx,sy,sw,sh]=h.s;if(!weaponArt.ready)return sh*.4;
+  const px=weaponArt.getContext('2d').getImageData(sx,sy,sw,sh).data;let sum=0,n=0;
+  for(let c=0;c<3;c++){const col=h.m?sw-1-c:c;for(let r=0;r<sh;r++)if(px[(r*sw+col)*4+3]>0){sum+=r;n++;}}
+  return barrelRow[type]=n?sum/n:sh*.4;
+}
+// The muzzle in game units: `muzzle` ahead of the feet, `y` above them, for the firing pose.
+function gunMount(){
+  const type=player.weapon,S=CFG.sockets.scale;
+  if(HOLD[type]){const {lx,ly}=placeHeld(HOLD[type],stanceFrame(type,'fire'));return {x:-lx*S,y:-(ly+muzzleRow(type))*S,muzzle:-lx*S,gunDrawn:false,held:true};}
+  const spec=CFG.sockets.recoil,f=myFrame(spec[stanceKind()]),p=handPoint(f,1,S,spec.offset),gunDrawn=!!f?.gunDrawn,w=WEAPONS[type],profile=weaponClass(type);
+  return {x:p.x,y:-p.y,gunDrawn,muzzle:p.x+(gunDrawn||!w?0:w.sprite[2]*(1-profile.grip)*weaponScale(type))};
+}
 function drawArmedComposite(g,torso,legs,x,y,dir){
  // The arcade's own walking and running torsos are torso-only records whose bottom edge meets the top of the
  // separate leg records, so they are simply drawn one over the other. Only a full-body ready pose used as a torso
@@ -1093,6 +1139,7 @@ function drawArmedComposite(g,torso,legs,x,y,dir){
 // Screen offset of a pose's hand or grip point (pose coordinates measured from the top-left).
 const posePoint=(f,p,s=1.35)=>({x:(f.anchor-p[0])*s,y:(f.h-p[1])*s});
 function drawPlayer() {
+  lastHeld=null;
   const x=player.x-camera,y=player.y-player.z;ctx.save();shadow(ctx,x,player.y,driving?96:27);
   if(player.inv>0&&Math.floor(time*16)%2===0)ctx.globalAlpha=.65;
   player.pose='idle';
@@ -1113,7 +1160,13 @@ function drawPlayer() {
       const pose=firing?(recoiling?'recoil':'recovery'):air?'jump':player.move?(player.run?'run':'walk'):'idle';
       const spec=CFG.sockets[pose],f=myFrame(spec[stanceKind()]);
       player.pose=firing?'fire':air?'armed-jump':player.move?(player.run?'armed-run':'armed-walk'):'armed-ready';
-      if(!long&&player.move&&!air&&!firing){
+      if(HOLD[player.weapon]){
+        // The arcade stance for this weapon class, on the legs of the current motion, with the weapon in both hands.
+        const sp=firing?'fire':player.move&&!air?(player.run?'run':'walk'):'idle',sf=stanceFrame(player.weapon,sp);
+        const legs=air?myFrame('jump',player.vz>0?1:2):player.move?myFrame(player.run?'legsRun':'legsWalk',player.run?runI:walkI):sf.h<50?myFrame(HEROES[selected].id==='jack'?'armedLegs':'legsStand'):null;
+        if(legs)drawArmedComposite(ctx,sf,legs,x,y,dir);else drawAH(ctx,sf,x,y,dir);
+        drawHeld(ctx,HOLD[player.weapon],sf,x,y,dir,recoiling?2:0);
+      }else if(!long&&player.move&&!air&&!firing){
         // A handgun stays in the swinging hand on the ordinary walk and run, as in the arcade; it is only raised to fire.
         const wf=myFrame(player.run?'run':'walk',player.run?runI:walkI);drawAH(ctx,wf,x,y,dir);hold(wf,player.weapon,.35,CFG.sockets.pistolAngles.carry*dir);
       }else{
@@ -1143,7 +1196,8 @@ function drawPlayer() {
       else if(player.land>0){player.pose='land';f=myFrame('crouch');drawAH(ctx,f,x,y,dir);}
       else {player.pose='idle';f=myFrame('idle');drawAH(ctx,f,x,y,dir);}
       // Melee weapons sit in the hand of the current frame.
-      if(player.weapon&&player.hurt<=0&&f&&!armed){const melee=WEAPONS[player.weapon]?.melee,swing=melee&&player.attack>0?Math.sin((1-player.attack/player.attackTotal)*Math.PI)*-1.7*dir:0;hold(f,player.weapon,.3,melee&&!swing?-.9*dir:player.weapon==='knife'?.15*dir:swing);}
+      if(player.weapon==='knife'&&player.hurt<=0&&f)drawHeld(ctx,['idle','land'].includes(player.pose)?KNIFE_UP:KNIFE_LEVEL,f,x,y,dir);
+      else if(player.weapon&&player.hurt<=0&&f&&!armed){const melee=WEAPONS[player.weapon]?.melee,swing=melee&&player.attack>0?Math.sin((1-player.attack/player.attackTotal)*Math.PI)*-1.7*dir:0;hold(f,player.weapon,.3,melee&&!swing?-.9*dir:swing);}
     }
   }
   if(player.special>0){ctx.strokeStyle=HEROES[selected].color;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y-40,85*(1-player.special/.9),32,0,0,Math.PI*2);ctx.stroke();}
@@ -1278,7 +1332,7 @@ for(const ev of ['fullscreenchange','webkitfullscreenchange'])document.addEventL
 // Launched from the home screen: already fullscreen.
 if(TOUCH&&(matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches||navigator.standalone))root.classList.add('is-full','standalone');
 // A narrow, explicit test interface keeps campaign checks reproducible.
-window.LAST_EDEN={render, get state(){return state;},get snapshot(){return {difficulty:normalizeDifficulty(difficulty),road,coins,continueTimer,difficultyRules:{...rules()},particles:particles.map(p=>({...p})),gunSocket:player?.weapon&&weaponClass(player.weapon)?gunMount():null,mission:mission?{completed:mission.completed,total:mission.total,active:mission.active?{...mission.active}:null}:null,artReady:SEQUEL_RENDER.ready,posesReady:ahSheet.complete,state,level:levelIndex,wave,score,lives,section:sectionIndex,encounter:encIndex,driving,camera,length:level.length,plan:plan?{sections:plan.sections.map(s=>({...s})),encounters:plan.encounters.map(e=>({x:e.x,section:e.section,task:e.task,boss:!!e.boss,elite:e.elite?.name||null}))}:null,lock:lock?{...lock}:null,bullets:bullets.map(b=>({...b})),zones:zones.map(z=>({...z})),effects:effects.map(f=>f.type),audio:soundtrack.status,player:player?{...player,pickTarget:null,grab:player.grab?{t:player.grab.t,hits:player.grab.hits,type:player.grab.e.type}:null,moveState:player.moveState?{name:player.moveState.name,k:player.moveState.k}:null}:null,enemies:enemies.map(e=>({...e,target:null,hitList:null})),allies:allies.map(a=>({...a,target:null})),objects:objects.map(o=>({...o})),drops:drops.map(d=>({...d})),unlocked:save.unlocked,checkpoint:save.checkpoint?{...save.checkpoint}:null};},
+window.LAST_EDEN={render, get state(){return state;},get snapshot(){return {difficulty:normalizeDifficulty(difficulty),road,coins,continueTimer,held:lastHeld?{...lastHeld}:null,difficultyRules:{...rules()},particles:particles.map(p=>({...p})),gunSocket:player?.weapon&&weaponClass(player.weapon)?gunMount():null,mission:mission?{completed:mission.completed,total:mission.total,active:mission.active?{...mission.active}:null}:null,artReady:SEQUEL_RENDER.ready,posesReady:ahSheet.complete,state,level:levelIndex,wave,score,lives,section:sectionIndex,encounter:encIndex,driving,camera,length:level.length,plan:plan?{sections:plan.sections.map(s=>({...s})),encounters:plan.encounters.map(e=>({x:e.x,section:e.section,task:e.task,boss:!!e.boss,elite:e.elite?.name||null}))}:null,lock:lock?{...lock}:null,bullets:bullets.map(b=>({...b})),zones:zones.map(z=>({...z})),effects:effects.map(f=>f.type),audio:soundtrack.status,player:player?{...player,pickTarget:null,grab:player.grab?{t:player.grab.t,hits:player.grab.hits,type:player.grab.e.type}:null,moveState:player.moveState?{name:player.moveState.name,k:player.moveState.k}:null}:null,enemies:enemies.map(e=>({...e,target:null,hitList:null})),allies:allies.map(a=>({...a,target:null})),objects:objects.map(o=>({...o})),drops:drops.map(d=>({...d})),unlocked:save.unlocked,checkpoint:save.checkpoint?{...save.checkpoint}:null};},
  start:(i=0,hero=0,mode='story',section=0)=>{selected=clamp(hero,0,3);difficulty=normalizeDifficulty(mode);score=0;lives=3;startStage(clamp(i,0,5),{skipBrief:true,section});},step:(dt=1/60)=>update(dt),controls:{attack,jump,special,pickup,coin:insertCoin},
  test:{damageObjective:n=>damageObjective(n,mission.active?.x,mission.active?.y,100,1),completeObjective,equip:(type,ammo)=>{player.pendingStrike=null;player.attack=0;player.pickup=0;player.weapon=type;player.ammo=type?ammo??WEAPONS[type].ammo:0;},spawnEnemy,drop:(type,x,y,food)=>drops.push({type,x,y,life:999,food:food||(type==='food'?'hamburger':type==='bonus'?'goldbar':type==='ammo'?'ammo':undefined)}),move:(x,y)=>{player.x=x;player.y=y;},damageEnemy:(i,n)=>damageEnemy(enemies[i],n),damagePlayer:n=>damagePlayer(n,player.x-40),
   clearFighters:()=>{if(encounter&&!encounter.spec.boss){encounter.next=(encounter.spec.w||[]).length;encounter.eliteSpawned=true;}enemies.forEach(e=>{e.waiting=false;e.inv=0;e.delay=0;if(e.state==='drop'){e.z=0;e.state='walk';}damageEnemy(e,9999);if(e.phase===2&&e.hp>0){e.inv=0;damageEnemy(e,9999);}});},

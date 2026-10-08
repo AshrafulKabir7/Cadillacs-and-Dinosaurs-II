@@ -1,3 +1,7 @@
+# Validation — October 8, 2026 (fourth pass)
+
+**428 browser checks passed** in Chromium on Windows with no uncaught exceptions. The fourth pass replaced estimated weapon placements with holds measured from the arcade videos (see VIDEO-REVIEW.md) and added five checks: the rifle spans from ahead of the front hand back to the rear hand for all four heroes, the Uzi and shotgun sit in front of the chest at arcade size, the bazooka is shouldered, a knife is upright at rest and level on the move, and a knife with nobody to throw at still stabs crates and objectives. That last check came from a real bug the campaign bot hit: a knife swing with no enemy near did nothing, so a sonic lure could not be broken. The bot then cleared all six chapters in 2:50–4:17.
+
 # Validation — October 8, 2026 (third pass)
 
 **423 browser checks passed** in Chromium on Windows, with no uncaught browser exceptions reported. The third pass added ten checks to the polish suite for the decoded gun stances (Jack's torso records and the gun-in-hand firing frame, the shouldered bazooka for every hero) and the arcade items (recovery shares, points at full health, ammunition refills, container loot). The full-campaign bot completed all six chapters again (2:45–4:13, no deaths) with the new items in play.
