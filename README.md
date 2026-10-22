@@ -59,6 +59,12 @@ At a cold pod, valve, winch or pylon, **hold E / PICK** while standing still. At
 
 Break containers for supplies; walk over food to heal (a meal eaten at full health pays its points instead). In the Cadillac, hold → to build speed, ← to brake or back up, and ↑ / ↓ to change lanes; steer into enemies at speed to fling them. J bashes, K boosts and L rams.
 
+## Play with friends (online, up to 3 players)
+
+On the title screen choose **PLAY WITH FRIENDS**. One player picks **HOST A GAME** and gets a game code such as `DINO-4KQ7` (COPY LINK gives a link that joins directly). Up to two friends choose **JOIN A GAME** and type the code, or open the link. Everyone picks a different hero and presses READY; the host presses START. A friend who arrives while a game is running picks a free hero and presses JOIN IN: they drop in at the next break between fights, as on the cabinet.
+
+The host's browser runs the game; the others send their buttons to it and see its world, with their own walking shown at once. Each player has their own HUD block, lives, score and continue count (the credits are shared); the screen scrolls only when nobody would be left behind; bosses have more health with more players. In the Cadillac the lowest-numbered player drives and the others ride along and bash from the back seat. If the host closes the game, it ends for everyone. Online play connects the browsers directly (WebRTC through the free PeerJS service, loaded only when you choose Host or Join); some school, office and hotel networks block that. Single-player never touches the network.
+
 ## Difficulty, lives and saving
 
 **Easy, Normal and Arcade Mania** change health, food frequency, crowd limits, attack slots, recovery and melee-weapon durability; Mania adds rear flanking, quicker boss decisions and telegraphed dinosaur rage. Three lives per attempt; when they are gone, a ten-second CONTINUE? count runs where the hero fell, and a coin respawns you in place with three more. Only an expired count sends you back to the start of the section.

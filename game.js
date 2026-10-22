@@ -21,9 +21,17 @@ const rules=()=>CFG.difficulty[normalizeDifficulty(difficulty)];
 function heroV(h){const s=CFG.romWalk&&RIG()?.hero(h.id)?.speed;return s?.walk?{walk:s.walk*60,lane:s.walkDepth*60,run:s.run*60}:{walk:h.speed,lane:h.speed*.64,run:h.speed*1.68};}
 const weaponClass=type=>Object.values(CFG.weapons).find(w=>w.types.includes(type));
 const SELECT_ORDER=[1,2,0,3];let selectionChapter=0;
-const selectionImages=Object.fromEntries(Object.entries(ARCADE_SELECTION).map(([id,src])=>{const im=new Image();im.onload=()=>{if(state==='select')paintSelection();};im.src=src;return [id,im];}));
+// The select screen's portraits (selection-art.js, 119 KB of PNG data) load once the title is up, off the start-up
+// budget (ARCHITECTURE §5.3); the select screen paints them as they decode.
+let selectionImages={};
+function loadSelectionArt(){if(loadSelectionArt.started)return;loadSelectionArt.started=true;
+  const build=()=>{selectionImages=Object.fromEntries(Object.entries(window.ARCADE_SELECTION||{}).map(([id,src])=>{const im=new Image();im.onload=()=>{if(state==='select')paintSelection();};im.src=src;return [id,im];}));};
+  if(window.ARCADE_SELECTION){build();return;}const sc=document.createElement('script');sc.src='selection-art.js';sc.onload=build;sc.onerror=()=>{loadSelectionArt.started=false;};document.head.appendChild(sc);}
 const rand=(a,b)=>a+Math.random()*(b-a),clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),approach=(x,y,s)=>x<y?Math.min(x+s,y):Math.max(x-s,y);
 const keys=new Set(),pressed=new Set(),touchKeys=new Set(),padKeys=new Set();
+// The input source down()/tap() read (MULTIPLAYER §3.3): this machine's keys, pad and touch (LOCAL_IN), or another
+// player's source while the update runs that player (a joiner's frames on the host, a scripted test source).
+const LOCAL_IN={keys,pressed,pad:padKeys,touch:touchKeys,local:true};let IN=LOCAL_IN;
 const TOUCH=document.documentElement.classList.contains('touch-ui');let stickId=null;
 function resetInput(){keys.clear();pressed.clear();touchKeys.clear();padKeys.clear();lastDirection={key:'',time:0};dashKey='';dashTime=0;
   stickId=null;document.querySelectorAll('.touch-controls .held').forEach(b=>b.classList.remove('held'));document.getElementById('stick')?.classList.remove('active','running');const k=document.getElementById('stick-knob');if(k)k.style.transform='';}
@@ -33,6 +41,57 @@ let plan=null,encIndex=0,encounter=null,sectionIndex=-1,driving=false,parkedCar=
 let score=0,lives=3,combo=0,comboTimer=0,bestCombo=0,kills=0,runTime=0,toast='',toastTime=0,started=false;
 // Free-play coins: a credit is dropped on the continue screen (or any time with Enter) and spent to respawn in place.
 let coins=0,continueTimer=0,coinPending=0;
+// ---------------------------------------------------------------- 1-3 players (MULTIPLAYER.md §3.2, D-MP7)
+// `player` stays "the player being processed": usePlayer(p) swaps it with the per-player globals (hero, score, lives,
+// combo, the last foe, the input source, the double-tap state, the hero clips) while the update and the HUD loop over
+// players[0..2]. Outside any loop the context is this machine's player (players[localSlot], players[0] in single
+// player), so with one player every code path runs exactly as before. NETROLE: 'off' (single player, no network),
+// 'host' (the only simulation; joiners' input arrives as frames) or 'client' (a replica that draws the host's snapshots).
+const MAXP=3,SLOT_PEN=['#f8d838','#5ab4ff','#ff6a4a'];
+let players=[],localSlot=0,NETROLE='off',NID=0,ctxPlayer=null,NPRES=0,lastDriver=null;
+const makeInput=()=>({keys:new Set(),pressed:new Set(),pad:new Set(),touch:new Set(),local:false});
+// replicated entities carry a counter id (never Math.random), non-enumerable so snapshots keep their shape
+function nidOf(o){if(!o)return -1;if(o.nid==null)Object.defineProperty(o,'nid',{value:++NID,writable:true,configurable:true,enumerable:false});return o.nid;}
+function freshHeroAnim(){const R=window.HeroRig;return {main:R?R.player():null,legs:R?R.player():null,want:null,flame:null,swing:null,force:null,sel:null};}
+function attachMp(p,slot,hero,name){
+  Object.defineProperty(p,'mp',{value:{slot,hero,name:String(name||''),score:0,lives:3,combo:0,comboTimer:0,bestCombo:0,lastHitEnemy:null,hudFoe:null,lastHeld:null,
+    dashTime:0,dashKey:'',lastDirection:{key:'',time:0},dashTap:0,heroAnim:null,in:null,cont:null,out:false,away:false,tag:0,mx:0,my:0,moved:0},enumerable:false,configurable:true});
+  nidOf(p);return p;}
+const isP=v=>!!(v&&v.mp);
+const isLiveP=v=>isP(v)&&players[v.mp.slot]===v;
+function saveCtx(p){const m=p.mp;m.score=score;m.lives=lives;m.combo=combo;m.comboTimer=comboTimer;m.bestCombo=bestCombo;m.lastHitEnemy=lastHitEnemy;m.hudFoe=hudFoe;m.lastHeld=lastHeld;
+  m.dashTime=dashTime;m.dashKey=dashKey;m.lastDirection=lastDirection;m.dashTap=dashTap;m.heroAnim=heroAnim;m.in=IN;}
+function loadCtx(p){const m=p.mp;player=p;selected=m.hero;score=m.score;lives=m.lives;combo=m.combo;comboTimer=m.comboTimer;bestCombo=m.bestCombo;lastHitEnemy=m.lastHitEnemy;hudFoe=m.hudFoe;
+  lastHeld=m.lastHeld;dashTime=m.dashTime;dashKey=m.dashKey;lastDirection=m.lastDirection;dashTap=m.dashTap;heroAnim=m.heroAnim||(m.heroAnim=freshHeroAnim());IN=m.in||LOCAL_IN;ctxPlayer=p;}
+function usePlayer(p){if(!p||!p.mp||ctxPlayer===p)return;if(ctxPlayer&&ctxPlayer.mp)saveCtx(ctxPlayer);loadCtx(p);}
+function withPlayer(p,fn){if(!p||p===ctxPlayer||!p.mp)return fn();const prev=ctxPlayer;usePlayer(p);try{return fn();}finally{if(prev&&prev.mp)usePlayer(prev);}}
+const present=()=>players.filter(Boolean);
+const multi=()=>NPRES>1;
+function refreshPlayers(){NPRES=players.filter(Boolean).length;}
+const localPlayer=()=>players[localSlot]||players.find(Boolean)||player;
+// in a continue count, out of credits: not on the field
+const onField=p=>!!p&&!p.mp.cont&&!p.mp.out;
+// the Cadillac's driver: the lowest slot on the field; everyone else present rides in the back (§3.11)
+function driverP(){if(!multi())return player;for(const p of players)if(onField(p))return p;return players.find(Boolean)||player;}
+const passenger=p=>driving&&multi()&&p!==driverP();
+// who can be hit and fought: on the field, and in the car only the driver (the car takes the hits)
+const hitPlayers=()=>driving?[driverP()]:present().filter(onField);
+const active=()=>hitPlayers().filter(p=>p.hp>0&&!p.dying&&!p.down);
+const camPlayers=()=>{if(driving){const d=driverP();return d?[d]:[];}return present().filter(onField);};
+function leadPlayer(){if(!multi())return player;let a=null;for(const p of camPlayers())if(!a||p.x>a.x)a=p;return a||players[0]||player;}
+function nearestPlayer(x,y){let best=null,bd=1e9;for(const p of active()){const d=Math.hypot(p.x-x,(p.y-y)*1.4);if(d<bd){bd=d;best=p;}}if(best)return best;for(const p of camPlayers()){const d=Math.abs(p.x-x);if(d<bd){bd=d;best=p;}}return best;}
+// the player an enemy fights (§3.5 T): its update runs in that player's context
+function targetPlayerOf(e){
+  if(!multi())return player;
+  if(driving)return driverP();
+  if(e.thrown&&e.state==='fly'&&e.byP&&players[e.byP.mp.slot]===e.byP)return e.byP;
+  const t=e.tp;if(t&&players[t.mp.slot]===t&&onField(t)&&!(e.boss&&e.state==='walk'))return t;
+  if(e.boss){const n=nearestPlayer(e.x,e.y);if(n)e.tp=n;return n||localPlayer();}   // a boss re-chooses between its moves
+  hostileTargetMP(e);return e.tp&&players[e.tp.mp.slot]===e.tp?e.tp:localPlayer();
+}
+// arcade scaling (D-MP9): boss and elite HP x1.20 / x1.46 for 2 / 3 players; one more in the crowd per extra player
+const bossScale=()=>NPRES>1?[1,1.2,1.46][Math.min(3,NPRES)-1]:1;
+const crowdLimit=()=>rules().crowdLimit+(NPRES>1?NPRES-1:0);
 let save={unlocked:0,checkpoint:null,best:0},settings={music:true,sfx:true,aspect:'4:3'};
 try{save={...save,...JSON.parse(localStorage.getItem('last-eden-save')||'{}')};settings={...settings,...JSON.parse(localStorage.getItem('last-eden-settings')||'{}')};}catch{}
 save.unlocked=clamp(Number(save.unlocked)||0,0,5);
@@ -43,7 +102,7 @@ function applyAspect(){document.documentElement.classList.toggle('square-pixels'
 applyAspect();
 function persist(){try{localStorage.setItem('last-eden-save',JSON.stringify(save));localStorage.setItem('last-eden-settings',JSON.stringify(settings));}catch{}}
 // Checkpoints save {area, section} (ARCHITECTURE §2.4); resuming starts the section, which knows its area.
-function checkpoint(){const k=Math.max(0,sectionIndex);save.checkpoint={level:levelIndex,area:plan?.sections?.[k]?.area??0,section:k,hero:selected,difficulty,score,lives};persist();}
+function checkpoint(){if(NETROLE==='client')return;if(multi()&&ctxPlayer!==localPlayer()){withPlayer(localPlayer(),checkpoint);return;}const k=Math.max(0,sectionIndex);save.checkpoint={level:levelIndex,area:plan?.sections?.[k]?.area??0,section:k,hero:selected,difficulty,score,lives};persist();}
 let audio;
 function unlockAudio(){if(!audio){const AC=window.AudioContext||window.webkitAudioContext;if(AC)audio=new AC();}if(audio?.state==='suspended')audio.resume();soundtrack.unlock();}
 function tone(freq,dur=.12,type='square',vol=.04,end){if(!audio)return;const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(freq,audio.currentTime);if(end)o.frequency.exponentialRampToValueAtTime(Math.max(20,end),audio.currentTime+dur);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+dur);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+dur);}
@@ -169,7 +228,7 @@ function explode(x,y,damage,friendly=true,r=71,opts=null) {
   effects.push({x,y,z:opts?.z,age:0,life:seq?seqLen(seq)/60:.65,type:'explosion',seq:kind});shake=CFG.fx.explosion.shake;explosionParticles(x,y);sfx('explosion');
   for(const e of enemies)if(friendly&&!e.dead&&Math.hypot((e.boss?hx(e,x):e.x)-x,(e.y-y)*1.6)<r)damageEnemy(e,damage,Math.sign(e.x-x)*36,true,false,{blast:true});
   if(friendly&&mission?.active)damageObjective(damage,x,y,r,Math.sign(mission.active.x-x)||1);
-  if(!friendly&&Math.hypot(player.x-x,(player.y-y)*1.6)<r)damagePlayer(damage,x,false,opts?.hit||null);
+  if(!friendly){if(multi()){for(const p of hitPlayers())if(Math.hypot(p.x-x,(p.y-y)*1.6)<r)withPlayer(p,()=>damagePlayer(damage,x,false,opts?.hit||null));}else if(Math.hypot(player.x-x,(player.y-y)*1.6)<r)damagePlayer(damage,x,false,opts?.hit||null);}
   for(const o of objects)if(o.hp>0&&Math.hypot(o.x-x,o.y-y)<r)breakObject(o,damage);
 }
 function breakObject(o,power) {
@@ -257,7 +316,7 @@ function emitGunRound(type,k=0){
   if(profile&&profile.recoilPixels)player.x=clamp(player.x-dir*profile.recoilPixels,camera+16,camera+367);
   // The ROM muzzle of the hero's shot frame (HEROES §7.3): `muzzle` ahead of the feet, `y` above them.
   const mount=gunMount(),muzzle=mount.muzzle;
-  const base={x:player.x+dir*muzzle,sweepFrom:player.x,y:player.y,z:mount.y+player.z,vy:0,friendly:true,damage:w.damage*(selected===2?1.25:1),weapon:type,spread:w.spread||19,pierce:w.pierce||1,hits:[],age:0,hero:true,dir};
+  const base={x:player.x+dir*muzzle,sweepFrom:player.x,y:player.y,z:mount.y+player.z,vy:0,friendly:true,damage:w.damage*(selected===2?1.25:1),weapon:type,spread:w.spread||19,pierce:w.pierce||1,hits:[],age:0,hero:true,dir};if(multi())base.ps=player.mp.slot;
   if(!shot)bullets.push({...base,vx:dir*(w.explosive?333:637),life:w.spread?.33:1.15,kind:w.explosive?'rocket':'bullet'});
   else if(shot.kind==='pellet'){const group={pierce:base.pierce};shot.pellets.forEach((p,i)=>bullets.push({...base,vx:dir*p.v*60*S,vy:(p.travel[1]||0)/p.life*60*S,life:p.life/60,kind:'bullet',pellet:i,group,spread:i===0?base.spread:19}));}
   else if(shot.kind==='rocket')bullets.push({...base,vx:dir*(shot.v0||shot.v)*60*S,ax:dir*shot.a*3600*S,life:(shot.life[id]||25)/60,kind:'rocket',puff:0});
@@ -294,9 +353,9 @@ function gunFx(type,k,mount){
 function heroThrow(type,damage){
   const F=ROMFX(),T=F?.thrown,S=CFG.sockets.scale,dir=player.dir,h=(T?.releaseH?.[HEROES[selected].id]??53)*S+player.z;
   if(type==='grenade'||type==='dynamite'){const A=T?.arc||{vx:4,vh:2.5,g:-0.21875},fuse=(type==='grenade'?T?.grenadeFuse??57:T?.dynamiteFuse??135)/60;
-    bullets.push({x:player.x,y:player.y,z:h,vx:dir*A.vx*60*S,vy:0,vz:A.vh*60*S,g:Math.abs(A.g)*3600*S,friendly:true,damage,life:fuse,kind:'lob',weapon:type,age:0,hero:true,dir});return;}
+    bullets.push({x:player.x,y:player.y,z:h,vx:dir*A.vx*60*S,vy:0,vz:A.vh*60*S,g:Math.abs(A.g)*3600*S,friendly:true,damage,life:fuse,kind:'lob',weapon:type,age:0,hero:true,dir,...(multi()?{ps:player.mp.slot}:{})});return;}
   const row=(player.run&&player.move?T?.throwable?.alt:T?.throwable?.normal)||{vx:9.5,ax:-0.0078};
-  bullets.push({x:player.x,y:player.y,z:h,vx:dir*row.vx*60*S,ax:dir*(row.ax||0)*3600*S,vy:0,friendly:true,damage,life:1.5,kind:'thrown',weapon:type,age:0,hero:true,dir});
+  bullets.push({x:player.x,y:player.y,z:h,vx:dir*row.vx*60*S,ax:dir*(row.ax||0)*3600*S,vy:0,friendly:true,damage,life:1.5,kind:'thrown',weapon:type,age:0,hero:true,dir,...(multi()?{ps:player.mp.slot}:{})});
 }
 // O3 (the user's decision, over the arcade discard D15): an empty gun is hurled at the enemy when the fire clip of its
 // last round ends; E throws any held weapon the same way. It flies like a thrown knife (ROM_HEROES.fx.hurl), hits for
@@ -346,8 +405,9 @@ function drawDiscard(d){
 }
 function clearEnemyHazards(owner){for(const b of bullets)if(b.owner===owner)b.life=0;for(const z of zones)if(z.owner===owner)z.cancelled=true;}
 // Anyone an enemy can hurt: the player and any freed clones still fighting.
-const fighters=()=>[player,...allies.filter(a=>a.hp>0&&a.state!=='down'&&a.state!=='retreat')];
-function strike(v,amount,fromX,ignoreAir=false,hit=null){if(v===player)damagePlayer(amount,fromX,ignoreAir,hit);else hurtAlly(v,amount,fromX);}
+// With 2-3 players: every player on the field (in the car only the driver), each hit in its own context (§3.5 A).
+const fighters=()=>[...(multi()?hitPlayers():[player]),...allies.filter(a=>a.hp>0&&a.state!=='down'&&a.state!=='retreat')];
+function strike(v,amount,fromX,ignoreAir=false,hit=null){if(v===player)damagePlayer(amount,fromX,ignoreAir,hit);else if(isP(v))withPlayer(v,()=>damagePlayer(amount,fromX,ignoreAir,hit));else hurtAlly(v,amount,fromX);}
 // Thurow's bomb arcs onto the lane it was thrown at and goes off there (r 40); TYROG's parasites drop, then crawl at the
 // hero for 2 s and bite a hero on the ground (a jump avoids them: air:false).
 function updateHostileObject(b,dt){
@@ -358,21 +418,28 @@ function updateHostileObject(b,dt){
       else explode(b.x,b.y,b.damage,false,b.r,{kind:'dynamite',z:0,hit:b.hit});}return;}
   b.life-=dt;
   if(b.z>0){b.vz-=630*dt;b.z=Math.max(0,b.z+b.vz*dt);b.x+=b.vx*dt;return;}
-  const t=player,d=Math.sign(t.x-b.x)||b.dir;b.dir=d;b.vx=d*48;b.x+=b.vx*dt;b.y=approach(b.y,t.y,24*dt);
+  const t=multi()?nearestPlayer(b.x,b.y)||player:player,d=Math.sign(t.x-b.x)||b.dir;b.dir=d;b.vx=d*48;b.x+=b.vx*dt;b.y=approach(b.y,t.y,24*dt);
   if(!driving&&t.z<6&&t.inv<=0&&Math.abs(t.x-b.x)<12&&Math.abs(t.y-b.y)<10){strike(t,b.damage,b.x,false,b.hit);b.life=0;}
 }
 function updateProjectiles(dt) {
-  for(const b of bullets){
-    if(b.life<=0)continue;
-    if(b.kind==='bomb'||b.kind==='parasite'){updateHostileObject(b,dt);continue;}
-    if(b.group&&b.group.pierce<=0){b.life=0;continue;}
+  // a hero's round, throw or rocket credits the player who fired it (§3.7): its hits run in that player's context
+  for(const b of bullets){const o=b.ps!=null&&multi()?players[b.ps]:null;if(o&&o!==ctxPlayer)withPlayer(o,()=>stepBullet(b,dt));else stepBullet(b,dt);}
+  // a thrown enemy knife, hit or miss, ends on the floor as a knife anyone can pick up (ENEMIES §2.8)
+  for(const b of bullets)if(b.enemyKnife&&b.life<=0&&!b.dropped){b.dropped=true;const L=lock||{left:camera,right:camera+W};drops.push({x:clamp(b.x,L.left+16,L.right-16),y:b.y,type:'knife',life:60,loose:true,z:Math.max(8,b.z*.5),vz:60,dir:Math.sign(b.vx)||1});}
+  bullets=bullets.filter(b=>b.life>0);for(const fx of effects)fx.age+=dt;effects=effects.filter(fx=>fx.age<fx.life);
+}
+function stepBullet(b,dt){
+  {
+    if(b.life<=0)return;
+    if(b.kind==='bomb'||b.kind==='parasite'){updateHostileObject(b,dt);return;}
+    if(b.group&&b.group.pierce<=0){b.life=0;return;}
     const from=b.sweepFrom??b.x;delete b.sweepFrom;
     b.age=(b.age||0)+dt;b.x+=b.vx*dt;b.y+=(b.vy||0)*dt;b.life-=dt;
     if(b.ax){const v0=b.vx;b.vx+=b.ax*dt;if(b.kind==='thrown'&&Math.sign(b.vx)!==Math.sign(v0))b.vx=0;}
     // grenade and dynamite: the ROM arc, then they lie where they land until the fuse runs out
     if(b.kind==='lob'){
       if(!b.landed){b.vz-=(b.g||630)*dt;b.z+=(b.vz||0)*dt;if(b.z<=0){b.z=0;b.vz=0;b.vx=0;b.landed=true;}}
-      if(b.life<=0)detonate(b);continue;
+      if(b.life<=0)detonate(b);return;
     }
     // the rocket trails a small smoke puff every 2 f (the pistol's puff records 2166-2170)
     if(b.kind==='rocket'&&b.hero){const P=ROMW('gun')?.sparks?.seq;if(P){b.puff=(b.puff||0)+dt;while(b.puff>=2/60-1e-9){b.puff-=2/60;effects.push({type:'trail',seq:P.map(e=>[e[0],2]),x:b.x-Math.sign(b.vx)*14,y:b.y,z:b.z,dir:Math.sign(b.vx)||1,age:0,life:2*P.length/60});}}}
@@ -394,15 +461,12 @@ function updateProjectiles(dt) {
       blowKind=null;
       if(b.kind==='thrown'&&b.hero&&b.hit&&b.life<=0)reboundThrown(b);
     }else if(!b.friendly)for(const v of fighters()){
-      const car=v===player&&driving;
+      const car=isP(v)&&driving;
       if(intersects(v.x,car?74:17)&&Math.abs(b.y-v.y)<19&&b.z>=v.z+(car?0:6)&&b.z<=v.z+(car?59:78)){strike(v,b.damage,b.x-Math.sign(b.vx)*30,true,b.hit||null);b.life=0;b.struck=true;break;}
     }
     // a rocket that runs out of life bursts where it is (ROM life 22-26 f, about 90-100 px from the muzzle)
     if(b.kind==='rocket'&&b.hero&&b.life<=0&&!b.done){b.done=true;explode(b.x,b.y,b.damage,b.friendly,89,{z:b.z});}
   }
-  // a thrown enemy knife, hit or miss, ends on the floor as a knife anyone can pick up (ENEMIES §2.8)
-  for(const b of bullets)if(b.enemyKnife&&b.life<=0&&!b.dropped){b.dropped=true;const L=lock||{left:camera,right:camera+W};drops.push({x:clamp(b.x,L.left+16,L.right-16),y:b.y,type:'knife',life:60,loose:true,z:Math.max(8,b.z*.5),vz:60,dir:Math.sign(b.vx)||1});}
-  bullets=bullets.filter(b=>b.life>0);for(const fx of effects)fx.age+=dt;effects=effects.filter(fx=>fx.age<fx.life);
 }
 // A weapon in flight (a knife, stick or stone thrown, the hurled empty gun, a grenade or dynamite in the air) spins
 // through its ROM fast-spin records (ROM_HEROES.weapon[t].fastSpin, 1 f each; HEROES §7.8) at one arcade px per art px,
@@ -480,7 +544,7 @@ function panel(html){overlay.innerHTML=html;document.querySelector('#pause').sty
 // The title (CAMPAIGN §11.1): the original logo from the ROM (ROM_UI.logo, drawn into #title-logo once the ui sheet has
 // decoded; the HTML heading stays until then and for screen readers), the subtitle and a blinking INSERT COIN in the
 // arcade font, the eyebrow, deck and note. After 20 s without input the attract story (EDEN_INTRO) plays (attract()).
-function menu(){state='menu';lock=null;keys.clear();menuIdle=0;attractSeq=null;SR.require(0);const cp=save.checkpoint;panel(`<section class="panel title-panel"><p class="eyebrow">EASTCOAST 2513 · SIX MONTHS LATER</p><canvas id="title-logo" class="title-logo" width="384" height="136" aria-hidden="true"></canvas><h1>CADILLACS &<br>DINOSAURS <span>II</span></h1><div class="subtitle">II · FESSENDEN’S LEGACY</div><p class="deck">The doctor is dead. The sea poured into his lab, and his work floated up.<br>Four heroes. Six chapters. An army of copies.</p><div class="menu-buttons"><button class="primary" id="newgame">START ADVENTURE →</button>${cp?`<button class="secondary" id="continue">CONTINUE · CH 0${cp.level+1}</button>`:''}<button class="secondary" id="chapters">CHAPTERS</button><button class="secondary" id="story">THE STORY SO FAR</button><button class="secondary" id="guide">HOW TO PLAY</button><button class="secondary" id="jukebox">SOUND ROOM</button></div><p class="title-note">A FAN-MADE SEQUEL · MADE FOR MOSTAFA</p></section>`);bindButton('newgame',()=>characterSelect(0));bindButton('continue',()=>{const s=save.checkpoint;selected=clamp(s.hero,0,3);difficulty=normalizeDifficulty(s.difficulty);score=s.score||0;lives=s.lives||3;startStage(clamp(s.level,0,5),{section:s.section|0});});bindButton('chapters',chapters);bindButton('story',attract);bindButton('guide',()=>guide(menu));bindButton('jukebox',()=>soundRoom(menu));drawTitleLogo();}
+function menu(){state='menu';lock=null;keys.clear();menuIdle=0;attractSeq=null;SR.require(0);const cp=save.checkpoint;panel(`<section class="panel title-panel"><p class="eyebrow">EASTCOAST 2513 · SIX MONTHS LATER</p><canvas id="title-logo" class="title-logo" width="384" height="136" aria-hidden="true"></canvas><h1>CADILLACS &<br>DINOSAURS <span>II</span></h1><div class="subtitle">II · FESSENDEN’S LEGACY</div><p class="deck">The doctor is dead. The sea poured into his lab, and his work floated up.<br>Four heroes. Six chapters. An army of copies.</p><div class="menu-buttons"><button class="primary" id="newgame">START ADVENTURE →</button><button class="secondary" id="mp-open">PLAY WITH FRIENDS</button>${cp?`<button class="secondary" id="continue">CONTINUE · CH 0${cp.level+1}</button>`:''}<button class="secondary" id="chapters">CHAPTERS</button><button class="secondary" id="story">THE STORY SO FAR</button><button class="secondary" id="guide">HOW TO PLAY</button><button class="secondary" id="jukebox">SOUND ROOM</button></div><p class="title-note">A FAN-MADE SEQUEL · MADE FOR MOSTAFA</p></section>`);bindButton('newgame',()=>characterSelect(0));bindButton('mp-open',openLobby);bindButton('continue',()=>{const s=save.checkpoint;selected=clamp(s.hero,0,3);difficulty=normalizeDifficulty(s.difficulty);score=s.score||0;lives=s.lives||3;startStage(clamp(s.level,0,5),{section:s.section|0});});bindButton('chapters',chapters);bindButton('story',attract);bindButton('guide',()=>guide(menu));bindButton('jukebox',()=>soundRoom(menu));drawTitleLogo();}
 // The attract story (CAMPAIGN §4.7, §11.1): the five EDEN_INTRO panels in the 1993 five-beat shape, typed at 2 characters
 // per frame, each held 3.5 s (or skipped with a button), then back to the title. Any key or a click on the screen
 // returns to the title; PRESS START begins a game, as the cabinet's start button does in its attract loop.
@@ -505,14 +569,14 @@ function drawTitleLogo(){
 }
 function paintSelection(){
  const c=document.querySelector('#selection-banner'),stats=document.querySelector('#selection-stats');if(!c||!stats)return;
- const g=c.getContext('2d'),j=selectionImages.jack,h=selectionImages.hannah,chosen=selectionImages[HEROES[selected].id];g.imageSmoothingEnabled=false;
+ const g=c.getContext('2d'),j=selectionImages.jack,h=selectionImages.hannah,chosen=selectionImages[HEROES[selected].id];if(!j||!h||!chosen)return;g.imageSmoothingEnabled=false;
  // The two native frames let us show each portrait without the baked-in 1P cursor.
  if(j.complete&&j.naturalWidth&&h.complete&&h.naturalWidth){g.drawImage(h,0,0,384,144,0,0,384,144);g.drawImage(j,115,88,85,21,115,88,85,21);
    // A free-play selector has no coin timer; a small title occupies the timer's original position.
    g.fillStyle='#fffae9';g.fillRect(166,4,43,38);g.fillStyle='#1748bc';g.font='bold 9px monospace';g.textAlign='center';g.fillText('CHOOSE',187,16);g.fillText('HERO',187,28);}
  if(chosen.complete&&chosen.naturalWidth){const q=stats.getContext('2d');q.imageSmoothingEnabled=false;q.drawImage(chosen,0,144,128,80,0,0,128,80);}
 }
-function characterSelect(startAt=selectionChapter){selectionChapter=startAt;state='select';difficulty=normalizeDifficulty(difficulty);
+function characterSelect(startAt=selectionChapter){loadSelectionArt();selectionChapter=startAt;state='select';difficulty=normalizeDifficulty(difficulty);
  const h=HEROES[selected],ratings=CFG.heroRatings[h.id];
  panel(`<section class="panel character-panel arcade-select"><div class="select-heading"><button id="back" class="secondary">← BACK</button><span>PLAYER SELECT · FOUR HEROES</span></div><div class="classic-roster"><canvas id="selection-banner" width="384" height="144" aria-label="Original portraits of Jack, Hannah, Mustapha and Mess"></canvas><div class="portrait-buttons">${SELECT_ORDER.map(i=>`<button class="portrait-choice ${i===selected?'selected':''}" data-hero="${i}" aria-label="Choose ${HEROES[i].name}" aria-pressed="${i===selected}"><span>${i===selected?'1P':'SELECT'}</span></button>`).join('')}</div></div><div class="classic-select-bottom"><canvas id="selection-stats" width="128" height="80" aria-label="${h.name}: Power ${ratings[0]}, Speed ${ratings[1]}, Skill ${ratings[2]} out of five"></canvas><div class="select-options"><div class="difficulty">${Object.entries(CFG.difficulty).map(([key,v],i)=>`<button id="${['story-mode','normal-mode','arcade-mode'][i]}" data-mode="${key}" aria-pressed="${difficulty===key}" class="${difficulty===key?'selected':''}">${v.label}</button>`).join('')}</div><p class="difficulty-note">${rules().description}</p><button id="begin" class="primary">LET'S GO →</button></div></div></section>`);
  document.querySelectorAll('[data-hero]').forEach(b=>b.onclick=()=>{selected=+b.dataset.hero;characterSelect(startAt);sfx('pickup');});
@@ -614,10 +678,12 @@ function enterArea(k,from=plan.sections.findIndex(s=>s.area===k),supply=false){
   if(mission)mission.items=mission.items.filter(t=>t===mission.active&&!t.done);
   roadStream=0;roadRate=0;SR.resetStream(a);
   const x=first?a.start.x:sec.x+60,b=bandOf(x);
-  player.x=x;player.y=clamp(first?a.start.y:b.top+.62*b.h,b.top,b.bottom);player.z=0;player.vz=0;player.vx=0;player.vy=0;
+  // every player in, slot order, 24 px apart on lanes 12 px above and below the first (§3.6)
+  const y0=clamp(first?a.start.y:b.top+.62*b.h,b.top,b.bottom),ps=multi()?present():[player];
+  ps.forEach((p,k)=>{const bk=bandOf(x-24*k);p.x=x-24*k;p.y=k?clamp(y0+[0,-12,12][k],bk.top,bk.bottom):y0;p.z=0;p.vz=0;p.vx=0;p.vy=0;});const lp0=ps[0];
   const next=plan.encounters.find(e=>e.area===k&&e.section>=from);
   camera=first?0:clamp(sec.x,0,Math.min(Math.max(0,a.w-W),next?next.cam:Infinity));cameraY=STG.pathY(a,camera);
-  allies.forEach((al,j)=>{al.x=player.x-44-j*33;const ab=bandOf(al.x);al.y=clamp(player.y+al.lane,ab.top+4,ab.bottom-4);al.state='enter';al.target=null;});
+  allies.forEach((al,j)=>{al.x=lp0.x-44-j*33;const ab=bandOf(al.x);al.y=clamp(lp0.y+al.lane,ab.top+4,ab.bottom-4);al.state='enter';al.target=null;});
   placeProps(from,supply);
 }
 // Area exits fade the brightness down in 16 steps of 2 frames, switch the area and camera, and fade back in (ARCHITECTURE
@@ -789,10 +855,30 @@ function clearStory(){
   clearSeq.story=true;const T=clearSeq.tally;
   panel(`<section class="panel small-panel"><p class="eyebrow">CHAPTER 0${levelIndex+1} COMPLETE</p><h2>${levelIndex===5?'THE COPIES ARE FREE.':'KEEP THE ENGINE RUNNING.'}</h2><p id="clear-end" data-n="0"></p><p style="color:var(--acid)">CLEAR BONUS ${T.total} · SCORE ${score.toString().padStart(6,'0')} · BEST COMBO ${bestCombo} · ${Math.floor(stageTimer/60)}:${Math.floor(stageTimer%60).toString().padStart(2,'0')}</p><div class="menu-buttons"><button id="next" class="primary">${levelIndex===5?'SEE THE ENDING':'NEXT CHAPTER'} →</button></div></section>`);bindButton('next',clearNext);
 }
-function startStage(i,opts={}){
-  if(typeof opts==='boolean')opts={skipBrief:opts};
-  levelIndex=i;level=LEVELS[i];plan=buildPlan(i);level.length=plan.length;const hero=HEROES[selected],hp=hero.hp*rules().playerHealth;
-  player={x:0,y:0,z:0,vz:0,dir:1,hp,maxhp:hp,hurt:0,inv:1.5,attack:0,attackTotal:.38,special:0,specialCd:0,comboStep:0,weapon:null,ammo:0,move:false,run:false,anim:null,boost:0,boostCd:0,knocked:false,attackKind:"combo",pendingStrike:null,moveState:null,freeze:0,comboWin:0,comboHit:false,grab:null,grabCd:0,pickup:0,pickTarget:null,land:0,walkDist:0,runDist:0,roll:0,vx:0,vy:0,bank:0,bump:0,dust:0,
+// The players of a chapter (§3.2): single player one hero (`selected`, today's score and lives); a host's roster (START)
+// or the players already in (the next chapter, a retry, a restart) keep their heroes, scores and lives (a player out
+// of credits comes back with 3). This machine's player takes the globals, the others start their own.
+function buildPlayers(roster){
+  if(ctxPlayer&&ctxPlayer.mp)saveCtx(ctxPlayer);
+  const old=players;let list;
+  if(roster&&roster.length)list=roster.filter(r=>r&&r.slot>=0&&r.slot<MAXP).map(r=>({slot:r.slot|0,hero:r.hero|0,name:r.name}));
+  else if(NETROLE==='host'&&old.some(Boolean))list=old.filter(Boolean).map(p=>({slot:p.mp.slot,hero:p.mp.hero,name:p.mp.name}));
+  else list=[{slot:0,hero:selected}];
+  if(!list.some(r=>r.slot===localSlot))list.unshift({slot:localSlot,hero:selected});
+  players=[];
+  for(const r of list){
+    if(players[r.slot])continue;
+    const loc=r.slot===localSlot,hero=clamp(loc&&!roster?selected:r.hero,0,3),prev=old[r.slot],p=attachMp(freshHero(HEROES[hero].hp*rules().playerHealth),r.slot,hero,r.name||prev?.mp.name),m=p.mp;
+    if(loc){m.score=score;m.lives=lives;m.combo=combo;m.comboTimer=comboTimer;m.bestCombo=bestCombo;m.lastHitEnemy=lastHitEnemy;m.hudFoe=hudFoe;m.lastHeld=lastHeld;
+      m.dashTime=dashTime;m.dashKey=dashKey;m.lastDirection=lastDirection;m.dashTap=dashTap;m.heroAnim=heroAnim;m.in=LOCAL_IN;}
+    else{if(prev){m.score=prev.mp.score;m.lives=prev.mp.out||prev.mp.lives<=0?3:prev.mp.lives;m.bestCombo=prev.mp.bestCombo;m.in=prev.mp.in;}m.in=m.in||makeInput();m.heroAnim=freshHeroAnim();}
+    players[r.slot]=p;
+  }
+  refreshPlayers();lastDriver=null;loadCtx(players[localSlot]);
+  if(multi())for(const p of present())p.mp.tag=2;
+}
+// A hero on the field at a chapter start (or a drop-in): the per-hero state the update and the clips read.
+function freshHero(hp){return {x:0,y:0,z:0,vz:0,dir:1,hp,maxhp:hp,hurt:0,inv:1.5,attack:0,attackTotal:.38,special:0,specialCd:0,comboStep:0,weapon:null,ammo:0,move:false,run:false,anim:null,boost:0,boostCd:0,knocked:false,attackKind:"combo",pendingStrike:null,moveState:null,freeze:0,comboWin:0,comboHit:false,grab:null,grabCd:0,pickup:0,pickTarget:null,land:0,walkDist:0,runDist:0,roll:0,vx:0,vy:0,bank:0,bump:0,dust:0,
     // G3c ROM timing (HEROES §6): each state's length and its clip; `*Total` is the state's length, so the clip frame on
     // show is the elapsed time (total - remaining). runLatch: the KI22 run that persists after the stick is released.
     landRole:'land',landTotal:0,hurtRole:'hurt',knockRole:'knock',hurtTotal:0,pickupTotal:0,pickAt:0,specialTotal:0,shotT:9,swing:null,
@@ -800,7 +886,11 @@ function startStage(i,opts={}){
     // G3d: the bazooka push (px/s, braking px/s²; HEROES §7.6) and the Uzi/M-16 walking burst (ROM state 0x1E).
     pushV:0,pushA:0,walkFire:false,
     // G4: the KI21 stun meter (10, refilled at a knockdown and 2 s after the last hit).
-    stun:10,stunT:0};
+    stun:10,stunT:0};}
+function startStage(i,opts={}){
+  if(typeof opts==='boolean')opts={skipBrief:opts};
+  levelIndex=i;level=LEVELS[i];plan=buildPlan(i);level.length=plan.length;
+  buildPlayers(opts.roster);
   enemies=[];allies=[];objects=[];drops=[];particles=[];bullets=[];discards=[];zones=[];floating=[];effects=[];scenery=[];crown=null;spillWheels=[];bossObjs=[];bossCard=null;bossIntro=0;lastHitEnemy=null;dashTime=0;wave=0;lock=null;bossSpawned=false;cleared=false;stageTimer=0;combo=0;comboTimer=0;shake=0;flash=0;hitstop=0;
   encIndex=0;encounter=null;sectionIndex=-1;radio=null;radioQueue=[];alliesFreed=0;parkedCar=null;road=0;roadStream=0;cameraY=0;fade=null;initMission();
   card=null;caption=null;clearSeq=null;endSeq=null;endLot=null;lastLot00=null;finalBlow=false;blowKind=null;stageKills=kills;
@@ -827,10 +917,12 @@ function startStage(i,opts={}){
 function enterSection(k,quiet=false){
   sectionIndex=k;const s=plan.sections[k];
   if(!!s.drive!==driving){
-    driving=!!s.drive;flash=.45;shake=5;player.z=0;player.vz=0;player.pickup=0;player.vx=0;player.vy=0;player.bank=0;player.bump=0;
-    if(driving){dropWeapon();parkedCar=null;toast='BACK IN THE CADILLAC!';}
-    // On foot the Cadillac stays where the section parks it (a 'parked-car' prop), else beside the hero.
-    else{const ahead=!!parkedCar&&parkedCar.x>player.x+W/2;if(!parkedCar)parkedCar={x:player.x-22,y:clamp(player.y,laneY(.15),laneY(.88))};toast=ahead?'ON FOOT · THE CADILLAC WAITS AHEAD':'ON FOOT · THE CADILLAC WAITS HERE';}
+    driving=!!s.drive;flash=.45;shake=5;const ps=multi()?present():[player],lp=multi()?driverP():player;
+    for(const p of ps){p.z=0;p.vz=0;p.pickup=0;p.vx=0;p.vy=0;p.bank=0;p.bump=0;}
+    if(driving){for(const p of ps)withPlayer(p,dropWeapon);parkedCar=null;toast='BACK IN THE CADILLAC!';}
+    // On foot the Cadillac stays where the section parks it (a 'parked-car' prop), else beside the hero; the riders get
+    // out behind the driver.
+    else{ps.forEach((p,k)=>{if(p!==lp){p.x=lp.x-26*k;p.y=lp.y;}});const ahead=!!parkedCar&&parkedCar.x>lp.x+W/2;if(!parkedCar)parkedCar={x:lp.x-22,y:clamp(lp.y,laneY(.15,lp.x),laneY(.88,lp.x))};toast=ahead?'ON FOOT · THE CADILLAC WAITS AHEAD':'ON FOOT · THE CADILLAC WAITS HERE';}
     toastTime=3.5;
   }else if(!quiet){toast=s.name;toastTime=3.5;}
   // The first section of an area carries the area caption (CAMPAIGN §4.7, §15.2 (6)): ROM 8x16 text on scroll1 row 23
@@ -840,12 +932,16 @@ function enterSection(k,quiet=false){
   spawnScenery(s);
   checkpoint();
 }
-function pause(){if(state==='play'){state='paused';resetInput();panel(`<section class="panel small-panel"><p class="eyebrow">TAKE A BREATHER</p><h2>PAUSED.</h2><p>Chapter 0${levelIndex+1} · ${level.name}<br>Section ${sectionIndex+1} of ${plan.sections.length} · ${plan.sections[sectionIndex].name}<br>Your checkpoint is saved at the start of this section.</p><div class="menu-buttons"><button id="resume" class="primary">RESUME →</button><button id="controls" class="secondary">CONTROLS</button><button id="pause-sound" class="secondary">AUDIO SETTINGS</button>${TOUCH&&!root.classList.contains('standalone')?`<button id="pause-full" class="secondary">${isFull()?'EXIT FULLSCREEN':'FULLSCREEN'}</button>`:''}<button id="restart" class="secondary">RESTART SECTION</button><button id="quit" class="secondary">MAIN MENU</button></div></section>`);bindButton('resume',resume);bindButton('pause-sound',()=>soundRoom(()=>{state='play';pause();}));bindButton('pause-full',()=>{toggleFull();setTimeout(()=>{if(state==='paused'){state='play';pause();}},450);});bindButton('controls',()=>guide(()=>{state='play';pause();}));bindButton('restart',()=>startStage(levelIndex,{section:sectionIndex}));bindButton('quit',()=>{checkpoint();menu();});}else if(state==='paused')resume();}
-function resume(){state='play';panel('');resetInput();canvas.focus();}
-function gameover(){state='gameover';save.best=Math.max(save.best,score);persist();const at=Math.max(0,sectionIndex);panel(`<section class="panel small-panel"><p class="eyebrow">THE COUNT RAN OUT</p><h2>GAME OVER.</h2><p>No coin dropped in time. The gang can regroup at the start of section ${at+1}: ${plan.sections[at].name}.<br>Score ${score.toString().padStart(6,'0')} · Best combo ${bestCombo}</p><div class="menu-buttons"><button id="retry" class="primary">TRY AGAIN →</button><button id="quit" class="secondary">MAIN MENU</button></div></section>`);bindButton('retry',()=>{lives=3;startStage(levelIndex,{section:at});});bindButton('quit',menu);}
+function pause(by='host'){if(NETROLE==='client'){window.EDEN_LOBBY?.confirmLeave?.();return;}if(state==='play'){state='paused';netPause(true,by);resetInput();panel(`<section class="panel small-panel"><p class="eyebrow">TAKE A BREATHER</p><h2>PAUSED.</h2><p>Chapter 0${levelIndex+1} · ${level.name}<br>Section ${sectionIndex+1} of ${plan.sections.length} · ${plan.sections[sectionIndex].name}<br>Your checkpoint is saved at the start of this section.</p><div class="menu-buttons"><button id="resume" class="primary">RESUME →</button><button id="controls" class="secondary">CONTROLS</button><button id="pause-sound" class="secondary">AUDIO SETTINGS</button>${TOUCH&&!root.classList.contains('standalone')?`<button id="pause-full" class="secondary">${isFull()?'EXIT FULLSCREEN':'FULLSCREEN'}</button>`:''}<button id="restart" class="secondary">RESTART SECTION</button>${mpHosting()?'<button id="mp-end" class="secondary">END GAME FOR EVERYONE</button>':'<button id="quit" class="secondary">MAIN MENU</button>'}</div></section>`);bindButton('resume',resume);bindButton('mp-end',mpToRoom);bindButton('pause-sound',()=>soundRoom(()=>{state='play';pause();}));bindButton('pause-full',()=>{toggleFull();setTimeout(()=>{if(state==='paused'){state='play';pause();}},450);});bindButton('controls',()=>guide(()=>{state='play';pause();}));bindButton('restart',()=>startStage(levelIndex,{section:sectionIndex}));bindButton('quit',()=>{checkpoint();menu();});}else if(state==='paused')resume();}
+function resume(){state='play';netPause(false);panel('');resetInput();canvas.focus();}
+function gameover(){state='gameover';save.best=Math.max(save.best,score);persist();const at=Math.max(0,sectionIndex);panel(`<section class="panel small-panel"><p class="eyebrow">THE COUNT RAN OUT</p><h2>GAME OVER.</h2><p>No coin dropped in time. The gang can regroup at the start of section ${at+1}: ${plan.sections[at].name}.<br>Score ${score.toString().padStart(6,'0')} · Best combo ${bestCombo}</p><div class="menu-buttons"><button id="retry" class="primary">TRY AGAIN →</button><button id="quit" class="secondary">MAIN MENU</button></div></section>`);bindButton('retry',()=>{lives=3;startStage(levelIndex,{section:at});});bindButton('quit',()=>mpHosting()?mpToRoom():menu());}
 function stageClear(){if(cleared)return;cleared=true;state='clear';player.victoryT=0;player.runLatch=0;if(!driving){player.z=0;player.vz=0;player.dropIn=false;}
   const vitality=Math.max(0,Math.round(player.hp))*100,beaten=Math.max(0,kills-stageKills)*100,blow=finalBlow?20000:0,total=vitality+beaten+blow;
   score+=total;caption=null;clearSeq={t:0,story:false,typed:0,tally:{chapter:levelIndex+1,vitality,enemies:beaten,finalBlow:blow,total}};
+  // 2-3 players: everyone strikes the pose; each gets the clear bonus with their own vitality (the tally shows this
+  // machine's numbers); joiners save the unlock too
+  if(multi())for(const p of present())if(p!==player)withPlayer(p,()=>{player.victoryT=0;player.runLatch=0;if(!driving){player.z=0;player.vz=0;player.dropIn=false;}score+=Math.max(0,Math.round(player.hp))*100+beaten+blow;});
+  if(NETROLE==='host')hostEv('unlock',Math.min(5,levelIndex+1));
   save.unlocked=Math.max(save.unlocked,Math.min(5,levelIndex+1));save.best=Math.max(save.best,score);sfx('clear');save.checkpoint=levelIndex<5?{level:levelIndex+1,section:0,hero:selected,difficulty,score,lives}:null;persist();
   panel(`<section class="panel dock-panel clear-dock"><p class="eyebrow">CHAPTER 0${levelIndex+1} COMPLETE</p><div class="menu-buttons"><button id="next" class="primary">${levelIndex===5?'SEE THE ENDING':'NEXT CHAPTER'} →</button></div></section>`);bindButton('next',clearNext);}
 // ---------------------------------------------------------------- the ending (CAMPAIGN §11.2-§11.4; EDEN_ENDING)
@@ -932,6 +1028,8 @@ function endRunSetup(){endLot=null;
   if(plan&&plan.areas.length>1&&levelIndex===5){enterArea(1);}
   allies=[];enemies=[];bullets=[];zones=[];effects=[];objects=[];drops=[];floating=[];scenery=[];player.victoryT=null;player.weapon=null;player.ammo=0;player.hurt=0;player.special=0;player.attack=0;player.pickup=0;player.dir=1;
   const b=bandOf(player.x);player.y=b.top+b.h*.55;
+  // the other players run with the hero, a step behind on their own lanes
+  if(multi())present().forEach((p,k)=>{if(p===player)return;Object.assign(p,{victoryT:null,weapon:null,ammo:0,hurt:0,special:0,attack:0,pickup:0,dir:1,z:0,down:false,dying:false});p.mp.cont=null;p.mp.out=false;p.x=player.x-20*(k||1);p.y=clamp(player.y+(k%2?-12:12),b.top,b.bottom);});
   endActors=[0,1,2,3].map(k=>{const x=player.x-44-k*34,bb=bandOf(x);return endActor((selected+[1,2,3,0][k])%4,x,clamp(player.y+[-19,16,-6,27][k],bb.top+4,bb.bottom-4),{own:k===3});});
   endSeq.stumbler=endActors[0];endSeq.camHold=null;caption={text:endBeat()?.caption||'',t:0};
 }
@@ -957,6 +1055,7 @@ function updateEnding(dt){
     // the camera follows the runners until the copy stumbles, then holds on it while the others run on out of shot
     if(t<150){camera=clamp(player.x-150,0,Math.max(0,(ar?.w||W)-W));if(ar)cameraY=STG.pathY(ar,camera);}
     updateHeroAnim(dt,player.x-px);
+    if(multi())for(const p of present())if(p!==player)withPlayer(p,()=>{const qx=player.x;player.move=true;player.run=true;player.dir=1;player.x=Math.min(maxX,player.x+END_RUN_V*dt);updateHeroAnim(dt,player.x-qx);});
   }else if(b.beat==='choice'){
     const own=endActors.find(a=>a.own),fallen=endSeq.stumbler,t=endSeq.t-boxFrames(b);
     if(t>=0&&own&&fallen){
@@ -978,9 +1077,9 @@ function updateEnding(dt){
 function endingPanel(){
   if(state!=='ending')return;if(endSeq){endSeq.done=true;endSeq.k=END_BEATS().length;}rollT=0;
   const me=HEROES[selected];
-  panel(`<section class="panel small-panel"><p class="eyebrow">FESSENDEN’S LEGACY · THE END</p><h2>NOBODY’S COPY.</h2><p>Morning finds the Crown dam quiet. The vat hall is under water, Echo’s archive is ash, and a green stain on the spillway is all that is left of the last copy. Marshal Sable sits in a cell in Wassoon with a trial date, and Dr. Echo in the one beside it. Not one copy goes back into a tank. Mack grazes on the causeway; the Regent sleeps in the dome.</p><p>Your clone stands at the edge of the spillway, a little younger than you and a lot less sure. “Guess I need my own name,” it says.</p><p style="color:var(--acid)">MUSTAPHA: Take “Mostafa”. Nobody spells it right anyway.<br>JACK: Twice now Fessenden tried to tip the scales.<br>HANNAH: Fessenden tried to cheat nature twice. Twice, nature balanced itself.<br>MESS: Hey… that car seats two up front. Jack? JACK!</p><p>The Cadillac pulls away. Mustapha and Mess run after it again, and this time four copies of the gang run behind them.</p><p>${me.name} drives home with the gang · ${kills} enemies defeated · ${Math.floor(runTime/60)} minutes · score ${score}<br>All six chapters are now available.</p><div class="menu-buttons"><button id="chapters" class="primary">PLAY A CHAPTER →</button><button id="credits" class="secondary">CREDITS</button><button id="quit" class="secondary">MAIN MENU</button></div></section>`);bindButton('chapters',chapters);bindButton('credits',credits);bindButton('quit',menu);}
+  panel(`<section class="panel small-panel"><p class="eyebrow">FESSENDEN’S LEGACY · THE END</p><h2>NOBODY’S COPY.</h2><p>Morning finds the Crown dam quiet. The vat hall is under water, Echo’s archive is ash, and a green stain on the spillway is all that is left of the last copy. Marshal Sable sits in a cell in Wassoon with a trial date, and Dr. Echo in the one beside it. Not one copy goes back into a tank. Mack grazes on the causeway; the Regent sleeps in the dome.</p><p>Your clone stands at the edge of the spillway, a little younger than you and a lot less sure. “Guess I need my own name,” it says.</p><p style="color:var(--acid)">MUSTAPHA: Take “Mostafa”. Nobody spells it right anyway.<br>JACK: Twice now Fessenden tried to tip the scales.<br>HANNAH: Fessenden tried to cheat nature twice. Twice, nature balanced itself.<br>MESS: Hey… that car seats two up front. Jack? JACK!</p><p>The Cadillac pulls away. Mustapha and Mess run after it again, and this time four copies of the gang run behind them.</p><p>${me.name} drives home with the gang · ${kills} enemies defeated · ${Math.floor(runTime/60)} minutes · score ${score}<br>All six chapters are now available.</p><div class="menu-buttons"><button id="chapters" class="primary">PLAY A CHAPTER →</button><button id="credits" class="secondary">CREDITS</button><button id="quit" class="secondary">MAIN MENU</button></div></section>`);bindButton('chapters',()=>mpHosting()?mpToRoom():chapters());bindButton('credits',credits);bindButton('quit',()=>mpHosting()?mpToRoom():menu());}
 // §11.4: the staff roll over the sunset road (red categories, white names), then THANK YOU and the credits text.
-function credits(){state='credits';rollT=0;SR.require(1);panel(`<section class="panel dock-panel credits-dock"><p class="eyebrow">THANKS FOR PLAYING</p><div class="menu-buttons"><button id="credits-text" class="secondary">ABOUT THIS GAME</button><button id="quit" class="primary">MAIN MENU →</button></div></section>`);bindButton('quit',menu);bindButton('credits-text',creditsText);}
+function credits(){state='credits';rollT=0;SR.require(1);panel(`<section class="panel dock-panel credits-dock"><p class="eyebrow">THANKS FOR PLAYING</p><div class="menu-buttons"><button id="credits-text" class="secondary">ABOUT THIS GAME</button><button id="quit" class="primary">MAIN MENU →</button></div></section>`);bindButton('quit',()=>mpHosting()?mpToRoom():menu());bindButton('credits-text',creditsText);}
 function creditsText(){panel(`<section class="panel small-panel"><p class="eyebrow">THANKS FOR PLAYING</p><h2>FOR THE OLD ARCADE DAYS.</h2><p>An unofficial fan sequel made for Mostafa. It continues the story of Capcom’s 1993 arcade game six months after Dr. Fessenden’s death in the Under World beneath the City in the Sea. The heroes, enemies, bosses and dinosaurs are the original arcade sprites, decoded from the ROM files the user supplied; new characters are original bodies in new palettes, the way the arcade made Walther from Vice T. Every stage is a new layout built from the original arcade’s tiles, blocks and palettes.</p><p>New story, levels, encounters, combat engine and boss behaviours were made for this game. Original soundtrack supplied by the user. Original Cadillacs and Dinosaurs arcade game and artwork: Capcom. Characters and setting derive from Xenozoic Tales by Mark Schultz.</p><div class="menu-buttons"><button id="quit" class="primary">MAIN MENU →</button></div></section>`);bindButton('quit',menu);}
 // ---------------------------------------------------------------- G6 drawing (arcade screen px, under beginFrame)
 function drawAttract(){const U=UI(),list=window.EDEN_INTRO||[];rect(ctx,0,0,W,H,'#000000');if(!U||!attractSeq)return;const p=list[attractSeq.k];if(p){picFrame(p.pic,attractSeq.t);U.panel(ctx,{...p,typed:attractSeq.t});}}
@@ -1002,7 +1101,7 @@ function drawEndWorld(){
 }
 // an ending actor through the clone clip player: its own colours ('hero') or a freed copy's gold outline
 function drawEndActor(a,x,y){
-  const R=RIG(),st=animateClone(a,0,0);if(!R||!st||!st.main.clip)return false;const id=HEROES[a.hero].id,parts=R.parts(id,{full:st.main},null);
+  const R=RIG(),st=NETROLE==='client'?null:animateClone(a,0,0),body=st?{full:st.main}:a.rig?{full:{clip:a.rig[0],k:a.rig[1]}}:null;if(!R||!body||st&&!st.main.clip)return false;const id=HEROES[a.hero].id,parts=R.parts(id,body,null);
   return a.freed?drawOutlined(parts,x,y,a.z,a.dir,CFG.sockets.scale,'freed-'+id,'#ffd257'):R.draw(ctx,parts,x,y,a.z,a.dir,CFG.sockets.scale,'hero');
 }
 // The ending car: the ROM's own ending records (3489/3490: the Cadillac with Jack at the wheel and Hannah beside him,
@@ -1085,11 +1184,11 @@ function bossReinforce(e){e.calls=(e.calls||0)+1;BOSS_GUARDS[levelIndex].forEach
 // arrive() picks the encounter's variant without a random call. HP = the variant's ROM HP at the chapter's arcade level
 // (kindHp) times the difficulty's enemyHealth; a boss's HP is its BOSS_DEFS hp (bossHpOf, with the PLAN §8.2 HP lever).
 function spawnEnemy(x,y,type='raider',boss=false) {
-  const v=boss?null:defaultVariant(type),base=boss?bossHpOf(type):(kindHpOf(type,v)??BASE_HP[type]??80),hp=base*rules().enemyHealth;
+  const v=boss?null:defaultVariant(type),base=boss?bossHpOf(type):(kindHpOf(type,v)??BASE_HP[type]??80),hp=base*rules().enemyHealth*(boss?bossScale():1);
   const e={id:Math.random(),x,y,z:0,vx:0,vz:0,dir:-1,hp,maxhp:hp,type,boss,phase:1,state:'walk',timer:rand(.8,1.8),hurt:0,inv:0,anim:rand(0,1),dead:0,attack:0,attackNo:0,hitChain:0,hitTimer:0,recovery:0,onstage:true,delay:0,
     clone:!boss&&(['mutant','regent','mirror'].includes(type)||Math.random()<(level.clones||0)),hero:Math.floor(Math.random()*4)};
   if(v){e.v=v;e.knife=type==='knifer';e.stun=10;}
-  enemies.push(e);return e;
+  enemies.push(e);nidOf(e);return e;
 }
 // Gives an enemy another variant of its kind (CAMPAIGN §4.4 cast, an elite's `variant`): its HP, knife and colours.
 function setVariant(e,V,palAlt){
@@ -1132,12 +1231,12 @@ function arrive(type,side,j,wi=encounter?.next||0){
     const b0=bandOf(x),b1=bandOf(enterX),top=Math.max(b0.top,b1.top),bottom=Math.min(b0.bottom,b1.bottom),b=bottom-top>=16?{top,h:bottom-top}:b0;
     e=spawnEnemy(x,roadside?(j%2?b.top+3:b.top+b.h-3):laneIn(b),type);e.state='enter';e.dir=-s;e.onstage=false;e.enterX=enterX;e.from=s;}
   setVariant(e,V);
-  e.delay=j*.55;e.waiting=enemies.filter(v=>v!==e&&!v.dead&&!v.dying&&!v.waiting&&v.state!=='flee'&&!v.setPiece).length>=rules().crowdLimit;return e;
+  e.delay=j*.55;e.waiting=enemies.filter(v=>v!==e&&!v.dead&&!v.dying&&!v.waiting&&v.state!=='flee'&&!v.setPiece).length>=crowdLimit();return e;
 }
 function startEncounter(enc){
   // The lock is the screen at the camera trigger: lock = {left: x, right: x + 384} (ARCHITECTURE §2.3-§2.4).
   wave++;if(enc.cam!==undefined)camera=enc.cam;lock={left:camera,right:camera+W};
-  encounter={spec:enc,next:0,timer:0,eliteSpawned:false};
+  encounter={spec:enc,next:0,timer:0,eliteSpawned:false,np:NPRES>1?NPRES:1};
   if(enc.task!==undefined)createTaskFor(enc.task);
   if(enc.say)say(enc.say);
   if(enc.boss){spawnBoss();return;}
@@ -1154,7 +1253,7 @@ function startSetPieces(enc){
 }
 function spawnNextWave(){
   const spec=encounter.spec,waves=spec.w||[];if(encounter.next>=waves.length)return false;
-  const lineup=[...waves[encounter.next]];if(rules().extraWaveEnemy)lineup.push(driving?'biker':encounter.next%2?'knifer':'gunner');
+  const lineup=[...waves[encounter.next]];{const np=encounter.np||1,n0=lineup.length;for(let j=0;j<np-1&&n0;j++)lineup.push(lineup[j%n0]);}if(rules().extraWaveEnemy)lineup.push(driving?'biker':encounter.next%2?'knifer':'gunner');
   // The first wave keeps the encounter's entrance; later waves alternate sides so fights never feel scripted.
   const from=encounter.next===0?spec.from||'R':spec.from==='T'?'B':encounter.next%2?(spec.from==='L'?'R':'L'):spec.from||'R';
   lineup.forEach((type,j)=>{const e=arrive(type,from==='B'?(j%2?'L':'R'):from,j);if(j===0&&encounter.next===0&&wave%3===0)e.loot=CARRIED[levelIndex][(wave/3)%3];});
@@ -1164,13 +1263,15 @@ function spawnNextWave(){
 // campaign names one (PACK ALPHA t74-e8a0-pal31, BROOD MOTHER t10-e6a2-pal29 + drowned). Its `after` line is read from
 // the encounter (CODE-MAP §15.1: the campaign put it there, so it never played) and, as a belt-and-braces copy, from the
 // elite itself (CAMPAIGN D13).
+// a mirror elite copies a hero nobody is playing (O-MP5); single player: the hero select's offset as before
+function mirrorHero(k){if(!multi())return (selected+k)%4;const used=new Set(present().map(p=>p.mp.hero));let h=((players[0]?players[0].mp.hero:selected)+k)%4;for(let i=0;i<4&&used.has(h);i++)h=(h+1)%4;return h;}
 function spawnElite(spec){
   // the elite's variant is known before it arrives, so arrive() places it by that variant's entrance reach
   const V=castVariant(spec.type,spec.variant,0,0),pal=String(spec.palette||'');
   encounter.eliteSpawned=true;const e=arrive(V?spec.type+':'+V:spec.type,'R',0);e.delay=.3;e.elite=true;e.clone=true;e.name=spec.name;e.after=encounter.spec.after||spec.after||null;
   setVariant(e,V||e.v,e.type==='regent'&&pal?'brood':e.type==='raptor'&&/pal31/.test(pal)?'alpha':null);
   if(e.type==='regent'&&pal)e.brood=true;
-  e.hp=e.maxhp=spec.hp*rules().enemyHealth;if(spec.type==='mirror')e.hero=(selected+(spec.hero||0))%4;
+  e.hp=e.maxhp=spec.hp*rules().enemyHealth*bossScale();if(spec.type==='mirror')e.hero=mirrorHero(spec.hero||0);
   toast=spec.name+' · INCOMING';toastTime=3;sfx('special');return e;
 }
 // KI15 (enemies VERIFY #3): a wrecked bike respawns its rider as a GNEISS (Chinpira B) thrown from 32 px up at the bike's
@@ -1233,11 +1334,11 @@ function completeObjective(){
 function spawnLastCopy(){
   if(!lock)lock={left:camera,right:camera+W};encounter={spec:{boss:true},next:0,timer:0};bossSpawned=true;cleared=false;
   const ly=laneY(.62,lock.right),D=BDEF.fessenden,t=D?.intro?.t||3.2,b=spawnEnemy(lock.right+156,ly,'fessenden',true);
-  b.hp=b.maxhp=bossHpOf('fessenden')*rules().enemyHealth;b.name=D?.name||'LOT 00 · FESSENDEN';b.phase=3;b.calls=0;b.clone=true;b.pi=0;b.useN={};b.said={};
+  b.hp=b.maxhp=bossHpOf('fessenden')*rules().enemyHealth*bossScale();b.name=D?.name||'LOT 00 · FESSENDEN';b.phase=3;b.calls=0;b.clone=true;b.pi=0;b.useN={};b.said={};
   lot00Init(b);bossIntroSetup(b,{t,settle:140,x:Math.max(lock.right,camera+W)+122});bossIntro=t;setBossCard(b.name,level.lastCopy?.card||'THE LAST COPY',t,true);
   if(crown){crown.cracked=true;crown.occupied=false;crown.stalled=false;}
   flash=.8;shake=14;toast=level.lastCopy?.toast||'THE CAPSULE CRACKS OPEN';toastTime=4.5;sfx('explosion');effects.push({x:lock.right-89,y:ly,age:0,life:.8,type:'explosion'});explosionParticles(lock.right-89,ly);
-  const lc=level.lastCopy||{};say(lc.say?.[0]);say(lc.byHero?.[HEROES[selected].id]);say(lc.say?.[1]);makeWheels();
+  const lc=level.lastCopy||{};say(lc.say?.[0]);say(lc.byHero?.[HEROES[multi()?leadPlayer().mp.hero:selected].id]);say(lc.say?.[1]);makeWheels();
 }
 function damageObjective(power,x=player.x,y=player.y,range=67,dir=player.dir){
   const t=mission?.active;if(!t||t.kind!=='beacon'||t.done)return false;
@@ -1248,6 +1349,13 @@ function updateMission(dt){
   if(radio){radio.ttl-=dt;if(radio.ttl<=0)radio=null;}
   if(!radio&&radioQueue.length)radio={text:radioQueue.shift(),ttl:4.6};
   const t=mission?.active;if(!t)return;
+  // 2-3 players (§3.9): any player on the field in reach holding E works it, at the one-player rate
+  if(multi()){const ps=present().filter(p=>onField(p)&&!passenger(p));
+    if(t.kind==='cargo'){const p=ps.find(q=>withPlayer(q,objectiveNear));if(p)withPlayer(p,completeObjective);return;}
+    if(t.kind==='beacon'||t.kind==='tuner')return;
+    const p=ps.find(q=>withPlayer(q,()=>objectiveNear()&&down('KeyE','KeyV')&&player.hurt<=0&&player.attack<=0&&!player.move));
+    if(p){t.progress+=dt/(t.bossTask?1.4:.85);if(t.progress>=1)withPlayer(p,completeObjective);}else t.progress=Math.max(0,t.progress-dt*.7);
+    return;}
   if(t.kind==='cargo'){if(objectiveNear())completeObjective();return;}
   if(t.kind==='beacon'||t.kind==='tuner')return;
   if(objectiveNear()&&down('KeyE','KeyV')&&player.hurt<=0&&player.attack<=0&&!player.move){t.progress+=dt/(t.bossTask?1.4:.85);if(t.progress>=1)completeObjective();}
@@ -1330,8 +1438,8 @@ function spawnBoss() {
 // Freed clones join from behind the player, in the order the Mirror Gang was beaten; your own copy comes last.
 function spawnAlly(k,quiet=false){
   const order=[1,2,3,0],hero=(selected+order[k%4])%4,hp=rules().allyHealth,L=lock||{left:camera};
-  const b=bandOf(L.left);allies.push({id:'ally'+k,ally:true,hero,lane:[-19,16,-6,27][k%4],x:L.left-44-k*33,y:clamp(player.y+[-19,16,-6,27][k%4],b.top+4,b.bottom-4),z:0,dir:1,hp,maxhp:hp,state:'enter',timer:.4,anim:rand(0,1),hurt:0,inv:0,calm:0,strikeFlash:0,moving:false});
-  if(!quiet)popup(player.x,player.y-89,'A CLONE BREAKS FREE','#ffe08a');
+  const b=bandOf(L.left),lp=leadPlayer();allies.push({id:'ally'+k,ally:true,hero,lane:[-19,16,-6,27][k%4],x:L.left-44-k*33,y:clamp(lp.y+[-19,16,-6,27][k%4],b.top+4,b.bottom-4),z:0,dir:1,hp,maxhp:hp,state:'enter',timer:.4,anim:rand(0,1),hurt:0,inv:0,calm:0,strikeFlash:0,moving:false});
+  if(!quiet)popup(lp.x,lp.y-89,'A CLONE BREAKS FREE','#ffe08a');
 }
 function freeClones(n){for(let i=0;i<n;i++)spawnAlly(alliesFreed++);toast='FREED CLONES JOIN THE FIGHT';toastTime=3;flash=.25;}
 function hurtAlly(a,amount,fromX){
@@ -1354,7 +1462,7 @@ function updateAlly(a,dt){
     const ty=t.y+(a.lane>0?4:-4);if(Math.abs(a.y-ty)>2){a.y=approach(a.y,ty,speed*.6*dt);a.moving=true;}
     if(dist<want+16&&Math.abs(t.y-a.y)<19&&a.timer<=0){a.target=t;a.state='windup';a.timer=.26;}
   }else{
-    const bb=bandOf(a.x),tx=player.x-player.dir*(59+Math.abs(a.lane)),ty=clamp(player.y+a.lane,bb.top+4,bb.bottom-4),far=Math.abs(tx-a.x);
+    const lp=leadPlayer(),bb=bandOf(a.x),tx=lp.x-lp.dir*(59+Math.abs(a.lane)),ty=clamp(lp.y+a.lane,bb.top+4,bb.bottom-4),far=Math.abs(tx-a.x);
     if(far>13){a.dir=Math.sign(tx-a.x);a.x+=a.dir*speed*(far>193?1.7:1)*dt;a.moving=true;}
     if(Math.abs(a.y-ty)>3){a.y=approach(a.y,ty,speed*.6*dt);a.moving=true;}
   }
@@ -1480,7 +1588,7 @@ function damagePlayer(amount,fromX,ignoreAir=false,hit=null) {
   player.burst=null;player.runLatch=0;player.dashPhase=null;player.dropIn=false;if(player.knocked)dropWeapon();shake=6;flash=.06;sfx('hurt');burst(player.x,player.y-33,'#eea575',8);
   // A lost life: the death fall (knockHard, the ROM's death fall) and a moment lying, then the next life drops in from
   // the top of the screen (startDropIn; HEROES §6.6). The last life goes to the continue count.
-  if(player.hp<=0){lives--;if(lives>0){player.hp=player.maxhp;dropWeapon();player.knocked=!driving;player.dying=!driving;if(!driving){player.knockRole='knockHard';player.hurt=player.hurtTotal=heroClipLen('knockHard',.65)+1;}else player.hurt=0;player.inv=player.hurt+3;toast=`${lives} LIVES REMAINING`;toastTime=3;checkpoint();}else startContinue();}
+  if(player.hp<=0){lives--;if(lives>0){player.hp=player.maxhp;dropWeapon();player.knocked=!driving;player.dying=!driving;if(!driving){player.knockRole='knockHard';player.hurt=player.hurtTotal=heroClipLen('knockHard',.65)+1;}else player.hurt=0;player.inv=player.hurt+3;toast=multi()?`${player.mp.slot+1}P · ${lives} LIVES REMAINING`:`${lives} LIVES REMAINING`;toastTime=3;checkpoint();}else if(multi())mpStartContinue();else startContinue();}
 }
 // The respawn drop-in (HEROES §6.6; ROM caller 0x18C04): the hero falls in from the top of the screen on the jumpFwd
 // clip ("respawn / join drop-in") with the normal gravity and lands; no control until the feet touch the floor.
@@ -1508,6 +1616,42 @@ function respawn(){
   coins=Math.max(0,coins-1);lives=3;player.hp=player.maxhp;player.inv=3;player.hurt=0;player.knocked=false;player.down=false;player.z=0;player.vz=0;dropWeapon();if(!driving)startDropIn();
   for(const e of enemies)if(!e.dead&&!e.dying&&['windup','charge','leap'].includes(e.state)){e.state='walk';e.timer=1.2;clearEnemyHazards(e.id);}
   state='play';panel('');resetInput();toast='PLAYER 1 · CONTINUE';toastTime=2.5;sfx('special');flash=.3;checkpoint();
+}
+// 2-3 players (§3.10): a last life does not stop the game. The hero lies on the death fall's lying frame while that
+// player's own 10-s count runs on its HUD block; a coin (Enter or attack) spends a shared credit and drops the hero back
+// in on the spot with full health and 3 lives. At 0 the player is out: the slot calls JOIN-IN again and a coin brings
+// them back any time, score kept (O-MP8). Game over when every player is out.
+function mpStartContinue(){
+  const m=player.mp;m.cont={t:10,pending:0};player.down=true;player.downT=0;player.dying=false;player.dropIn=false;player.hurt=0;player.knocked=false;player.attack=0;player.moveState=null;player.pendingStrike=null;player.swing=null;player.burst=null;player.runLatch=0;player.z=0;player.vz=0;releaseGrab();dropWeapon();
+  toast=`${m.slot+1}P · CONTINUE?`;toastTime=2;
+  for(const e of enemies)if(e.tp===player)e.tp=null;
+  if(!active().length)for(const e of enemies)if(!e.dead&&!e.dying&&['windup','charge','leap'].includes(e.state)){e.state='walk';e.timer=1.5;e.strikeFlash=0;clearEnemyHazards(e.id);}
+}
+function mpDownStep(dt){
+  const m=player.mp,coin=tap('Enter','NumpadEnter','KeyJ','KeyZ','Space');m.mx=player.x;m.my=player.y;m.moved=0;
+  if(m.cont){player.downT+=dt;
+    if(m.cont.pending>0){m.cont.pending-=dt;if(m.cont.pending<=0)mpRespawn();return;}
+    m.cont.t-=dt;
+    if(coin){insertCoin();m.cont.pending=.9;}
+    else if(m.cont.t<=0){m.cont=null;m.out=true;player.down=false;toast=`${m.slot+1}P · GAME OVER`;toastTime=2.5;if(present().every(p=>p.mp.out))mpAllOut=true;}
+    return;}
+  if(m.out&&coin){insertCoin();mpRespawn();}
+}
+let mpAllOut=false;
+function mpRespawn(){
+  const m=player.mp,b=bandOf(camera+W/2);coins=Math.max(0,coins-1);lives=3;
+  if(m.out){player.x=clamp(camera+64+40*m.slot,camera+32,camera+W-32);player.y=clamp(b.mid+[0,-12,12][m.slot],b.top,b.bottom);}
+  else player.x=clamp(player.x,camera+32,camera+W-32);
+  m.cont=null;m.out=false;player.hp=player.maxhp;player.inv=3;player.hurt=0;player.knocked=false;player.down=false;player.z=0;player.vz=0;dropWeapon();
+  if(!driving)startDropIn();m.tag=2;toast=`${m.slot+1}P · CONTINUE`;toastTime=2;sfx('special');
+}
+// A passenger in the Cadillac (§3.11): rides with the driver; its attack is a side bash out of the back seat.
+function passengerStep(dt){
+  const d=driverP(),m=player.mp,seat=Math.max(1,present().filter(q=>q!==d).indexOf(player)+1);
+  player.x=d.x-6-14*seat;player.y=d.y;player.z=0;player.dir=d.dir;player.vx=d.vx;player.roll=d.roll;m.mx=player.x;m.my=player.y;m.moved=0;
+  for(const k of ['inv','hurt','attack','special','specialCd','boost','boostCd'])player[k]=Math.max(0,player[k]-dt);
+  if(tap('KeyJ','KeyZ','Space')&&player.attack<=0){const side=seat%2?-1:1,ox=player.x;player.attack=player.attackTotal=.5;player.x=d.x+side*40;player.dir=side;meleeStrike(CAR_REACH*.6,46,true,null,{car:true});player.x=ox;player.dir=d.dir;sfx('hit');}
+  if(tap('Enter','NumpadEnter'))insertCoin();
 }
 // The in-place continue (CAMPAIGN D18: the user's 10-s count over the fallen hero, not the 1993 Vice T. screen) in the
 // ROM font: CONTINUE? and the count over the lanes, the coin call, how to drop one, and CREDIT n at the foot of the
@@ -1597,7 +1741,7 @@ function grabAttack(){
   if(back||g.hits>=3){
     const e=g.e,h=HEROES[selected],dir=back?-player.dir:player.dir;
     startMove('throw',{back,role:back?'throwBack':'throwFwd',onRelease:()=>{if(e.state!=='held'){releaseGrab();return;}e.state='walk';e.x=player.x+dir*(back?7:21);e.z=22;
-      damageEnemy(e,h.power*2.3,dir*22,true,false,{melee:true,heavy:true,fling:{vx:dir*185,vz:222}});e.thrown=true;player.grab=null;player.grabCd=.7;if(back)player.dir=dir;}});
+      damageEnemy(e,h.power*2.3,dir*22,true,false,{melee:true,heavy:true,fling:{vx:dir*185,vz:222}});e.thrown=true;if(multi())e.byP=player;player.grab=null;player.grabCd=.7;if(back)player.dir=dir;}});
     return;
   }
   g.hits++;startMove('knee',{role:g.hits%2?'knee1':'knee2'});
@@ -2003,7 +2147,7 @@ function bossDownTick(e,dt){const L=lock||{left:camera,right:camera+W};e.x=clamp
 // hp <= 0: true when the boss lives on (a phase change, the Regent's floor, MACK's flight), else the defeat script runs
 function bossDown(e,kdir){
   const L=lock||{left:camera,right:camera+W};
-  if(e.type==='sable'&&e.phase===1){clearEnemyHazards(e.id);Object.assign(e,{z:0,phase:2,calls:0,state:'transform',timer:2.7,inv:2.7,attackNo:0,pi:0,phIdx:-1,useN:{},said:{},mvI:null,rec:null,next:null,tempoMul:1});e.hp=e.maxhp=bossHpOf('sable',2)*rules().enemyHealth;
+  if(e.type==='sable'&&e.phase===1){clearEnemyHazards(e.id);Object.assign(e,{z:0,phase:2,calls:0,state:'transform',timer:2.7,inv:2.7,attackNo:0,pi:0,phIdx:-1,useN:{},said:{},mvI:null,rec:null,next:null,tempoMul:1});e.hp=e.maxhp=bossHpOf('sable',2)*rules().enemyHealth*bossScale();
     flash=.65;shake=12;toast=level.phase2?.toast||'SABLE BOARDS THE CROWN ENGINE';toastTime=4;effects.push({x:e.x,y:e.y,age:0,life:.8,type:'explosion'});say(level.phase2?.say);e.name=BDEF.sable?.phase2?.name||'CROWN ENGINE';bPlay(e,bSpec(e,'main:4')?.alts[0][0],{hold:false});return true;}
   if(e.type==='raptor'&&bossDriver()){e.hp=1;e.state='recover';e.timer=1.4;e.inv=1.4;e.rec=null;toast='SILENCE THE NEST SONIC DRIVER TO STOP THE BEAST';toastTime=2;return true;}
   if(e.type==='raptor'){e.state='flee';e.timer=1.2;e.hp=1;e.inv=2;e.dir=1;score+=2000;kills++;return true;}
@@ -2175,7 +2319,7 @@ function lotHit(e,mv){
   const g=lotGeom(e).find(q=>q.p===mv.part);let box=g?boxOf(g,e.dir):[e.x-60,e.x+60];
   if(pm.reach){const f=e.dir>0?[e.x,e.x+pm.reach]:[e.x-pm.reach,e.x];box=[Math.min(box[0],f[0]),Math.max(box[1],f[1])];}
   for(const v of fighters()){if(mv.hitList.includes(v))continue;if(v.x>=box[0]-6&&v.x<=box[1]+6&&Math.abs(v.y-e.y)<bossDepth(e)+(L.mode==='planted'?8:0)&&v.z<40){
-    if(pm.kind==='grab'&&pm.hold&&v===player&&!L.held){strike(v,dmg,e.x,false,{stun:0,react:0});if(player.hp>0&&!player.knocked){L.held={t:pm.hold/60,dmg:bossDmg(pm.dmg,1)};player.hurt=player.hurtTotal=Math.max(player.hurt,pm.hold/60);player.inv=Math.max(player.inv,pm.hold/60);}}
+    if(pm.kind==='grab'&&pm.hold&&(v===player||isLiveP(v))&&!L.held){strike(v,dmg,e.x,false,{stun:0,react:0});if(v.hp>0&&!v.knocked){L.held={t:pm.hold/60,dmg:bossDmg(pm.dmg,1),p:v};v.hurt=v.hurtTotal=Math.max(v.hurt,pm.hold/60);v.inv=Math.max(v.inv,pm.hold/60);}}
     else if(pm.kind==='grab'&&pm.hold){hurtAlly(v,dmg,e.x);v.hurt=Math.max(v.hurt||0,pm.hold/60);}
     else strike(v,dmg,e.x,false,pm.kind==='grab'?{stun:10,react:10}:null);
     mv.hitList.push(v);if(pm.kind==='grab')break;}}
@@ -2195,7 +2339,7 @@ function lotSlot(e,slot,list,names,dt){
   if(mv.pm.kind==='rush'&&mv.left>0){mv.left-=dt;const Lk=lock||{left:camera,right:camera+W};e.x=clamp(e.x+mv.vx*dt,Lk.left+40,Lk.right-30);
     for(const v of fighters()){if(mv.hitList.includes(v))continue;if(Math.abs(hx(e,v.x)-v.x)<12&&Math.abs(v.y-e.y)<bossDepth(e)&&v.z<12){strike(v,bossDmg(mv.pm.dmg??26),e.x,false,{stun:10,react:10});mv.hitList.push(v);}}}
   const f=bFrame(e,ps);if(f&&ps.key===mv.key)for(const a of mv.acts)if(f.i>=a&&!mv.done.includes(a)){mv.done.push(a);if(mv.part==='line'||mv.pm.hits)lotHit(e,mv);}
-  if(L.held&&slot===L.body){L.held.t-=dt;const v=player;v.x=approach(v.x,e.x+e.dir*70,200*dt);if(L.held.t<=0||player.hp<=0){const h=L.held;L.held=null;player.inv=0;player.hurt=0;if(player.hp>0)strike(player,h.dmg,e.x,false,{stun:10,react:10});}}
+  if(L.held&&slot===L.body){L.held.t-=dt;const v=L.held.p||player;v.x=approach(v.x,e.x+e.dir*70,200*dt);if(L.held.t<=0||v.hp<=0){const h=L.held;L.held=null;v.inv=0;v.hurt=0;if(v.hp>0)strike(v,h.dmg,e.x,false,{stun:10,react:10});}}
   if(ps.t>=mv.len-1e-6&&!L.held){
     if(mv.then){mv.key=mv.then;mv.then=null;ps.key=mv.key;ps.t=0;mv.acts=[];mv.len=bLen(mv.key);return;}
     slot.mv=null;slot.timer=(list==='necks'?.55:.75)/lotTempo(e,list);
@@ -2250,8 +2394,10 @@ const wheelNear=()=>!driving&&player?spillWheels.find(w=>w.cd<=0&&Math.abs(w.x-p
 function updateWheels(dt){
   if(!spillWheels.length)return;const boss=enemies.find(e=>e.type==='fessenden'&&e.boss&&!e.dead);if(!boss){spillWheels=[];return;}
   for(const w of spillWheels){w.cd=Math.max(0,w.cd-dt);w.spin+=dt*(w.charge>0?6:.4);}
-  const w=wheelNear();
-  if(w&&down('KeyE','KeyV')&&player.hurt<=0&&player.attack<=0&&boss.lot&&boss.lot.mode!=='collapse'&&boss.state!=='intro'){w.charge+=dt;if(w.charge>=w.hold){w.charge=0;w.cd=w.recharge;
+  // any player on the field holding E at a wheel (slot order, the first wins)
+  const hold=()=>{const q=wheelNear();return q&&down('KeyE','KeyV')&&player.hurt<=0&&player.attack<=0?q:null;};let w=null;
+  if(multi()){for(const p of present())if(onField(p)&&(w=withPlayer(p,hold)))break;}else w=hold();
+  if(w&&boss.lot&&boss.lot.mode!=='collapse'&&boss.state!=='intro'){w.charge+=dt;if(w.charge>=w.hold){w.charge=0;w.cd=w.recharge;
       boss.lot.stagger=w.stagger;boss.vulnT=w.stagger;boss.vulnMul=w.hurt;boss.lot.body.mv=null;boss.lot.held=null;effects.push({type:'surge',x:boss.x,y:boss.y,age:0,life:.9});shake=Math.max(shake,8);sfx('explosion');toast='WHEEL! · THE RIVER HITS IT';toastTime=2;}}
   else for(const v of spillWheels)v.charge=Math.max(0,v.charge-dt*.7);
 }
@@ -2423,7 +2569,7 @@ function endAttack(e,I,then=null,restF=null){
 // The blow on the attack's active (or release / fire) frame, at the end of the windup.
 function romStrike(e){
   const a=e.move,I=atkInfo(e,a);if(!I){e.state='recover';e.timer=.4;return;}
-  const v=e.target&&(e.target===player||allies.includes(e.target))?e.target:player;e.strikeFlash=.2;
+  const v=e.target&&(e.target===player||isLiveP(e.target)||allies.includes(e.target))?e.target:player;e.strikeFlash=.2;
   if(I.kind==='leap'){startLeap(e,I,v);return;}
   if(I.kind==='rush'){startCharge(e,I);return;}
   if(I.kind==='throw')throwKnife(e,I);
@@ -2523,7 +2669,7 @@ function romThink(e,dt,ox,oy){
   if(e.brood&&broodMove(e))return;
   const t=hostileTarget(e);
   e.dir=Math.sign(t.x-e.x)||e.dir;const distance=Math.abs(t.x-e.x),dy=Math.abs(t.y-e.y);
-  if(e.bit&&t===player&&(player.attack>0||player.moveState)&&distance<64&&dy<EKK.DEPTH){startEvade(e);return;}
+  if(e.bit&&(t===player||isLiveP(t))&&(t.attack>0||t.moveState)&&distance<64&&dy<EKK.DEPTH){startEvade(e);return;}
   const speed=enemySpeed(e),stop=once?Infinity:e.type==='knifer'&&e.knife===false?45:ROM_STOP[e.type]??eTable(e)?.stop??57;
   const flank=!once&&e.id<rules().flankChance&&enemies.some(o=>o!==e&&!o.dead&&!o.waiting&&!o.setPiece&&Math.abs(o.x-t.x)<rules().flankDistance&&Math.abs(o.y-t.y)<18);
   const canAttack=enemies.filter(o=>o!==e&&!o.dead&&['windup','charge','leap'].includes(o.state)).length<rules().attackSlots;
@@ -2602,7 +2748,7 @@ function zekeUpdate(e,dt){
   if(e.state==='flee'){e.z+=110*dt;e.x+=e.dir*150*dt;e.moving=true;if(e.z>220||e.x<L.left-140||e.x>L.right+140)e.remove=true;return;}
   e.moving=true;e.x+=e.dir*180*dt;const b=bandOf(e.x);e.y=approach(e.y,clamp(player.y,b.top,b.bottom),40*dt);
   const I=atkInfo(e,eTable(e)?.atk?.[0]);
-  if(I&&!e.hitList.includes(player)&&Math.abs(e.x-player.x)<(driving?60:22)&&Math.abs(e.y-player.y)<(driving?21:14)&&player.z<(driving?99:12)){strike(player,I.dmg,e.x,true,hitOf(I));e.hitList.push(player);}
+  if(I)for(const v of multi()?hitPlayers():[player])if(!e.hitList.includes(v)&&Math.abs(e.x-v.x)<(driving?60:22)&&Math.abs(e.y-v.y)<(driving?21:14)&&v.z<(driving?99:12)){strike(v,I.dmg,e.x,true,hitOf(I));e.hitList.push(v);}
   if((e.dir>0&&e.x>L.right+110)||(e.dir<0&&e.x<L.left-110)){if(++e.passes>=2||!lock)e.remove=true;else{e.dir=-e.dir;e.hitList=[];}}
 }
 // Scenery actors (CAMPAIGN §4.5): archaeopteryx flocks and pteranodons in the sky, ankylosaurus / maiasaura herds behind
@@ -2621,7 +2767,7 @@ function spawnScenery(sec){
 }
 function updateScenery(dt){
   for(const s of scenery){s.t+=dt*60;s.x+=s.vx*dt;
-    if(s.id==='hatchlings'&&Math.abs(s.x-player.x)<60&&Math.abs(s.y-player.y)<24)s.vx=(s.x<player.x?-1:1)*180;
+    if(s.id==='hatchlings')for(const p of multi()?present():[player])if(Math.abs(s.x-p.x)<60&&Math.abs(s.y-p.y)<24){s.vx=(s.x<p.x?-1:1)*180;break;}
     if(s.x<camera-160||s.x>camera+W+160)s.gone=true;}
   scenery=scenery.filter(s=>!s.gone);
 }
@@ -2637,7 +2783,19 @@ function enemySpeed(e){
 const romWalk=e=>Math.max(.3,EK.kindSpeed(e.type,e.v)||1);
 function meleeDamage(e){return ['brute','mutant','regent'].includes(e.type)?24:e.type==='slicer'?22:e.type==='mirror'?e.elite?18:14:14;}
 // Enemies go for whoever is closest: the player or a freed clone.
-function hostileTarget(e){let best=player,bd=Math.hypot(player.x-e.x,(player.y-e.y)*1.4)*.85;for(const a of allies){if(a.hp<=0||a.state==='down'||a.state==='retreat')continue;const d=Math.hypot(a.x-e.x,(a.y-e.y)*1.4);if(d<bd){bd=d;best=a;}}return best;}
+function hostileTarget(e){if(multi())return hostileTargetMP(e);let best=player,bd=Math.hypot(player.x-e.x,(player.y-e.y)*1.4)*.85;for(const a of allies){if(a.hp<=0||a.state==='down'||a.state==='retreat')continue;const d=Math.hypot(a.x-e.x,(a.y-e.y)*1.4);if(d<bd){bd=d;best=a;}}return best;}
+// 2-3 players (§3.7): the nearest player on the field (distance x0.85 as before), sticky (another must be under 0.7 x the
+// current target's distance), and a player already fought by two or more others counts 48 px further for each one beyond
+// the first (the crowd spreads over the players); freed clones as before
+function hostileTargetMP(e){
+  const C=active(),dist=p=>Math.hypot(p.x-e.x,(p.y-e.y)*1.4)*.85;let best=null,bd=1e9;
+  for(const p of C){let d=dist(p);if(p!==e.tp){let n=0;for(const o of enemies)if(o!==e&&o.tp===p&&!o.dead&&!o.dying)n++;if(n>=2)d+=48*(n-1);}if(d<bd){bd=d;best=p;}}
+  if(e.tp&&best!==e.tp&&C.includes(e.tp)){const d0=dist(e.tp);if(bd>=.7*d0){best=e.tp;bd=d0;}}
+  if(!best){best=nearestPlayer(e.x,e.y)||localPlayer();bd=dist(best);}
+  e.tp=best;let t=best;
+  for(const a of allies){if(a.hp<=0||a.state==='down'||a.state==='retreat')continue;const d=Math.hypot(a.x-e.x,(a.y-e.y)*1.4);if(d<bd){bd=d;t=a;}}
+  return t;
+}
 function markStage(e){if(!e.onstage&&(!lock||(e.x>lock.left+13&&e.x<lock.right-13)))e.onstage=true;}
 // The first update in a new state (the clock's state change): a knockdown makes a knife man drop his knife (the arcade
 // rule; he picks it up again after rising) and counts toward the dizzy rule.
@@ -2668,7 +2826,7 @@ function resolveAnim(e){
     case 'rise':return e.riseFrom==='drop'?{key:landKey(e),t:stF,hold:true}:{key:S('rise'),t:stF,hold:true};
     case 'dizzy':return {key:S('dizzy')||S('idle')};
     case 'hurt':return {key:EK.stateAnim(e.type,e.v,'hurt',(e.hitChain+1)%2)||S('hurt'),t:stF,hold:true};
-    case 'held':{const g=player?.grab,ms=player?.moveState;
+    case 'held':{const gp=multi()?players.find(p=>p&&p.grab&&p.grab.e===e)||player:player,g=gp?.grab,ms=gp?.moveState;
       if(g&&g.e===e&&ms&&ms.name==='knee'&&S('kneed'))return {key:S('kneed'),k:clamp(g.hits-1,0,4)};
       if(g&&g.e===e&&ms&&ms.name==='throw'){const key=EK.stateAnim(e.type,e.v,'thrown',0);if(key)return {key,k:clamp(ms.k|0,0,3)};}
       return {key:S('held'),k:0};}
@@ -2696,7 +2854,7 @@ function resolveAnim(e){
 }
 // Advances the anim of a ROM enemy (dt 0 = resolve the frame for drawing). Hitstop holds the frame.
 function animateEnemy(e,dt,moved){
-  if(!romKind(e)&&e.type!=='zeke')return;
+  if(NETROLE==='client'||!romKind(e)&&e.type!=='zeke')return;   // a replica shows the host's frame (fid)
   if(e.freeze>0)dt=moved=0;
   const r=resolveAnim(e),a=r&&eAnim(r.key);if(!a){e.ak=null;e.fid=null;return;}
   if(r.key!==e.ak){e.ak=r.key;e.aF=0;}
@@ -2708,7 +2866,7 @@ function animateEnemy(e,dt,moved){
 }
 function updateEnemy(e,dt) {
   const ox=e.x,oy=e.y;   // walking moves resolve from here over the walk mask (walkTo)
-  if(e.waiting){if(enemies.filter(v=>v!==e&&!v.dead&&!v.dying&&!v.waiting&&v.state!=='flee'&&!v.setPiece).length>=rules().crowdLimit)return;e.waiting=false;}
+  if(e.waiting){if(enemies.filter(v=>v!==e&&!v.dead&&!v.dying&&!v.waiting&&v.state!=='flee'&&!v.setPiece).length>=crowdLimit())return;e.waiting=false;}
   e.rageCooldown=Math.max(0,(e.rageCooldown||0)-dt);e.rage=Math.max(0,(e.rage||0)-dt);e.rageWarning=Math.max(0,(e.rageWarning||0)-dt);e.rammed=Math.max(0,(e.rammed||0)-dt);
   if(rules().dinosaurRage&&e.type==='raptor'&&!e.boss&&!e.setPiece&&e.onstage&&!e.dead&&!e.dying&&e.hp<e.maxhp*CFG.fx.rage.threshold&&e.state==='walk'&&!e.rageCooldown){e.rage=CFG.fx.rage.duration+CFG.fx.rage.warning;e.rageWarning=CFG.fx.rage.warning;e.rageCooldown=CFG.fx.rage.cooldown;toast='DINOSAUR RAGE · KEEP YOUR DISTANCE';toastTime=1.6;}
   if(e.rageWarning>0)return;
@@ -2757,7 +2915,7 @@ function updateEnemy(e,dt) {
   if(e.state==='hurt'){if(e.timer<=0){e.state='walk';e.timer=.55;}return;}
   if(e.state==='windup'){
     if(e.timer<=0){if(R)romStrike(e);else{
-      const v=e.target&&(e.target===player||allies.includes(e.target))?e.target:player;
+      const v=e.target&&(e.target===player||isLiveP(e.target)||allies.includes(e.target))?e.target:player;
       if(e.action==='rush'){e.state='charge';e.timer=.55;e.vx=e.dir*(e.type==='mirror'?281:e.type==='biker'?252:222);e.hitList=[];return;}
       if(['gunner','biker'].includes(e.type)){const reach=e.type==='gunner'?49:22;shoot(e.x+e.dir*reach,e.y,e.dir,false,14,252,e.id);if(e.type==='gunner'&&!driving)effects.push({type:'muzzle',x:e.x+e.dir*reach,y:e.y-46,dir:e.dir,age:0,life:.07});sfx('enemygun');}
       else if(e.action==='knife'){bullets.push({x:e.x+e.dir*22,y:e.y,z:36,vx:e.dir*244,vy:0,friendly:false,damage:17,owner:e.id,life:1.5,kind:'thrown',weapon:'knife',age:0});}
@@ -2812,18 +2970,15 @@ function updateEnemy(e,dt) {
 }
 
 function gamepad(){const pads=navigator.getGamepads?.()||[];const p=Array.from(pads).find(Boolean);if(!p){padKeys.clear();return;}const map=['KeyK','KeyE','KeyJ','KeyL'];for(let i=0;i<4;i++){if(p.buttons[i]?.pressed){if(!padKeys.has(map[i]))pressed.add(map[i]);padKeys.add(map[i]);}else padKeys.delete(map[i]);}for(const [key,on] of [['ArrowLeft',p.axes[0]<-.3||p.buttons[14]?.pressed],['ArrowRight',p.axes[0]>.3||p.buttons[15]?.pressed],['ArrowUp',p.axes[1]<-.3||p.buttons[12]?.pressed],['ArrowDown',p.axes[1]>.3||p.buttons[13]?.pressed]]){if(on)padKeys.add(key);else padKeys.delete(key);}if(p.buttons[9]?.pressed&&!gamepad.pauseHeld)pause();gamepad.pauseHeld=p.buttons[9]?.pressed;}
-const down=(...ks)=>ks.some(k=>keys.has(k)||padKeys.has(k)),tap=(...ks)=>ks.some(k=>pressed.has(k));
-function update(dt) {
-  // At a chapter clear the hero holds the ROM victory pose behind the clear panel (HEROES §6.6; victoryT runs the clip).
-  time+=dt;music(dt);if(state==='continue'){updateContinue(dt);return;}if(state!=='play'){if(state==='clear'&&player&&player.victoryT!=null)player.victoryT+=dt;if(state==='clear')for(const e of enemies)if(e.boss&&e.defeat&&e.dead>0)bossDeadTick(e,dt);
-    // the presentation screens run on the update's frames (G6): the title's idle count into the attract story, the
-    // chapter card and its panels, the clear tally, the ending beats and the staff roll
-    if(state==='menu'){menuIdle+=dt;if(menuIdle>=MENU_IDLE&&SEQUEL_RENDER.ready&&!document.hidden&&(window.EDEN_INTRO||[]).length)attract();}
-    else if(state==='attract')updateAttract(dt);else if(state==='brief')updateCard(dt);else if(state==='clear')updateClear(dt);else if(state==='ending')updateEnding(dt);else if(state==='credits')rollT+=dt*60;
-    pressed.clear();return;}gamepad();if(state!=='play')return;
-  if(fade){updateFade(dt);pressed.clear();return;}
-  if(caption){caption.t+=dt*60;if(caption.t>=CAPTION_FRAMES)caption=null;}
-  stageTimer+=dt;runTime+=dt;const h=HEROES[selected];bossIntro=Math.max(0,bossIntro-dt);if(!down(dashKey))dashTime=0;
+const down=(...ks)=>ks.some(k=>IN.keys.has(k)||IN.pad.has(k)),tap=(...ks)=>ks.some(k=>IN.pressed.has(k));
+// One step of the hero being processed (MULTIPLAYER §3.4a): timers, input, movement and the first clamp, band and hazard
+// slides, landing, grabs, moves, strikes and the buttons. With 2-3 players it runs once per player in slot order, in
+// that player's context; a player in a continue count or out runs its count instead, a passenger rides in the car.
+function controlStep(dt){
+  const m=player.mp;
+  if(m&&(m.cont||m.out)){mpDownStep(dt);return;}
+  if(m&&passenger(player)){passengerStep(dt);return;}
+  const h=HEROES[selected];if(!down(dashKey))dashTime=0;
   const frozen=player.freeze>0;
   for(const k of ['inv','hurt','attack','special','specialCd','boost','boostCd','land','freeze','comboWin','grabCd'])if(!(frozen&&k==='attack'))player[k]=Math.max(0,player[k]-dt);
   player.shotT+=dt;if(player.stunT>0){player.stunT-=dt;if(player.stunT<=0)player.stun=10;}
@@ -2846,7 +3001,7 @@ function update(dt) {
   // Running is a horizontal sprint; lane changes while running are slower so the stride stays readable.
   player.run=!driving&&!!dx&&player.pickup<=0&&(down('ShiftLeft','ShiftRight','TouchRun')||(dashTime>0&&down(dashKey))||dx===player.runLatch);player.move=!!(dx||dy);
   if(dx&&player.attack<=0&&player.pickup<=0&&!player.grab){if(player.dir!==dx)player.turnAt=time;player.dir=dx;}
-  const px=player.x,py=player.y,camBefore=camera;
+  const px=player.x,py=player.y;
   player.walkFire=false;if(driving||player.hurt>0)player.pushV=0;
   if(driving)updateCar(dt,dx,dy,bossIntro<=0&&!frozen);
   else if(player.hurt<=0&&player.special<=0&&bossIntro<=0&&player.pickup<=0&&!frozen&&!player.grab&&!player.dropIn){
@@ -2899,30 +3054,63 @@ function update(dt) {
   if(tap('KeyJ','KeyZ','Space')&&tap('KeyK','KeyX'))special();
   else{if(down('KeyJ','KeyZ','Space'))attack();if(tap('KeyK','KeyX'))jump();}
   if(tap('KeyL','KeyC'))special();if(tap('KeyE','KeyV'))pickup();if(tap('Enter','NumpadEnter'))insertCoin();
-  updateBurst(dt);updateEmptyGun();updateMission(dt);
+  updateBurst(dt);updateEmptyGun();
+  if(m){m.mx=mx;m.my=my;m.moved=moved;if(m.tag>0)m.tag=Math.max(0,m.tag-dt);}
+}
+// the joiners' attack / jump presses advance the chapter card and the ending's boxes too (the cabinet's any-start rule)
+function remoteAdvance(fn){if(!multi())return;for(const p of present()){const I=p.mp.in;if(I&&I!==LOCAL_IN&&['KeyJ','KeyK','KeyZ','KeyX','Space'].some(k=>I.pressed.has(k)))fn();}}
+function clearPresses(){pressed.clear();for(const p of players)if(p&&p.mp.in&&p.mp.in!==LOCAL_IN)p.mp.in.pressed.clear();}
+// the first player (slot order) close enough to eat a drop; in the car the driver scoops it up
+function dropEater(d){
+  for(const p of multi()?present():[player]){if(multi()&&(!onField(p)||passenger(p)))continue;
+    if(driving?Math.abs(d.x-p.x)<81&&Math.abs(d.y-p.y)<24:Math.hypot(d.x-p.x,d.y-p.y)<20)return p;}
+  return null;}
+// a new driver (the old one went into a continue count or left) takes over the car where it is, without stopping
+function mpDriver(){if(!driving){lastDriver=null;return;}const d=driverP();
+  if(lastDriver&&d!==lastDriver){for(const k of ['x','y','vx','vy','bank','roll','dir','boost'])d[k]=lastDriver[k];d.z=0;d.dropIn=false;}lastDriver=d;}
+function update(dt) {
+  // At a chapter clear the hero holds the ROM victory pose behind the clear panel (HEROES §6.6; victoryT runs the clip).
+  time+=dt;music(dt);if(state==='continue'){updateContinue(dt);return;}if(state!=='play'){if(state==='clear'&&player)for(const p of multi()?present():[player])if(p.victoryT!=null)p.victoryT+=dt;if(state==='clear')for(const e of enemies)if(e.boss&&e.defeat&&e.dead>0)bossDeadTick(e,dt);
+    // the presentation screens run on the update's frames (G6): the title's idle count into the attract story, the
+    // chapter card and its panels, the clear tally, the ending beats and the staff roll
+    if(state==='menu'){if(lobbyOpen())menuIdle=0;else menuIdle+=dt;if(menuIdle>=MENU_IDLE&&SEQUEL_RENDER.ready&&!document.hidden&&(window.EDEN_INTRO||[]).length)attract();}
+    else if(state==='attract')updateAttract(dt);else if(state==='brief'){remoteAdvance(cardAdvance);updateCard(dt);}else if(state==='clear')updateClear(dt);else if(state==='ending'){remoteAdvance(endAdvance);updateEnding(dt);}else if(state==='credits')rollT+=dt*60;
+    clearPresses();return;}gamepad();if(state!=='play')return;
+  if(fade){updateFade(dt);clearPresses();return;}
+  if(caption){caption.t+=dt*60;if(caption.t>=CAPTION_FRAMES)caption=null;}
+  stageTimer+=dt;runTime+=dt;bossIntro=Math.max(0,bossIntro-dt);
+  const camBefore=camera,L0=ctxPlayer;
+  try{
+  if(multi()){mpDriver();for(const p of players)if(p)withPlayer(p,()=>controlStep(dt));}else controlStep(dt);
+  updateMission(dt);
   for(const d of [...drops]){d.life-=dt;
     // a weapon knocked loose pops out of the hand and falls back (drawn spinning until it lands, drawDrop)
     if(d.vz!=null){d.vz-=630*dt;d.z=(d.z||0)+d.vz*dt;if(d.z<=0){d.z=0;d.vz=null;}}
     // On the highway, dropped food slides back with the road stream; the Cadillac scoops it up by driving over it.
     if(driving){d.x-=roadRate*dt;if(d.x<camera-67){drops.splice(drops.indexOf(d),1);continue;}}
-    const reach=driving?Math.abs(d.x-player.x)<81&&Math.abs(d.y-player.y)<24:Math.hypot(d.x-player.x,d.y-player.y)<20;
-    if(PICKUPS.has(d.type)&&!d.claimed&&reach){consumeItem(d);}else if(d.life<=0&&!d.claimed)drops.splice(drops.indexOf(d),1);}
+    // food, score items and ammunition go to the first player in reach (slot order, §3.8)
+    const eater=PICKUPS.has(d.type)&&!d.claimed?dropEater(d):null;
+    if(eater){if(eater===player)consumeItem(d);else withPlayer(eater,()=>consumeItem(d));}else if(d.life<=0&&!d.claimed)drops.splice(drops.indexOf(d),1);}
   // Hero copies and freed clones run their ROM clips after their own update, walk clips by the distance moved (G3b;
   // drawing only, no random call).
   // ROM enemies advance their anim clock after their update too (animateEnemy: walk frames by the distance walked).
-  for(const e of enemies){const ox=e.x,oy=e.y;updateEnemy(e,dt);const moved=Math.hypot(e.x-ox,e.y-oy);if(e.type==='mirror')animateClone(e,dt,moved);else animateEnemy(e,dt,moved);}enemies=enemies.filter(e=>!e.remove);
+  // 2-3 players: each enemy runs in the context of the player it fights (§3.5 T, §3.7)
+  if(multi()){for(const e of enemies){const ox=e.x,oy=e.y;withPlayer(targetPlayerOf(e),()=>{updateEnemy(e,dt);const moved=Math.hypot(e.x-ox,e.y-oy);if(e.type==='mirror')animateClone(e,dt,moved);else animateEnemy(e,dt,moved);});}}
+  else for(const e of enemies){const ox=e.x,oy=e.y;updateEnemy(e,dt);const moved=Math.hypot(e.x-ox,e.y-oy);if(e.type==='mirror')animateClone(e,dt,moved);else animateEnemy(e,dt,moved);}
+  enemies=enemies.filter(e=>!e.remove);
   updateScenery(dt);
   for(const a of allies){const ox=a.x,oy=a.y;updateAlly(a,dt);animateClone(a,dt,Math.hypot(a.x-ox,a.y-oy));}allies=allies.filter(a=>!a.remove);
-  if(driving)ramEnemies();
+  if(driving){if(multi())withPlayer(driverP(),ramEnemies);else ramEnemies();}
   updateProjectiles(dt);updateDiscards(dt);updateBossObjects(dt);updateWheels(dt);if(bossCard){bossCard.t-=dt;if(bossCard.t<=0)bossCard=null;}
   for(const z of zones){if(z.cancelled||!z.linger)continue;z.tick-=dt;if(z.tick<=0){z.tick=.5;for(const v of fighters())if(Math.hypot((v.x-z.x)*.8,v.y-z.y)<z.r&&v.z<19)strike(v,z.damage,z.x,false,{stun:2,react:0});}}
   for(const z of zones){if(z.cancelled)continue;z.t-=dt;if(z.linger){if(z.t<=0)z.cancelled=true;continue;}if(z.band&&z.t<=0){for(const v of fighters())if(v.y>=z.band[0]-2&&v.y<=z.band[1]+2&&(!z.air||v.z<19))strike(v,z.damage,v.x+20,!z.air,z.knock?{stun:10,react:10}:null);burst(z.x,z.band[1]-8,'#c9f1ff',24);shake=7;continue;}if(z.t<=0){const quiet=['land','steam','slam','fire','flood'].includes(z.style);burst(z.x,z.y-15,z.friendly?'#efb36d':z.style==='fire'?'#ff9a3b':z.style==='steam'?'#eef4f2':z.style==='land'?'#b9b28f':z.style==='flood'?'#9fe3f2':'#c7ea91',quiet?(z.style==='flood'?22:14):24);if(!quiet)effects.push({x:z.x,y:z.y,age:0,life:.55,type:'explosion'});shake=quiet?Math.max(shake,4):7;if(z.friendly){for(const e of enemies)if(Math.hypot((e.x-z.x)*.8,e.y-z.y)<z.r)damageEnemy(e,z.damage,Math.sign(e.x-z.x)*26,true);}else for(const v of fighters())if(Math.hypot((v.x-z.x)*.8,v.y-z.y)<z.r&&(!z.air||v.z<19))strike(v,z.damage,z.x,!z.air,z.knock?{stun:10,react:10}:null);}}
   zones=zones.filter(z=>!z.cancelled&&z.t>0);
   // Foundry vents and lab discharges announce their location before activating.
-  if(!bossSpawned&&lock&&sectionIndex>=1&&(levelIndex===3||levelIndex===4)&&!(levelIndex===3&&!mission.active)&&Math.floor(stageTimer/9)>Math.floor((stageTimer-dt)/9))zones.push({x:player.x+67,y:laneY(levelIndex===3?.79:.15,player.x+67),r:43,t:1.25,total:1.25,friendly:false,damage:18,air:true,style:'vent'});
+  if(!bossSpawned&&lock&&sectionIndex>=1&&(levelIndex===3||levelIndex===4)&&!(levelIndex===3&&!mission.active)&&Math.floor(stageTimer/9)>Math.floor((stageTimer-dt)/9)){const vx=leadPlayer().x+67;zones.push({x:vx,y:laneY(levelIndex===3?.79:.15,vx),r:43,t:1.25,total:1.25,friendly:false,damage:18,air:true,style:'vent'});}
   updateParticles(dt);
   for(const f of floating){f.y-=22*dt;f.life-=dt;}floating=floating.filter(f=>f.life>0);
-  if(comboTimer>0){comboTimer-=dt;if(comboTimer<=0)combo=0;}toastTime=Math.max(0,toastTime-dt);shake=Math.max(0,shake-dt*22);flash=Math.max(0,flash-dt);
+  if(multi()){for(const p of present())withPlayer(p,()=>{if(comboTimer>0){comboTimer-=dt;if(comboTimer<=0)combo=0;}});}
+  else if(comboTimer>0){comboTimer-=dt;if(comboTimer<=0)combo=0;}toastTime=Math.max(0,toastTime-dt);shake=Math.max(0,shake-dt*22);flash=Math.max(0,flash-dt);
   if(encounter)encounter.timer+=dt;updateEncounter();
   // A fight is over once every enemy is down for good or on its way out: the bodies lie 80 f and blink out 60 f
   // (ENEMIES §2.3), calmed dinosaurs, beaten copies and hit-and-run throwers leave (flee: they can no longer be hit), and
@@ -2930,7 +3118,7 @@ function update(dt) {
   // boss's defeat script plays out first, up to its dissolve or its last line (bossDeadTick: Rook 1.0 s, Slice 1.4 s, Cinder
   // 1.65 s, LOT 00's lines.after 1.2 s; CAMPAIGN §10.4 'lines.after; then clear'), so the clear panel never hides it.
   if(lock&&encounterSpawned()&&enemies.every(e=>e.dead||e.dying||e.setPiece||e.state==='flee')&&!mission.active&&!enemies.some(e=>e.boss&&e.defeat&&e.defeat.kind!=='engine'&&!e.defeat.done&&!e.remove)){const boss=encounter.spec.boss;lock=null;encounter=null;if(boss){stageClear();return;}toast='GO →';toastTime=2.5;score+=500;}
-  {const nx=plan.sections[sectionIndex+1];if(nx&&nx.area===areaIndex&&player.x>=nx.x)enterSection(sectionIndex+1);}
+  {const nx=plan.sections[sectionIndex+1];if(nx&&nx.area===areaIndex&&leadPlayer().x>=nx.x)enterSection(sectionIndex+1);}
   updateCamera(dt);
   // A fight starts when the camera reaches its lock trigger, as the ROM's camera segments do (ARCHITECTURE §2.4).
   if(!fade&&!lock&&!encounter&&encIndex<plan.encounters.length&&plan.encounters[encIndex].area===areaIndex&&camera>=plan.encounters[encIndex].cam)startEncounter(plan.encounters[encIndex++]);
@@ -2940,9 +3128,12 @@ function update(dt) {
   if(driving){const flow=Math.max(0,CAR.road*dt-(camera-camBefore)),P=curArea()?.loop?.period||0;let f=flow;
     if(!lock){if(P&&roadStream>0){const edge=Math.ceil(roadStream/P-1e-9)*P;f=Math.min(flow,edge-roadStream);roadStream+=f;if(roadStream>=edge-1e-6)roadStream=0;}else f=0;}
     else roadStream+=f;
-    road+=f;roadRate=dt>0?f/dt:0;player.roll+=flow;roadDust(flow);}
-  clampPlayer(false,mx,my);updateHeroAnim(dt,moved);
-  pressed.clear();
+    road+=f;roadRate=dt>0?f/dt:0;if(multi())withPlayer(driverP(),()=>{player.roll+=flow;roadDust(flow);});else{player.roll+=flow;roadDust(flow);}}
+  if(multi()){for(const p of present())withPlayer(p,()=>{const m=p.mp;if(!m.out&&!passenger(p))clampPlayer(false,m.mx,m.my);updateHeroAnim(dt,m.moved);});}
+  else{const m=player.mp;clampPlayer(false,m.mx,m.my);updateHeroAnim(dt,m.moved);}
+  if(mpAllOut){mpAllOut=false;withPlayer(localPlayer(),gameover);}
+  clearPresses();
+  }finally{if(L0&&ctxPlayer!==L0)usePlayer(L0);}
 }
 // The arcade camera (ARCHITECTURE §2.1, §2.3; ROM 0x20A22): it follows to the right only, at most 6 px per 60 Hz frame,
 // holding the lead hero at or left of screen x `lead` (the area's follow segment, 192 by default), never past the next
@@ -2954,7 +3145,10 @@ function camLead(a){let L=CAM_LEAD;for(const c of a.camera||[]){if(c.x>camera)br
 function updateCamera(dt){
   const a=curArea();
   if(lock){camera=lock.left;cameraY=STG.pathY(a,camera);return;}
-  const k=dt*60,next=nextTrigger(),L=camLead(a),lead=player.x-camera,trail=lead;
+  // D-MP8: the leading player pushes the screen only while the trailing one is more than 16 px inside the left edge
+  // (one player: lead = trail, today's rule)
+  let lead=player.x-camera,trail=lead;if(multi()){const C=camPlayers();if(C.length){lead=-1e9;trail=1e9;for(const p of C){lead=Math.max(lead,p.x-camera);trail=Math.min(trail,p.x-camera);}}}
+  const k=dt*60,next=nextTrigger(),L=camLead(a);
   let d=0;if(lead>64&&lead>=L)d=(lead-trail>=L-16)?clamp(trail-16,0,6):Math.min(6,lead-L);
   camera=Math.min(camera+d*k,Math.max(camera,next));camera=clamp(camera,0,Math.max(0,a.w-W));cameraY=STG.pathY(a,camera);
   const exit=(a.camera||[]).find(c=>c.mode==='exit');
@@ -3057,6 +3251,8 @@ function car(g,x,y,o={}){
   SP.drawRec(g,'fx',Wh.steer[steer][ph],map,bx+Wh.front.dx,by+Wh.front.dy+bob+jit(1),false);
   SP.drawRec(g,'fx',(o.brake?C.anims.brake:C.anims.drive)[0][0],map,bx,by,false);
   const R=RIG();
+  // 2-3 players: the riders in the passenger seat and the back seat (seats 1 and 2), seated on the drive clip
+  if(o.passengers&&R)o.passengers.forEach((h,i)=>{const st=C.seats[i+1];if(!st||!HEROES[h])return;const id=HEROES[h].id,c=R.clip(id,'drive');if(c)R.draw(g,R.parts(id,{full:{clip:'drive',k:carFrameAt(c,(o.t||0)+.3*(i+1))}},null),bx+st.dx,by+st.dy,0,st.flip?1:-1,1,'hero');});
   if(o.hero>=0&&R&&HEROES[o.hero]){
     const id=HEROES[o.hero].id,c=R.clip(id,'drive'),seat=C.seats[0];
     // the seated records already face right (seat 0 is not flipped): dir -1 draws them as stored
@@ -3156,8 +3352,8 @@ function drawOutlined(parts,x,y,z,dir,S,map,color){
 }
 // variant 'mirror' (hostile copy; a dissolving one cross-fades to gel) or 'freed' (ally). False until HeroRig is ready.
 function drawHeroClone(e,variant){
-  const R=RIG(),st=animateClone(e,0,0);if(!R||!st||!st.main.clip)return false;
-  const id=HEROES[e.hero].id,parts=R.parts(id,{full:st.main},null),x=e.x-viewX+(e.freeze>0?(Math.floor(time*50)%2?1:-1):0),S=CFG.sockets.scale*(e.scale||1);
+  const R=RIG(),st=NETROLE==='client'?null:animateClone(e,0,0),body=st?{full:st.main}:e.rig?{full:{clip:e.rig[0],k:e.rig[1]}}:null;if(!R||!body||st&&!st.main.clip)return false;
+  const id=HEROES[e.hero].id,parts=R.parts(id,body,null),x=e.x-viewX+(e.freeze>0?(Math.floor(time*50)%2?1:-1):0),S=CFG.sockets.scale*(e.scale||1);
   if(variant==='freed')return drawOutlined(parts,x,e.y,e.z,e.dir,S,'freed-'+id,'#ffd257');
   const ok=R.draw(ctx,parts,x,e.y,e.z,e.dir,S,(e.half?'half-':'mirror-')+id);
   if(ok&&e.dissolve){ctx.save();ctx.globalAlpha*=e.dead>0?1:.5;R.draw(ctx,parts,x,e.y,e.z,e.dir,S,'gel');ctx.restore();}
@@ -3262,7 +3458,8 @@ function heroFrameAt(t,s){let k=0;while(k+1<t.at.length&&s>=t.at[k+1]-1e-9)k++;r
 // the hero's role for a weapon class (h.cls[cls][key]: 'attack' = swing/stab/throw/fire clip, 'stand' = stance)
 function heroClassRole(cls,key){const R=RIG(),h=R?R.hero(HEROES[selected].id):null;return (h&&cls&&h.cls[cls]&&h.cls[cls][key])||(key==='attack'?'attack.throwable':'idle');}
 // `main`/`legs` are the clip players; `want` is the free-running role last started ('@role' after a pinned state).
-const heroAnim={main:null,legs:null,want:null,flame:null,swing:null,force:null,sel:null};
+// (a let since G9b: every player has its own, usePlayer swaps it in)
+let heroAnim={main:null,legs:null,want:null,flame:null,swing:null,force:null,sel:null};
 function heroAnimReset(){const R=window.HeroRig;Object.assign(heroAnim,{main:R?R.player():null,legs:R?R.player():null,want:null,flame:null,swing:null,force:null,sel:null});}
 // `swing` is the ROM weapon class whose attack clip the move plays (blade stab, blunt swing, throwable throw).
 function heroAct(swing=null){heroAnim.swing=swing;}
@@ -3361,10 +3558,11 @@ function gunMount(){
 // (tight top-left lx/ly = origin - (ox, oy); the art faces left).
 let lastHeld=null;
 function drawPlayer() {
+  if(NETROLE==='client'){drawReplicaPlayer();return;}
   lastHeld=null;
   const x=player.x-viewX,y=player.y-player.z;ctx.save();if(!driving)shadow(ctx,x,player.y,20);   // the car draws its own
   if(player.inv>0&&Math.floor(time*16)%2===0)ctx.globalAlpha=.65;
-  if(driving){player.pose='driving';car(ctx,x,y,{hero:selected,roll:player.roll,moving:true,bank:player.bank,bump:player.bump,brake:player.brake,t:time});}
+  if(driving){player.pose='driving';car(ctx,x,y,{hero:selected,roll:player.roll,moving:true,bank:player.bank,bump:player.bump,brake:player.brake,t:time,passengers:multi()?present().filter(passenger).map(q=>q.mp.hero):null});}
   else {
     updateHeroAnim(0,0);
     const R=RIG(),A=heroAnim,sel=A.sel,id=HEROES[selected].id;
@@ -3482,7 +3680,7 @@ function currentFoe(){const live=e=>e&&!e.dead&&!e.dying&&e.hp>0&&enemies.includ
 // The weapon panel (0x23A24): a firearm shows its icon, the rounds right-aligned in 2 cells (red at or under the ROM's low
 // count), its name and the 12-tile ammo strip (2 units a tile: rounds x 4/4/1/1/4/6, (rounds+1)>>1 for UZI and M-16A1);
 // every other weapon shows the ARM icon and its name at x 32.
-function weaponPanel(){const w=player.weapon;if(!w||driving)return;const P=hudData()?.weaponPanel,ammo=Math.max(0,player.ammo|0);
+function weaponPanel(){if(NETROLE==='client'&&!players[localSlot])return;const w=player.weapon;if(!w||driving)return;const P=hudData()?.weaponPanel,ammo=Math.max(0,player.ammo|0);
  const fire=FIREARMS.has(w),name=(P?.names?.[w]||WEAPONS[w]?.name||w).toUpperCase(),[ix,iy]=P?.icon||[0,208];
  hudRec(P?.icons?.[fire?w:'arm'],ix,iy);
  if(!fire){const [nx,ny]=P?.otherName||[32,208];hudText(name,nx,ny);return;}
@@ -3510,7 +3708,40 @@ function hudLines(){
 function coinSlots(){const L=hudLayout(),B=L.blink||HUD_FALLBACK.blink,f=Math.floor(time*60)%B.period,U=hudData()?.hud;
  const join=f>=B.joinIn[0]&&f<B.joinIn[1],ins=f>=B.insertCoin[0]&&f<B.insertCoin[1];if(!join&&!ins)return;
  const asJoin=join||coins>0;for(let s=0;s<2;s++){const at=asJoin?L.joinIn[s]:L.insertCoin[s];if(!hudRec(asJoin?U?.joinIn:U?.insertCoin,at[0],at[1]))hudText(asJoin?'JOIN-IN':'INSERT COIN',at[0]+(asJoin?40:56),at[1]+4,{align:'center',pen:'orange',outline:true});}}
-function hud(){const L=hudLayout(),R=hudData(),h=HEROES[selected];
+// ---- 2-3 players (§3.12): the cabinet's three blocks at x 0 / 128 / 256, each its player's face, lives, score, name and
+// bar (CONTINUE? n during that player's count) over its own foe row; an empty or spent slot calls INSERT COIN / JOIN-IN
+// (steady JOIN-IN while a joiner waits for the next break). The toast moves to a centred line under the radio strip,
+// the mission counter and this machine's special and combo to the foot of the screen beside its weapon panel.
+const slotAt=(s,p)=>[p[0]+128*(s-1),p[1]];
+let joinWait=0;
+function hudSlotCall(s){const L=hudLayout(),B=L.blink||HUD_FALLBACK.blink,f=Math.floor(time*60)%B.period,U=hudData()?.hud,wait=(joinWait>>s)&1;
+ const join=wait||f>=B.joinIn[0]&&f<B.joinIn[1],ins=!wait&&f>=B.insertCoin[0]&&f<B.insertCoin[1];if(!join&&!ins)return;
+ const asJoin=join||coins>0,at=slotAt(s,asJoin?L.joinIn[0]:L.insertCoin[0]);if(!hudRec(asJoin?U?.joinIn:U?.insertCoin,at[0],at[1]))hudText(asJoin?'JOIN-IN':'INSERT COIN',at[0]+(asJoin?40:56),at[1]+4,{align:'center',pen:'orange',outline:true});}
+function hudBlock(ox,s){const L=hudLayout(),R=hudData(),h=HEROES[selected],m=player.mp;
+ if(!hudRec(R?.hudFaces?.[h.id],L.face[0]+ox,L.face[1],'ui'))rect(ctx,L.face[0]+ox,L.face[1],23,23,'#1a2a4a');
+ hudText('='+Math.max(0,Math.min(9,lives)),L.lives[0]+ox,L.lives[1]);
+ const sc=String(Math.max(0,Math.floor(score)));for(let i=0;i<sc.length;i++){const x=L.scoreRight[0]+ox-8*(sc.length-i);if(!hudCell(R?.hud?.score,+sc[i],x,L.scoreRight[1]))hudText(sc[i],x,L.scoreRight[1],{pen:'#99ccff'});}
+ hudText(R?.hud?.names?.[h.id]||h.name,L.name[0]+ox,L.name[1]);
+ if(m&&m.cont){if(Math.floor(time*60/16)%2===0)hudText('CONTINUE? '+Math.max(0,Math.ceil(m.cont.t)),L.bar[0]+ox,L.bar[1],{pen:'orange'});}
+ else{const r=clamp(player.hp/player.maxhp,0,1);hudBar(L.bar[0]+ox,L.bar[1],100,player.hp>0?Math.max(1,Math.round(100*r)):0,R?.lifeBar?.pens?.colours||BAR_P1);}
+ const foe=currentFoe();if(foe){hudRec(foeFaceRec(foe),L.foe.face[0]+ox,L.foe.face[1]);hudText(foeName(foe),L.foe.name[0]+ox,L.foe.name[1]);const st=foeBarState(foe.dying||foe.dead?0:foe.hp,foe.maxhp);hudBar(L.foe.bar[0]+ox,L.foe.bar[1],st.len,st.fill,st.cols);}}
+function hudLinesMP(){
+ const U=UI(),y=bossCard?122:84;
+ if(toastTime>0&&toast){const txt=hudArrows(toast),rows=U?U.wrap(txt,42).slice(0,2):[txt];rect(ctx,20,y-2,W-40,rows.length*8+4,'#05100fb0');rows.forEach((r,i)=>hudText(r,192,y+i*8,{align:'center',pen:'#e0e8a8'}));}
+ if(mission){hudText(`${mission.spec.verb.toUpperCase()} ${mission.completed}/${mission.total}`,376,216,{align:'right',pen:'#afded4'});const n=allies.filter(a=>a.state!=='retreat').length;if(n)hudText('FREED ×'+n,376,208,{align:'right',pen:'#ffe08a'});}
+ const t=mission?.active,off=t&&player&&(t.x-camera<22||t.x-camera>W-22);
+ if(off)hudText(t.x<player.x?'< OBJECTIVE':'OBJECTIVE >',t.x<player.x?128:376,198,{align:t.x<player.x?'left':'right',pen:'#99e5d8'});
+ if(player&&player.mp&&onField(player)){const h=HEROES[selected];if(player.specialCd>0)hudText('SPECIAL '+Math.ceil(player.specialCd)+'S',128,208,{pen:'#a6b797'});else hudText(driving?'L · RAM READY':'L · '+h.special.toUpperCase(),128,208,{pen:'#d5ec69'});
+  if(combo>=2)hudText(combo+' HIT COMBO',128,216,{pen:'#d5ec69'});}}
+function hudMP(){
+ for(let s=0;s<MAXP;s++){const p=players[s];if(p&&!p.mp.out)withPlayer(p,()=>hudBlock(128*s,s));else if(s>0||p)hudSlotCall(s);}
+ weaponPanel();hudLinesMP();hudTail();}
+function hudTail(){
+ // the boss card (bossCard, phase2.card, lastCopy.card): a transient card under the radio strip (y 84-120)
+ if(bossCard&&UI()){const c=bossCard,frames=Math.max(1,Math.round(c.total*60)),t=clamp(Math.floor((c.total-c.t)*60),0,frames-1);UI().bossCard(ctx,{name:c.name,sub:c.sub,t,frames,y:84,accent:c.pink?'pink':(level.accent||'red')});}
+ // GO: the arcade's blinking call to move on (a transient card at the right edge of the lanes)
+ if(!bossSpawned&&!lock&&toastTime<=0&&state==='play'&&Math.floor(time*60/32)%2===0){hudText('GO',360,96,{font:16,align:'right',pen:'yellow',outline:true});rect(ctx,362,103,6,2,'#f8d838');for(let i=0;i<4;i++)rect(ctx,368+i,100+i,1,8-2*i,'#f8d838');}}
+function hud(){if(multi()||NETROLE==='client'){hudMP();return;}const L=hudLayout(),R=hudData(),h=HEROES[selected];
  // P1 block: face, lives, score, name, life bar
  if(!hudRec(R?.hudFaces?.[h.id],L.face[0],L.face[1],'ui'))rect(ctx,L.face[0],L.face[1],23,23,'#1a2a4a');
  hudText('='+Math.max(0,Math.min(9,lives)),L.lives[0],L.lives[1]);
@@ -3526,6 +3757,16 @@ function hud(){const L=hudLayout(),R=hudData(),h=HEROES[selected];
  if(!bossSpawned&&!lock&&toastTime<=0&&state==='play'&&Math.floor(time*60/32)%2===0){hudText('GO',360,96,{font:16,align:'right',pen:'yellow',outline:true});rect(ctx,362,103,6,2,'#f8d838');for(let i=0;i<4;i++)rect(ctx,368+i,100+i,1,8-2*i,'#f8d838');}}
 // One transform for the world pass and the screen pass (ARCHITECTURE §1.2): x2, with the shake in whole arcade px.
 function beginFrame(sx,sy){ctx.setTransform(PX,0,0,PX,PX*sx,PX*sy);ctx.imageSmoothingEnabled=false;}
+// the players' sprite entries: one per player on the field (a passenger rides in the car, an out player is gone)
+function playerDraws(carShadow){
+  if(!multi()&&NETROLE!=='client')return [{y:player.y,fn:drawPlayer,sh:()=>{const x=player.x-viewX;if(driving)carShadow(x,player.y-player.z);else shadow(ctx,x,player.y,20);}}];
+  return present().filter(p=>!p.mp.out&&!passenger(p)).map(p=>({y:p.y,fn:()=>withPlayer(p,drawPlayer),sh:()=>{const x=p.x-viewX;if(driving)carShadow(x,p.y-p.z);else shadow(ctx,x,p.y,20);}}));
+}
+// 1P / 2P / 3P over a hero's head in its slot colour for 2 s after a start, a drop-in or a continue (the arcade's start
+// markers), and over this machine's hero while two heroes overlap
+function drawTags(){const me=localPlayer();
+  for(const p of present()){if(p.mp.out||passenger(p))continue;const near=p===me&&present().some(q=>q!==p&&!q.mp.out&&Math.abs(q.x-p.x)<24&&Math.abs(q.y-p.y)<16);
+    if(!(p.mp.tag>0)&&!near)continue;legacy(ctx,p.x-viewX,p.y-p.z,()=>label((p.mp.slot+1)+'P',0,-132,13,SLOT_PEN[p.mp.slot]||'#ffffff','center'));}}
 function render(){ctx.setTransform(1,0,0,1,0,0);ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.save();
  // The camera and every world position are rounded separately (never x - camera), so sprites cannot slide against the floor.
  let sx=0,sy=0;if(shake>0){sx=Math.round(rand(-shake,shake)*LEG);sy=Math.round(rand(-shake/2,shake/2)*LEG);}beginFrame(sx,sy);viewX=Math.round(camera);screenText=false;
@@ -3555,13 +3796,13 @@ function render(){ctx.setTransform(1,0,0,1,0,0);ctx.imageSmoothingEnabled=false;
   ...scenery.map(sc=>({y:sc.y,fn:()=>drawScenery(sc),sh:()=>{}})),
   ...allies.map(a=>({y:a.y,fn:()=>drawAlly(a),sh:()=>{const x=a.x-viewX;if(x>=-111&&x<=W+111)shadow(ctx,x,a.y);}})),
   ...(state==='ending'?endActors:[]).map(a=>({y:a.y,fn:()=>drawEndActor(a,a.x-viewX,a.y),sh:()=>{const x=a.x-viewX;if(x>=-111&&x<=W+111)shadow(ctx,x,a.y);}})),
-  {y:player.y,fn:drawPlayer,sh:()=>{const x=player.x-viewX;if(driving)carShadow(x,player.y-player.z);else shadow(ctx,x,player.y,20);}}];
+  ...playerDraws(carShadow)];
  if(crown)draws.push({y:crown.y,fn:()=>drawCrown(crown),sh:()=>{const x=crown.x-viewX;if(x>-140&&x<W+140)shadow(ctx,x,crown.y+1,100,6);}});
  if(parkedCar&&!driving)draws.push({y:parkedCar.y,fn:()=>car(ctx,parkedCar.x-viewX,parkedCar.y),sh:()=>carShadow(parkedCar.x-viewX,parkedCar.y)});
  for(const item of mission?.items||[])draws.push({y:item.y,fn:()=>drawMissionItem(item),sh:()=>{const x=item.x-viewX;if(x>=-74&&x<=W+74)legacy(ctx,x,item.y,()=>{shadow(ctx,0,0,25,6);if(item.kind==='cargo')shadow(ctx,0,0,62,6);});}});
  draws.sort((a,b)=>a.y-b.y);
  SHADOWS=1;for(const d of draws)d.sh();for(const b of bullets)if(!(b.delay>0)&&(b.kind==='lob'||b.kind==='thrown'||b.kind==='bomb'||b.kind==='parasite'))shadow(ctx,b.x-viewX,b.y,b.kind==='parasite'?4:6);
- SHADOWS=2;try{draws.forEach(d=>d.fn());drawEffects();drawParticles();}finally{SHADOWS=0;}
+ SHADOWS=2;try{draws.forEach(d=>d.fn());drawEffects();drawParticles();if(multi()&&state==='play')drawTags();}finally{SHADOWS=0;}
  ctx.restore();
  if(ar)SR.front(ctx,ar,cam,time,sopt);
  ctx.save();ctx.translate(0,-cam.y);for(const f of floating)legacy(ctx,f.x-viewX,f.y,()=>label(f.text,0,0,12,f.color,'center'));ctx.restore();
@@ -3577,18 +3818,27 @@ function render(){ctx.setTransform(1,0,0,1,0,0);ctx.imageSmoothingEnabled=false;
 // The simulation advances by the real elapsed time of every displayed frame, split into steps no longer than
 // about a sixtieth of a second. A fixed 60 Hz accumulator skipped or doubled updates on 72, 120 and 144 Hz
 // displays, which showed as a hitch in the hero's walk several times a second.
-function frame(now){const elapsed=Math.min(.1,Math.max(0,(now-last)/1000||1/60));last=now;const steps=Math.max(1,Math.round(elapsed*60)),dt=elapsed/steps;for(let i=0;i<steps;i++)update(dt);render();requestAnimationFrame(frame);}
+// A joiner (NETROLE 'client') never runs update(): clientFrame samples its input, applies the host's interpolated
+// snapshot, replays the host's events and draws. The host hands every step to the session (snapshots, events, input).
+function frame(now){const elapsed=Math.min(.1,Math.max(0,(now-last)/1000||1/60));last=now;
+  if(NETROLE==='client'){clientStep(elapsed);render();requestAnimationFrame(frame);return;}
+  const steps=Math.max(1,Math.round(elapsed*60)),dt=elapsed/steps;for(let i=0;i<steps;i++)stepSim(dt);render();requestAnimationFrame(frame);}
+function stepSim(dt){
+  if(replayQ)while(replayQ.length&&replayQ[0][0]<=stepNo){const [,slot,held,press]=replayQ.shift();mpInput(slot,{held,press});}
+  update(dt);stepNo++;if(NETROLE==='host')netTick(dt);}
 window.addEventListener('keydown',e=>{menuIdle=0;
+  // a joiner's keys go to its input sampler (60 Hz frames to the host); Esc / P asks whether to leave the game
+  if(NETROLE==='client'){unlockAudio();clientKey(e,true);return;}
   // the attract story: Enter starts a game (the cabinet's start button), any other key returns to the title
   if(state==='attract'){e.preventDefault();unlockAudio();if(!e.repeat){if(e.code==='Enter'||e.code==='NumpadEnter')characterSelect(0);else menu();}return;}
   // the chapter card and the ending: a button finishes the typing, then moves on (Enter still skips the card)
   if(!e.repeat&&['KeyJ','KeyK','KeyZ','KeyX','Space'].includes(e.code)){if(state==='brief'){e.preventDefault();cardAdvance();return;}if(state==='ending'){e.preventDefault();endAdvance();return;}}
   const use=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyW','KeyA','KeyS','KeyD','KeyJ','KeyK','KeyL','KeyZ','KeyX','KeyC','KeyE','KeyV','ShiftLeft','ShiftRight','Enter','Escape','KeyP'];if(use.includes(e.code)&&(state==='play'||['ArrowLeft','ArrowRight','Enter','Escape','KeyP'].includes(e.code)))e.preventDefault();unlockAudio();if(e.code==='Escape'||e.code==='KeyP'){if(!e.repeat){if(state==='play'||state==='paused')pause();else if(e.code==='Escape'&&['select','chapters','guide','credits','jukebox'].includes(state))menu();}return;}if(!e.repeat&&['ArrowLeft','ArrowRight','KeyA','KeyD'].includes(e.code)){const now=performance.now()/1000;if(lastDirection.key===e.code&&now-lastDirection.time<.28){dashTime=1.6;dashKey=e.code;dashTap++;}lastDirection={key:e.code,time:now};}if(!keys.has(e.code))pressed.add(e.code);keys.add(e.code);if(e.code==='Enter'&&!e.repeat){if(state==='menu')characterSelect(0);else if(state==='select')document.getElementById('begin')?.click();else if(state==='brief')document.getElementById('enter-stage')?.click();else if(state==='clear')document.getElementById('next')?.click();else if(state==='ending')endAdvance();else if(state==='gameover')document.getElementById('retry')?.click();}if(state==='select'&&!e.repeat&&['ArrowLeft','ArrowRight'].includes(e.code)){selected=SELECT_ORDER[(SELECT_ORDER.indexOf(selected)+(e.code==='ArrowRight'?1:3))%4];characterSelect();}});
-window.addEventListener('keyup',e=>keys.delete(e.code));
+window.addEventListener('keyup',e=>{keys.delete(e.code);if(NETROLE==='client')clientKey(e,false);});
 // any pointer input restarts the title's idle count; a click on the screen during the attract story returns to the title
 window.addEventListener('pointerdown',()=>{menuIdle=0;},{capture:true});
-document.querySelector('.game-shell')?.addEventListener('pointerdown',e=>{if(state==='attract'&&!e.target.closest?.('button'))menu();});window.addEventListener('blur',()=>{resetInput();if(state==='play')pause();});document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='play')pause();});
-function touchKey(code,on){if(on&&!touchKeys.has(code)){touchKeys.add(code);if(!keys.has(code))pressed.add(code);keys.add(code);}else if(!on&&touchKeys.has(code)){touchKeys.delete(code);keys.delete(code);}}
+document.querySelector('.game-shell')?.addEventListener('pointerdown',e=>{if(state==='attract'&&!e.target.closest?.('button'))menu();});window.addEventListener('blur',()=>{if(NETROLE==='client'){mpSampler()?.setAway(true);return;}resetInput();if(state==='play')pause('host-away');});window.addEventListener('focus',()=>{if(NETROLE==='client')mpSampler()?.setAway(false);});document.addEventListener('visibilitychange',()=>{if(NETROLE==='client'){mpSampler()?.setAway(document.hidden);return;}if(document.hidden&&state==='play')pause('host-away');});
+function touchKey(code,on){if(NETROLE==='client'){const S=mpSampler();if(S){if(on)S.keyDown(code,performance.now());else S.keyUp(code);}}if(on&&!touchKeys.has(code)){touchKeys.add(code);if(!keys.has(code))pressed.add(code);keys.add(code);}else if(!on&&touchKeys.has(code)){touchKeys.delete(code);keys.delete(code);}}
 const stickEl=document.getElementById('stick'),knobEl=document.getElementById('stick-knob');
 function setStick(x,y){
   const dead=.3,run=Math.abs(x)>.8;touchKey('ArrowRight',x>dead);touchKey('ArrowLeft',x<-dead);touchKey('ArrowDown',y>dead);touchKey('ArrowUp',y<-dead);touchKey('TouchRun',run);
@@ -3607,7 +3857,7 @@ document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;let id
   b.addEventListener('pointerdown',e=>{e.preventDefault();id=e.pointerId;try{b.setPointerCapture(e.pointerId);}catch{}unlockAudio();b.classList.add('held');touchKey(k,true);navigator.vibrate?.(8);});
   for(const t of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(t,release);
   b.addEventListener('contextmenu',e=>e.preventDefault());});
-bindButton('pause',pause);bindButton('home',()=>{if(state==='play')pause();else menu();});bindButton('sound',()=>{const on=settings.music||settings.sfx;settings.music=!on;settings.sfx=!on;document.querySelector('#sound').textContent=on?'SOUND OFF':'SOUND ON';persist();});document.querySelector('#sound').textContent=settings.music||settings.sfx?'SOUND ON':'SOUND OFF';// Fullscreen. Desktop keeps the playfield-only fullscreen. Touch devices fullscreen the whole page so the controls
+bindButton('pause',pause);bindButton('home',()=>{if(NETROLE==='client'){window.EDEN_LOBBY?.confirmLeave?.();return;}if(state==='play')pause();else if(mpHosting())mpToRoom();else menu();});bindButton('sound',()=>{const on=settings.music||settings.sfx;settings.music=!on;settings.sfx=!on;document.querySelector('#sound').textContent=on?'SOUND OFF':'SOUND ON';persist();});document.querySelector('#sound').textContent=settings.music||settings.sfx?'SOUND ON':'SOUND OFF';// Fullscreen. Desktop keeps the playfield-only fullscreen. Touch devices fullscreen the whole page so the controls
 // come along, hide the page header and lock to landscape where the browser allows it. iPhone Safari has no page
 // fullscreen, so it gets a fill-the-screen mode instead (and Add to Home Screen opens the game without browser bars).
 const root=document.documentElement,fsElement=()=>document.fullscreenElement||document.webkitFullscreenElement;
@@ -3634,15 +3884,339 @@ bindButton('full',toggleFull);bindButton('full-exit',toggleFull);
 for(const ev of ['fullscreenchange','webkitfullscreenchange'])document.addEventListener(ev,()=>{if(TOUCH&&!fsElement()&&!root.classList.contains('pseudo-full')&&!root.classList.contains('standalone'))root.classList.remove('is-full');resetInput();});
 // Launched from the home screen: already fullscreen.
 if(TOUCH&&(matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches||navigator.standalone))root.classList.add('is-full','standalone');
+// ================================================================ online co-op: host adapter, snapshots, replica (MULTIPLAYER.md §1.9-§1.12, §3.15, §5.3)
+// net.js (window.EDEN_NET) and lobby.js (window.EDEN_LOBBY) reach the game only through MP_ADAPTER. The host's update()
+// is the only simulation: every step the session gets the step (input frames for the joiners' players, 20 Hz delta
+// snapshots of NET_SCHEMA, the step's events). A joiner never runs update(): it applies the interpolated snapshot to the
+// same globals render() reads, replays the events (sounds, particles, effects, floating scores) and draws. Nothing here
+// runs, and no network is touched, until a player chooses PLAY WITH FRIENDS (or opens a ?join= link).
+const NET_SCHEMA={timeField:'time',playerSection:'p',sections:{
+  g:{fields:[['state','str'],['level','i'],['area','i'],['section','i'],['enc','i'],['wave','i'],['time','t'],['camera','q4'],['cameraY','q4'],['road','q4'],['roadStream','q4'],['driving','b'],['lock','json'],
+    ['bossSpawned','b'],['bossIntro','f2'],['fade','json'],['shake','f2'],['flash','f2'],['coins','i'],['continueTimer','f2'],['coinPending','f2'],['toast','str'],['toastTime','f1'],['radio','str'],['caption','json'],
+    ['card','json'],['tally','json'],['bossCard','json'],['mission','json'],['crown','json'],['parkedCar','json'],['wheels','json'],['difficulty','str'],['stageTimer','f1'],['kills','i'],['cleared','b'],['rollT','f1'],
+    ['joinWait','i'],['end','json'],['ecar','json'],['elot','json']]},
+  p:{key:'slot',fields:[['slot','i'],['nid','i'],['hero','i'],['x','q4'],['y','q4'],['z','q4'],['dir','i'],['hp','f1'],['maxhp','f1'],['lives','i'],['score','i'],['combo','i'],['weapon','str'],['ammo','i'],['inv','f2'],
+    ['special','f2'],['specialTotal','f2'],['specialCd','f1'],['flags','i'],['an','json'],['cont','f1'],['bank','f2'],['bump','f2'],['roll','q4'],['boost','f2'],['lastHit','i'],['tag','f1'],['name','str']]},
+  e:{key:'nid',fields:[['nid','i'],['type','str'],['v','str'],['x','q4'],['y','q4'],['z','q4'],['dir','i'],['hp','f1'],['maxhp','f1'],['state','str'],['fl','i'],['dead','f2'],['delay','f2'],['freeze','f2'],['fid','i'],
+    ['ak','str'],['af','i'],['name','str'],['hero','i'],['phase','i'],['timer','f2'],['rage','f2'],['rageWarning','f2'],['palAlt','str'],['flashMap','str'],['mvName','str'],['hy','q4'],['tx','q4'],['ty','q4'],
+    ['strikeFlash','f2'],['inv','f2'],['hurt','f2'],['ba','json'],['lot','json'],['gaff','i'],['defeat','json'],['rig','json'],['tp','i']]},
+  a:{key:'nid',fields:[['nid','i'],['hero','i'],['x','q4'],['y','q4'],['z','q4'],['dir','i'],['hp','f1'],['maxhp','f1'],['state','str'],['inv','f2'],['rig','json']]},
+  b:{key:'nid',fields:[['nid','i'],['kind','str'],['weapon','str'],['x','q4'],['y','q4'],['z','q4'],['vx','q4'],['vy','q4'],['friendly','b'],['hero','b'],['age','f2'],['delay','f2'],['landed','b'],['pellet','i'],['dir','i'],['art','json'],['color','str']]},
+  d:{key:'nid',fields:[['nid','i'],['type','str'],['food','str'],['x','q4'],['y','q4'],['z','q4'],['claimed','b'],['life','f1'],['dir','i']]},
+  o:{key:'nid',fields:[['nid','i'],['type','str'],['x','q4'],['y','q4'],['z','q4'],['hp','f1'],['boss','b'],['rolling','b'],['falling','b'],['roll','q4'],['vx','q4']]},
+  bo:{key:'nid',fields:[['nid','i'],['type','str'],['x','q4'],['y','q4'],['z','q4'],['hp','f1'],['boss','b'],['rolling','b'],['falling','b'],['roll','q4'],['vx','q4']]},
+  z:{key:'nid',fields:[['nid','i'],['x','q4'],['y','q4'],['r','q4'],['t','f2'],['total','f2'],['band','json'],['style','str'],['friendly','b']]},
+  x:{key:'nid',fields:[['nid','i'],['weapon','str'],['x','q4'],['y','q4'],['z','q4'],['dir','i'],['age','f2'],['t','f2'],['lie','f2'],['landed','b']]},
+  sc:{key:'nid',fields:[['nid','i'],['id','str'],['type','str'],['v','str'],['key','str'],['keys','json'],['x','q4'],['y','q4'],['z','q4'],['vx','q4'],['t','f1']]},
+  ea:{key:'nid',fields:[['nid','i'],['hero','i'],['x','q4'],['y','q4'],['z','q4'],['dir','i'],['freed','b'],['own','b'],['state','str'],['rig','json']]},
+}};
+const PF=['run','move','dying','down','dropIn','knocked','walkFire','brake','free','cont','out','away','victory','grab','coin'];
+const EF=['boss','elite','clone','setPiece','onstage','waiting','hidden','dying','dissolve','knife','wreck','sink','half','testHidden','brood','collarOff','phase2h','moving','remnant'];
+const bitsOf=list=>{let f=0;list.forEach((v,i)=>{if(v)f|=1<<i;});return f;};
+const bit=(f,i)=>!!((f|0)&(1<<i));
+const r1=v=>typeof v==='number'?Math.round(v*10)/10:v,r2=v=>typeof v==='number'?Math.round(v*100)/100:v;
+const mpSess=()=>window.EDEN_NET&&window.EDEN_NET.session||null;
+const mpSampler=()=>{const S=mpSess();return S&&S.role==='client'?S.sampler:null;};
+// ---------------------------------------------------------------- host: events (§1.10)
+// One-shot and cosmetic things travel as events: sounds, the particle helpers (each page runs its own random draws),
+// floating scores, and every new effect or loose particle the step created (sent once, then aged on the joiner).
+let EV=[],evDepth=0,stepNo=0,inputRec=null,replayQ=null;
+const pSeen=new WeakSet(),fxSeen=new WeakSet();
+function hostLive(){const S=mpSess();return NETROLE==='host'&&!!S&&S.role==='host'&&S.phase==='play'&&!!S.clients&&S.clients.size>0;}
+function hostEv(...ev){if(NETROLE!=='host'||!hostLive())return;EV.push(ev);if(EV.length>600)EV.splice(0,EV.length-600);}
+function fxCall(ev,fn){if(NETROLE!=='host')return fn();const n0=particles.length,f0=effects.length;if(evDepth===0)hostEv(...ev);evDepth++;
+  try{return fn();}finally{evDepth--;for(let i=n0;i<particles.length;i++)pSeen.add(particles[i]);for(let i=f0;i<effects.length;i++)fxSeen.add(effects[i]);}}
+const _sfx=sfx,_burst=burst,_bloodBurst=bloodBurst,_explosionParticles=explosionParticles,_sparkBurst=sparkBurst,_popup=popup;
+sfx=name=>fxCall(['sfx',name],()=>_sfx(name));
+burst=(x,y,color,n=12)=>fxCall(['burst',r1(x),r1(y),color,n],()=>_burst(x,y,color,n));
+bloodBurst=(e,dir,opts)=>fxCall(['blood',r1(e.x),r1(e.y),r1(e.z||0),dir,opts&&opts.sharp?1:0,r1(opts&&opts.hitZ||0)],()=>_bloodBurst(e,dir,opts));
+explosionParticles=(x,y)=>fxCall(['expl',r1(x),r1(y)],()=>_explosionParticles(x,y));
+sparkBurst=(x,y,n=10)=>fxCall(['spark',r1(x),r1(y),n],()=>_sparkBurst(x,y,n));
+popup=(x,y,text,color='#e9ecd1')=>fxCall(['popup',r1(x),r1(y),String(text),color],()=>_popup(x,y,text,color));
+function packObj(o){const out={};for(const k in o){const v=o[k];if(v==null||typeof v==='function')continue;if(typeof v==='number')out[k]=r2(v);else if(typeof v==='object'){if(Array.isArray(v)?v.length<=64:Object.keys(v).length<=16)out[k]=v;}else out[k]=v;}return out;}
+function emitDiffs(){if(!hostLive())return;
+  for(const f of effects)if(!fxSeen.has(f)){fxSeen.add(f);hostEv('fx',packObj(f));}
+  for(const p of particles)if(!pSeen.has(p)){pSeen.add(p);hostEv('pt',packObj(p));}}
+function netTick(dt){
+  const S=mpSess();if(!S||S.role!=='host'||typeof S.tick!=='function')return;
+  let jw=0;if(S.clients)for(const c of S.clients.values())if(c.state==='waiting'&&c.ready)jw|=1<<c.slot;joinWait=jw;
+  emitDiffs();S.tick(dt);
+}
+// ---------------------------------------------------------------- host: snapshot (§1.9)
+function freeOf(p){return state==='play'&&!fade&&!driving&&onField(p)&&p.hurt<=0&&p.special<=0&&bossIntro<=0&&p.pickup<=0&&!(p.freeze>0)&&!p.grab&&!p.dropIn&&p.attack<=0&&p.z<=0&&!p.down&&!p.dying;}
+function anOf(p){const A=p.mp.heroAnim;if(driving||!A||!A.main||!A.main.clip)return null;const L=A.sel&&A.sel.legs&&A.legs&&A.legs.clip?A.legs:null;return [A.main.role,A.main.k,L?L.role:null,L?L.k:0,Math.round((A.sel&&A.sel.lift)||0)];}
+function pRow(p){const m=p.mp;return {slot:m.slot,nid:nidOf(p),hero:m.hero,x:p.x,y:p.y,z:p.z,dir:p.dir,hp:p.hp,maxhp:p.maxhp,lives:m.lives,score:m.score,combo:m.combo,weapon:p.weapon||'',ammo:p.ammo|0,
+  inv:p.inv,special:p.special,specialTotal:p.specialTotal,specialCd:p.specialCd,
+  flags:bitsOf([p.run,p.move,p.dying,p.down,p.dropIn,p.knocked,p.walkFire,p.brake,freeOf(p),!!m.cont,m.out,m.away,p.victoryT!=null,!!p.grab,!!(m.cont&&m.cont.pending>0)]),
+  an:anOf(p),cont:m.cont?m.cont.t:0,bank:p.bank,bump:p.bump,roll:p.roll,boost:p.boost,lastHit:m.lastHitEnemy&&enemies.includes(m.lastHitEnemy)?nidOf(m.lastHitEnemy):-1,tag:m.tag||0,name:m.name||''};}
+const lotOf=L=>L?{parts:Object.fromEntries(Object.entries(L.parts||{}).map(([k,v])=>[k,{key:v.key,t:r1(v.t||0),hold:!!v.hold}])),melted:Object.fromEntries(Object.entries(L.melted||{}).map(([k,v])=>[k,{t:r2(v.t)}])),span:L.span||null}:null;
+function rigOf(e){if(e.type!=='mirror'&&!e.ally)return null;const i=cloneInfo(e);return i?[i.id,i.k]:null;}
+function eRow(e){return {nid:nidOf(e),type:e.type,v:e.v||'',x:e.x,y:e.y,z:e.z||0,dir:e.dir,hp:e.hp,maxhp:e.maxhp,state:e.state||'',
+  fl:bitsOf([e.boss,e.elite,e.clone,e.setPiece,e.onstage,e.waiting,e.hidden,e.dying,e.dissolve,e.knife,e.wreck,e.sink,e.half,e.testHidden,e.brood,e.collar===false,e.phase2h,e.moving,e.remnant]),
+  dead:e.dead||0,delay:e.delay||0,freeze:e.freeze||0,fid:e.fid??-1,ak:e.ak||'',af:e.af|0,name:e.name||'',hero:e.hero|0,phase:e.phase|0,timer:e.sink?e.timer:0,rage:e.rage||0,rageWarning:e.rageWarning||0,
+  palAlt:e.palAlt||'',flashMap:e.flashMap||'',mvName:e.mvName||'',hy:e.hy||0,tx:e.state==='leap'?e.targetX:0,ty:e.state==='leap'?e.targetY:0,strikeFlash:e.strikeFlash||0,inv:e.inv||0,hurt:e.hurt||0,
+  ba:e.boss&&e.type!=='fessenden'&&e.ba?{key:e.ba.key,t:r1(e.ba.t||0),hold:!!e.ba.hold,rev:!!e.ba.rev,pin:e.ba.pin??null}:null,lot:e.type==='fessenden'?lotOf(e.lot):null,gaff:e.gaff?Math.round(e.gaff.len||0):-1,
+  defeat:e.defeat?{kind:e.defeat.kind,t:r2(e.defeat.t||0)}:null,rig:rigOf(e),tp:e.tp&&e.tp.mp?e.tp.mp.slot:-1};}
+const oRow=o=>({nid:nidOf(o),type:o.type,x:o.x,y:o.y,z:o.z||0,hp:o.hp,boss:!!o.boss,rolling:!!o.rolling,falling:!!o.falling,roll:o.roll||0,vx:o.vx||0});
+function mpSerialize(){
+  if(ctxPlayer&&ctxPlayer.mp)saveCtx(ctxPlayer);
+  const g={state,level:levelIndex,area:areaIndex,section:sectionIndex,enc:encIndex,wave,time,camera,cameraY,road,roadStream,driving,lock:lock?{left:lock.left,right:lock.right}:null,bossSpawned,bossIntro,
+    fade:fade?{to:fade.to,t:r2(fade.t),out:!!fade.out}:null,shake,flash,coins,continueTimer,coinPending,toast:toastTime>0?String(toast||''):'',toastTime,radio:radio?String(radio.text):'',
+    caption:caption?{text:caption.text,t:Math.floor(caption.t)}:null,card:card?{i:card.i,start:card.start,phase:card.phase,k:card.k,t:Math.floor(card.t),pre:card.pre||null}:null,
+    tally:clearSeq?{t:Math.floor(clearSeq.t),story:!!clearSeq.story,tally:clearSeq.tally}:null,bossCard:bossCard?{name:bossCard.name,sub:bossCard.sub,t:r2(bossCard.t),total:bossCard.total,pink:!!bossCard.pink}:null,
+    mission:mission?{completed:mission.completed,total:mission.total,active:mission.active?mission.items.indexOf(mission.active):-1,items:mission.items.map(t=>({kind:t.kind,name:t.name,x:t.x,y:t.y,target:t.target,channel:t.channel,progress:r2(t.progress),hp:r2(t.hp),maxhp:t.maxhp,done:!!t.done,bossTask:!!t.bossTask}))}:null,
+    crown:crown?{...crown}:null,parkedCar:parkedCar?{x:parkedCar.x,y:parkedCar.y}:null,wheels:spillWheels.map(w=>({x:w.x,y:w.y,charge:r2(w.charge),cd:r1(w.cd),spin:r1(w.spin),hold:w.hold})),
+    difficulty:normalizeDifficulty(difficulty),stageTimer,kills,cleared,rollT,joinWait,
+    end:endSeq?{k:endSeq.k,t:Math.floor(endSeq.t),box:endSeq.box,done:!!endSeq.done,lift:endSeq.lift??null,stumbler:endActors.indexOf(endSeq.stumbler)}:null,
+    ecar:endCar?{x:endCar.x,y:endCar.y,v:endCar.v,roll:r1(endCar.roll),stopX:endCar.stopX,state:endCar.state}:null,
+    elot:endLot?{x:endLot.x,y:endLot.y,dir:endLot.dir,dead:endLot.dead,fallT:r2(endLot.fallT||0),remnant:!!endLot.remnant,defeat:endLot.defeat?{kind:endLot.defeat.kind,t:r2(endLot.defeat.t||0)}:null,lot:lotOf(endLot.lot)}:null};
+  return {g,p:present().map(pRow),e:enemies.map(eRow),a:allies.map(a=>({nid:nidOf(a),hero:a.hero,x:a.x,y:a.y,z:a.z||0,dir:a.dir,hp:a.hp,maxhp:a.maxhp,state:a.state,inv:a.inv||0,rig:rigOf(a)})),
+    b:bullets.map(b=>({nid:nidOf(b),kind:b.kind||'',weapon:b.weapon||'',x:b.x,y:b.y,z:b.z||0,vx:b.vx||0,vy:b.vy||0,friendly:!!b.friendly,hero:!!b.hero,age:b.age||0,delay:b.delay||0,landed:!!b.landed,pellet:b.pellet|0,dir:b.dir||0,art:b.art||null,color:b.color||''})),
+    d:drops.map(d=>({nid:nidOf(d),type:d.type,food:d.food||'',x:d.x,y:d.y,z:d.z||0,claimed:!!d.claimed,life:d.life,dir:d.dir||0})),
+    o:objects.map(oRow),bo:bossObjs.filter(o=>!objects.includes(o)).map(oRow),
+    z:zones.map(z=>({nid:nidOf(z),x:z.x,y:z.y,r:z.r,t:z.t,total:z.total,band:z.band||null,style:z.style||'',friendly:!!z.friendly})),
+    x:discards.map(d=>({nid:nidOf(d),weapon:d.weapon,x:d.x,y:d.y,z:d.z||0,dir:d.dir,age:d.age,t:d.t,lie:d.lie,landed:!!d.landed})),
+    sc:scenery.map(s=>({nid:nidOf(s),id:s.id,type:s.type,v:s.v,key:s.key||'',keys:s.keys||null,x:s.x,y:s.y,z:s.z||0,vx:s.vx,t:s.t})),
+    ea:(state==='ending'?endActors:[]).map(a=>({nid:nidOf(a),hero:a.hero,x:a.x,y:a.y,z:a.z||0,dir:a.dir,freed:!!a.freed,own:!!a.own,state:a.state||'',rig:(()=>{const i=cloneInfo(a);return i?[i.id,i.k]:null;})()}))};
+}
+// ---------------------------------------------------------------- host: players joining, leaving, input (§3.10, §3.3)
+const mpReserve={};
+function mpAddPlayer(slot,hero,o={}){
+  slot=slot|0;if(slot<1||slot>=MAXP||NETROLE==='client'||!started||!players[0]||players[slot])return false;
+  const used=new Set(present().map(p=>p.mp.hero));let h=clamp(hero|0,0,3);if(used.has(h))h=[...SELECT_ORDER,0,1,2,3].find(k=>!used.has(k));if(h==null)return false;
+  if(ctxPlayer&&ctxPlayer.mp)saveCtx(ctxPlayer);
+  const p=attachMp(freshHero(HEROES[h].hp*rules().playerHealth),slot,h,o.name),m=p.mp;m.in=makeInput();m.heroAnim=freshHeroAnim();
+  const res=o.reconnect?mpReserve[slot]:null;if(res&&res.hero===h){m.score=res.score;m.lives=Math.max(1,res.lives);}delete mpReserve[slot];
+  const lp=leadPlayer()||players[0],x0=clamp(camera+64+40*slot,camera+24,camera+W-24),x=lock?clamp(x0,lock.left+24,lock.right-24):x0,b=bandOf(x);
+  p.x=x;p.y=clamp(b.mid+[0,-12,12][slot],b.top,b.bottom);p.dir=1;
+  players[slot]=p;refreshPlayers();
+  if(driving){p.x=lp.x;p.y=lp.y;}else if(o.dropIn!==false)withPlayer(p,startDropIn);
+  m.tag=2;toast=`${slot+1}P ${String((o.name&&!/^[1-3]P$/i.test(o.name))?o.name:HEROES[h].name).toUpperCase()} JOINED`;toastTime=2.5;
+  return true;
+}
+function mpRemovePlayer(slot,reason){
+  const p=players[slot];if(!p||slot===0||slot===localSlot)return false;
+  if(ctxPlayer&&ctxPlayer.mp)saveCtx(ctxPlayer);
+  mpReserve[slot]={hero:p.mp.hero,score:p.mp.score,lives:p.mp.lives};
+  withPlayer(p,()=>{releaseGrab();dropWeapon();});
+  players[slot]=null;refreshPlayers();
+  for(const e of enemies){if(e.tp===p)e.tp=null;if(e.target===p)e.target=null;if(e.byP===p)e.byP=null;}
+  if(ctxPlayer===p)loadCtx(localPlayer());
+  if(reason!=='reconnect'){toast=`${slot+1}P LEFT`;toastTime=2;}
+  return true;
+}
+// a joiner's decoded frame (net.js Receiver.next): held keys (a press counts as held for its step, so a tap shorter
+// than one host step still attacks), presses, the joiner-side double tap, away (§1.8)
+function mpSetRemoteInput(slot,fr){
+  const p=players[slot];if(!p||slot===localSlot||!fr)return;const m=p.mp,I=m.in&&m.in!==LOCAL_IN?m.in:(m.in=makeInput());
+  I.keys=new Set(fr.held||[]);for(const c of fr.presses||[]){I.pressed.add(c);I.keys.add(c);}
+  if(fr.dash&&fr.dash.code){m.dashTime=1.6;m.dashKey=fr.dash.code;m.dashTap+=fr.dash.count||1;}
+  m.away=!!fr.away;
+  if(inputRec)inputRec.push([stepNo,slot,[...I.keys],[...(fr.presses||[])]]);
+}
+// a scripted input source (tests, bots, a local second player later): held keys stay held until the next call
+function mpInput(slot,{held=[],press=[]}={}){
+  const p=players[slot];if(!p)return false;
+  if(p.mp.in===LOCAL_IN||(p===ctxPlayer&&IN===LOCAL_IN)){keys.clear();for(const k of held)keys.add(k);for(const k of press)pressed.add(k);return true;}
+  const I=p.mp.in||(p.mp.in=makeInput());I.keys=new Set(held);for(const k of press){I.pressed.add(k);I.keys.add(k);}return true;
+}
+// ---------------------------------------------------------------- client: the replica (§3.15, §1.12)
+const RC={e:new Map(),a:new Map(),b:new Map(),d:new Map(),o:new Map(),bo:new Map(),z:new Map(),x:new Map(),sc:new Map(),ea:new Map()};
+let replicaLot=null,padPrev=new Set();
+function rsync(sec,rows,fix){
+  const M=RC[sec],out=[],seen=new Set();
+  for(const r of rows||[]){if(!r)continue;let o=M.get(r.nid);
+    if(!o){o={};Object.defineProperty(o,'nid',{value:r.nid,writable:true,configurable:true,enumerable:false});M.set(r.nid,o);}
+    for(const k in r)if(k!=='nid')o[k]=r[k];if(fix)fix(o,r);out.push(o);seen.add(r.nid);}
+  for(const k of [...M.keys()])if(!seen.has(k))M.delete(k);
+  return out;
+}
+function replicaChapter(i){
+  levelIndex=clamp(i|0,0,5);level=LEVELS[levelIndex];plan=buildPlan(levelIndex);level.length=plan.length;SR.require(levelIndex);STG.use(chapterKey(levelIndex));heroRigChapter(levelIndex);
+  const spec=EDEN_MISSIONS[levelIndex];mission={completed:0,total:spec.tasks.length,active:null,items:[],spec};started=true;areaIndex=-1;
+}
+function applyView(v){
+  const g=v.g||{},prev=state;
+  if(g.level!=null&&(g.level!==levelIndex||!plan||!started))replicaChapter(g.level);
+  if(g.area!=null&&plan&&g.area!==areaIndex&&plan.areas[g.area]){areaIndex=g.area;SR.resetStream(curArea());}
+  if(ctxPlayer&&ctxPlayer.mp)saveCtx(ctxPlayer);
+  if(typeof g.state==='string'&&g.state)state=g.state;
+  if(typeof g.time==='number')time=g.time;
+  camera=g.camera??camera;cameraY=g.cameraY??cameraY;road=g.road??road;roadStream=g.roadStream??roadStream;driving=!!g.driving;lock=g.lock||null;bossSpawned=!!g.bossSpawned;bossIntro=g.bossIntro||0;
+  fade=g.fade||null;shake=g.shake||0;flash=g.flash||0;coins=g.coins|0;continueTimer=g.continueTimer||0;coinPending=g.coinPending||0;toast=g.toast||'';toastTime=g.toast?g.toastTime||0:0;
+  radio=g.radio?{text:g.radio,ttl:1}:null;caption=g.caption||null;card=g.card?{...g.card}:null;clearSeq=g.tally?{t:g.tally.t,story:g.tally.story,typed:0,tally:g.tally.tally}:null;bossCard=g.bossCard||null;
+  if(mission&&g.mission){const M=g.mission;mission.completed=M.completed;mission.total=M.total;mission.items=M.items||[];mission.active=M.active>=0?mission.items[M.active]||null:null;}
+  crown=g.crown||null;parkedCar=g.parkedCar||null;spillWheels=g.wheels||[];sectionIndex=g.section??sectionIndex;encIndex=g.enc??encIndex;wave=g.wave|0;difficulty=g.difficulty||difficulty;
+  stageTimer=g.stageTimer||0;kills=g.kills|0;cleared=!!g.cleared;rollT=g.rollT||0;joinWait=g.joinWait|0;
+  enemies=rsync('e',v.e,(e,r)=>{EF.forEach((k,i)=>{e[k]=bit(r.fl,i);});e.collar=e.collarOff?false:undefined;e.fid=r.fid>=0?r.fid:null;e.ak=r.ak||null;e.v=r.v||undefined;e.targetX=r.tx;e.targetY=r.ty;
+    e.gaff=r.gaff>=0?{len:r.gaff}:null;e.palAlt=r.palAlt||null;e.flashMap=r.flashMap||null;});
+  allies=rsync('a',v.a,a=>{a.ally=true;a.freed=true;});
+  bullets=rsync('b',v.b,b=>{b.art=b.art||undefined;b.color=b.color||undefined;});
+  drops=rsync('d',v.d,d=>{d.food=d.food||undefined;});objects=rsync('o',v.o);bossObjs=rsync('bo',v.bo);zones=rsync('z',v.z,z=>{z.band=z.band||undefined;});
+  discards=rsync('x',v.x);scenery=rsync('sc',v.sc,s=>{s.key=s.key||undefined;s.keys=s.keys||undefined;});endActors=rsync('ea',v.ea);
+  endSeq=g.end?{...g.end,stumbler:endActors[g.end.stumbler]||null}:null;endCar=g.ecar||null;
+  if(g.elot){replicaLot=replicaLot||{type:'fessenden',boss:true,z:0};Object.assign(replicaLot,g.elot);endLot=replicaLot;}else endLot=null;
+  // the players: one replica object per slot; this machine's own row is the echo-predicted one (session.view)
+  const next=[],S=mpSess(),own=S&&S.ownRow;
+  for(const r of v.p||[]){if(!r||!(r.slot>=0&&r.slot<MAXP))continue;let p=players[r.slot];
+    if(!p||p.mp.hero!==r.hero){p=attachMp(freshHero(r.maxhp||100),r.slot,r.hero,r.name);p.mp.in=makeInput();p.mp.heroAnim=freshHeroAnim();}
+    const m=p.mp,f=r.flags|0,ox=p.x,oy=p.y;p.nid=r.nid;
+    Object.assign(p,{x:r.x,y:r.y,z:r.z,dir:r.dir,hp:r.hp,maxhp:r.maxhp,weapon:r.weapon||null,ammo:r.ammo,inv:r.inv,special:r.special,specialTotal:r.specialTotal,specialCd:r.specialCd,bank:r.bank,bump:r.bump,roll:r.roll,boost:r.boost,
+      run:bit(f,0),move:bit(f,1),dying:bit(f,2),down:bit(f,3),dropIn:bit(f,4),knocked:bit(f,5),walkFire:bit(f,6),brake:bit(f,7),victoryT:bit(f,12)?1:null});
+    m.score=r.score;m.lives=r.lives;m.combo=r.combo;m.cont=bit(f,9)?{t:r.cont,pending:bit(f,14)?1:0}:null;m.out=bit(f,10);m.away=bit(f,11);m.tag=r.tag;m.name=r.name;m.an=r.an;
+    m.lastHitEnemy=r.lastHit>=0?RC.e.get(r.lastHit)||null:null;
+    // own walking echo: while this machine moves its hero ahead of the host's clip, a local walk clip shows (§1.12)
+    if(r.slot===localSlot&&own&&ox!=null){const d=Math.hypot(p.x-ox,p.y-oy),R=RIG(),moving=Math.abs(p.x-own.x)+Math.abs(p.y-own.y)>.5&&d>.05;
+      m.echoOn=!!(R&&moving&&m.an&&!isLoco(m.an[0])&&bit(f,8));
+      if(m.echoOn){const id=HEROES[r.hero].id,sp=R.hero(id).speed||{};m.echoA=m.echoA||R.player();R.play(m.echoA,id,'walk');R.advance(m.echoA,d/(sp.walk||1.6));}}
+    else m.echoOn=false;
+    next[r.slot]=p;}
+  players=next;refreshPlayers();
+  const L=localPlayer();if(L&&L.mp)loadCtx(L);
+  if(state!==prev)onReplicaState(prev);
+}
+function onReplicaState(prev){
+  panel('');const LB=window.EDEN_LOBBY;if(!LB)return;
+  if(state==='clear')LB.showBanner('clear-wait');else if(state==='gameover')LB.showBanner('gameover-wait');else if(prev==='clear'||prev==='gameover')LB.hideBanner();
+}
+function drawReplicaPlayer(){
+  const x=player.x-viewX,y=player.y-player.z,m=player.mp;ctx.save();if(!driving)shadow(ctx,x,player.y,20);
+  if(player.inv>0&&Math.floor(time*16)%2===0)ctx.globalAlpha=.65;
+  if(driving)car(ctx,x,y,{hero:selected,roll:player.roll,moving:true,bank:player.bank,bump:player.bump,brake:player.brake,t:time,passengers:present().filter(passenger).map(q=>q.mp.hero)});
+  else{const R=RIG(),an=m.an,id=HEROES[selected].id;
+    if(R&&R.ready&&an){let body=an[2]?{torso:{clip:an[0],k:an[1]},legs:{clip:an[2],k:an[3]}}:{full:{clip:an[0],k:an[1]}};if(m.echoOn&&m.echoA&&m.echoA.clip)body={full:m.echoA};
+      let w=player.weapon&&R.hero(id).hold[player.weapon]?player.weapon:null;if(w&&player.ammo<=0&&R.hero(id).hold[w+'-empty'])w+='-empty';
+      R.draw(ctx,R.parts(id,body,w),x,player.y-(an[4]||0),player.z,player.dir,CFG.sockets.scale,'hero');}}
+  if(player.special>0){const k=clamp(1-player.special/(player.specialTotal||.65),0,1);ctx.strokeStyle=HEROES[selected].color;ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(x,y-30,63*(.28+.72*k),24,0,0,Math.PI*2);ctx.stroke();}
+  ctx.restore();
+}
+function fireEvent(ev){
+  if(!Array.isArray(ev))return;const [k,...a]=ev,n=v=>typeof v==='number'&&isFinite(v)?v:0;
+  switch(k){
+    case 'sfx':if(typeof a[0]==='string')_sfx(a[0]);break;
+    case 'burst':_burst(n(a[0]),n(a[1]),String(a[2]||'#ffffff'),clamp(n(a[3])||12,0,40));break;
+    case 'blood':_bloodBurst({x:n(a[0]),y:n(a[1]),z:n(a[2])},n(a[3])||1,{sharp:!!a[4],hitZ:n(a[5])});break;
+    case 'expl':_explosionParticles(n(a[0]),n(a[1]));break;
+    case 'spark':_sparkBurst(n(a[0]),n(a[1]),clamp(n(a[2])||10,0,40));break;
+    case 'popup':_popup(n(a[0]),n(a[1]),String(a[2]??''),String(a[3]||'#e9ecd1'));break;
+    case 'fx':if(a[0]&&typeof a[0]==='object'&&effects.length<300)effects.push({...a[0]});break;
+    case 'pt':if(a[0]&&typeof a[0]==='object'&&particles.length<CFG.fx.maxParticles)particles.push({...a[0]});break;
+    case 'unlock':{const u=clamp(n(a[0]),0,5);if(u>save.unlocked){save.unlocked=u;persist();}break;}
+    default:break;   // 'notice': the lobby shows join / leave notices from the roster
+  }
+}
+// §1.12: today's walk rule for the joiner's own hero while the host says it may walk (the `free` flag)
+function echoStep(row,f,dt){
+  if(!row||!bit(row.flags,8)||!plan||!curArea())return row;
+  const b=f.b|0,dx=((b>>1)&1)-(b&1),dy=((b>>3)&1)-((b>>2)&1);if(!dx&&!dy)return row;
+  const run=!!((b>>8)&1)&&!!dx,V=heroV(HEROES[row.hero]||HEROES[0]),speed=run?FIREARMS.has(row.weapon)?V.walk*1.5:V.run:V.walk,lane=V.lane*(run?.5:1);
+  let x=row.x+dx*speed*dt,y=row.y+dy*lane*dt;if(dx&&dy&&!run){x-=dx*speed*dt*.22;y-=dy*lane*dt*.22;}
+  const r=walkTo(row.x,row.y,x,y,{cam:{x:camera,y:cameraY},lock});return Object.assign({},row,{x:r.x,y:r.y,dir:dx||row.dir});
+}
+function clientKey(e,on){
+  if(on&&(e.code==='Escape'||e.code==='KeyP')){e.preventDefault();if(!e.repeat)window.EDEN_LOBBY?.confirmLeave?.();return;}
+  const S=mpSampler();if(!S)return;
+  if(on){if(S.away)S.setAway(false);if(S.keyDown(e.code,performance.now())&&state==='play')e.preventDefault();}else S.keyUp(e.code);
+}
+function clientPad(){
+  const S=mpSampler(),pads=navigator.getGamepads?.()||[],p=Array.from(pads).find(Boolean),now=new Set();
+  if(p){['KeyK','KeyE','KeyJ','KeyL'].forEach((c,i)=>{if(p.buttons[i]?.pressed)now.add(c);});
+    if(p.axes[0]<-.3||p.buttons[14]?.pressed)now.add('ArrowLeft');if(p.axes[0]>.3||p.buttons[15]?.pressed)now.add('ArrowRight');if(p.axes[1]<-.3||p.buttons[12]?.pressed)now.add('ArrowUp');if(p.axes[1]>.3||p.buttons[13]?.pressed)now.add('ArrowDown');
+    if(p.buttons[9]?.pressed){if(!padPrev.has('Start')&&!lobbyOpen())window.EDEN_LOBBY?.confirmLeave?.();now.add('Start');}}
+  if(S&&!lobbyOpen()){for(const c of now)if(c!=='Start'&&!padPrev.has(c))S.keyDown(c,performance.now());for(const c of padPrev)if(c!=='Start'&&!now.has(c))S.keyUp(c);}
+  padPrev=now;
+}
+// the joiner's frame (no update): input frames out, the interpolated view in, the host's events, local cosmetics
+function clientStep(dt){
+  const S=mpSess();if(!S||S.role!=='client')return;
+  clientPad();
+  if(S.sampler){const fr=S.sampler.sample(dt*1000);if(fr.length)S.sendInput(fr);}
+  const now=performance.now(),v=S.view(now);if(v)MP_ADAPTER.applyView(v);
+  for(const ev of S.dueEvents(now))MP_ADAPTER.fireEvent(ev);   // through the adapter, so a test (or a recorder) can wrap it
+  updateParticles(dt);for(const f of floating){f.y-=22*dt;f.life-=dt;}floating=floating.filter(f=>f.life>0);
+  for(const fx of effects)fx.age+=dt;effects=effects.filter(fx=>fx.age<fx.life);
+  music(dt);
+}
+function mpClearWorld(){
+  if(ctxPlayer&&ctxPlayer.mp)saveCtx(ctxPlayer);
+  players=[];refreshPlayers();ctxPlayer=null;IN=LOCAL_IN;localSlot=0;lastDriver=null;EV=[];joinWait=0;mpAllOut=false;
+  for(const M of Object.values(RC))M.clear();replicaLot=null;
+  enemies=[];allies=[];objects=[];drops=[];particles=[];bullets=[];discards=[];zones=[];floating=[];effects=[];scenery=[];bossObjs=[];spillWheels=[];crown=null;bossCard=null;lock=null;encounter=null;fade=null;
+  card=null;caption=null;clearSeq=null;endSeq=null;endLot=null;endActors=[];endCar=null;radio=null;radioQueue=[];driving=false;parkedCar=null;started=false;
+}
+// ---------------------------------------------------------------- the adapter (§5.3) and the lobby
+const fnv=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}return h.toString(16).padStart(8,'0');};
+let buildId=null;
+const MP_ADAPTER={
+  get build(){return buildId||(buildId=fnv(JSON.stringify([1,CFG,LEVELS.map(l=>l.name),NET_SCHEMA,HEROES.map(h=>[h.id,h.hp,h.speed,h.power])])));},
+  heroes:HEROES.map((h,i)=>({id:i,name:h.name,color:h.color,portrait:()=>portraitCanvas(h.id)})),
+  selectOrder:SELECT_ORDER.slice(),
+  chapters:()=>LEVELS.map((l,i)=>({index:i,name:l.name,unlocked:i<=save.unlocked})),
+  difficulties:()=>Object.entries(CFG.difficulty).map(([key,v])=>({key,label:v.label})),
+  schema:NET_SCHEMA,
+  // host
+  startGame(cfg={}){
+    NETROLE='host';localSlot=0;const r0=(cfg.roster||[]).find(r=>r&&r.slot===0);
+    selected=clamp(r0?r0.hero|0:selected,0,3);difficulty=normalizeDifficulty(cfg.difficulty);score=0;lives=3;kills=0;bestCombo=0;runTime=0;coins=0;
+    for(const k of Object.keys(mpReserve))delete mpReserve[k];
+    startStage(clamp(cfg.chapter|0,0,5),{skipBrief:true,section:cfg.section|0,roster:cfg.roster&&cfg.roster.length?cfg.roster:null});
+    if(!(cfg.section|0))queueDialog();
+  },
+  canAdmit(o){if(state!=='play'||fade||driving||bossIntro>0||bossSpawned||bossCard||!started||!players[0])return false;if(!lock)return true;return !!(o&&o.waitedMs>30000);},
+  addPlayer:(slot,hero,o)=>mpAddPlayer(slot,hero,o||{}),
+  removePlayer:(slot,reason)=>mpRemovePlayer(slot,reason),
+  setRemoteInput:(slot,fr)=>mpSetRemoteInput(slot,fr),
+  remoteButton(slot,name){if(name==='advance'){if(state==='brief')cardAdvance();else if(state==='ending')endAdvance();}},
+  serialize:()=>mpSerialize(),
+  drainEvents(){const e=EV;EV=[];return e;},
+  playerState(slot){const p=players[slot];if(!p)return null;return p.mp.out?'out':p.mp.cont?'continue':'playing';},
+  pause(){},
+  stopGame(reason){mpClearWorld();const S=mpSess();NETROLE=S&&!S.ended&&S.role==='host'?'host':'off';menu();},
+  // client
+  enterReplica(cfg={}){
+    mpClearWorld();NETROLE='client';localSlot=clamp(cfg.slot|0,1,MAXP-1);difficulty=normalizeDifficulty(cfg.difficulty);state='play';plan=null;
+    resetInput();panel('');canvas.focus();
+    const S=mpSampler();if(S)for(const c of keys)S.keyDown(c,performance.now());
+  },
+  applyView:v=>applyView(v),
+  fireEvent:ev=>fireEvent(ev),
+  echoStep:(row,f,dt)=>echoStep(row,f,dt),
+  localInput:{attach(){},detach(){}},
+  exitReplica(reason){mpClearWorld();NETROLE='off';window.EDEN_LOBBY?.hideBanner?.();menu();},
+};
+const lobbyOpen=()=>{try{return !!(window.EDEN_LOBBY&&window.EDEN_LOBBY.status().open);}catch(e){return false;}};
+const mpHosting=()=>{const S=mpSess();return NETROLE==='host'&&!!S&&S.role==='host'&&!S.ended&&S.phase==='play';};
+function netPause(on,by='host'){if(NETROLE!=='host')return;const S=mpSess();if(S&&S.role==='host'&&S.phase==='play'&&typeof S.pause==='function')S.pause(!!on,by);}
+function mpToRoom(){const L=window.EDEN_LOBBY;if(L&&L.showRoom){L.showRoom();return;}const S=mpSess();if(S&&S.toRoom)S.toRoom('host-quit');}
+function mpLobbyExit(){const S=mpSess();if(!S||S.ended){if(NETROLE==='client')mpClearWorld();NETROLE='off';}if(NETROLE==='off'&&state!=='select')menu();}
+const lobbyOpts=()=>({adapter:MP_ADAPTER,net:window.EDEN_NET,onExit:mpLobbyExit,onStart:()=>{}});
+function openLobby(){ensureMP().then(ok=>{const L=window.EDEN_LOBBY;if(!ok||!L||!window.EDEN_NET){toast='ONLINE PLAY COULD NOT LOAD';toastTime=3;return;}L.open({...lobbyOpts(),mode:'menu'});});}
+// net.js and lobby.js load when a player first chooses PLAY WITH FRIENDS (single player never downloads them); with
+// the page itself for a test or dev page (?net=), a share link (?join=) or a joiner's reload (net.js's rejoin key)
+const MP_SRC=['net.js','lobby.js'];let mpLoad=null;
+function ensureMP(){if(window.EDEN_NET&&window.EDEN_LOBBY)return Promise.resolve(true);if(mpLoad)return mpLoad;
+  mpLoad=MP_SRC.reduce((p,f)=>p.then(ok=>ok&&new Promise(res=>{if(f==='net.js'?window.EDEN_NET:window.EDEN_LOBBY)return res(true);const sc=document.createElement('script');sc.src=f;sc.onload=()=>res(true);sc.onerror=()=>res(false);document.body.appendChild(sc);})),Promise.resolve(true))
+    .then(ok=>{if(!ok)mpLoad=null;return ok;});return mpLoad;}
+const MP_EAGER=/[?&](net|join)=/.test(location.search)||(()=>{try{return !!sessionStorage.getItem('cnd2-mp-rejoin');}catch(e){return false;}})();
+if(MP_EAGER&&document.readyState==='loading'&&!window.EDEN_NET)for(const f of MP_SRC)document.write('<script src="'+f+'"></script>');
+// ?join=DINO-XXXX opens the join screen and connects (the lobby strips the parameter); a joiner's reload rejoins its room
+function mpBoot(){const L=window.EDEN_LOBBY,N=window.EDEN_NET;if(!L||!N)return;
+  try{if(L.autoJoinFromUrl(lobbyOpts()))return;const rc=typeof N.rejoinCode==='function'?N.rejoinCode():null;if(rc)L.open({...lobbyOpts(),mode:'join',code:rc});}catch(e){console.error(e);}}
+// the snapshot's player rows (§3.17): the same shape as snapshot.player plus slot, hero, score, lives, cont, out, seat
+function netView(){let st=null;try{st=window.EDEN_NET?window.EDEN_NET.status():null;}catch(e){st=null;}return {role:NETROLE,code:st&&st.code||null,slot:localSlot,rtt:st&&st.rtt||0,snapSeq:st&&st.snapSeq!=null?st.snapSeq:-1,delay:st&&st.delay||0,kbpsIn:st&&st.kbpsIn||0,kbpsOut:st&&st.kbpsOut||0};}
+function pview(p){if(!p)return null;const m=p.mp,me=p===ctxPlayer;return {...p,pickTarget:null,grab:p.grab?{t:p.grab.t,hits:p.grab.hits,type:p.grab.e.type}:null,moveState:p.moveState?{name:p.moveState.name,k:p.moveState.k}:null,
+  slot:m.slot,hero:m.hero,nid:p.nid,score:me?score:m.score,lives:me?lives:m.lives,cont:m.cont?m.cont.t:null,out:!!m.out,seat:passenger(p)?1:0,name:m.name||''};}
 // A narrow, explicit test interface keeps campaign checks reproducible.
 // Arcade units (ARCHITECTURE §8, PLAN §4.6): positions, view, band and lock are arcade px in the area's own space; layout is
 // canvas px. `rules` carries the reaches and lanes the tests read instead of literals.
 const RULES={units:'arcade',reach:Object.fromEntries(['p1','p2','kick','fin'].map(k=>[k,MOVE[k].reach])),dashReach:93,airReach:80,meleeLane:27,bulletLane:19,shotgunSpread:41,grab:[27,8],pickup:[33,18],attackPickup:[22,13],autoCollect:20,special:104,clamp:[16,367],carEdge:CAR_EDGE,carReach:CAR_REACH,lockLead:LOCK_LEAD,camLead:CAM_LEAD,camStep:6};
-window.LAST_EDEN={render, get state(){return state;},get units(){return {world:'arcade',px:PX,aspect:settings.aspect};},get layout(){return {hud:[...LAYOUT.hud],radio:[...LAYOUT.radio],weapon:[...LAYOUT.weapon],font:UI()?.romFonts?'rom':'authored'};},get snapshot(){const b=bandOf(player?player.x:0),ar=plan?.areas?.[areaIndex];return {units:'arcade',view:{x:camera,y:cameraY,w:W,h:H},cameraY,area:ar?{index:ar.index,id:ar.id,w:ar.w,h:ar.h}:null,band:{top:b.top,bottom:b.bottom,mid:b.mid},areaLength:ar?ar.w:0,fade:fade?{to:fade.to,out:fade.out,t:fade.t}:null,roadStream,rules:JSON.parse(JSON.stringify(RULES)),difficulty:normalizeDifficulty(difficulty),road,coins,continueTimer,held:lastHeld?{...lastHeld}:null,difficultyRules:{...rules()},particles:particles.map(p=>({...p})),gunSocket:player?.weapon&&weaponClass(player.weapon)?gunMount():null,mission:mission?{completed:mission.completed,total:mission.total,active:mission.active?{...mission.active}:null}:null,artReady:SEQUEL_RENDER.ready,posesReady:!!RIG()?.ready,state,level:levelIndex,wave,score,lives,section:sectionIndex,encounter:encIndex,driving,camera,length:level.length,plan:plan?{areas:plan.areas.map(a=>({index:a.index,id:a.id,w:a.w,h:a.h,x0:a.x0})),sections:plan.sections.map(s=>({index:s.index,name:s.name,say:s.say,drive:s.drive,x:s.x,len:s.len,area:s.area,first:s.first,stage:s.stage,cap:s.cap,props:s.props.map(p=>({...p}))})),encounters:plan.encounters.map(e=>({x:e.x,cam:e.cam,lockId:e.lockId,area:e.area,section:e.section,task:e.task,boss:!!e.boss,elite:e.elite?.name||null}))}:null,lock:lock?{...lock}:null,bullets:bullets.map(b=>({...b})),discards:discards.map(d=>({...d})),zones:zones.map(z=>({...z})),effects:effects.map(f=>f.type),audio:soundtrack.status,player:player?{...player,pickTarget:null,grab:player.grab?{t:player.grab.t,hits:player.grab.hits,type:player.grab.e.type}:null,moveState:player.moveState?{name:player.moveState.name,k:player.moveState.k}:null}:null,enemies:enemies.map(e=>({...e,target:null,hitList:null,...(e.type==='mirror'?{rig:cloneInfo(e)}:{})})),allies:allies.map(a=>({...a,target:null,rig:cloneInfo(a)})),objects:objects.map(o=>({...o})),drops:drops.map(d=>({...d})),scenery:scenery.map(c=>({...c})),crown:crown?{...crown}:null,wheels:spillWheels.map(w=>({...w})),bossObjects:bossObjs.map(o=>({...o})),bossCard:bossCard?{...bossCard}:null,radio:radio?radio.text:null,radioQueue:[...radioQueue],unlocked:save.unlocked,
+window.LAST_EDEN={render, get state(){return state;},get units(){return {world:'arcade',px:PX,aspect:settings.aspect};},get layout(){return {hud:[...LAYOUT.hud],radio:[...LAYOUT.radio],weapon:[...LAYOUT.weapon],font:UI()?.romFonts?'rom':'authored'};},get snapshot(){const b=bandOf(player?player.x:0),ar=plan?.areas?.[areaIndex];return {units:'arcade',view:{x:camera,y:cameraY,w:W,h:H},cameraY,area:ar?{index:ar.index,id:ar.id,w:ar.w,h:ar.h}:null,band:{top:b.top,bottom:b.bottom,mid:b.mid},areaLength:ar?ar.w:0,fade:fade?{to:fade.to,out:fade.out,t:fade.t}:null,roadStream,rules:JSON.parse(JSON.stringify(RULES)),difficulty:normalizeDifficulty(difficulty),road,coins,continueTimer,held:lastHeld?{...lastHeld}:null,difficultyRules:{...rules()},particles:particles.map(p=>({...p})),gunSocket:player?.weapon&&weaponClass(player.weapon)?gunMount():null,mission:mission?{completed:mission.completed,total:mission.total,active:mission.active?{...mission.active}:null}:null,artReady:SEQUEL_RENDER.ready,posesReady:!!RIG()?.ready,state,level:levelIndex,wave,score,lives,section:sectionIndex,encounter:encIndex,driving,camera,length:level.length,plan:plan?{areas:plan.areas.map(a=>({index:a.index,id:a.id,w:a.w,h:a.h,x0:a.x0})),sections:plan.sections.map(s=>({index:s.index,name:s.name,say:s.say,drive:s.drive,x:s.x,len:s.len,area:s.area,first:s.first,stage:s.stage,cap:s.cap,props:s.props.map(p=>({...p}))})),encounters:plan.encounters.map(e=>({x:e.x,cam:e.cam,lockId:e.lockId,area:e.area,section:e.section,task:e.task,boss:!!e.boss,elite:e.elite?.name||null}))}:null,lock:lock?{...lock}:null,bullets:bullets.map(b=>({...b})),discards:discards.map(d=>({...d})),zones:zones.map(z=>({...z})),effects:effects.map(f=>f.type),audio:soundtrack.status,player:player?{...player,pickTarget:null,grab:player.grab?{t:player.grab.t,hits:player.grab.hits,type:player.grab.e.type}:null,moveState:player.moveState?{name:player.moveState.name,k:player.moveState.k}:null}:null,enemies:enemies.map(e=>({...e,nid:e.nid,target:null,tp:null,byP:null,hitList:null,...(e.type==='mirror'?{rig:cloneInfo(e)}:{})})),allies:allies.map(a=>({...a,target:null,rig:cloneInfo(a)})),objects:objects.map(o=>({...o})),drops:drops.map(d=>({...d})),scenery:scenery.map(c=>({...c})),crown:crown?{...crown}:null,wheels:spillWheels.map(w=>({...w})),bossObjects:bossObjs.map(o=>({...o})),bossCard:bossCard?{...bossCard}:null,radio:radio?radio.text:null,radioQueue:[...radioQueue],unlocked:save.unlocked,
   // G6 presentation: the card state, the area caption, the clear tally, the ending beat, the attract story
   card:card?{i:card.i,start:card.start,phase:card.phase,k:card.k,t:card.t,pre:card.pre}:null,caption:caption?{...caption}:null,tally:clearSeq?{...clearSeq.tally,t:clearSeq.t,story:clearSeq.story}:null,
-  ending:endSeq?{k:endSeq.k,beat:endBeat()?.beat||null,t:endSeq.t,done:!!endSeq.done,actors:endActors.map(a=>({hero:a.hero,x:a.x,y:a.y,state:a.state,own:!!a.own,freed:!!a.freed})),car:endCar?{...endCar}:null,area:areaIndex,lot:endLot?{x:endLot.x,y:endLot.y,dir:endLot.dir,key:endLot.lot.parts.body.key,gel:clamp(endLot.defeat.t/(BDEF.fessenden?.defeat?.crossfade||1.5),0,1),parts:lotGeom(endLot).length,drawn:!!endLot.drawn,remnant:!!endLot.remnant}:null}:null,attract:attractSeq?{...attractSeq}:null,menuIdle,checkpoint:save.checkpoint?{...save.checkpoint}:null};},
- start:(i=0,hero=0,mode='story',section=0)=>{selected=clamp(hero,0,3);difficulty=normalizeDifficulty(mode);score=0;lives=3;startStage(clamp(i,0,5),{skipBrief:true,section});},step:(dt=1/60)=>update(dt),controls:{attack,jump,special,pickup,coin:insertCoin},
+  ending:endSeq?{k:endSeq.k,beat:endBeat()?.beat||null,t:endSeq.t,done:!!endSeq.done,actors:endActors.map(a=>({hero:a.hero,x:a.x,y:a.y,state:a.state,own:!!a.own,freed:!!a.freed})),car:endCar?{...endCar}:null,area:areaIndex,lot:endLot?{x:endLot.x,y:endLot.y,dir:endLot.dir,key:endLot.lot.parts.body.key,gel:clamp(endLot.defeat.t/(BDEF.fessenden?.defeat?.crossfade||1.5),0,1),parts:lotGeom(endLot).length,drawn:!!endLot.drawn,remnant:!!endLot.remnant}:null}:null,attract:attractSeq?{...attractSeq}:null,menuIdle,checkpoint:save.checkpoint?{...save.checkpoint}:null,
+  // §3.17: every player in slot order, this machine's slot, the network status, the sim time (on a joiner the shown time)
+  players:[0,1,2].map(k=>pview(players[k])),localSlot,net:NETROLE==='off'?null:netView(),time};},
+ start:(i=0,hero=0,mode='story',section=0)=>{selected=clamp(hero,0,3);difficulty=normalizeDifficulty(mode);score=0;lives=3;startStage(clamp(i,0,5),{skipBrief:true,section});},step:(dt=1/60)=>NETROLE==='client'?clientStep(dt):stepSim(dt),controls:{attack,jump,special,pickup,coin:insertCoin},
  test:{loadChapter:i=>SR.require(i),damageObjective:n=>damageObjective(n,mission.active?.x,mission.active?.y,74,1),completeObjective,equip:(type,ammo)=>{player.pushV=0;player.pendingStrike=null;player.swing=null;player.dashPhase=null;player.attack=0;player.pickup=0;player.weapon=type;player.ammo=type?ammo??WEAPONS[type].ammo:0;},
   // spawnEnemy(x, y, 'kind[:V|:castId]', boss): a variant can be named (G4).
   spawnEnemy:(x,y,type='raider',boss=false)=>{const [k,V]=String(type).split(':'),e=spawnEnemy(x,y,k,boss);if(V)setVariant(e,castVariant(k,V,0,0)||V);return e;},drop:(type,x,y,food)=>drops.push({type,x,y,life:999,food:food||(type==='food'?'hamburger':type==='bonus'?'goldbar':type==='ammo'?'ammo':undefined)}),// move(x, y, area): arcade px in the area's own space; `area` (index or id) switches to that area first. The camera
@@ -3658,6 +4232,7 @@ window.LAST_EDEN={render, get state(){return state;},get units(){return {world:'
   skipTo:n=>{const enc=plan.encounters[n];fade=null;lock=null;encounter=null;enemies=[];if(mission.active&&!mission.active.done)mission.active=null;
    if(enc.area!==areaIndex){enterArea(enc.area);enterSection(plan.sections.findIndex(s=>s.area===enc.area));}
    encIndex=n;camera=enc.cam;cameraY=STG.pathY(curArea(),camera);player.x=Math.min(enc.cam+LOCK_LEAD,curArea().w-17);{const b=bandOf(player.x);player.y=clamp(player.y,b.top,b.bottom);}
+   if(multi())present().forEach((p,k)=>{if(p===player)return;p.x=Math.max(enc.cam+24,player.x-24*(k||1));const b=bandOf(p.x);p.y=clamp(p.y,b.top,b.bottom);});
    while(sectionIndex<enc.section&&plan.sections[sectionIndex+1]?.area===areaIndex)enterSection(sectionIndex+1);},
   // spawnBoss() is plan-based: it moves to the boss fight's lock (area and section included), then brings the boss in.
   spawnBoss:()=>{const k=plan.encounters.findIndex(e=>e.boss);if(!lock&&k>=0&&encIndex<=k){LAST_EDEN.test.skipTo(k);encIndex=k+1;lock={left:camera,right:camera+W};}spawnBoss();},
@@ -3707,9 +4282,17 @@ window.LAST_EDEN={render, get state(){return state;},get units(){return {world:'
   arrive:(type,side='R',j=0)=>arrive(type,side,j),
   setPiece:(id,side=1)=>id==='zeke'?spawnZeke(side):id==='naguri-vignette'?spawnVignette():(spawnScenery({scenery:[id]}),scenery.length),
   // the G3b drawers for visual checks: art.car(g,x,y,o), art.outlined(parts,x,y,z,dir,S,map,color) (draws on the game ctx)
-  art:{car,outlined:drawOutlined}}};
+  art:{car,outlined:drawOutlined}},
+ mp:{adapter:MP_ADAPTER,role:()=>NETROLE,localSlot:()=>localSlot,addPlayer:(slot,hero,o)=>mpAddPlayer(slot,hero,o||{}),removePlayer:slot=>mpRemovePlayer(slot,'left'),input:mpInput,
+  players:()=>{if(ctxPlayer&&ctxPlayer.mp)saveCtx(ctxPlayer);return [0,1,2].map(k=>{const p=players[k];if(!p)return null;const m=p.mp;return {slot:k,hero:m.hero,x:p.x,y:p.y,z:p.z,hp:p.hp,lives:m.lives,score:m.score,cont:m.cont?m.cont.t:null,out:!!m.out,seat:passenger(p)?1:0,target:null};});},
+  targetOf:i=>{const t=enemies[i]&&enemies[i].tp;return t&&t.mp&&players[t.mp.slot]===t?t.mp.slot:null;},
+  // inputLog(true) records every joiner frame the host applies ([step, slot, held, presses]); replay(log) feeds a log back
+  // into scripted sources on one page, step by step: a reported multiplayer bug becomes a network-free repro (§3.16)
+  inputLog:on=>{const r=inputRec;inputRec=on?[]:null;return r;},replay:log=>{replayQ=Array.isArray(log)?log.slice():null;stepNo=0;return !!replayQ;},
+  schema:()=>NET_SCHEMA}};
 // Chapter 1's pages load at start-up for the title backdrop and the first chapter (SEQUEL_RENDER.ready waits on them).
 SR.require(0);preloadPics();
-menu();requestAnimationFrame(frame);
+menu();requestAnimationFrame(frame);setTimeout(loadSelectionArt,0);
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mpBoot);else mpBoot();
 window.SPRITES.whenReady(ok=>{if(!ok)panel('<section class="panel small-panel"><h2>ARTWORK COULD NOT LOAD.</h2><p>Keep the sprite-data-*.js files, game.js and index.html in the same folder, then open index.html again.</p></section>');else if(state==='select')characterSelect();});
 })();

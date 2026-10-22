@@ -32,6 +32,8 @@ node tests/assets.cjs
 
 `vercel.json` already supplies the framework, build, install and output settings. Do not choose Next.js, React or Vite; this game serves its existing files directly. `.vercelignore` keeps everything that is not the game out of the deployment: the documentation (`*.md`, `docs/`), the Windows launcher, `tests/`, `tools/`, `work/`, `design/`, `combat-config.json`, `assets/reference/`, the audio manifest, the reference videos, and the legacy art files retired in G8 (listed there so a copy that comes back is never served).
 
+Online co-op (PLAY WITH FRIENDS) needs nothing from the deployment: `net.js`, `lobby.js` and `lobby.css` ship with the game (the page loads them only when PLAY WITH FRIENDS is chosen or a `?join=` link is opened), and PeerJS 1.5.4 is fetched from jsDelivr (unpkg as the fallback) only when a player chooses Host or Join. Players are introduced by the free public PeerJS broker (`0.peerjs.com`); if it or jsDelivr is unreachable, online play shows an error and single-player is unaffected. `vercel.json` sets no Content-Security-Policy, so nothing blocks the script or WebRTC.
+
 After the repository is connected, pushes to `main` trigger production updates. Vercel supplies the final `*.vercel.app` address when deployment completes. No production deployment or project has been created automatically by this repository preparation.
 
 Vercel's [Hobby plan](https://vercel.com/docs/plans/hobby) is a free option for personal, non-commercial projects, subject to its published limits and terms.

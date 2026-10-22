@@ -88,3 +88,6 @@ html.square-pixels{--screen-aspect:12/7}
 @media(max-width:600px){.dock-panel{padding:4px;gap:4px}.dock-panel .menu-buttons button{padding:6px 9px;font-size:9px}}
 .touch-ui .dock-panel{padding:4px;gap:4px}.touch-ui .dock-panel .menu-buttons button{padding:7px 10px;font-size:9px}
 .touch-ui .title-panel.rom-logo .title-logo{max-height:24vh}
+/* Online co-op (G9b): the title's PLAY WITH FRIENDS entry in the 2P slot blue; the lobby itself is lobby.css, linked by
+ lobby.js when it first opens (net.js and lobby.js load only when online play is chosen). */
+#mp-open{border-color:#5ab4ff;color:#cfe6ff}

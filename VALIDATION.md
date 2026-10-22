@@ -56,6 +56,7 @@ G8 also checked its own drawing changes pixel for pixel: the ROM-font lines draw
 | Item | Budget | G8 |
 |---|---|---|
 | Eager download, non-audio (19 scripts + CSS) | ≤ 3.5 MB (3,670,016 bytes) | 3.500 MB (3,669,793 bytes; 223 bytes to spare) |
+| Eager download after G9b (online co-op) | ≤ 3.5 MB | 3,611,584 bytes (58,432 to spare): 18 scripts + CSS. `game.js` grew by the co-op runtime (+58.8 KB); `selection-art.js` (119 KB) now loads once the title is up and `net.js` / `lobby.js` / `lobby.css` only when PLAY WITH FRIENDS is chosen (or with a `?join=` / `?net=` page) |
 | `sprite-data-heroes.js` / `-fx` / `-enemies` / `-bosses` / `-ui` | 0.9 / 0.35 / 1.1 / 1.5 / 0.15 MB | 0.641 / 0.280 / 1.027 / 0.698 / 0.125 MB |
 | `stage-data.js` | ≤ 0.15 MB | 0.063 MB |
 | Stage pages | ≤ 1.0 MB per chapter, ≤ 5 MB in all, each ≤ 1024² | 140 pages, 1.389 MB in all |
