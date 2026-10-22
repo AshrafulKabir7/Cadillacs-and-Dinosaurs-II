@@ -1,0 +1,11 @@
+{
+  "name": "stage1-jack-walk-nosprites",
+  "frames": 240,
+  "loadState": "stage1-jack",
+  "inputs": [
+    { "from": 0, "to": 180, "keys": ["P1 Right"] },
+    { "from": 200, "to": 202, "keys": ["P1 Button 1"] }
+  ],
+  "pokes": [ { "from": 30, "to": 240, "rel": "obj", "addr": 6, "size": 2, "value": "0xFF00" } ],
+  "snapshotEvery": { "from": 30, "every": 30 }
+}

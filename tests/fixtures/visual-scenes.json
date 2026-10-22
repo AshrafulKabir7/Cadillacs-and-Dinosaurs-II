@@ -1,0 +1,1663 @@
+{
+ "$doc": [
+  "Scene table for tools/re/compare-frames.cjs (PLAN §8.3). Each scene sets the game up through LAST_EDEN with a",
+  "small op list (coordinates in arcade px; {view:dx} = view.x+dx, {player:dx} = player.x+dx, 'M' = band mid,",
+  "{lane:f} = band.top + f*(bottom-top); before G1 the ops are scaled to today's canvas px by AT.arc), renders,",
+  "grabs the canvas and compares it with a reference frame: a frame of one of the two local videos (ffmpeg), a",
+  "MAME snapshot (work/re/runs/<run>/snap-fNNNNNN.png or a crop of a verify composite) or an extract crop.",
+  "`step` is the integration step after which the gates in `expect` are evaluated (earlier: the frames are still",
+  "produced and the scene is reported 'early'). `expect` keys: heroHeight {h,tol}, bandTop (+soft), layout,",
+  "recs [..], heldRec, role, pose, enemyState, overlay {minScore,mirror,search}, bossHeight {type,tol,ratio} (the boss",
+  "rendered with and without its body, no step, gated on its ROM box), bossParts, paletteDiff {family,map,home,slots,minPens}, state, diffMax, roi.",
+  "An `overlay` without minScore only records the fit score (used where the reference shows another hero).",
+  "Every scene starts from a freshly loaded page (storage cleared) and Math.random is reseeded with `seed`, so a scene's frames are the same alone or in the table.",
+  "Video timestamps were checked by eye on 2026-10-21 (work/re/visual/refs/*.png).",
+  "G3a: `rig` {minScore, at, feet, tol, weaponTol, weaponScore, mirror} fits the hero exactly as HeroRig draws it (snapshot.player.anim + the held weapon, alone on a transparent canvas) into the reference over feet positions `feet` [x0,y0,x1,y1): score = share of its opaque pixels within `tol` (sum of channel deltas, 60) of the reference, `at` = the reference hero's feet (gate: within 1 px), the weapon refitted alone must sit within weaponTol px of where the body puts it. This is the PLAN §8.3 'overlay within 1 px of the MAME renders' gate.",
+  "G3a: video references are compared by eye (PLAN §8.3 (b)); their `overlay` scores are recorded, not gated (s04-stand, s05-left/right show another stage, a walking frame, a hero cut by the screen edge or overlapped by the 2nd player). The MAME shots of the same stances carry the gates. The four MAME stances face right like the game hero, so their overlays no longer set `mirror`. s02-s05 tick 100 frames after start so the spawn invulnerability blink (alpha .65) is over before the silhouette is measured.",
+  "G4: s08 spawns \"brute:B\" (test.spawnEnemy takes kind:variant since G4): the scene is BLK ELMER (Hutori B), while a plain brute is the kind's first variant, HAMMER T.",
+  "G3c: s07 ticks 100 frames before damagePlayer(24) (the hit was ignored inside the 1.5 s spawn invulnerability, so the hero never fell). The ROM knockdown then plays: damagePlayer hits from behind, so Jack falls on knockFace (set3:7, 31 f with the KI11 trim: s07-fly at 6 f shows frame 0, s07-lying at 30 f the lying loop frame) and gets up on getup (set3:3, 25 f: s07-getup at 54 f). The MAME refs stay placeholders (see the scene note)."
+ ],
+ "seed": 2024,
+ "videos": {
+  "boss": {
+   "file": "YTDown.com_YouTube_Media_Inhoeri2BQc_Cadillacs-Dinosaurs-Arcade-all-boss-fights_001_1080p.mp4",
+   "note": "15:43, 1440x1080 60 fps, 4:3 picture; Mustapha played; INDEX.md boss timestamps: Vice T. 0:24-1:36, Butcher 1:44-3:20, Hogg 3:28-4:08, Slice 4:16-5:20, Morgan 5:28-6:30, Morgue 6:30-7:36, Tyrog 7:44-11:00, Slisaur 11:04-12:32, Fessenden 12:40-15:20"
+  },
+  "two": {
+   "file": "YTDown.com_YouTube_Media_VQtsqjuc0kA_Cadillacs-And-Dinosaurs-ARCADE-2-players-60FPS_004_360p (1).mp4",
+   "crop": [
+    80,
+    0,
+    480,
+    360
+   ],
+   "note": "46:15, 640x360 30 fps with the 480x360 4:3 picture pillarboxed; Mustapha + Hannah"
+  }
+ },
+ "scenes": [
+  {
+   "id": "s01",
+   "title": "Jack idle at the ch1 start",
+   "step": "G1",
+   "setup": [
+    [
+     "start",
+     0,
+     1,
+     "easy"
+    ],
+    [
+     "move",
+     {
+      "view": 150
+     },
+     "M"
+    ],
+    [
+     "ticks",
+     5
+    ]
+   ],
+   "shots": [
+    {
+     "id": "s01",
+     "ops": [],
+     "ref": {
+      "kind": "mame",
+      "run": "census-stage1-jack",
+      "frame": 0,
+      "note": "stage 1 after the intro blast: Jack at feet (159,200), hero 79 px tall, HUD at the top"
+     },
+     "expect": {
+      "heroHeight": {
+       "h": 79,
+       "tol": 1
+      },
+      "bandTop": 81,
+      "soft": true,
+      "layout": true
+     }
+    },
+    {
+     "id": "s01-video",
+     "ops": [],
+     "ref": {
+      "kind": "video",
+      "video": "two",
+      "t": 12,
+      "note": "the 2-player stage-1 start (00:12): Mustapha and Hannah on the building top, FERRIS arriving"
+     },
+     "expect": {
+      "heroHeight": {
+       "h": 79,
+       "tol": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "s02",
+   "title": "Handgun carry and walk",
+   "step": "G3",
+   "setup": [
+    [
+     "start",
+     0,
+     1,
+     "easy"
+    ],
+    [
+     "ticks",
+     100
+    ],
+    [
+     "move",
+     {
+      "view": 150
+     },
+     "M"
+    ],
+    [
+     "equip",
+     "gun"
+    ]
+   ],
+   "shots": [
+    {
+     "id": "s02-carry",
+     "ops": [
+      [
+       "key",
+       "KeyD",
+       true
+      ],
+      [
+       "ticks",
+       14
+      ]
+     ],
+     "ref": {
+      "kind": "video",
+      "video": "boss",
+      "t": 108,
+      "note": "Mustapha walking with the gun carried in the swinging hand (01:48). The game shot is Jack (the scene pins Jack's records 75/86/87), so the colour-match overlay score against this Mustapha frame is recorded for the eye only and not gated; the gated handgun overlay is s02-ready against the MAME chk-stage1-jack-armed-gun snapshot"
+     },
+     "expect": {
+      "pose": [
+       "armed-walk",
+       "walk"
+      ],
+      "overlay": {
+       "search": [
+        0,
+        60,
+        384,
+        164
+       ]
+      }
+     }
+    },
+    {
+     "id": "s02-ready",
+     "ops": [
+      [
+       "key",
+       "KeyD",
+       false
+      ],
+      [
+       "ticks",
+       3
+      ]
+     ],
+     "ref": {
+      "kind": "mame",
+      "run": "chk-stage1-jack-armed-gun",
+      "frame": 1,
+      "note": "Jack with the handgun at the stage-1 state: stance rec 75 over 74"
+     },
+     "expect": {
+      "recs": [
+       75
+      ],
+      "overlay": {
+       "minScore": 0.85,
+       "search": [
+        100,
+        90,
+        140,
+        134
+       ]
+      },
+      "rig": {
+       "minScore": 0.98,
+       "at": [
+        159,
+        200
+       ],
+       "feet": [
+        149,
+        190,
+        170,
+        211
+       ],
+       "weaponTol": 1
+      }
+     }
+    },
+    {
+     "id": "s02-fire",
+     "ops": [
+      [
+       "attack"
+      ],
+      [
+       "ticks",
+       1
+      ]
+     ],
+     "ref": {
+      "kind": "video",
+      "video": "boss",
+      "t": 110,
+      "note": "the handgun raised beside the head / fired"
+     },
+     "expect": {
+      "pose": "fire",
+      "recs": [
+       86,
+       87
+      ],
+      "heldRec": 1633
+     }
+    }
+   ]
+  },
+  {
+   "id": "s03",
+   "title": "Rifle walk and fire (Jack)",
+   "step": "G3",
+   "setup": [
+    [
+     "start",
+     0,
+     1,
+     "easy"
+    ],
+    [
+     "ticks",
+     100
+    ],
+    [
+     "move",
+     {
+      "view": 150
+     },
+     "M"
+    ],
+    [
+     "equip",
+     "rifle"
+    ]
+   ],
+   "shots": [
+    {
+     "id": "s03-walk",
+     "ops": [
+      [
+       "key",
+       "KeyD",
+       true
+      ],
+      [
+       "ticks",
+       12
+      ]
+     ],
+     "ref": {
+      "kind": "video",
+      "video": "boss",
+      "t": 262,
+      "note": "rifle held level at the hip while walking (04:22)"
+     },
+     "expect": {
+      "pose": "armed-walk",
+      "recs": [
+       79
+      ]
+     }
+    },
+    {
+     "id": "s03-stand",
+     "ops": [
+      [
+       "key",
+       "KeyD",
+       false
+      ],
+      [
+       "ticks",
+       3
+      ]
+     ],
+     "ref": {
+      "kind": "mame",
+      "run": "chk-stage1-jack-armed-rifle",
+      "frame": 1,
+      "note": "Jack rifle stance rec 77"
+     },
+     "expect": {
+      "recs": [
+       77
+      ],
+      "overlay": {
+       "minScore": 0.85,
+       "search": [
+        100,
+        90,
+        140,
+        134
+       ]
+      },
+      "rig": {
+       "minScore": 0.98,
+       "at": [
+        159,
+        200
+       ],
+       "feet": [
+        149,
+        190,
+        170,
+        211
+       ],
+       "weaponTol": 1
+      }
+     }
+    },
+    {
+     "id": "s03-fire",
+     "ops": [
+      [
+       "attack"
+      ],
+      [
+       "ticks",
+       1
+      ]
+     ],
+     "ref": {
+      "kind": "video",
+      "video": "boss",
+      "t": 270,
+      "note": "firing the rifle from the hip at Slice (04:30): muzzle flash at the ROM origin"
+     },
+     "expect": {
+      "pose": "fire",
+      "recs": [
+       77,
+       88
+      ],
+      "heldRec": 1888
+     }
+    }
+   ]
+  },
+  {
+   "id": "s04",
+   "title": "Mustapha rifle stance and walk",
+   "step": "G3",
+   "setup": [
+    [
+     "start",
+     0,
+     0,
+     "easy"
+    ],
+    [
+     "ticks",
+     100
+    ],
+    [
+     "move",
+     {
+      "view": 150
+     },
+     "M"
+    ],
+    [
+     "equip",
+     "rifle"
+    ]
+   ],
+   "shots": [
+    {
+     "id": "s04-stand",
+     "ops": [
+      [
+       "ticks",
+       5
+      ]
+     ],
+     "ref": {
+      "kind": "video",
+      "video": "boss",
+      "t": 258,
+      "note": "Mustapha rifle stance in the factory (04:18)"
+     },
+     "expect": {
+      "recs": [
+       259
+      ],
+      "overlay": {
+       "search": [
+        0,
+        60,
+        384,
+        164
+       ]
+      }
+     }
+    },
+    {
+     "id": "s04-mame",
+     "ops": [],
+     "ref": {
+      "kind": "mame",
+      "run": "chk-stage1-mustapha-armed-rifle",
+      "frame": 1
+     },
+     "expect": {
+      "recs": [
+       259
+      ],
+      "overlay": {
+       "minScore": 0.85,
+       "search": [
+        100,
+        90,
+        140,
+        134
+       ]
+      },
+      "rig": {
+       "minScore": 0.98,
+       "at": [
+        159,
+        200
+       ],
+       "feet": [
+        149,
+        190,
+        170,
+        211
+       ],
+       "weaponTol": 1
+      }
+     }
+    },
+    {
+     "id": "s04-walk",
+     "ops": [
+      [
+       "key",
+       "KeyD",
+       true
+      ],
+      [
+       "ticks",
+       12
+      ],
+      [
+       "key",
+       "KeyD",
+       false
+      ]
+     ],
+     "ref": {
+      "kind": "video",
+      "video": "boss",
+      "t": 262,
+      "note": "walking with the rifle (04:22): torso 284 over the legs"
+     },
+     "expect": {
+      "recs": [
+       284
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "s05",
+   "title": "Mustapha shotgun, both facings",
+   "step": "G3",
+   "setup": [
+    [
+     "start",
+     0,
+     0,
+     "easy"
+    ],
+    [
+     "ticks",
+     100
+    ],
+    [
+     "move",
+     {
+      "view": 190
+     },
+     "M"
+    ],
+    [
+     "equip",
+     "shotgun"
+    ]
+   ],
+   "shots": [
+    {
+     "id": "s05-left",
+     "ops": [
+      [
+       "face",
+       -1
+      ],
+      [
+       "ticks",
+       4
+      ]
+     ],
+     "ref": {
+      "kind": "video",
+      "video": "two",
+      "t": 58,
+      "note": "Mustapha with the shotgun facing left at BLK ELMER (00:58)"
+     },
+     "expect": {
+      "recs": [
+       261
+      ],
+      "overlay": {
+       "search": [
+        0,
+        60,
+        384,
+        164
+       ]
+      }
+     }
+    },
+    {
+     "id": "s05-right",
+     "ops": [
+      [
+       "face",
+       1
+      ],
+      [
+       "ticks",
+       4
+      ]
+     ],
+     "ref": {
+      "kind": "video",
+      "video": "two",
+      "t": 81,
+      "note": "facing right beside the chained raptor (01:21): the mirror is exact"
+     },
+     "expect": {
+      "recs": [
+       261
+      ],
+      "overlay": {
+       "search": [
+        0,
+        60,
+        384,
+        164
+       ]
+      }
+     }
+    },
+    {
+     "id": "s05-mame",
+     "ops": [],
+     "ref": {
+      "kind": "mame",
+      "run": "chk-stage1-mustapha-armed-shotgun",
+      "frame": 1
+     },
+     "expect": {
+      "recs": [
+       261
+      ],
+      "overlay": {
+       "minScore": 0.85,
+       "search": [
+        100,
+        90,
+        140,
+        134
+       ]
+      },
+      "rig": {
+       "minScore": 0.98,
+       "at": [
+        159,
+        200
+       ],
+       "feet": [
+        149,
+        190,
+        170,
+        211
+       ],
+       "weaponTol": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "s06",
+   "title": "Mustapha victory thumbs-up",
+   "step": "G3",
+   "setup": [
+    [
+     "start",
+     0,
+     0,
+     "easy"
+    ],
+    [
+     "move",
+     {
+      "view": 120
+     },
+     "M"
+    ],
+    [
+     "pose",
+     "victory",
+     7
+    ]
+   ],
+   "ref": {
+    "kind": "video",
+    "video": "boss",
+    "t": 254,
+    "note": "the stage-clear tally with the thumbs-up (04:14): rec 295"
+   },
+   "expect": {
+    "recs": [
+     295
+    ],
+    "role": "victory"
+   }
+  },
+  {
+   "id": "s07",
+   "title": "Knockdown: fly, lying, get-up",
+   "step": "G3",
+   "note": "No MAME snapshot of a hero knockdown existed among the runs (ex-heroes-jack-hurt kept RAM only; an idle Jack at the stage-1 state is never attacked). The embedded plan walks Jack into the first fight (--mame runs it, about 25 s; done 2026-10-21). A jeans-colour detector flagged frame 1446 (Jack's jeans 47x25 px) as the only low frame of the run; by eye it shows Jack bent low beside FERRIS at the screen edge (a grab or hurt, not a confirmed knockdown), so 1437/1446/1458 are placeholders. A proper reference needs a plan that forces a knockdown (for example the ex-heroes-jack-hurt cheats/hook run of the runtime pass, re-run with snapshotEvery): confirm on node tools/re/mame/contact.cjs work/re/runs/vis-s07-jack-hurt --from 1420 --to 1480 --scale 1 and re-pin.",
+   "setup": [
+    [
+     "start",
+     0,
+     1,
+     "easy"
+    ],
+    [
+     "move",
+     {
+      "view": 190
+     },
+     "M"
+    ],
+    [
+     "ticks",
+     100
+    ],
+    [
+     "damagePlayer",
+     24
+    ]
+   ],
+   "shots": [
+    {
+     "id": "s07-fly",
+     "ops": [
+      [
+       "ticks",
+       6
+      ]
+     ],
+     "ref": {
+      "kind": "mame",
+      "run": "vis-s07-jack-hurt",
+      "frame": 1437,
+      "plan": {
+       "name": "vis-s07-jack-hurt",
+       "frames": 1500,
+       "loadState": "stage1-jack",
+       "inputs": [
+        {
+         "from": 0,
+         "to": 330,
+         "keys": [
+          "P1 Right"
+         ]
+        }
+       ],
+       "snapshotEvery": {
+        "from": 330,
+        "to": 1499,
+        "every": 3
+       }
+      }
+     },
+     "expect": {
+      "role": [
+       "knock",
+       "knockFace",
+       "knockHard"
+      ]
+     }
+    },
+    {
+     "id": "s07-lying",
+     "ops": [
+      [
+       "ticks",
+       24
+      ]
+     ],
+     "ref": {
+      "kind": "mame",
+      "run": "vis-s07-jack-hurt",
+      "frame": 1446
+     },
+     "expect": {
+      "role": [
+       "knock",
+       "lieBack",
+       "knockFace",
+       "knockHard"
+      ]
+     }
+    },
+    {
+     "id": "s07-getup",
+     "ops": [
+      [
+       "ticks",
+       24
+      ]
+     ],
+     "ref": {
+      "kind": "mame",
+      "run": "vis-s07-jack-hurt",
+      "frame": 1458
+     },
+     "expect": {
+      "role": [
+       "getup",
+       "lieBack"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "s08",
+   "title": "Brute (BLK ELMER) walk and belly charge",
+   "step": "G4",
+   "setup": [
+    [
+     "start",
+     0,
+     1,
+     "easy"
+    ],
+    [
+     "move",
+     {
+      "view": 90
+     },
+     "M"
+    ],
+    [
+     "spawn",
+     "brute:B",
+     {
+      "view": 330
+     },
+     {
+      "lane": 0.5
+     },
+     {
+      "dir": -1
+     }
+    ]
+   ],
+   "shots": [
+    {
+     "id": "s08-walk",
+     "ops": [
+      [
+       "ticks",
+       30
+      ]
+     ],
+     "ref": {
+      "kind": "mame",
+      "run": "en-hutori-b",
+      "frame": 120,
+      "note": "BLK ELMER walking in (en-hutori-b run)"
+     },
+     "expect": {
+      "enemyState": [
+       "walk",
+       "enter"
+      ]
+     }
+    },
+    {
+     "id": "s08-charge",
+     "ops": [
+      [
+       "ticks",
+       75
+      ]
+     ],
+     "ref": {
+      "kind": "video",
+      "video": "two",
+      "t": 516,
+      "note": "BLK ELMER in the garage (08:36)"
+     },
+     "expect": {
+      "enemyState": [
+       "windup",
+       "charge",
+       "walk"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "s09",
+   "title": "Knifer BLADE stab and throw",
+   "step": "G4",
+   "setup": [
+    [
+     "start",
+     0,
+     1,
+     "easy"
+    ],
+    [
+     "move",
+     {
+      "view": 90
+     },
+     "M"
+    ],
+    [
+     "spawn",
+     "knifer",
+     {
+      "view": 300
+     },
+     {
+      "lane": 0.5
+     },
+     {
+      "dir": -1
+     }
+    ]
+   ],
+   "shots": [
+    {
+     "id": "s09-walk",
+     "ops": [
+      [
+       "ticks",
+       30
+      ]
+     ],
+     "ref": {
+      "kind": "mame",
+      "run": "en-knifeman-a",
+      "frame": 120
+     },
+     "expect": {
+      "enemyState": [
+       "walk",
+       "enter"
+      ]
+     }
+    },
+    {
+     "id": "s09-throw",
+     "ops": [
+      [
+       "ticks",
+       60
+      ]
+     ],
+     "ref": {
+      "kind": "mame",
+      "run": "en-knifeman-a",
+      "frame": 400,
+      "note": "the knife object is attached ±1 px during the throw windup"
+     },
+     "expect": {
+      "enemyState": [
+       "windup",
+       "walk",
+       "recover"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "s10",
+   "title": "ch1 S1 harbour at the start",
+   "step": "G2",
+   "setup": [
+    [
+     "start",
+     0,
+     1,
+     "easy"
+    ],
+    [
+     "ticks",
+     10
+    ]
+   ],
+   "ref": {
+    "kind": "extract",
+    "file": "work/re/extract/stages/ep4-area0-composite.png",
+    "crop": [
+     352,
+     0,
+     384,
+     224
+    ],
+    "note": "E4a0 352-736, the first S1 source piece (CAMPAIGN §12.2): seams, band, fg rails over the hero"
+   },
+   "expect": {
+    "bandTop": 81,
+    "soft": true
+   }
+  },
+  {
+   "id": "s11",
+   "title": "ch2 road loop and rowscroll",
+   "step": "G2",
+   "setup": [
+    [
+     "start",
+     1,
+     1,
+     "easy",
+     0
+    ],
+    [
+     "ticks",
+     150
+    ]
+   ],
+   "ref": {
+    "kind": "video",
+    "video": "boss",
+    "t": 220,
+    "note": "HELL ROAD from the Cadillac (03:40): perspective band rows 128-159"
+   }
+  },
+  {
+   "id": "s12",
+   "title": "ch3 nest (E6a1 pool)",
+   "step": "G2",
+   "setup": [
+    [
+     "start",
+     2,
+     1,
+     "easy",
+     2
+    ],
+    [
+     "ticks",
+     10
+    ]
+   ],
+   "ref": {
+    "kind": "extract",
+    "file": "work/re/extract/stages/ep6-area1-composite.png",
+    "crop": [
+     0,
+     32,
+     384,
+     224
+    ],
+    "note": "E6a1 composite at its framing: priority ferns over the hero"
+   }
+  },
+  {
+   "id": "s13",
+   "title": "ch4 shattered tanks (E8a0 dynamic)",
+   "step": "G2",
+   "setup": [
+    [
+     "start",
+     3,
+     1,
+     "easy",
+     0
+    ],
+    [
+     "ticks",
+     10
+    ]
+   ],
+   "ref": {
+    "kind": "extract",
+    "file": "work/re/extract/stages/ep8-area0-dynamic-scroll2.png",
+    "crop": [
+     1360,
+     0,
+     384,
+     224
+    ],
+    "note": "the broken-tank cells of the dynamic scroll2 (tank base at x 1440 and the crater at 1550; magenta = cells the dynamic layer does not cover)"
+   }
+  },
+  {
+   "id": "s20",
+   "title": "Boss: WARDEN ROOK beside the hero (BUTCHER body, rook palette)",
+   "step": "G5",
+   "setup": [
+    [
+     "start",
+     0,
+     1,
+     "easy",
+     5
+    ]
+   ],
+   "shots": [
+    {
+     "id": "s20",
+     "ops": [
+      [
+       "spawnBoss"
+      ],
+      [
+       "ticks",
+       150
+      ],
+      [
+       "call",
+       "LAST_EDEN.test.say",
+       null
+      ],
+      [
+       "move",
+       {
+        "view": 100
+       },
+       "M"
+      ]
+     ],
+     "ref": {
+      "kind": "video",
+      "video": "boss",
+      "t": 150,
+      "note": "BUTCHER in the swamp (02:30)"
+     },
+     "expect": {
+      "heroHeight": {
+       "h": 79,
+       "tol": 2
+      },
+      "bossHeight": {
+       "type": "warden",
+       "ratio": [
+        1.1,
+        1.9
+       ]
+      },
+      "paletteDiff": {
+       "family": "bosses",
+       "map": "rook",
+       "home": "S2A2",
+       "minPens": 6
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "s21",
+   "title": "Boss: LOT 44 · MACK from the Cadillac",
+   "step": "G5",
+   "setup": [
+    [
+     "start",
+     1,
+     1,
+     "easy",
+     5
+    ]
+   ],
+   "shots": [
+    {
+     "id": "s21",
+     "ops": [
+      [
+       "spawnBoss"
+      ],
+      [
+       "ticks",
+       150
+      ],
+      [
+       "call",
+       "LAST_EDEN.test.say",
+       null
+      ]
+     ],
+     "ref": {
+      "kind": "video",
+      "video": "boss",
+      "t": 220,
+      "note": "HOGG beside the Cadillac (03:40)"
+     },
+     "expect": {
+      "bossHeight": {
+       "type": "truck"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "s22",
+   "title": "Boss: VERDANT REGENT (raptor) and the driver",
+   "step": "G5",
+   "setup": [
+    [
+     "start",
+     2,
+     1,
+     "easy",
+     5
+    ]
+   ],
+   "shots": [
+    {
+     "id": "s22",
+     "ops": [
+      [
+       "spawnBoss"
+      ],
+      [
+       "ticks",
+       150
+      ],
+      [
+       "call",
+       "LAST_EDEN.test.say",
+       null
+      ],
+      [
+       "move",
+       {
+        "view": 100
+       },
+       "M"
+      ]
+     ],
+     "ref": {
+      "kind": "video",
+      "video": "boss",
+      "t": 40,
+      "note": "R HOPPER on the chain beside Vice T. (00:40)"
+     },
+     "expect": {
+      "heroHeight": {
+       "h": 79,
+       "tol": 2
+      },
+      "bossHeight": {
+       "type": "raptor"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "s23",
+   "title": "Boss: FOREMAN CINDER (MORGAN body, cinder palette)",
+   "step": "G5",
+   "setup": [
+    [
+     "start",
+     3,
+     1,
+     "easy",
+     5
+    ]
+   ],
+   "shots": [
+    {
+     "id": "s23",
+     "ops": [
+      [
+       "spawnBoss"
+      ],
+      [
+       "ticks",
+       150
+      ],
+      [
+       "call",
+       "LAST_EDEN.test.say",
+       null
+      ],
+      [
+       "move",
+       {
+        "view": 100
+       },
+       "M"
+      ]
+     ],
+     "ref": {
+      "kind": "video",
+      "video": "boss",
+      "t": 365,
+      "note": "MORGAN in the burning village (06:05)"
+     },
+     "expect": {
+      "heroHeight": {
+       "h": 79,
+       "tol": 2
+      },
+      "bossHeight": {
+       "type": "cinder"
+      },
+      "paletteDiff": {
+       "family": "bosses",
+       "map": "cinder",
+       "home": "S5A1",
+       "minPens": 6
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "s24",
+   "title": "Boss: LOT 04 · SLICE (slicevat palette)",
+   "step": "G5",
+   "setup": [
+    [
+     "start",
+     4,
+     1,
+     "easy",
+     5
+    ]
+   ],
+   "shots": [
+    {
+     "id": "s24",
+     "ops": [
+      [
+       "spawnBoss"
+      ],
+      [
+       "ticks",
+       150
+      ],
+      [
+       "call",
+       "LAST_EDEN.test.say",
+       null
+      ],
+      [
+       "move",
+       {
+        "view": 100
+       },
+       "M"
+      ]
+     ],
+     "ref": {
+      "kind": "video",
+      "video": "boss",
+      "t": 270,
+      "note": "SLICE in the factory (04:30)"
+     },
+     "expect": {
+      "heroHeight": {
+       "h": 79,
+       "tol": 2
+      },
+      "bossHeight": {
+       "type": "echo"
+      },
+      "paletteDiff": {
+       "family": "bosses",
+       "map": "slicevat",
+       "home": "S4A2",
+       "minPens": 6
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "s25",
+   "title": "Boss: MARSHAL SABLE (VICE T. body) then the CROWN ENGINE",
+   "step": "G5",
+   "setup": [
+    [
+     "start",
+     5,
+     1,
+     "easy",
+     5
+    ]
+   ],
+   "shots": [
+    {
+     "id": "s25-sable",
+     "ops": [
+      [
+       "spawnBoss"
+      ],
+      [
+       "ticks",
+       150
+      ],
+      [
+       "call",
+       "LAST_EDEN.test.say",
+       null
+      ],
+      [
+       "move",
+       {
+        "view": 100
+       },
+       "M"
+      ]
+     ],
+     "ref": {
+      "kind": "video",
+      "video": "boss",
+      "t": 60,
+      "note": "VICE T. on the street (01:00)"
+     },
+     "expect": {
+      "heroHeight": {
+       "h": 79,
+       "tol": 2
+      },
+      "bossHeight": {
+       "type": "sable"
+      },
+      "paletteDiff": {
+       "family": "bosses",
+       "map": "sable",
+       "home": "S1A2",
+       "minPens": 6
+      }
+     }
+    },
+    {
+     "id": "s25-engine",
+     "ops": [
+      [
+       "damageEnemy",
+       0,
+       9999
+      ],
+      [
+       "ticks",
+       200
+      ]
+     ],
+     "ref": {
+      "kind": "extract",
+      "file": "work/re/extract/stages/ep8-area3-composite.png",
+      "crop": [
+       1232,
+       0,
+       384,
+       224
+      ],
+      "note": "the E8a3 throne-room cells the Crown Engine is baked from"
+     },
+     "expect": {
+      "enemyState": [
+       "walk",
+       "windup",
+       "recover",
+       "transform",
+       "intro"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "s26",
+   "title": "Boss: LOT 00 · FESSENDEN, the six-part beast",
+   "step": "G5",
+   "setup": [
+    [
+     "start",
+     5,
+     1,
+     "easy",
+     5
+    ]
+   ],
+   "shots": [
+    {
+     "id": "s26",
+     "ops": [
+      [
+       "spawn",
+       "fessenden",
+       {
+        "view": 300
+       },
+       {
+        "lane": 0.5
+       },
+       {
+        "boss": true
+       }
+      ],
+      [
+       "ticks",
+       20
+      ],
+      [
+       "move",
+       {
+        "view": 100
+       },
+       "M"
+      ]
+     ],
+     "ref": {
+      "kind": "video",
+      "video": "boss",
+      "t": 905,
+      "note": "the pink beast standing beside Mustapha in the throne room (15:05)"
+     },
+     "expect": {
+      "heroHeight": {
+       "h": 79,
+       "tol": 2
+      },
+      "bossHeight": {
+       "type": "fessenden"
+      },
+      "bossParts": true
+     }
+    }
+   ]
+  },
+  {
+   "id": "s30",
+   "title": "Top HUD and the INSERT COIN slots",
+   "step": "G7",
+   "setup": [
+    [
+     "start",
+     0,
+     1,
+     "easy"
+    ],
+    [
+     "move",
+     {
+      "view": 150
+     },
+     "M"
+    ],
+    [
+     "clearFighters"
+    ],
+    [
+     "ticks",
+     5
+    ],
+    [
+     "spawn",
+     "raider",
+     {
+      "player": 90
+     },
+     "M",
+     {
+      "dummy": true,
+      "v": "B"
+     }
+    ],
+    [
+     "damageEnemy",
+     0,
+     5
+    ],
+    [
+     "ticks",
+     1
+    ]
+   ],
+   "ref": {
+    "kind": "video",
+    "video": "two",
+    "t": 58,
+    "note": "P1 block 0-128 (portrait, name, lives, score, bar, foe face/name/bar), slots at 128-256 and 256-384. G7: the element gate is the MAME scroll1 HUD of stg-ep1-walk f16/f72 (tests/fixtures/hud-cabinet.json); the video frame stays the by-eye side-by-side"
+   },
+   "expect": {
+    "layout": true,
+    "roi": [
+     0,
+     0,
+     384,
+     44
+    ],
+    "hud": {
+     "tol": 2
+    }
+   },
+   "$doc": "G7 (PLAN §7 G7 acceptance): Jack at the chapter-1 start with a GNEISS dummy hit once, so the foe row shows; expect.hud measures every HUD element on a HUD-only render (LAST_EDEN.test.hudOnly) in both coin turns and compares it with the cabinet boxes within 2 px."
+  },
+  {
+   "id": "s31",
+   "title": "Continue screen",
+   "step": "G7",
+   "setup": [
+    [
+     "start",
+     0,
+     1,
+     "easy"
+    ],
+    [
+     "move",
+     {
+      "view": 150
+     },
+     "M"
+    ],
+    [
+     "die",
+     4
+    ],
+    [
+     "ticks",
+     30
+    ]
+   ],
+   "ref": {
+    "kind": "none",
+    "note": "no continue moment was located in the 2-player video (its 46 minutes were sampled at 1 frame / 30 s); the arcade count sits over the fallen hero: pin a timestamp here when one is found"
+   },
+   "expect": {
+    "state": "continue"
+   }
+  },
+  {
+   "id": "s40",
+   "title": "Chapter card, intermission panel and caption",
+   "step": "G6",
+   "$doc": "G6: the menus lead into the chapter-1 card (state brief). s40-pre: the EASTCOAST 2513 caption over the first screen (30 ticks); s40-card: the ROM title-card panel at (80,0) over the stage with the hero at the start, CHAPTER 1 and the typed name (200 ticks), against the EPISODE 3 card; s40-panel: the first intermission panel, layout A (NEXT, then 60 ticks of typing), against the EPISODE 2 panel. By eye (PLAN §8.3 (b)).",
+   "setup": [
+    [
+     "reload"
+    ],
+    [
+     "click",
+     "#newgame"
+    ],
+    [
+     "click",
+     "#begin"
+    ]
+   ],
+   "shots": [
+    {
+     "id": "s40-pre",
+     "ops": [
+      [
+       "ticks",
+       30
+      ]
+     ],
+     "ref": {
+      "kind": "mame",
+      "file": "work/re/extract/stages/screens/card3-f0300-snap.png",
+      "note": "EPISODE 1 opened on a caption over the stage; the card frame below is EPISODE 3's"
+     },
+     "expect": {
+      "state": "brief"
+     }
+    },
+    {
+     "id": "s40-card",
+     "ops": [
+      [
+       "ticks",
+       170
+      ]
+     ],
+     "ref": {
+      "kind": "mame",
+      "file": "work/re/extract/stages/screens/card3-f0300-snap.png",
+      "note": "the EPISODE 3 title card: the panel at the top of the stage, EPISODE 3 and the typed name"
+     },
+     "expect": {
+      "state": "brief"
+     }
+    },
+    {
+     "id": "s40-panel",
+     "ops": [
+      [
+       "call",
+       "LAST_EDEN.test.cardAdvance"
+      ],
+      [
+       "ticks",
+       60
+      ]
+     ],
+     "ref": {
+      "kind": "mame",
+      "file": "work/re/extract/stages/screens/card2-f0020-snap.png",
+      "note": "the EPISODE 2 intermission: layout A, the picture centred at the top, the 8x16 lines below"
+     },
+     "expect": {
+      "state": "brief"
+     }
+    }
+   ]
+  }
+ ]
+}

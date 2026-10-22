@@ -1,0 +1,636 @@
+{
+  "notes": [
+    "Intermission pictures (CAMPAIGN.md §4.7), 224x96 for panel layout A, composed at 1x from ROM scroll2/scroll3 cells only (tools/re/build/levels-compose.cjs composePic). Layers paint in order; pen 15 shows the layer below, then the backdrop.",
+    "The sprite parts the CAMPAIGN lists (FERRIS rolling a crate, the cold-pod object, the hatchling in gel, SHIVAT asleep, the four hero idle frames, VICE T. raising the pistol) need OBJ records and are listed under `sprites` for the WP-C/WP-D sprite families to overlay at G6; the pictures here are their ROM-cell backgrounds."
+  ],
+  "pics": {
+    "p-sink-night": {
+      "w": 224,
+      "h": 96,
+      "bg": "#050814",
+      "preset": "night",
+      "why": "E7a0 s3 skyline (night+flood) over black water",
+      "layers": [
+        {
+          "s3": {
+            "src": "E7a0",
+            "x": [
+              0,
+              224
+            ],
+            "h": [
+              128,
+              224
+            ]
+          },
+          "ops": [
+            "flood"
+          ]
+        }
+      ]
+    },
+    "p-salvage-boats": {
+      "w": 224,
+      "h": 96,
+      "bg": "#050814",
+      "preset": "night",
+      "why": "the same bay with E4a0 breakwater crops as hulls",
+      "layers": [
+        {
+          "s3": {
+            "src": "E7a0",
+            "x": [
+              256,
+              480
+            ],
+            "h": [
+              128,
+              224
+            ]
+          },
+          "ops": [
+            "flood"
+          ]
+        },
+        {
+          "s2": {
+            "src": "E4a0",
+            "x": [
+              640,
+              864
+            ],
+            "h": [
+              128,
+              176
+            ]
+          },
+          "at": [
+            0,
+            48
+          ]
+        }
+      ],
+      "sprites": [
+        "frosted crate (cold-pod object) on a rope"
+      ]
+    },
+    "p-barge-fire": {
+      "w": 224,
+      "h": 96,
+      "bg": "#0b0d1a",
+      "preset": "harbor-night",
+      "why": "E4a0 x 352-576 at night; the barge fire",
+      "layers": [
+        {
+          "s3": {
+            "src": "E4a0",
+            "x": [
+              0,
+              224
+            ],
+            "h": [
+              112,
+              208
+            ]
+          }
+        },
+        {
+          "s2": {
+            "src": "E4a0",
+            "x": [
+              352,
+              576
+            ],
+            "h": [
+              80,
+              176
+            ]
+          }
+        },
+        {
+          "s2": {
+            "src": "E5a1",
+            "x": [
+              3360,
+              3552
+            ],
+            "h": [
+              528,
+              560
+            ]
+          },
+          "at": [
+            16,
+            52
+          ],
+          "preset": false,
+          "pens": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "rows": [
+            26
+          ]
+        }
+      ],
+      "sprites": [
+        "two FERRIS (walk frames) rolling a crate"
+      ]
+    },
+    "p-pod-face": {
+      "w": 224,
+      "h": 96,
+      "bg": "#0b0d1a",
+      "preset": "harbor-night",
+      "why": "the quay under the cold pods",
+      "layers": [
+        {
+          "s3": {
+            "src": "E7a0",
+            "x": [
+              0,
+              224
+            ],
+            "h": [
+              128,
+              224
+            ]
+          }
+        },
+        {
+          "s2": {
+            "src": "E7a0",
+            "x": [
+              0,
+              224
+            ],
+            "h": [
+              96,
+              192
+            ]
+          }
+        }
+      ],
+      "sprites": [
+        "cold-pod object close-up, FERRIS lying (gel palette) behind the glass, x2"
+      ]
+    },
+    "p-manifest": {
+      "w": 224,
+      "h": 96,
+      "bg": "#000000",
+      "preset": "coldlab",
+      "why": "an E7a3 console monitor bank",
+      "layers": [
+        {
+          "s2": {
+            "src": "E7a3",
+            "x": [
+              256,
+              480
+            ],
+            "h": [
+              80,
+              176
+            ]
+          }
+        }
+      ],
+      "sprites": [
+        "'LOT 07 / 09 / 12 / 31' in the scroll1 font (ARCADE_UI text)"
+      ]
+    },
+    "p-convoy": {
+      "w": 224,
+      "h": 96,
+      "bg": "#22264a",
+      "why": "E3a0 road (coral) under the dusk mesas",
+      "layers": [
+        {
+          "s3": {
+            "src": "E3a0",
+            "x": [
+              2304,
+              2528
+            ],
+            "h": [
+              80,
+              176
+            ]
+          },
+          "ops": [
+            {
+              "op": "tint",
+              "rgb": "#d98a8a",
+              "amount": 0.25
+            }
+          ]
+        },
+        {
+          "s2": {
+            "src": "E3a0",
+            "x": [
+              15872,
+              16096
+            ],
+            "h": [
+              80,
+              176
+            ]
+          },
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -12,
+              "s": 1,
+              "l": 1.04
+            },
+            {
+              "op": "tint",
+              "rgb": "#d98a8a",
+              "amount": 0.16
+            }
+          ]
+        }
+      ],
+      "sprites": [
+        "three bikers and a pod wagon (convoy crate prop)"
+      ]
+    },
+    "p-hatchling": {
+      "w": 224,
+      "h": 96,
+      "bg": "#061a10",
+      "preset": "verdant",
+      "why": "the egg racks under the glass",
+      "layers": [
+        {
+          "s3": {
+            "src": "E2a0",
+            "x": [
+              128,
+              352
+            ],
+            "h": [
+              112,
+              208
+            ]
+          }
+        },
+        {
+          "s2": {
+            "src": "E2a0",
+            "x": [
+              256,
+              480
+            ],
+            "h": [
+              144,
+              240
+            ]
+          }
+        }
+      ],
+      "sprites": [
+        "small raptor (0x4DBA0) curled in gel with one VICE chain link as the collar"
+      ]
+    },
+    "p-dome": {
+      "w": 224,
+      "h": 96,
+      "bg": "#0a1a14",
+      "preset": "verdant",
+      "why": "E6a0 x 1216-1472 (verdant) glass hall",
+      "layers": [
+        {
+          "s3": {
+            "src": "E6a0",
+            "x": [
+              608,
+              832
+            ],
+            "h": [
+              112,
+              208
+            ]
+          }
+        },
+        {
+          "s2": {
+            "src": "E6a0",
+            "x": [
+              1216,
+              1440
+            ],
+            "h": [
+              128,
+              224
+            ]
+          }
+        }
+      ]
+    },
+    "p-regent-asleep": {
+      "w": 224,
+      "h": 96,
+      "bg": "#061a14",
+      "preset": "verdant",
+      "why": "the nest pool and the stone skull",
+      "layers": [
+        {
+          "s3": {
+            "src": "E6a1",
+            "x": [
+              1408,
+              1632
+            ],
+            "h": [
+              112,
+              208
+            ]
+          }
+        },
+        {
+          "s2": {
+            "src": "E6a1",
+            "x": [
+              2848,
+              3072
+            ],
+            "h": [
+              304,
+              400
+            ]
+          }
+        }
+      ],
+      "sprites": [
+        "SHIVAT main 0 (asleep), chain links to a driver prop"
+      ]
+    },
+    "p-ledger": {
+      "w": 224,
+      "h": 96,
+      "bg": "#000000",
+      "preset": "verdant",
+      "why": "an E7a3 monitor chunk",
+      "layers": [
+        {
+          "s2": {
+            "src": "E7a3",
+            "x": [
+              480,
+              704
+            ],
+            "h": [
+              80,
+              176
+            ]
+          }
+        }
+      ],
+      "sprites": [
+        "'STOCK: THE SINK' and tank numbers in the scroll1 font"
+      ]
+    },
+    "p-observatory": {
+      "w": 224,
+      "h": 96,
+      "bg": "#05081a",
+      "preset": "night",
+      "why": "E5a0 cliffs at night with the E4a0 far dome tower",
+      "layers": [
+        {
+          "s3": {
+            "src": "E4a0",
+            "x": [
+              96,
+              320
+            ],
+            "h": [
+              96,
+              192
+            ]
+          }
+        },
+        {
+          "s2": {
+            "src": "E5a0",
+            "x": [
+              1696,
+              1920
+            ],
+            "h": [
+              528,
+              560
+            ]
+          },
+          "at": [
+            0,
+            64
+          ]
+        }
+      ]
+    },
+    "p-echo-speaker": {
+      "w": 224,
+      "h": 96,
+      "bg": "#000000",
+      "preset": "coldlab",
+      "why": "an E7a3 console grille: Echo is a voice, never a face",
+      "layers": [
+        {
+          "s2": {
+            "src": "E7a3",
+            "x": [
+              0,
+              224
+            ],
+            "h": [
+              80,
+              176
+            ]
+          }
+        }
+      ],
+      "sprites": [
+        "sound bars (ARCADE_UI draw)"
+      ]
+    },
+    "p-crown-dam": {
+      "w": 224,
+      "h": 96,
+      "bg": "#0a0614",
+      "preset": "storm-crown",
+      "why": "the E8a1 sluice basin (x 1456-1680, storm-crown): the floodgate pool below the spire (E8a1 past 2992 is empty playfield)",
+      "layers": [
+        {
+          "s3": {
+            "src": "E1a2",
+            "x": [
+              0,
+              224
+            ],
+            "h": [
+              304,
+              400
+            ]
+          }
+        },
+        {
+          "s2": {
+            "src": "E8a1",
+            "x": [
+              1456,
+              1680
+            ],
+            "h": [
+              848,
+              944
+            ]
+          }
+        }
+      ]
+    },
+    "p-mirror-gang": {
+      "w": 224,
+      "h": 96,
+      "bg": "#000000",
+      "why": "black, as the CAMPAIGN asks",
+      "layers": [],
+      "sprites": [
+        "four hero idle frames (clone palette)"
+      ]
+    },
+    "p-sable": {
+      "w": 224,
+      "h": 96,
+      "bg": "#0a0614",
+      "preset": "storm-crown",
+      "why": "E1a1 x 112-336 (storm-crown)",
+      "layers": [
+        {
+          "s2": {
+            "src": "E1a1",
+            "x": [
+              112,
+              336
+            ],
+            "h": [
+              112,
+              208
+            ]
+          }
+        }
+      ],
+      "sprites": [
+        "VICE T. (sable palette) main 13 'raise the pistol' x2"
+      ]
+    },
+    "p-dam-dawn": {
+      "w": 224,
+      "h": 96,
+      "bg": "#3a2a40",
+      "why": "the E8a1 sluice basin (x 1456-1680) in a dawn tint: the floodgate drained",
+      "layers": [
+        {
+          "s3": {
+            "src": "E1a0",
+            "x": [
+              0,
+              224
+            ],
+            "h": [
+              80,
+              176
+            ]
+          },
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 25,
+              "s": 1.1,
+              "l": 1.3
+            }
+          ]
+        },
+        {
+          "s2": {
+            "src": "E8a1",
+            "x": [
+              1456,
+              1680
+            ],
+            "h": [
+              848,
+              944
+            ]
+          },
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 25,
+              "s": 1.1,
+              "l": 1.3
+            }
+          ]
+        }
+      ]
+    },
+    "p-sunset-road": {
+      "w": 224,
+      "h": 96,
+      "bg": "#402030",
+      "why": "E3a0 road in the 1993 ending's sunset tint with its mesas",
+      "layers": [
+        {
+          "s3": {
+            "src": "E3a0",
+            "x": [
+              2304,
+              2528
+            ],
+            "h": [
+              80,
+              176
+            ]
+          },
+          "ops": [
+            {
+              "op": "tint",
+              "rgb": "#ff7a40",
+              "amount": 0.3
+            }
+          ]
+        },
+        {
+          "s2": {
+            "src": "E3a0",
+            "x": [
+              15872,
+              16096
+            ],
+            "h": [
+              80,
+              176
+            ]
+          },
+          "ops": [
+            {
+              "op": "tint",
+              "rgb": "#ff7a40",
+              "amount": 0.25
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,1066 @@
+{
+  "id": "ch4",
+  "title": "THE SINK",
+  "objPage": "S8A1",
+  "preset": "drowned",
+  "notes": [
+    "CAMPAIGN.md §8.1 / §12.2 '4-1'..'4-6'. The one deliberate return (D4): every area is a returnVisit (ARCHITECTURE §3.8) with the drowned palette on every slice and >= 25% of its cells patched (broken-tank dynamic cells of E8a0, rock collapses, standing water, scaffolds, pump pipes, the capsule removed, the cut floor).",
+    "E8a1 past 2992 (CAMPAIGN 4-1, 4-3) is not used: the original camera falls there during a fade (segment 0x09 at 3008), its terrain is type 0 in every row (no lane was authored) and its scroll2 is empty from X 3100, so a lane there would stand on nothing. E8a1 elsewhere has a 32-px wading lane (live h 784-815), except the sluice basin 1504-1664 (live top h 879-880, probed by work/re/runs/wpe-depth-e8a1): the basin is what ch4 uses of E8a1 (4-3 and 4-6).",
+    "4-1: the tunnel is E7a0 only (1792-2304, 2560-2800, 1792-2304 flip) and ends on the tunnel's own brick pier and arch (E7a0 1712-1792 flip continues the mirrored piece seamlessly) where the Bio Lab begins. The pump pipes of 4-3..4-6 are the E7a3 riser and elbows (E7a3 816-912, palette row 4 lifted); the first build's E4a2 'pipe' patches were empty cells that erased the cave art (gate 1 now warns on such patches).",
+    "4-3: the sluice basin (E8a1 1504-1664) between two scaffold posts is the Brood Mother pool (the pit rect sits at its back); E8a2 1792-2304 before it and 1952-2304 after it, which continues straight into 4-4's E8a2 2304-2816; 4-4 ends on a mirror join (E8a2 2304-2816 flip).",
+    "4-5: E8a3 3824-3968 has a 32-px lane (the throne-room entry narrows between rocks), so the chamber is E8a3 3968-4304, its mirror, then the throne E8a3 4400-4752 (capsule cells replaced, the floor in front of the steps cut open). 4-6: the basin, the cave arches E8a2 1920-2432 and their mirror (E8a2 1952-2432 flip), so the boss lock 1792-2176 is E8a2 columns only (E8a2 has no boss window).",
+    "Seams (CAMPAIGN §4.1 join chunks): joins in the tunnel and the lab are covered by the tunnel's brick pier (E7a0 1760-1792, palette row 27 lifted), joins in the caves by a scaffold post (the propped timber of the E6a0 mine portal, E6a0 864-896, rows 9/8/3/2 lifted); every other join is a mirror join or continues the source.",
+    "KI1 framing: E8a2 1792-3328 is framed at camY 256 (h 272-496), where the original camera stands there; at the §4.1 camY 512 the frame is the empty rock above the cave. Lanes checked live: E8a2 and E8a3 by work/re/runs/wpe-depth-e8a2 (it walked on into E8a3), E8a0 by stg-depth-e8a0; E7a0 1792-2832 is ROM terrain only (the probe stopped at the 1408 lock).",
+    "Return-visit lock layout (§3.8): no lock window may start within 64 px of an original lock trigger of its source (E7a0 432/1408/1936/2352, E8a0 288/720/1152, E8a1 416/880/1392/2112/2560, E8a2 0/1840/2304, E8a3 4384), checked by gate 4.",
+    "Far layer: one per section (4-1 E7a0, 4-2 E8a0, 4-3/4-4 E8a2, 4-5 E8a3, 4-6 E8a2); the open floor under the E8a3 bridge shows E8a3's own machinery far layer, as in the original (gate 2 warning).",
+    "Section casts (CAMPAIGN §4.4 'cast', merged over the chapter pool): lighter A/BOMB/KNIFE variants where the ROM-affine HP budget of the chapter's waves exceeded ENEMIES §2.6 by more than 15% (tests/campaign.cjs (8)); ratio now 1.138.",
+    "The drowned preset (flood + ruin + night 0.8) leaves the tunnel and the Bio Lab nearly black on the review sheet, so the chapter adds a lift (lightness x1.45, saturation x1.1) after it.",
+    "4-1: the collapse where Hannah fell is the E8a2 rock fall over the tunnel ribs (an E4a0 rubble patch was tried: its cells carry the sea wall, not the heap)."
+  ],
+  "areas": [
+    {
+      "id": "a0",
+      "w": 2368,
+      "h": 224,
+      "bg": "auto",
+      "returnVisit": {
+        "source": [
+          7,
+          0
+        ],
+        "why": "the 1993 escape tunnel six months later: half-flooded, its mouth a crater rim over black water; the collapse at x 560 is where Hannah fell; then the Bio Lab, every tank broken"
+      },
+      "s2": [
+        {
+          "slice": {
+            "src": "E7a0",
+            "x": [
+              1792,
+              2304
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E7a0",
+            "x": [
+              2560,
+              2800
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            512,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E7a0",
+            "x": [
+              1792,
+              2304
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            752,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E7a0",
+            "x": [
+              1712,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1264,
+            0
+          ],
+          "flip": true,
+          "note": "the mirrored tunnel continues into its own brick pier and arch (E7a0 1712-1792) where the Bio Lab begins"
+        },
+        {
+          "slice": {
+            "src": "E8a0",
+            "x": [
+              0,
+              512
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1344,
+            0
+          ],
+          "step": true,
+          "dynamic": "live"
+        },
+        {
+          "slice": {
+            "src": "E8a0",
+            "x": [
+              32,
+              544
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1856,
+            0
+          ],
+          "dynamic": "live"
+        },
+        {
+          "patch": {
+            "src": "E8a2",
+            "x": [
+              1792,
+              2048
+            ],
+            "h": [
+              400,
+              496
+            ]
+          },
+          "at": [
+            64,
+            0
+          ],
+          "every": 384,
+          "repeat": 3,
+          "note": "rock collapse over the tunnel ribs (E8a2 cave rock)"
+        },
+        {
+          "patch": {
+            "src": "E6a1",
+            "x": [
+              2848,
+              3168
+            ],
+            "h": [
+              240,
+              256
+            ]
+          },
+          "at": [
+            0,
+            208
+          ],
+          "every": 320,
+          "repeat": 4,
+          "terrain": "keep",
+          "note": "standing water along the tunnel floor"
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              1760,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              27
+            ]
+          },
+          "at": [
+            736,
+            0
+          ],
+          "join": true,
+          "note": "brick pier over the E7a0 2800 | 2288 join"
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              1760,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              27
+            ]
+          },
+          "at": [
+            1328,
+            0
+          ],
+          "join": true,
+          "note": "brick pier over the section join 4-1 | 4-2 (the far layer changes under it)"
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              1760,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              27
+            ]
+          },
+          "at": [
+            1840,
+            0
+          ],
+          "join": true,
+          "note": "brick pier between the two tank rows (E8a0 512 | 32)"
+        }
+      ],
+      "s3": "auto",
+      "hazards": [
+        {
+          "kind": "water-edge",
+          "rect": [
+            1200,
+            200,
+            96,
+            24
+          ]
+        }
+      ],
+      "sections": [
+        {
+          "id": "4-1",
+          "name": "WHERE HANNAH FELL",
+          "x0": 0,
+          "len": 1344,
+          "cap": "THE SINK",
+          "locks": [
+            640,
+            960
+          ],
+          "bossLock": null,
+          "cast": {
+            "gunner": [
+              "poacherJ",
+              "bomber"
+            ]
+          },
+          "props": [
+            {
+              "kind": "crate",
+              "x": 222
+            },
+            {
+              "kind": "barrel",
+              "x": 607
+            },
+            {
+              "kind": "barrel",
+              "x": 992
+            }
+          ]
+        },
+        {
+          "id": "4-2",
+          "name": "THE SHATTERED TANKS",
+          "x0": 1344,
+          "len": 1024,
+          "locks": [
+            1536,
+            1984
+          ],
+          "bossLock": null,
+          "props": [
+            {
+              "kind": "crate",
+              "x": 193
+            },
+            {
+              "kind": "barrel",
+              "x": 578
+            },
+            {
+              "kind": "valve",
+              "name": "SEA VALVE · TANK ROW",
+              "x": 420
+            }
+          ],
+          "note": "every tank in the broken-tank dynamic state; BLUDGE come out of the water",
+          "cast": {
+            "gunner": [
+              "poacherJ",
+              "bomber"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "a1",
+      "w": 2048,
+      "h": 224,
+      "bg": "auto",
+      "returnVisit": {
+        "source": [
+          8,
+          1
+        ],
+        "why": "the old sluice and the caves, now Echo's salvage dig: scaffolds, pumps, raised water"
+      },
+      "s2": [
+        {
+          "slice": {
+            "src": "E8a2",
+            "x": [
+              1792,
+              2304
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E8a1",
+            "x": [
+              1504,
+              1664
+            ],
+            "h": [
+              784,
+              1008
+            ]
+          },
+          "at": [
+            512,
+            0
+          ],
+          "note": "the sluice basin of the 1993 UNDERGROUND, now the Brood Mother pool"
+        },
+        {
+          "slice": {
+            "src": "E8a2",
+            "x": [
+              1952,
+              2304
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            672,
+            0
+          ],
+          "step": true
+        },
+        {
+          "slice": {
+            "src": "E8a2",
+            "x": [
+              2304,
+              2816
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            1024,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E8a2",
+            "x": [
+              2304,
+              2816
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            1536,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "patch": {
+            "src": "E6a0",
+            "x": [
+              864,
+              928
+            ],
+            "h": [
+              80,
+              240
+            ],
+            "rows": [
+              9,
+              8,
+              3,
+              2
+            ]
+          },
+          "at": [
+            304,
+            0
+          ],
+          "every": 768,
+          "repeat": 3,
+          "note": "scaffold timbers (the E6a0 portal timber, lifted)"
+        },
+        {
+          "patch": {
+            "src": "E7a3",
+            "x": [
+              816,
+              912
+            ],
+            "h": [
+              112,
+              240
+            ],
+            "rows": [
+              4
+            ]
+          },
+          "at": [
+            1120,
+            16
+          ],
+          "every": 640,
+          "repeat": 2,
+          "note": "Echo's pump pipes: the E7a3 riser and its elbows (palette row 4 lifted), standing on the cave floor"
+        },
+        {
+          "patch": {
+            "src": "E6a1",
+            "x": [
+              2688,
+              3008
+            ],
+            "h": [
+              272,
+              304
+            ]
+          },
+          "at": [
+            0,
+            192
+          ],
+          "every": 320,
+          "alternate": true,
+          "note": "raised water: two rows of E6a1 open water along the near edge of the dig (every other copy mirrored)"
+        },
+        {
+          "patch": {
+            "src": "E4a2",
+            "x": [
+              0,
+              256
+            ],
+            "h": [
+              96,
+              144
+            ]
+          },
+          "at": [
+            1024,
+            96
+          ],
+          "every": 256,
+          "repeat": 4,
+          "alternate": true,
+          "blend": "over",
+          "note": "the scaffold guard rail at the back of the dig (E4a2 railing rows, every other copy mirrored)"
+        },
+        {
+          "patch": {
+            "src": "E6a0",
+            "x": [
+              864,
+              896
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              9,
+              8,
+              3,
+              2
+            ]
+          },
+          "at": [
+            496,
+            0
+          ],
+          "join": true,
+          "note": "scaffold post over the E8a2 | E8a1 join (the sluice gate, left)"
+        },
+        {
+          "patch": {
+            "src": "E6a0",
+            "x": [
+              864,
+              896
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              9,
+              8,
+              3,
+              2
+            ]
+          },
+          "at": [
+            656,
+            0
+          ],
+          "join": true,
+          "note": "scaffold post over the E8a1 | E8a2 join (the sluice gate, right)"
+        }
+      ],
+      "s3": "auto",
+      "hazards": [
+        {
+          "kind": "pit",
+          "rect": [
+            528,
+            136,
+            128,
+            40
+          ]
+        }
+      ],
+      "sections": [
+        {
+          "id": "4-3",
+          "name": "THE DRAIN",
+          "x0": 0,
+          "len": 1024,
+          "cap": "THE DROWNED CAVES",
+          "locks": [
+            192,
+            640
+          ],
+          "bossLock": null,
+          "note": "elite BROOD MOTHER; the pit rect is her pool, the back of the E8a1 sluice basin between the two scaffold posts",
+          "props": [
+            {
+              "kind": "barrel",
+              "x": 193
+            },
+            {
+              "kind": "crate",
+              "x": 578
+            }
+          ]
+        },
+        {
+          "id": "4-4",
+          "name": "THE PUMP SCAFFOLDS",
+          "x0": 1024,
+          "len": 1024,
+          "locks": [
+            1216,
+            1664
+          ],
+          "bossLock": null,
+          "props": [
+            {
+              "kind": "barrel",
+              "x": 193
+            },
+            {
+              "kind": "barrel",
+              "x": 578
+            },
+            {
+              "kind": "valve",
+              "name": "SEA VALVE · SCAFFOLDS",
+              "x": 420
+            }
+          ],
+          "cast": {
+            "gunner": [
+              "poacherJ",
+              "bomber"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "a2",
+      "w": 2176,
+      "h": 224,
+      "bg": "auto",
+      "returnVisit": {
+        "source": [
+          8,
+          3
+        ],
+        "why": "the throne room drained and stripped, the capsule gone, the floor cut open; then the dig's pump house under the cave arches"
+      },
+      "s2": [
+        {
+          "slice": {
+            "src": "E8a3",
+            "x": [
+              3968,
+              4304
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E8a3",
+            "x": [
+              3968,
+              4304
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            336,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E8a3",
+            "x": [
+              4400,
+              4752
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            672,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E8a1",
+            "x": [
+              1504,
+              1664
+            ],
+            "h": [
+              784,
+              1008
+            ]
+          },
+          "at": [
+            1024,
+            0
+          ],
+          "step": true
+        },
+        {
+          "slice": {
+            "src": "E8a2",
+            "x": [
+              1920,
+              2432
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            1184,
+            0
+          ],
+          "step": true
+        },
+        {
+          "slice": {
+            "src": "E8a2",
+            "x": [
+              1952,
+              2432
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            1696,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "patch": {
+            "src": "E8a3",
+            "x": [
+              4512,
+              4640
+            ],
+            "h": [
+              416,
+              496
+            ]
+          },
+          "at": [
+            784,
+            0
+          ],
+          "note": "the capsule is gone: machinery cells over the capsule on the throne"
+        },
+        {
+          "patch": {
+            "src": "E6a1",
+            "x": [
+              2848,
+              2944
+            ],
+            "h": [
+              240,
+              272
+            ]
+          },
+          "at": [
+            784,
+            192
+          ],
+          "note": "the floor cut open in front of the throne steps (flooded)"
+        },
+        {
+          "patch": {
+            "src": "E6a1",
+            "x": [
+              2848,
+              3168
+            ],
+            "h": [
+              240,
+              256
+            ]
+          },
+          "at": [
+            0,
+            208
+          ],
+          "every": 320,
+          "repeat": 7,
+          "note": "standing water"
+        },
+        {
+          "patch": {
+            "src": "E7a3",
+            "x": [
+              816,
+              912
+            ],
+            "h": [
+              112,
+              240
+            ],
+            "rows": [
+              4
+            ]
+          },
+          "at": [
+            1296,
+            16
+          ],
+          "every": 448,
+          "repeat": 2,
+          "note": "the dig's pump-house pipes: the E7a3 riser and its elbows (palette row 4 lifted)"
+        },
+        {
+          "patch": {
+            "src": "E8a2",
+            "x": [
+              1792,
+              2048
+            ],
+            "h": [
+              400,
+              496
+            ]
+          },
+          "at": [
+            96,
+            0
+          ],
+          "note": "rock fall over the throne-room entry"
+        },
+        {
+          "patch": {
+            "src": "E8a2",
+            "x": [
+              1792,
+              1920
+            ],
+            "h": [
+              400,
+              496
+            ]
+          },
+          "at": [
+            1856,
+            0
+          ],
+          "note": "rock fall over the dig"
+        },
+        {
+          "patch": {
+            "src": "E4a2",
+            "x": [
+              0,
+              256
+            ],
+            "h": [
+              96,
+              144
+            ]
+          },
+          "at": [
+            1184,
+            96
+          ],
+          "every": 256,
+          "repeat": 2,
+          "alternate": true,
+          "blend": "over",
+          "note": "the pump house guard rail (E4a2 railing rows)"
+        },
+        {
+          "patch": {
+            "src": "E6a0",
+            "x": [
+              864,
+              896
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              9,
+              8,
+              3,
+              2
+            ]
+          },
+          "at": [
+            656,
+            0
+          ],
+          "join": true,
+          "note": "scaffold post over the E8a3 3968 | 4400 join"
+        },
+        {
+          "patch": {
+            "src": "E6a0",
+            "x": [
+              864,
+              896
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              9,
+              8,
+              3,
+              2
+            ]
+          },
+          "at": [
+            1008,
+            0
+          ],
+          "join": true,
+          "note": "scaffold post over the section join 4-5 | 4-6 (the far layer changes under it)"
+        },
+        {
+          "patch": {
+            "src": "E6a0",
+            "x": [
+              864,
+              896
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              9,
+              8,
+              3,
+              2
+            ]
+          },
+          "at": [
+            1168,
+            0
+          ],
+          "join": true,
+          "note": "scaffold post over the E8a1 | E8a2 join"
+        }
+      ],
+      "s3": "auto",
+      "hazards": [
+        {
+          "kind": "pit",
+          "rect": [
+            784,
+            196,
+            96,
+            24
+          ]
+        }
+      ],
+      "sections": [
+        {
+          "id": "4-5",
+          "name": "THE DROWNED THRONE",
+          "x0": 0,
+          "len": 1024,
+          "cap": "THE THRONE ROOM",
+          "locks": [
+            192,
+            640
+          ],
+          "bossLock": null,
+          "props": [
+            {
+              "kind": "crate",
+              "x": 193
+            },
+            {
+              "kind": "barrel",
+              "x": 578
+            },
+            {
+              "kind": "valve",
+              "name": "SEA VALVE · THRONE DRAIN",
+              "x": 880
+            }
+          ],
+          "note": "the capsule chamber is a regular lock here, never the boss lock",
+          "cast": {
+            "gunner": [
+              "poacherJ",
+              "bomber"
+            ]
+          }
+        },
+        {
+          "id": "4-6",
+          "name": "CINDER’S DIG",
+          "x0": 1024,
+          "len": 1152,
+          "locks": [
+            1216
+          ],
+          "bossLock": 1792,
+          "props": [
+            {
+              "kind": "barrel",
+              "x": 193
+            },
+            {
+              "kind": "crate",
+              "x": 578
+            },
+            {
+              "kind": "barrel",
+              "x": 963
+            },
+            {
+              "kind": "pump-column",
+              "x": 860
+            },
+            {
+              "kind": "pump-column",
+              "x": 1060
+            }
+          ],
+          "note": "boss lock 1792-2176 = E8a2 columns; E8a2 has no boss window"
+        }
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "op": "hsl",
+      "h": 0,
+      "s": 1.1,
+      "l": 1.45
+    }
+  ]
+}

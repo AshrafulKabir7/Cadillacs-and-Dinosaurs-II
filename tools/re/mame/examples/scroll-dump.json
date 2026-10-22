@@ -1,0 +1,7 @@
+{
+  "name": "scroll-dump",
+  "frames": 10,
+  "loadState": "stage1-hannah",
+  "dump": { "from": 5, "to": 5, "obj": true, "cpsA": true, "allPalettes": true, "scroll": true, "ramFile": true },
+  "snapshots": [5]
+}

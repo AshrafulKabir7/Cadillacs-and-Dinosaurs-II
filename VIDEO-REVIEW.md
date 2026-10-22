@@ -1,3 +1,51 @@
+# Visual checks against the arcade — October 22, 2026 (G8, `tools/re/compare-frames.cjs`)
+
+Every scene of `tests/fixtures/visual-scenes.json` is set up through `LAST_EDEN`, rendered, downsampled to 384 × 224 and put beside its reference: a MAME snapshot of the ROM set, a frame of one of the two reference videos ("boss" = the all-boss-fights video, "two" = the two-player video), or a stage composite from the extracts. All 23 scenes (39 shots) are **ok**: 0 early, 0 skipped, 0 failed. The side-by-side sheets, diffs and `report.json` are in `work/re/impl/G8/visual/` (`index.png` has every sheet at half size). "hero h" is the hero's bounding-box height in arcade px, "overlay" the fit of the game frame on the MAME snapshot, "diff" the share of pixels that differ from the reference by more than 24 levels (high by design: the sequel's stages, HUD state and cast are new, so the gates are the hero and boss measures and the overlay fits, not this ratio), and the boss rows give the boss-to-hero height ratio against the ROM records.
+
+| Shot | Result | Reference | Measures |
+|---|---|---|---|
+| s01 | ok | MAME census-stage1-jack f0 | hero h 79; diff 97.5% |
+| s01-video | ok | video two @12s | hero h 79; diff 98.9% |
+| s02-carry | ok | video boss @108s | hero h 78; overlay 0.183; diff 99.1% |
+| s02-ready | ok | MAME chk-stage1-jack-armed-gun f1 | hero h 82; overlay 0.948; rig 1 feet 159,200 weapon 0,0 (1); diff 96.1% |
+| s02-fire | ok | video boss @110s | diff 98.9% |
+| s03-walk | ok | video boss @262s | diff 83.7% |
+| s03-stand | ok | MAME chk-stage1-jack-armed-rifle f1 | hero h 79; overlay 0.96; rig 1 feet 159,200 weapon 0,0 (1); diff 96.0% |
+| s03-fire | ok | video boss @270s | diff 96.9% |
+| s04-stand | ok | video boss @258s | hero h 84; overlay 0.262; diff 96.3% |
+| s04-mame | ok | MAME chk-stage1-mustapha-armed-rifle f1 | hero h 84; overlay 0.957; rig 1 feet 159,200 weapon 0,0 (1); diff 95.9% |
+| s04-walk | ok | video boss @262s | diff 84.3% |
+| s05-left | ok | video two @58s | hero h 83; overlay 0.211; diff 98.0% |
+| s05-right | ok | video two @81s | hero h 83; overlay 0.464; diff 96.6% |
+| s05-mame | ok | MAME chk-stage1-mustapha-armed-shotgun f1 | hero h 83; overlay 0.959; rig 1 feet 159,200 weapon 0,0 (1); diff 95.8% |
+| s06 | ok | video boss @254s | diff 97.1% |
+| s07-fly | ok | MAME vis-s07-jack-hurt f1437 | diff 96.4% |
+| s07-lying | ok | MAME vis-s07-jack-hurt f1446 | diff 95.7% |
+| s07-getup | ok | MAME vis-s07-jack-hurt f1458 | diff 95.9% |
+| s08-walk | ok | MAME en-hutori-b f120 | diff 97.7% |
+| s08-charge | ok | video two @516s | diff 89.5% |
+| s09-walk | ok | MAME en-knifeman-a f120 | diff 97.7% |
+| s09-throw | ok | MAME en-knifeman-a f400 | diff 97.3% |
+| s10 | ok | extract ep4-area0-composite.png | diff 65.8% |
+| s11 | ok | video boss @220s | diff 82.7% |
+| s12 | ok | extract ep6-area1-composite.png | diff 93.5% |
+| s13 | ok | extract ep8-area0-dynamic-scroll2.png | diff 97.0% |
+| s20 | ok | video boss @150s | hero h 79; boss h 90 (rom 90) ratio 1.139 (rom 1.139); diff 97.3% |
+| s21 | ok | video boss @220s | boss h 71 (rom 71); diff 70.5% |
+| s22 | ok | video boss @40s | hero h 79; boss h 133 (rom 133) ratio 1.684 (rom 1.684); diff 99.1% |
+| s23 | ok | video boss @365s | hero h 79; boss h 58.5 (rom 58) ratio 0.741 (rom 0.734); diff 97.9% |
+| s24 | ok | video boss @270s | hero h 79; boss h 92.5 (rom 93) ratio 1.171 (rom 1.177); diff 96.1% |
+| s25-sable | ok | video boss @60s | hero h 79; boss h 103 (rom 103) ratio 1.304 (rom 1.304); diff 97.3% |
+| s25-engine | ok | extract ep8-area3-composite.png | diff 97.9% |
+| s26 | ok | video boss @905s | hero h 79; boss h 129.5 (rom 129) ratio 1.639 (rom 1.633); diff 98.0% |
+| s30 | ok | video two @58s | diff 96.9% |
+| s31 | ok | none | — |
+| s40-pre | ok | MAME card3-f0300-snap.png | diff 99.5% |
+| s40-card | ok | MAME card3-f0300-snap.png | diff 74.7% |
+| s40-panel | ok | MAME card2-f0020-snap.png | diff 28.5% |
+
+The earlier reviews below drove the fixes that led to the rebuild; their file names (`arcade-heroes.js`, the weapon sheet) are retired.
+
 # Fourth review — October 8, 2026 (night): measured weapon holds
 
 The user's six photos showed every long gun floating at chest height while the rear arm gripped nothing, the bazooka above the head and the knife sticking forward at chin height. This pass measured the arcade instead of estimating it. The boss-fight video's weapon readout was scanned every half second (15 armed spans), the two-player video's readouts every second (55 spans), and each armed frame was resampled to the arcade's 384 × 224 pixels. The hero's ROM record and the exact weapon-sheet sprite were then fitted to the frame by colour agreement, with mirroring searched, and Jack's RQ87 captures (native resolution) were fitted the same way.

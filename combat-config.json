@@ -23,7 +23,7 @@
       "propFoodChance": 1,
       "meleeDurability": 1.25,
       "flankChance": 0.25,
-      "flankDistance": 42,
+      "flankDistance": 31,
       "dinosaurRage": false,
       "flankRear": false
     },
@@ -45,7 +45,7 @@
       "propFoodChance": 0.8,
       "meleeDurability": 1,
       "flankChance": 0.65,
-      "flankDistance": 72,
+      "flankDistance": 53,
       "dinosaurRage": false,
       "flankRear": false
     },
@@ -67,7 +67,7 @@
       "propFoodChance": 0.45,
       "meleeDurability": 0.8,
       "flankChance": 1,
-      "flankDistance": 115,
+      "flankDistance": 85,
       "dinosaurRage": true,
       "flankRear": true
     }
@@ -80,10 +80,10 @@
       "grip": 0.35,
       "twoHanded": false,
       "shells": false,
-      "recoilPixels": 2,
+      "recoilPixels": 0,
       "ejection": [
-        -7,
-        -5
+        -5,
+        -4
       ]
     },
     "shotgun": {
@@ -94,10 +94,10 @@
       "grip": 0.68,
       "twoHanded": true,
       "shells": true,
-      "recoilPixels": 5,
+      "recoilPixels": 0,
       "ejection": [
-        -13,
-        -4
+        -10,
+        -3
       ]
     },
     "automatic": {
@@ -108,10 +108,10 @@
       "grip": 0.68,
       "twoHanded": true,
       "shells": true,
-      "recoilPixels": 1.5,
+      "recoilPixels": 0,
       "ejection": [
-        -10,
-        -5
+        -7,
+        -4
       ]
     },
     "launcher": {
@@ -121,7 +121,7 @@
       "grip": 0.14,
       "twoHanded": true,
       "shells": false,
-      "recoilPixels": 7,
+      "recoilPixels": 0,
       "ejection": [
         0,
         0
@@ -129,79 +129,15 @@
     }
   },
   "sockets": {
-    "scale": 1.35,
-    "pistolAngles": {
-      "comment": "Radians, positive = barrel down for a right-facing hero. At rest the revolver is held up beside the head with the barrel skyward (Mustapha and Jack raise the fist to the chin; Hannah and Mess hold it forward from the chest); while walking or running it hangs in the lowered hand pointing down; firing levels it.",
-      "ready": {
-        "mustapha": -1.5708,
-        "jack": -1.5708,
-        "hannah": -0.45,
-        "mess": -0.8
-      },
-      "carry": 1.05
-    },
-    "coordinates": "Frame hand offsets from feet, original sprites face left; mirror X once for facing direction.",
-    "idle": {
-      "twoHanded": "gunStand",
-      "handgun": "pistolStand",
-      "launcher": "bazookaStand",
-      "offset": [
-        0,
-        0
-      ]
-    },
-    "walk": {
-      "twoHanded": "torsoWalk",
-      "handgun": "pistolStand",
-      "launcher": "bazookaStand",
-      "legs": "legsWalk",
-      "offset": [
-        0,
-        0
-      ]
-    },
-    "run": {
-      "twoHanded": "torsoRun",
-      "handgun": "pistolStand",
-      "launcher": "bazookaStand",
-      "legs": "legsRun",
-      "offset": [
-        0,
-        0
-      ]
-    },
-    "jump": {
-      "twoHanded": "gunStand",
-      "handgun": "pistolStand",
-      "launcher": "bazookaStand",
-      "legs": "jump",
-      "offset": [
-        0,
-        0
-      ]
-    },
-    "recoil": {
-      "twoHanded": "gunFire",
-      "handgun": "pistolFire",
-      "launcher": "bazookaFire",
-      "offset": [
-        0,
-        0
-      ]
-    },
-    "recovery": {
-      "twoHanded": "gunStand",
-      "handgun": "pistolStand",
-      "launcher": "bazookaStand",
-      "offset": [
-        0,
-        0
-      ]
-    }
+    "scale": 1
   },
+  "runPersist": true,
+  "heroStun": true,
+  "bossKnockdown": true,
+  "romWalk": true,
   "fx": {
     "maxParticles": 420,
-    "gravity": 320,
+    "gravity": 237,
     "blood": {
       "count": 9,
       "knifeCount": 7,
@@ -211,8 +147,8 @@
         "#771a27"
       ],
       "speed": [
-        65,
-        170
+        48,
+        126
       ],
       "life": [
         0.28,

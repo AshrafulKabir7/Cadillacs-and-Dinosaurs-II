@@ -1,95 +1,68 @@
 # Assets and gameplay references
 
-The supplied dino directory contains CPS-1 ROM images, not the original source project. This is a newly written browser game; it does not emulate the original at runtime.
+The supplied `dino` directory contains the CPS-1 ROM images of Capcom's *Cadillacs and Dinosaurs* (1993), not its source. This is a newly written browser game: it does not emulate the original at run time, and no ROM, emulator or ROM archive is part of the project. The ROMs were only ever read; their hashes are kept in `original-rom-hashes.json`.
 
-## ROM graphics
+Since the rebuild (steps G0–G8, `work/re/design/PLAN.md`), **every sprite and stage pixel the game draws is the arcade's own**, read from the ROM, re-rendered slot-indexed and recoloured at run time through the arcade's own palette rows. The sections below say which ROM tables each shipped file comes from and how that was checked.
 
-Graphics ROMs were interleaved into a four-megabyte region and decoded into 16×16 tiles with four bitplanes. Original palettes and sprite placement were read from emulated graphics memory. The first atlas contains 194 poses/objects. A later update added **90 selected combat poses**: raiders, knife fighters, poachers, heavy enemies, raptors, a larger tyrannosaur-shaped creature, mutants, a blond heavy fighter, an orange clawed mutant and a motorcycle. Incomplete and overlapping frames were omitted from that atlas. The reference video shows that the tyrannosaur silhouette matches Fessenden's final mutated form (pink in the original); an earlier note called it Tyrog-derived, which the video does not support.
+## How the shipped art is made
 
-Rook, Cinder, Echo and Sable have original generated ready/attack sprites; Echo is recast as Fessenden's former assistant, Dr. Echo. The Chapter 3 boss, Fessenden Beast · Copy 01, uses the larger recovered creature tinted towards the original's pink. Older boss-adapted frames remain in the atlas but do not render the four human bosses. The Crown Engine is canvas artwork with a cockpit, hydraulic hammer, cannon, tracks and damage smoke. Copies of the heroes (the Mirror Gang and freed clones) reuse the decoded hero animation with a colour filter. Timing and encounters are this game's implementation.
+`node tools/re/build-game-assets.cjs all` (Node 22, the ROM set in `DINO_ROMS`, default `E:/mostafa/dino`) builds every generated file from the ROM and the research extracts in `work/re/extract/` (not committed):
 
-The earlier hero correction added **28 selected poses** in `hero-art.js` / `assets/hero-actions.png`: aiming, recoil, three running frames, a dash strike and an aerial strike for each hero. Aiming and dash art was recovered through controlled local arcade captures. Firing uses full-body aiming/recoil poses and never selects an unarmed attack animation for gunfire. Per-hero grip coordinates align the supplied gun sprites. Atlas frame metadata identifies its local capture and frame number.
+- the program ROMs `cde_23a.8f`, `cde_22a.7f`, `cde_21a.6f`, concatenated with every byte pair swapped (`work/re/dino-prg.bin`), and the graphics ROMs `cd-1m … cd-8m` interleaved into a 4 MB tile region (16 × 16 tiles, 128 bytes each: per 8-byte row the four bitplanes of pixels 0–7, then of pixels 8–15, MSB first; pen 15 is transparent);
+- the decoders in `tools/re/` (`rom.cjs`, `stage-rom.cjs`, `cps-scroll.cjs`) and the exporters in `tools/re/export/` that wrote the research dumps;
+- the build modules in `tools/re/build/` (deterministic PNG encoder, MaxRects atlas packer, 12-bit palette operations, stage composer and validator, stable JS writer).
 
-Technical references:
+Each run records the sha256 of every input and output, the Node and zlib versions and the ROM's sha1 (`f6f64930…`) in `tools/re/build/manifest.json`. `node tools/re/build-game-assets.cjs check` rebuilds everything into `work/re/build-check/` and compares **decoded pixels** and JSON with the shipped files, runs the stage gates (ARCHITECTURE §3.7) and the budgets, and refuses tracked files over 2 MB outside `assets/audio` and any `.bin` or `.zip`. `tests/assets.cjs` runs that check as the asset gate. Sprite sheets carry an FNV checksum of their indexed pixels; `sprites.js` verifies it when it decodes a sheet (`SPRITES.verified`).
 
-- [Official MAME CPS-1 driver](https://github.com/mamedev/mame/blob/master/src/mame/capcom/cps1.cpp)
-- [Official MAME video implementation](https://github.com/mamedev/mame/blob/master/src/mame/capcom/cps1_v.cpp)
-- [MAME Lua API](https://docs.mamedev.org/luascript/index.html)
-- [Archived MAME cheat metadata](https://github.com/libretro/mame2010-libretro/tree/master/metadata), used for stage selection and player health during local artwork capture.
+## Shipped files and their ROM sources
 
-Official MAME ran without sound for extraction. The supplied set lacked unused board-logic dumps and expected QSound firmware; temporary research used zero-filled placeholders for missing files. These are not authentic dumps and are neither distributed nor used by the game. No emulator or full ROM archive is included. The original ROM hash manifest is retained.
+| File | Content | ROM tables and sources |
+|---|---|---|
+| `sprite-data-heroes.js` (`ROM_HEROES`, `ARCADE_HEROES` view) | the four heroes' records, animations (frame tuples with duration, hold, event, action), weapon holds and muzzle points, weapon and effect timing, palette maps (home, mirror, freed, half, gel, flash) | frame records 0xD0CF4 (3,513 pointers) and layouts 0xD43D8 (2,516; each block's offset from the feet); hold tables from 0x122240; object palettes 0xB7A52 (32 rows of 16 RGB444 words per set; rows 0–3 Jack, Hannah, Mustapha, Mess); walk and depth speeds 0x50E4, run sets 0x5064, 0x53A2; stab boxes 0x62AE; torch flame chains 0x29CB6/0x29CF4 with offsets 0x29C26; jump tables from the live game; the driving pose (main 29) |
+| `sprite-data-fx.js` (`ROM_FX`) | weapons (ground, rotations, fast spins, empty poses, fuses), muzzle flashes, rounds, casings, sparks, POW!/TA/KA, explosions, BOOM, debris, bubbles, food, score items and ammunition, containers, the Cadillac with its wheels and driver seat | the same record and palette tables; the chapter colours are the area palette pages of 0x8E8E (keys `S<episode>A<area>`); the B. KNIFE and YOROI colours pinned to rows 29 and 488 (KI7); item records chosen per ROM food/score subtype; the Cadillac by `tools/re/export/cadillac.cjs` (draw order 0x8BDDC, bump table, wheel steering) |
+| `sprite-data-enemies.js` (`ROM_ENEMIES`) | 18 ROM types (the regular enemies with their variants, and the dinosaurs and birds) with animations, attack windows, the knife object and projectiles | records and animation sets per type; attack data 0xA2EA4 + id × 8 (damage, stun, reaction, hit-stop); rank rows 0x2C3AE; HP 0x31454; damage formula 0x6422; each variant's home palette rows plus its `+0x23` overrides (TYROG pinned to the S6A2 rows, KI13; LASH T.'s ball slot 23 to row 63, KI17); knife object 0xF0 / set 0x6FB6A; rounds and bombs 0x6FB1A, 0x5F0AC, 0x5F128; parasites 0x71408 |
+| `sprite-data-bosses.js` (`ROM_BOSSES`) | Butcher, Mack, Shivat, Morgan, Slice, Vice T., Fessenden's six-part final form, the Crown Engine and the boss projectiles, in the sequel's boss palettes | the boss records and animations (`work/re/extract/bosses/`, logged live in MAME), the throne-room capsule cells of episode 8 area 3 baked into one sprite, palettes built from ROM rows (ENEMIES §6.1) |
+| `sprite-data-ui.js` (`ROM_UI`) | the 8 × 8 and 8 × 16 fonts, the title logo, story portraits 0x00–0x0D, the chapter card frame and map, the HUD pieces | scroll1 font tiles (codes 0x0000–0x0FFF); portraits 0x8463E / 0x8461A; P1 face and names 0x16396 / 0x16426; foe faces 0x16E46, 0x179B6, 0x17A1E, 0x17A6E, 0x17A82, 0x17ABE and names 0x17D70 / 0x17D78; foe bar 0x174F2 / 0x17834 with its colour cycle 0x17892; weapon panel 0x23A24, icons 0x23AC6, ARM 0x23B52 and 0x23B62–0x23EB4; score digit tiles 0x124–0x12D; JOIN-IN tiles 0x620–0x639; the card and logo from the MAME screens `card3 f0300` and `boot f0330` |
+| `stage-data.js`, `assets/stages/` | 140 stage pages (scroll2, scroll3, priority foreground, animated cells), 18 areas, bands, camera, locks, props, intermission pictures | scroll2/scroll3 block maps 0x21580 / 0x2311E rendered through `stage-rom.cjs`; camera segments 0x21B2A; terrain classes 0x1370C (walk band = class 0 base type inside the screen clamp, KI1); rowscroll per row at camX × (32 + i) / 64 (0x23390); the stage palettes; the recipes in `tools/re/levels/ch1.json` … `ch6.json` and `pics.json` |
+| `enemy-kinds.js` | `ENEMY_KINDS` and `BOSS_DEFS`: kinds, variants, HP formula, attack choice, boss moves | hand-written on the ROM data above (ENEMIES §2, CAMPAIGN §12.4) |
+| `selection-art.js` | the hero select screen | native 384 × 224 screenshots of the original select screen, captured from the ROM set with MAME (`assets/reference/select-*.png`) |
+| `combat-config.js` | tuning | `combat-config.json` through `tools/build-config.cjs` |
 
-## Hero frames decoded from the arcade sprite tables (arcade feel update)
+## How it was checked
 
-`arcade-heroes.js` replaces the earlier load-time composites (`hero-poses.js`, removed). Its frames come directly from the original game's data in the supplied ROM set, which was only read:
-
-- The 68000 program (`cde_23a.8f`, `cde_22a.7f`, `cde_21a.6f`, byte-swapped) holds a table of 3,513 frame-record pointers at 0xD0CF4 and 2,516 layout pointers at 0xD43D8. A record lists its tiles (with a size/flip/palette attribute when flag 0x8000 is set, otherwise single 16×16 tiles) and a layout index; a layout gives each block's signed offset from the character's feet.
-- Tiles are decoded from the graphics ROMs as before. Each hero's 16-colour palette was solved by aligning a decoded record with the same frame in the previously recovered atlas.
-- Records were identified for each hero (walk, walking legs, run, running legs, jump, crouch, combo, grab, knee, throw, hurt, flung, lying, get-up, dizzy, victory, gun stances and gun-carrying torsos). Mustapha's were confirmed against the reference video; the other heroes' were chosen from their own record sets by matching layout order and pose (for example Mess's 13 gun stances 716–728 align with Mustapha's 256–268).
-- Separate shadow blocks are dropped (the game draws its own shadow). The front hand of each frame is measured from its skin colours and used to place held weapons; Mustapha's rifle-stance hand (40 px forward, 66 px up) agrees with the video measurement (about 35 and 62).
-
-Weapons are drawn from the supplied sheet at the heroes' scale. Running uses horizontal firearm grips over the original moving legs, refined against the later supplied video. Hit sparks are the sheet's starburst frames; gun hits use its “POW!” sprites.
-
-## Armed stances and items decoded on October 8, 2026
-
-A second decoding pass (the ROM set was again only read) added nine frames on a second hero sheet (`ARCADE_HEROES.sheet2`) and the item sheet `arcade-items.js`:
-
-- The tile format was re-verified against the shipped atlas (99.8 % transparency agreement): every 8-byte row of a 128-byte tile holds the four bitplanes of pixels 0–7 and then of pixels 8–15, most significant bit first; pen 15 is transparent.
-- The object palette table starts at 0xB7A52 in the byte-swapped program (32 palettes of 16 RGB444 words, one set per 0x1000 bytes). Palettes 0–3 are Jack, Hannah, Mustapha and Mess, palette 6 the weapons and palette 7 the food; the earlier atlas-derived hero palettes match it exactly.
-- Jack's real gun poses are torso records drawn over his standing or moving leg records, exactly as the arcade composes them: 93 handgun ready, 86 handgun firing (this record contains the pistol, so no separate weapon sprite is drawn for it), 95/96 two-handed ready and recoil, 91 running torso, 94 shouldered bazooka. The shouldered bazooka records for the others are 264 (Mustapha), 726 (Mess) and 1565 (Hannah); the rear hand beside the head is the grip point.
-- Food, score items and ammunition come from records 2646–2694, 2191, 2723, 2775 and 2130, coloured with the ROM's own object palettes; their recovery values follow the arcade (barbecue 100 %, steak 80 %, lobster and sushi 64 %, hamburger/pizza/hot dog 48 %, salad, cake, fries, pudding and parfait 32 %, donut, coffee, croissant, gum and chocolate 16 %). A meal eaten at full health pays its points instead.
+- `work/re/verify-extract/{heroes,enemies,bosses,stages,mechanics}/` hold the independent checks of every extraction (`VERIFY.json`, `heroes/RECHECK.json`): records re-rendered against MAME snapshots, live palettes, damage records, the band depths of `stages/depth-check.json` and the scroll3 extension of `stages/s3-beyond.json`. The issues they found are absorbed as PLAN §2 KI1–KI24.
+- `tests/fixtures/rom-heroes-golden.json` (about 400 sampled hero frames) is compared with `HeroRig.parts()` by `tests/rom-heroes.cjs`.
+- `tests/fixtures/hud-cabinet.json`, made by `tools/re/hud-cabinet.cjs` from the MAME scroll1 dumps of `work/re/runs/stg-ep1-walk`, is the cabinet HUD the framing suite compares with (every element within 0 px).
+- `tools/re/compare-frames.cjs` sets up 23 scenes and compares them with MAME snapshots and frames of the two reference videos (VALIDATION.md).
+- The stage review sheets (`node tools/re/build-game-assets.cjs review ch<N>`, `work/re/levels/`) were shown to the user before the chapters were un-stubbed.
 
 ## Arcade sound effects
 
-The user's `Arcade - Cadillacs & Dinosaurs - Miscellaneous - Sound Effects.zip` contains 36 unlabelled WAV files. They were extracted to a scratch folder (the zip is unchanged) and labelled by cross-correlating each against the reference video's audio; [VIDEO-REVIEW.md](VIDEO-REVIEW.md) lists the matches. Eight are shipped as small mono MP3s in `assets/sfx/`: punch (0064), kick (007E), slam (0072), pistol (0076), rifle (0068), uzi (0085), explosion (0066) and machine gun (005D). Other effects remain synthesized.
+The user's `Arcade - Cadillacs & Dinosaurs - Miscellaneous - Sound Effects.zip` contains 36 unlabelled WAV files. They were extracted to a scratch folder (the zip is unchanged) and labelled by cross-correlating each against the reference video's audio; [VIDEO-REVIEW.md](VIDEO-REVIEW.md) lists the matches. Eight are shipped as small mono MP3s in `assets/sfx/`: punch (0064), kick (007E), slam (0072), pistol (0076), rifle (0068), uzi (0085), explosion (0066) and machine gun (005D). Other effects are synthesized.
 
-## Corrected recovered frame lists
+## Supplied music
 
-- The gunner's attack list contained frame 73 (a triceratops) and frame 75 (two overlapping gunners), so armed poachers flashed into a dinosaur when firing. It now uses an aiming frame with a muzzle flash.
-- The orange mutant's knockdown frame was an unrelated soldier; it now uses its own crouch.
-- The chopper sprite faces the opposite way to every other recovered sprite, so it is mirrored to match its rider; riders are drawn above the saddle.
+The 28 supplied MP3 files contain **27 unique recordings** (both Four Heroes files have identical SHA-256 hashes). `assets/audio/manifest.json` records source names, duplicates, input hashes, output sizes and durations. Delivery copies use 160 kbps MP3; the originals were only read. Only the current cue loads. The Sound Room contains every distinct track.
 
-## Supplied weapons and music
+## Movement and combat references
 
-`assets/reference/weapons.png` preserves the supplied weapon sheet. Runtime rectangles select weapons, muzzle flashes and explosions. Canvas color-keying removes blue; horizontal poses and facing direction are selected individually.
+The user's local all-boss-fights video and the two-player video are the main behavioural references ([arcade-reference timestamps in VIDEO-REVIEW.md](VIDEO-REVIEW.md)); MAME runs of the ROM set gave the rest (frame timing, holds, damage, speeds). The MP4s remain unchanged local inputs and are not redistributed.
 
-The 28 MP3 files contain **27 unique recordings**. Both Four Heroes files have identical SHA-256 hashes. `assets/audio/manifest.json` records source names, duplicates, input hashes, output sizes and durations. Delivery copies use 160 kbps MP3; originals were only read. Audio totals approximately 45.7 MB. Only the current cue loads, rather than the entire collection at startup.
+- [Goh_Billy's GameFAQs move list, supplied by the user](https://gamefaqs.gamespot.com/arcade/575551-cadillacs-and-dinosaurs/faqs/53882): indexed excerpts only; the full page blocked direct retrieval.
+- [ninjasrok's GameFAQs walkthrough](https://gamefaqs.gamespot.com/arcade/575551-cadillacs-and-dinosaurs/faqs/45433): the four running attacks and enemy attack patterns.
+- [RQ87 gameplay](https://rq87.flyingomelette.com/RQ/CAD/game.html), [weapon](https://rq87.flyingomelette.com/RQ/CAD/wep.html) and [character](https://rq87.flyingomelette.com/RQ/CAD/char.html) references: running, pickups, weapon drops, calming dinosaurs, Cadillac contact attacks, firearm differences, specials.
+- The supplied Namu enemy-list URL could not be retrieved; no claim of its roster is made.
 
-Music is the supplied soundtrack. Hit, slam, gun and explosion effects use the supplied arcade samples listed above; other effects are synthesized. Playback starts after user interaction. The Sound Room contains all distinct supplied tracks.
+Intentional differences from the arcade: an empty firearm is hurled at the enemy (the user asked for it; the arcade drops it), the sequel's weapon gameplay values (ammunition, damage, pierce) are kept, and cooperative grabs and team moves are outside this single-player game.
 
-## Background artwork
-
-Sheets contributed by **shunninghuang** at [Sprite Database](https://spritedatabase.net/game/597) remain in `assets/reference/`, including original credit strips. These are retained research assets. `world-art.js` and these backgrounds are not loaded by `index.html` and are excluded from the Vercel upload. The active six environments and four human boss designs were generated for this sequel. Exact prompts, files and the built-in generation method are recorded in [ART-DIRECTION.md](ART-DIRECTION.md). Mission objects, story props (cold pods, egg racks, vats, clone tanks), hazards, the Cadillac and the final machine are drawn in code.
-
-Source pages: [Episode 1](https://spritedatabase.net/file/20058), [Episode 2](https://spritedatabase.net/file/20059), [Episode 4](https://spritedatabase.net/file/20061), [Episode 5](https://spritedatabase.net/file/20062), [Episode 6](https://spritedatabase.net/file/20063), [Episode 7](https://spritedatabase.net/file/20064), [Episode 8](https://spritedatabase.net/file/20065).
-
-## Movement and combat
-
-The user's local all-boss-fights video is the main behavioural reference. [VIDEO-REVIEW.md](VIDEO-REVIEW.md) records the sampled portions, observations, reproduced bugs and fixes. The MP4 remains an unchanged local input and is not redistributed.
-
-- [Goh_Billy's GameFAQs move list, supplied by the user](https://gamefaqs.gamespot.com/arcade/575551-cadillacs-and-dinosaurs/faqs/53882): indexed excerpts were accessible, though the full page blocked direct retrieval. These establish different character actions and attack/jump inputs; they are references, not this sequel's script.
-- [ninjasrok's GameFAQs walkthrough](https://gamefaqs.gamespot.com/arcade/575551-cadillacs-and-dinosaurs/faqs/45433): indexed material corroborates the four distinct running attacks and enemy attack patterns.
-- [The supplied Namu enemy-list URL](https://en.namu.wiki/w/%EC%BA%90%EB%94%9C%EB%9D%BD%26%EB%8B%A4%EC%9D%B4%EB%85%B8%EC%86%8C%EC%96%B4/%EC%A0%81%EA%B5%B0%20%EC%9D%BC%EB%9E%8C) could not be retrieved. Its complete contents were not reviewed; no claim of exact Namu roster coverage is made.
-
-- [RQ87 gameplay reference](https://rq87.flyingomelette.com/RQ/CAD/game.html): running, pickups, weapon drops, calming dinosaurs and Cadillac contact attacks.
-- [RQ87 weapon reference](https://rq87.flyingomelette.com/RQ/CAD/wep.html): firearm differences, ammunition, explosives, knife throwing and rod breakage.
-- [RQ87 character reference](https://rq87.flyingomelette.com/RQ/CAD/char.html): movement, dash attacks and specials.
-
-These informed selected mechanics. The new engine does not reproduce every original move, animation, AI rule or damage value. Cooperative grabs and team moves are outside this single-player version.
-
-An intentional input difference: an empty firearm stays in the hero's hands and J produces no melee attack. E discards/swaps it. This addresses the requested gun-versus-punch behavior; original empty-rifle clubbing is not active in this version.
+Technical references: the [MAME CPS-1 driver](https://github.com/mamedev/mame/blob/master/src/mame/capcom/cps1.cpp) and [video implementation](https://github.com/mamedev/mame/blob/master/src/mame/capcom/cps1_v.cpp), the [MAME Lua API](https://docs.mamedev.org/luascript/index.html). MAME ran headless without sound for extraction, from a private rompath outside the repository; missing board-logic and QSound files were zero-filled placeholders for research only and are neither distributed nor used by the game.
 
 ## Story continuity
 
-The opening follows the original ending: Fessenden injects himself with his serum, his laboratory collapses, Jack helps Hannah escape, and the Cadillac brings the four friends home. The ending account was cross-checked against the [arcade game's plot summary](https://en.wikipedia.org/wiki/Cadillacs_and_Dinosaurs_(video_game)) and against the final fight in the reference video. The sequel builds on three consequences of that night — the surviving archive, the blood samples taken in the lab and Fessenden's post-serum sample — and on the poachers' hunting grounds and the Cadillac drive. Dr. Echo, Marshal Sable, the numbered clone lots, the Mirror Gang, the command signal, the Crown dam and all dialogue are new fan fiction. Chapter transitions use text panels; in-chapter story is delivered as radio dialogue.
-
-The Cadillac drawing follows the driving section of the reference video (about 03:28–03:46): a long steel-blue convertible with tailfins, a rolled cream top, chrome side trim, a skirted rear wheel and the driver visible behind a wraparound windscreen.
+The sequel starts from the original ending as the arcade played it: Fessenden injects himself with his serum and dies a beast in the throne room, Jack goes back on foot for Hannah in the escape tunnel, Mustapha and Mess walk out across the desert and the Cadillac picks them up at sunset. The account was cross-checked against the [arcade game's plot summary](https://en.wikipedia.org/wiki/Cadillacs_and_Dinosaurs_(video_game)), the final fight in the reference video and the ROM's own ending script (`work/re/extract/story/`). Dr. Echo, Marshal Sable, the numbered lots, the Mirror Gang, the command signal, the Crown dam and all dialogue are new fan fiction ([STORY.md](STORY.md)).
 
 Original game, artwork and music: Capcom, 1993. Characters and setting derive from Mark Schultz's Xenozoic Tales. This unofficial fan project is unaffiliated with the original creators. No ownership of original assets is asserted.
 
+## Retired in G8
 
-## October 5 specification update
-
-`assets/reference/select-{jack,hannah,mustapha,mess}.png` are unmodified native 384×224 screenshots of the original selection screen, captured from the user-supplied ROM set with MAME. `selection-art.js` embeds them for offline play. Runtime canvas crops show the original portraits and stat panels; the free-play interface replaces the coin timer and unused join-in controls. No emulator or ROM is shipped in this project.
-
-Five new scenery PNGs in `assets/original/` were generated with the built-in image-generation tool and copied unmodified. `docs/ART-DIRECTION.md` records each exact prompt and output path. `environment-art.js` lists the local lossless WebP runtime copies in `assets/scenery/`; the runtime copies have identical decoded pixels to the original PNGs. The reference MP4 remains a local research file ignored by Git, deployment and the download package.
+Before the rebuild the game drew from hand-assembled and generated art: an atlas of recovered poses and generated boss sprites (`assets.js`, `combat-art.js`, `hero-art.js`, `sequel-art.js`), the supplied weapon sheet colour-keyed at load (`weapon-art.js`), the first hero and item decodes (`arcade-heroes.js`, `arcade-items.js`), five generated scenery images (`environment-art.js`, `assets/scenery/`, the originals in `assets/original/`) and the earlier background sheets (`world-art.js`). G8 deleted them; git history keeps them. The background sheets by **shunninghuang** ([Sprite Database](https://spritedatabase.net/game/597)) remain in `assets/reference/` as research material with their credit strips; they are not loaded by the game and are excluded from deployment. The generation record of the retired scenery stays in [docs/ART-DIRECTION.md](docs/ART-DIRECTION.md) for history.

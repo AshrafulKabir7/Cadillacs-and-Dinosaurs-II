@@ -1,0 +1,225 @@
+{
+ "$doc": "The cabinet top HUD (PLAN §7 G7, §8.3 s30): element boxes in arcade px [x0, y0, x1, y1] measured by tools/re/hud-cabinet.cjs from the live scroll1 dumps of the MAME run stg-ep1-walk (f16: JOIN-IN in both slots and the foe row; f72: INSERT COIN). tests/lib/arcade.cjs HUD_ELEMENTS gives the windows and the compared edges; tests/framing.cjs (G7) and tools/re/compare-frames.cjs (s30) compare the game within 2 px.",
+ "run": "stg-ep1-walk",
+ "frames": {
+  "join": 16,
+  "insert": 72
+ },
+ "elements": {
+  "face": {
+   "win": [
+    0,
+    0,
+    24,
+    24
+   ],
+   "edges": "ltrb"
+  },
+  "lives": {
+   "win": [
+    24,
+    0,
+    24,
+    8
+   ],
+   "edges": "ltb"
+  },
+  "score": {
+   "win": [
+    48,
+    0,
+    80,
+    8
+   ],
+   "edges": "trb"
+  },
+  "name": {
+   "win": [
+    24,
+    8,
+    104,
+    8
+   ],
+   "edges": "ltrb"
+  },
+  "bar": {
+   "win": [
+    24,
+    16,
+    104,
+    8
+   ],
+   "edges": "ltrb"
+  },
+  "foeFace": {
+   "win": [
+    0,
+    24,
+    24,
+    16
+   ],
+   "edges": "ltrb"
+  },
+  "foeName": {
+   "win": [
+    24,
+    24,
+    104,
+    8
+   ],
+   "edges": "ltrb"
+  },
+  "foeBar": {
+   "win": [
+    24,
+    32,
+    104,
+    8
+   ],
+   "edges": "ltb"
+  },
+  "slot2": {
+   "win": [
+    128,
+    16,
+    128,
+    16
+   ],
+   "edges": "ltrb"
+  },
+  "slot3": {
+   "win": [
+    256,
+    16,
+    128,
+    16
+   ],
+   "edges": "ltrb"
+  }
+ },
+ "boxes": {
+  "join": {
+   "face": [
+    0,
+    0,
+    23,
+    23
+   ],
+   "lives": [
+    25,
+    0,
+    37,
+    7
+   ],
+   "score": [
+    120,
+    0,
+    127,
+    7
+   ],
+   "name": [
+    24,
+    8,
+    71,
+    15
+   ],
+   "bar": [
+    25,
+    16,
+    126,
+    23
+   ],
+   "foeFace": [
+    0,
+    24,
+    23,
+    39
+   ],
+   "foeName": [
+    24,
+    24,
+    71,
+    31
+   ],
+   "foeBar": [
+    25,
+    32,
+    46,
+    39
+   ],
+   "slot2": [
+    152,
+    18,
+    229,
+    30
+   ],
+   "slot3": [
+    280,
+    18,
+    357,
+    30
+   ]
+  },
+  "insert": {
+   "face": [
+    0,
+    0,
+    23,
+    23
+   ],
+   "lives": [
+    25,
+    0,
+    37,
+    7
+   ],
+   "score": [
+    120,
+    0,
+    127,
+    7
+   ],
+   "name": [
+    24,
+    8,
+    71,
+    15
+   ],
+   "bar": [
+    25,
+    16,
+    126,
+    23
+   ],
+   "foeFace": null,
+   "foeName": null,
+   "foeBar": null,
+   "slot2": [
+    137,
+    18,
+    245,
+    30
+   ],
+   "slot3": [
+    265,
+    18,
+    373,
+    30
+   ]
+  }
+ },
+ "shows": {
+  "join": {
+   "lives": "=1",
+   "score": "0",
+   "name": "JACK.T",
+   "foeName": "GNEISS"
+  },
+  "insert": {
+   "lives": "=1",
+   "score": "0",
+   "name": "JACK.T",
+   "foeName": ""
+  }
+ }
+}

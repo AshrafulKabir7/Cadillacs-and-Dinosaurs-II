@@ -1,6 +1,6 @@
 # Combat implementation and tuning
 
-The executable configuration is `combat-config.json`. Run `python tools/build-config.py` after editing it; this regenerates `combat-config.js` for offline `file://` play. The browser regression checks compare both versions. No network fetch or production build is required.
+The executable configuration is `combat-config.json`. Run `node tools/build-config.cjs` after editing it; this regenerates `combat-config.js` for offline `file://` play. The browser regression checks compare both versions. No network fetch or production build is required.
 
 ## Firearm state machine (Prompt A)
 

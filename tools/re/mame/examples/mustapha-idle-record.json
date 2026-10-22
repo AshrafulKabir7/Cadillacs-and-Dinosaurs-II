@@ -1,0 +1,7 @@
+{
+  "name": "mustapha-idle-record",
+  "frames": 130,
+  "loadState": "stage1-mustapha",
+  "dump": { "from": 115, "to": 125, "obj": true, "cpsA": true, "palette": true },
+  "snapshots": [120]
+}

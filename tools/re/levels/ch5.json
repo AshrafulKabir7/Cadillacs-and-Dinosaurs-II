@@ -1,0 +1,710 @@
+{
+  "id": "ch5",
+  "title": "THE OBSERVATORY",
+  "objPage": "S7A1",
+  "preset": "coldlab",
+  "notes": [
+    "CAMPAIGN.md §9.1 / §12.2 '5-1'..'5-6'; areas a0 = S1 (outside, night), a1 = S2-S3, a2 = S4-S6.",
+    "KI1: E7a2 336-448 is a mesh door and a ramp (no floor at 320-368), so the copied stacks are E7a2 448-960 (a 96-px lane) in 5-2 and 448-960 flip in 5-6.",
+    "The hero idle frames behind the tank glass of 5-4 need hero records drawn into the stage page; they are left for the G6 overlay (gap noted in the WP-E report). The E7a3 monitors stay in their ROM state (waveform cells were not identified as dynamic states), never a face: E7a3 1264+ (the monitor wall of the Fessenden reveal) is not used.",
+    "Section casts (CAMPAIGN §4.4 'cast', merged over the chapter pool): lighter A/BOMB/KNIFE variants where the ROM-affine HP budget of the chapter's waves exceeded ENEMIES §2.6 by more than 15% (tests/campaign.cjs (8)); ratio now 1.137.",
+    "5-4..5-6 re-cut so that joins are mirror joins or sit under a vault post: 5-4 = E8a0 592-1104 (tanks 05-08, all four in the hall since G6 verify r2; never mirrored: a mirrored tank row shows the plate 08 as '80') and E7a3 0-512 flip; 5-5 = E7a3 0-512 and its mirror; 5-6 = E8a0 864-1120, E7a2 448-960 flip, E4a2 512-768 and E4a2 640-768 flip.",
+    "Seams (CAMPAIGN §4.1 join chunks): every join that is not a mirror join is covered by a vault post, the chained steel post of the E7a2 archive door (E7a2 400-432, palette row 21 lifted: full height, foreground).",
+    "Far layer: one per section; only E5a0, E4a2 and E8a0 have a scroll3 here (5-1 E5a0 night, 5-2 E4a2, 5-4 and 5-6 E8a0); the E7a2 and E7a3 interiors are opaque above the floor.",
+    "The coldlab preset washes the interiors out, so a1/a2 add saturation x1.25, lightness x0.82."
+  ],
+  "areas": [
+    {
+      "id": "a0",
+      "w": 1344,
+      "h": 224,
+      "bg": "auto",
+      "preset": "night",
+      "ops": [
+        {
+          "op": "tint",
+          "rgb": "#2a3a6a",
+          "amount": 0.15
+        }
+      ],
+      "s2": [
+        {
+          "slice": {
+            "src": "E5a0",
+            "x": [
+              1696,
+              2208
+            ],
+            "h": [
+              528,
+              752
+            ]
+          },
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E5a0",
+            "x": [
+              1696,
+              2208
+            ],
+            "h": [
+              528,
+              752
+            ]
+          },
+          "at": [
+            512,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E5a0",
+            "x": [
+              1696,
+              2016
+            ],
+            "h": [
+              528,
+              752
+            ]
+          },
+          "at": [
+            1024,
+            0
+          ]
+        }
+      ],
+      "s3": "auto",
+      "sections": [
+        {
+          "id": "5-1",
+          "name": "THE CLIFF ROAD",
+          "x0": 0,
+          "len": 1344,
+          "cap": "THE CLIFF ROAD",
+          "locks": [
+            640,
+            960
+          ],
+          "bossLock": null,
+          "set": [
+            "zeke"
+          ],
+          "scenery": [
+            "pteranodon-bg"
+          ],
+          "cast": {
+            "gunner": [
+              "bomber",
+              "poacherJ"
+            ]
+          },
+          "props": [
+            {
+              "kind": "crate",
+              "x": 222
+            },
+            {
+              "kind": "barrel",
+              "x": 607
+            },
+            {
+              "kind": "barrel",
+              "x": 992
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a1",
+      "w": 2048,
+      "h": 224,
+      "bg": "auto",
+      "s2": [
+        {
+          "slice": {
+            "src": "E4a2",
+            "x": [
+              512,
+              768
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E4a2",
+            "x": [
+              512,
+              768
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            256,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E7a2",
+            "x": [
+              448,
+              960
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            512,
+            0
+          ],
+          "step": true
+        },
+        {
+          "slice": {
+            "src": "E7a2",
+            "x": [
+              1360,
+              1872
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1024,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E7a2",
+            "x": [
+              1360,
+              1872
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1536,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "patch": {
+            "src": "E7a2",
+            "x": [
+              400,
+              432
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              21
+            ]
+          },
+          "at": [
+            496,
+            0
+          ],
+          "join": true,
+          "note": "vault post over the E4a2 | E7a2 join"
+        },
+        {
+          "patch": {
+            "src": "E7a2",
+            "x": [
+              400,
+              432
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              21
+            ]
+          },
+          "at": [
+            1008,
+            0
+          ],
+          "join": true,
+          "note": "vault post over the section join 5-2 | 5-3"
+        }
+      ],
+      "s3": "auto",
+      "sections": [
+        {
+          "id": "5-2",
+          "name": "THE INSTRUMENT FLOOR",
+          "x0": 0,
+          "len": 1024,
+          "cap": "THE COPIED VAULT",
+          "locks": [
+            192,
+            640
+          ],
+          "bossLock": null,
+          "props": [
+            {
+              "kind": "crate",
+              "x": 193
+            },
+            {
+              "kind": "barrel",
+              "x": 578
+            },
+            {
+              "kind": "tuner",
+              "name": "CONTROL CHANNEL A",
+              "x": 420
+            }
+          ],
+          "cast": {
+            "knifer": [
+              "knife",
+              "blade"
+            ]
+          }
+        },
+        {
+          "id": "5-3",
+          "name": "THE COPIED ARCHIVE",
+          "x0": 1024,
+          "len": 1024,
+          "locks": [
+            1216,
+            1664
+          ],
+          "bossLock": null,
+          "note": "elite MIRROR TEST; fg book piles (priority pens)",
+          "cast": {
+            "gunner": [
+              "bomber",
+              "poacherJ"
+            ],
+            "knifer": [
+              "blade",
+              "knife"
+            ]
+          },
+          "props": [
+            {
+              "kind": "barrel",
+              "x": 193
+            },
+            {
+              "kind": "crate",
+              "x": 578
+            }
+          ]
+        }
+      ],
+      "ops": [
+        {
+          "op": "hsl",
+          "h": 0,
+          "s": 1.25,
+          "l": 0.82
+        }
+      ]
+    },
+    {
+      "id": "a2",
+      "w": 3200,
+      "h": 224,
+      "bg": "auto",
+      "s2": [
+        {
+          "slice": {
+            "src": "E8a0",
+            "x": [
+              592,
+              1104
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            0,
+            0
+          ],
+          "note": "tanks 05-08 in their ROM state (never mirrored: the plates would read backwards); 592-1104 (G6 verify r2 #3) so tank 05 is in the hall too: its glass from x 0, tank 08 to the vault post at 496, all four hero copies in one hall; ch4 uses E8a0 0-544 only"
+        },
+        {
+          "slice": {
+            "src": "E7a3",
+            "x": [
+              0,
+              512
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            512,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E7a3",
+            "x": [
+              0,
+              512
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1024,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E7a3",
+            "x": [
+              0,
+              512
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1536,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E8a0",
+            "x": [
+              864,
+              1120
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            2048,
+            0
+          ],
+          "note": "864-1120 (G6 verify r2 #3): inside the vat hall’s 592-1104 plus 16 columns, so E8a0 stays under the 60 % originality gate; tanks 07 and 08 again, 08 whole before the vault post at 2288"
+        },
+        {
+          "slice": {
+            "src": "E7a2",
+            "x": [
+              448,
+              960
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            2304,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E4a2",
+            "x": [
+              512,
+              768
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            2816,
+            0
+          ],
+          "step": true
+        },
+        {
+          "slice": {
+            "src": "E4a2",
+            "x": [
+              640,
+              768
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            3072,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "patch": {
+            "src": "E7a2",
+            "x": [
+              400,
+              432
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              21
+            ]
+          },
+          "at": [
+            496,
+            0
+          ],
+          "join": true,
+          "note": "vault post over the E8a0 | E7a3 join"
+        },
+        {
+          "patch": {
+            "src": "E7a2",
+            "x": [
+              400,
+              432
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              21
+            ]
+          },
+          "at": [
+            2032,
+            0
+          ],
+          "join": true,
+          "note": "vault post over the section join 5-5 | 5-6"
+        },
+        {
+          "patch": {
+            "src": "E7a2",
+            "x": [
+              400,
+              432
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              21
+            ]
+          },
+          "at": [
+            2288,
+            0
+          ],
+          "join": true,
+          "note": "vault post over the E8a0 | E7a2 join"
+        },
+        {
+          "patch": {
+            "src": "E7a2",
+            "x": [
+              400,
+              432
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              21
+            ]
+          },
+          "at": [
+            2800,
+            0
+          ],
+          "join": true,
+          "note": "vault post over the E7a2 | E4a2 join (the boss lock edge)"
+        }
+      ],
+      "s3": "auto",
+      "sections": [
+        {
+          "id": "5-4",
+          "name": "THE VAT HALL",
+          "x0": 0,
+          "len": 1024,
+          "cap": "THE VAT HALL",
+          "locks": [
+            192,
+            640
+          ],
+          "bossLock": null,
+          "props": [
+            {
+              "kind": "barrel",
+              "x": 193
+            },
+            {
+              "kind": "barrel",
+              "x": 578
+            },
+            {
+              "kind": "tuner",
+              "name": "CONTROL CHANNEL B",
+              "x": 420
+            }
+          ],
+          "overlay": "heroTanks (G6): hero idle frames behind the tank glass, plates TENREC / DUNDEE / CAIRO / O’BRADOVICH",
+          "cast": {
+            "gunner": [
+              "poacherJ",
+              "bomber"
+            ],
+            "knifer": [
+              "blade",
+              "knife"
+            ]
+          }
+        },
+        {
+          "id": "5-5",
+          "name": "THE BROADCAST ROOM",
+          "x0": 1024,
+          "len": 1024,
+          "locks": [
+            1216,
+            1664
+          ],
+          "bossLock": null,
+          "props": [
+            {
+              "kind": "crate",
+              "x": 193
+            },
+            {
+              "kind": "barrel",
+              "x": 578
+            },
+            {
+              "kind": "tuner",
+              "name": "CONTROL CHANNEL C",
+              "x": 860
+            }
+          ],
+          "cast": {
+            "gunner": [
+              "bomber",
+              "poacherJ"
+            ]
+          }
+        },
+        {
+          "id": "5-6",
+          "name": "THE LENS HALL",
+          "x0": 2048,
+          "len": 1152,
+          "locks": [
+            2240
+          ],
+          "bossLock": 2816,
+          "props": [
+            {
+              "kind": "barrel",
+              "x": 193
+            },
+            {
+              "kind": "crate",
+              "x": 578
+            },
+            {
+              "kind": "barrel",
+              "x": 963
+            },
+            {
+              "kind": "vat-vent",
+              "x": 840
+            },
+            {
+              "kind": "vat-vent",
+              "x": 960
+            },
+            {
+              "kind": "vat-vent",
+              "x": 1080
+            }
+          ],
+          "note": "boss lock 2816-3200 = E4a2 512-768 + 640-768 flip (a mirror join); no E7a3/E8a0 column in it; the Slice window E4a2 1136+ is unused",
+          "cast": {
+            "gunner": [
+              "bomber",
+              "poacherJ"
+            ],
+            "knifer": [
+              "blade",
+              "knife"
+            ]
+          }
+        }
+      ],
+      "ops": [
+        {
+          "op": "hsl",
+          "h": 0,
+          "s": 1.25,
+          "l": 0.82
+        }
+      ]
+    }
+  ]
+}

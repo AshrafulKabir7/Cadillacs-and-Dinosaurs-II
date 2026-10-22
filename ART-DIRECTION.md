@@ -1,31 +1,44 @@
-# Art direction and generation record
+# Art direction
 
-The four playable heroes and regular enemy atlases were retained unchanged in this update. The new environments and four human stage bosses use original generated pixel art. Thornmaw uses the existing dinosaur artwork; the Iron Convoy and Crown Engine remain canvas drawings.
+Since the rebuild on the 1993 ROM data (steps G0–G8), the sequel draws only the arcade's own art. Nothing on screen is generated imagery: the heroes, enemies, bosses, weapons, items, effects, the Cadillac, the stages, the fonts and the HUD are read from the ROM and recomposed. What is new is the arrangement (stage layouts, palettes, story), never the drawing. The rules below keep it looking like the cabinet and keep it a sequel rather than a replay.
 
-## Fessenden's Legacy additions
+## Framing
 
-No new image files were generated for this update. New visuals are drawn in code or derived at load time from the retained atlases:
+- The view is the cabinet's 384 × 224 screen. One world unit is one arcade pixel; the canvas is 768 × 448 and every pass draws through one 2× transform, so sprites and stage pixels are exactly 2 × 2 canvas pixels.
+- The picture is shown at the arcade monitor's 4:3 by default; the Sound Room switches to square pixels (12:7). The switch is CSS only.
+- Sprites are drawn at one arcade pixel per art pixel, feet on their ROM origin, with no smoothing, no CSS filters and no recolouring by pixel reads: every colour change is a palette map over slot-indexed sheets (`sprites.js`), the way the hardware reloads its palette slots.
+- The HUD, the boss cards, the chapter cards, the intermission panels and the stage-clear tally use the ROM fonts at the cabinet's coordinates; the top bar matches a cabinet frame within 0 px per element.
+- Fades are 16 brightness steps, flashes additive rects; the screen pass (HUD) never shakes, because the cabinet's scroll1 HUD never moves.
 
-- **Cadillac:** the arcade's steel-blue finned convertible (rolled cream top, chrome spear and bumpers, skirted rear wheel, whitewall tires, wraparound windscreen) with the chosen hero at the wheel, a parked version for on-foot sections and boost flames.
-- **Story props:** Fessenden-sealed cold pods with sleeping copies, egg racks, unfinished vats, clone tanks holding tinted copies of the four heroes and violet command pylons.
-- **Copies of the heroes:** recovered hero animation with a hue-inverted violet-glow filter for hostile clones and a gold glow for freed clones. Beaten copies dissolve into green gel.
-- **Hero frames:** decoded from the arcade ROM sprite tables into `arcade-heroes.js` (not generated), including the original gun stances and gun-carrying torsos; see [SOURCE-NOTES.md](SOURCE-NOTES.md).
-- **Recast boss art:** the generated Echo sprite is now Dr. Echo, Fessenden's former assistant; the large recovered tyrannosaur creature is tinted pink as the copy of Fessenden's final form.
+## Stage palettes
 
-## Delivered assets
+Stage pages are composed from the arcade's tiles and recoloured with palette operations on the 12-bit palette words, never on pixels; results are quantised back to 4 bits per channel, so they stay in the arcade's colour space. The operations are `borrow` (a row from another stage or area), `hsl`, `tint`, and the presets `night`, `fire`, `flood`, `lab` and `ruin` (`tools/re/build/palettes.cjs`; ARCHITECTURE §3.4). The presets are tuned by eye against the videos; they are not ROM facts.
 
-- `assets/original/last-eden-environments.png`: 1536 × 1024, six environments in a 2 × 3 grid.
-- `assets/original/last-eden-bosses.png`: 1536 × 1024 RGBA, ready and attack poses for Rook, Cinder, Echo and Sable.
-- `sequel-art.js`: embedded copies for offline file loading.
-- `sequel-render.js`: scenery crops, parallax, rain/particles, mirrored floor repeats, transparent boss extraction and animation.
+## New villains from old bodies
 
-Method: built-in image generation, two new-image calls. Environment transparency was false; boss transparency was true. No API-key generation was used. Both outputs were inspected in the game. These are limited two-pose boss sprites with motion added in code, not full original-arcade animation sets.
+A sequel villain is an original body with a new palette, the way the arcade itself made Walther from Vice T.'s body. A boss palette is accepted only when (ENEMIES §6.1):
 
-## Environment prompt
+1. every colour comes from a ROM palette row (`tools/re/build/palette-pick.cjs` lists the rows whose ramp fits a slot);
+2. the new clothing slots differ from every original palette of that body in at least 6 of 16 pens;
+3. skin, outline and eye pens are unchanged.
 
-Use case: stylized-concept. Asset type: a single production environment atlas for an ORIGINAL arcade side-scrolling beat-em-up sequel called Last Eden. Make ONE landscape image, exact TWO columns by THREE rows of six equal rectangular environment panels, edge to edge with no margins, gutters, borders, text, UI, people or vehicles. This is a matched set of 1990s high-end hand-pixelled arcade backgrounds, highly detailed crisp pixel art with deliberate clusters and limited colors, NOT photorealistic, NOT smooth concept painting. Each panel is a wide side-on environment at a consistent camera height: upper 65% is scenery, bottom 35% is a broad clear horizontal walkable floor for a belt-scrolling brawler. Straight horizon; ground comes toward viewer slightly but no vanishing-point road. Original architecture, never recreate levels from an existing game. Panel order left-to-right then top-to-bottom: (1) STORM QUAY, a reclaimed coastal harbor at rainy blue dusk, white lighthouse, suspended orange rescue buoys, cables, radio hut, wet slate-blue quay floor; (2) SKYWAY RELAY, an elevated concrete causeway over a flooded city under a peach storm-break sunset, broken solar antenna arrays and amber direction lights, broad empty asphalt at bottom; (3) THE LIVING PASSAGE, giant tree roots making a refuge passage over a turquoise river in a lush emerald prehistoric wetland, fern canopies, wood boardwalk and moss earth flat floor, luminous insects; (4) THE PRESSWORKS, a water-pump fabrication workshop, huge copper pipes and pistons, fiery orange furnace behind industrial teal machines, broad riveted dark floor; (5) THE TIDE ARCHIVE, an old cylindrical reservoir radio control station in rainy indigo night, warm lit round windows, blue turbine housings and tall antennas, cool grey promenade floor; (6) CROWN BARRIER, a vast original flood-control dam at golden sunrise, terraced sluice towers, falling turquoise water and hydro-mechanical gates, broad ochre steel maintenance walkway floor. Each setting should feel inhabited by a recovering post-apocalyptic civilization, dinosaur traces subtly present, strong readable silhouettes and foreground/background separation. All six panels equal dimensions, aligned grid. Important: no labels, lettering, watermark, protagonist, monsters, HUD or game screenshot; just the six original landscape backgrounds.
+The contact sheet `work/re/pack/boss-palettes.png` shows each original next to its new palette, for the user to judge. A copy that keeps its own name (LOT 07 · Heavy, LOT 00 · Fessenden) keeps its home colours.
 
-## Boss prompt
+## Originality gates (the sequel rule)
 
-Use case: stylized-concept. Asset type: ONE transparent boss character sprite atlas for an original arcade beat-em-up named Last Eden. Create a crisp deliberate 1990s hand-pixelled arcade sprite sheet, bold dark outlines, compact pixel clusters, rich 16-bit shading, NOT smooth illustration. Exact 4 columns by 2 rows, EIGHT separate full-body human sprites on true transparent background, equal cells, wide 3:2 sheet. All feet aligned in each row, generous clear space around every sprite, no overlaps, no shadows, no text, no tile dividers. Four ORIGINAL villains face LEFT with a three-quarter view, NOT characters from existing games. Column 1 WARDEN ROOK: stocky dock security captain in navy waterproof coat over orange flotation vest, plated forearms, short dark beard, stun baton. Column 2 FOREMAN CINDER: enormous industrial welder wearing copper-red overalls, charcoal leather apron, raised welding visor, yellow hydraulic gauntlet on one arm. Column 3 SIGNAL CAPTAIN ECHO: lean athletic woman in pale grey tactical raincoat, violet scarf, radio backpack with aerial, short silver hair, compact dark carbine. Column 4 MARSHAL SABLE: severe middle-aged water commissioner in olive officer coat and cream sash, dark slicked-back hair, brass shoulder plates, heavy black pistol. TOP ROW: each villain in a grounded fighting READY stance, knees bent and face clearly visible. BOTTOM ROW: the same four exact characters and same scale/design in one distinct ATTACK pose: Rook lunging with baton extended left, Cinder driving his massive piston gauntlet low left, Echo aiming her carbine left in a wide stance, Sable firing his pistol left with extended arm. Consistent matching anatomy across each column, entire hands/weapons/boots visible, silhouettes clear at small gameplay scale. Keep every character fully inside its own cell. Transparent background with real alpha, no colored backdrop or baked checkerboard.
+`node tools/re/build-game-assets.cjs check` fails a stage when (ARCHITECTURE §3.7, §3.8):
 
+- a verbatim run (consecutive columns from consecutive source columns of one original area, identity palette, no patches) is longer than 512 px;
+- an original area has more than 60 % of its columns used anywhere in the sequel (a warning above 35 %);
+- a boss-lock window comes from an original boss segment window;
+- a return visit (chapter 4's Sink areas, the Under World six months after the blast) does not recolour every slice, patch at least 25 % of its cells and change the camera, lock and exit layout.
+
+Seams, walkability, the test-safe start of chapter 1, the budgets and determinism are gated too. Each chapter's review sheet (`node tools/re/build-game-assets.cjs review ch<N>`) shows the areas at 1× with seams, bands, locks, the priority pixels and the camera path; they were shown to the user before all six chapters were switched on.
+
+## What is still drawn in code
+
+The mission objects that have no identified ROM record (cold pods, valves, tuners, pylons, beacons, the spillway gate and wheels, chains, cargo), the shadows, the world labels and the easy-mode tells. They are drawn small, in arcade proportions, and are listed in `ROM_FX.notes.props`.
+
+## History
+
+The generated scenery and the generated boss sprites of the October 5 version, with their exact prompts, are recorded in [docs/ART-DIRECTION.md](docs/ART-DIRECTION.md). Those files were retired in G8 (see [SOURCE-NOTES.md](SOURCE-NOTES.md)); git history keeps them.

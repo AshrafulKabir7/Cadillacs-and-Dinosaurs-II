@@ -11,30 +11,35 @@ const BASE=process.env.GAME_URL||'http://127.0.0.1:8766';
  check('Stage plays supplied Four Heroes audio',await page.evaluate(()=>LAST_EDEN.snapshot.audio.id==='06'));
  await page.keyboard.press('Escape');await page.waitForTimeout(80);check('Pause suspends soundtrack',await page.evaluate(()=>!LAST_EDEN.snapshot.audio.playing));await page.click('#resume');
  await page.click('#sound');await page.waitForTimeout(80);check('Mute stops supplied soundtrack',await page.evaluate(()=>!LAST_EDEN.snapshot.audio.playing));
- await page.evaluate(()=>{LAST_EDEN.start(0);LAST_EDEN.test.move(3900,350);LAST_EDEN.test.spawnBoss();});await page.click('#sound');await page.waitForFunction(()=>LAST_EDEN.snapshot.audio.id==='09');check('Boss arrival starts the supplied intro',true);await page.waitForFunction(()=>LAST_EDEN.snapshot.audio.id==='10'&&LAST_EDEN.snapshot.audio.playing);check('Boss intro advances into looping battle track',true);await page.click('#sound');
+ await page.evaluate(()=>{LAST_EDEN.start(0);LAST_EDEN.test.spawnBoss();});await page.click('#sound');await page.waitForFunction(()=>LAST_EDEN.snapshot.audio.id==='09');check('Boss arrival starts the supplied intro',true);await page.waitForFunction(()=>LAST_EDEN.snapshot.audio.id==='10'&&LAST_EDEN.snapshot.audio.playing);check('Boss intro advances into looping battle track',true);await page.click('#sound');
  const combat=await page.evaluate(()=>{
   const g=LAST_EDEN,results=[];function ticks(n){for(let i=0;i<n;i++)g.step(.016);}
-  function setup(){g.start(0);g.test.move(150,346);}
-  function enemy(x=255,y=346,type='raider'){const e=g.test.spawnEnemy(x,y,type);e.state='recover';e.timer=20;return e;}
-  setup();let e=enemy(207);g.controls.attack();results.push(['Melee waits for the impact frame',e.hp===e.maxhp]);ticks(9);results.push(['Melee damages enemy in front',e.hp<e.maxhp]);
-  setup();e=enemy(104);g.controls.attack();ticks(12);results.push(['Melee does not hit behind the hero',e.hp===e.maxhp]);
-  setup();e=enemy(150);g.controls.attack();ticks(12);results.push(['Overlapping targets remain hittable at arena boundaries',e.hp<e.maxhp]);
-  setup();e=enemy();let side=enemy(255,386);g.test.equip('gun');g.controls.attack();ticks(20);results.push(['Pistol starts with six shots and spends one',g.snapshot.player.ammo===5]);results.push(['Pistol respects lane aiming',e.hp<e.maxhp&&side.hp===side.maxhp]);
-  setup();e=enemy();side=enemy(255,386);g.test.equip('shotgun');g.controls.attack();ticks(20);results.push(['Shotgun blast reaches adjacent lane',e.hp<e.maxhp&&side.hp<side.maxhp]);
-  setup();e=enemy(300,346,'brute');g.test.equip('uzi');g.controls.attack();ticks(40);results.push(['Uzi fires a three-round burst',g.snapshot.player.ammo===45&&Math.abs(e.maxhp-e.hp-45)<.1]);
-  setup();e=enemy();side=enemy(300);g.test.equip('rifle');g.controls.attack();ticks(25);results.push(['Rifle penetrates two targets',e.hp<e.maxhp&&side.hp<side.maxhp]);
-  setup();e=enemy(300,346,'brute');side=enemy(320,380,'brute');g.test.equip('bazooka');g.controls.attack();ticks(40);results.push(['Four-shot bazooka causes splash damage',g.snapshot.player.ammo===3&&e.hp<e.maxhp&&side.hp<side.maxhp]);
-  setup();e=enemy(335,346,'brute');g.test.equip('grenade');g.controls.attack();ticks(80);results.push(['Grenade arcs and explodes',g.snapshot.bullets.length===0&&e.hp<e.maxhp]);
+  // Arcade px (ARCHITECTURE §7): M is the middle of the feet band.
+  const M=()=>g.snapshot.band.mid;
+  function setup(){g.start(0);g.test.move(111,M());}
+  function enemy(x=189,y=M(),type='raider'){const e=g.test.spawnEnemy(x,y,type);e.state='recover';e.timer=20;return e;}
+  setup();let e=enemy(153);g.controls.attack();results.push(['Melee waits for the impact frame',e.hp===e.maxhp]);ticks(9);results.push(['Melee damages enemy in front',e.hp<e.maxhp]);
+  setup();e=enemy(77);g.controls.attack();ticks(12);results.push(['Melee does not hit behind the hero',e.hp===e.maxhp]);
+  setup();e=enemy(111);g.controls.attack();ticks(12);results.push(['Overlapping targets remain hittable at arena boundaries',e.hp<e.maxhp]);
+  setup();e=enemy();let side=enemy(189,M()+30);g.test.equip('gun');g.controls.attack();ticks(20);results.push(['Pistol starts with six shots and spends one',g.snapshot.player.ammo===5]);results.push(['Pistol respects lane aiming',e.hp<e.maxhp&&side.hp===side.maxhp]);
+  setup();e=enemy();side=enemy(189,M()+30);g.test.equip('shotgun');g.controls.attack();ticks(20);results.push(['Shotgun blast reaches adjacent lane',e.hp<e.maxhp&&side.hp<side.maxhp]);
+  setup();e=enemy(222,M(),'brute');g.test.equip('uzi');g.controls.attack();ticks(40);results.push(['Uzi fires a three-round burst',g.snapshot.player.ammo===45&&Math.abs(e.maxhp-e.hp-45)<.1]);
+  setup();e=enemy();side=enemy(222);g.test.equip('rifle');g.controls.attack();ticks(25);results.push(['Rifle penetrates two targets',e.hp<e.maxhp&&side.hp<side.maxhp]);
+  setup();e=enemy(222,M(),'brute');side=enemy(237,M()+25,'brute');g.test.equip('bazooka');g.controls.attack();ticks(40);results.push(['Four-shot bazooka causes splash damage',g.snapshot.player.ammo===3&&e.hp<e.maxhp&&side.hp<side.maxhp]);
+  setup();e=enemy(248,M(),'brute');g.test.equip('grenade');g.controls.attack();ticks(80);results.push(['Grenade arcs and explodes',g.snapshot.bullets.length===0&&e.hp<e.maxhp]);
   setup();g.test.equip('gun',2);g.controls.special();results.push(['Special drops weapon with remaining ammo',!g.snapshot.player.weapon&&g.snapshot.drops.some(d=>d.type==='gun'&&d.ammo===2)]);results.push(['Whiffed special does not cost health',g.snapshot.player.hp===g.snapshot.player.maxhp]);
-  setup();e=enemy(205);g.controls.special();results.push(['Connecting special costs eight health',g.snapshot.player.hp===g.snapshot.player.maxhp-8]);
+  setup();e=enemy(152);g.controls.special();results.push(['Connecting special costs eight health',g.snapshot.player.hp===g.snapshot.player.maxhp-8]);
   setup();g.test.equip('shotgun',3);ticks(110);g.test.damagePlayer(24);results.push(['Heavy hit knocks down and drops weapon',g.snapshot.player.knocked&&!g.snapshot.player.weapon&&g.snapshot.drops.some(d=>d.type==='shotgun'&&d.ammo===3)]);
   setup();ticks(110);g.controls.jump();ticks(9);let hp=g.snapshot.player.hp;g.test.damagePlayer(24);results.push(['Jump avoids grounded hit',g.snapshot.player.hp===hp]);
-  setup();e=enemy(255,346,'raptor');g.test.damageEnemy(0,1000);results.push(['Defeated dinosaur calms and leaves',e.state==='flee']);ticks(90);results.push(['Calmed dinosaur exits the encounter',g.snapshot.enemies.length===0]);
-  setup();g.test.equip('rod',1);e=enemy(205);g.controls.attack();results.push(['Broken rod becomes a stick',g.snapshot.player.weapon==='stick']);
-  setup();e=enemy(205);g.test.equip('knife');g.controls.attack();results.push(['Nearby knife stabs instead of being thrown',g.snapshot.player.weapon==='knife'&&e.hp<e.maxhp]);
-  setup();e=enemy(320);g.test.equip('knife');g.controls.attack();ticks(30);results.push(['Distant knife attack throws the blade',!g.snapshot.player.weapon&&e.hp<e.maxhp]);
-  setup();g.test.move(230,360);g.controls.attack();const crouched=g.snapshot.player.pickup>0&&!g.snapshot.player.weapon;ticks(20);results.push(['Attack button crouches and picks up a nearby weapon',crouched&&g.snapshot.player.weapon==='gun']);
-  setup();for(const type of ['gun','uzi','shotgun','rifle','m16','bazooka','knife','rod','stick','club','torch','grenade','dynamite','stone']){g.test.equip(type);g.controls.attack();ticks(70);}results.push(['All fourteen weapon types execute without a runtime error',true]);
+  setup();e=enemy(189,M(),'raptor');g.test.damageEnemy(0,1000);results.push(['Defeated dinosaur calms and leaves',e.state==='flee']);ticks(90);results.push(['Calmed dinosaur exits the encounter',g.snapshot.enemies.length===0]);
+  // Weapon blows land on their ROM event frame (HEROES D11: swing ev1 after 7-8 f, stab ev1 after 6 f; PLAN §7 G3c).
+  setup();g.test.equip('rod',1);e=enemy(152);g.controls.attack();ticks(15);results.push(['Broken rod becomes a stick',g.snapshot.player.weapon==='stick']);
+  setup();e=enemy(152);g.test.equip('knife');g.controls.attack();ticks(12);results.push(['Nearby knife stabs instead of being thrown',g.snapshot.player.weapon==='knife'&&e.hp<e.maxhp]);
+  // The knife throws when nothing is inside the hero's ROM stab box (0x62AE; HEROES D17): Mustapha's box reaches 128 px,
+  // so the distant target stands 149 px ahead (126 px is a stab for him; it was outside Jack's 112-px box).
+  setup();e=enemy(260);g.test.equip('knife');g.controls.attack();ticks(30);results.push(['Distant knife attack throws the blade',!g.snapshot.player.weapon&&e.hp<e.maxhp]);
+  setup();{const gun=g.snapshot.drops.find(d=>d.type==='gun');g.test.move(gun.x,gun.y);}g.controls.attack();const crouched=g.snapshot.player.pickup>0&&!g.snapshot.player.weapon;ticks(20);results.push(['Attack button crouches and picks up a nearby weapon',crouched&&g.snapshot.player.weapon==='gun']);
+  setup();for(const type of ['gun','uzi','shotgun','rifle','m16','bazooka','knife','rod','stick','club','torch','grenade','dynamite','stone','bknife']){g.test.equip(type);g.controls.attack();ticks(70);g.render();}results.push(['All fifteen weapon types (B. KNIFE included) execute and draw without a runtime error',true]);
   return results;
  });for(const [name,ok] of combat)check(name,ok);
  for(let level=0;level<6;level++){
@@ -48,7 +53,7 @@ const BASE=process.env.GAME_URL||'http://127.0.0.1:8766';
  await page.click('#jukebox');check('Sound room exposes all 36 unique tracks',await page.locator('[data-track]').count()===36);await page.click('[data-track="24"]');await page.waitForFunction(()=>LAST_EDEN.snapshot.audio.id==='24'&&LAST_EDEN.snapshot.audio.playing&&LAST_EDEN.snapshot.audio.ready===4);check('Sound room plays selected MP3',true);
  // Verify each MP3 parses and can be decoded in the actual browser media element.
  const audio=await page.evaluate(async()=>{const results=[];for(const t of SOUNDTRACK){const a=new Audio();a.preload='metadata';const ok=await new Promise(resolve=>{const timer=setTimeout(()=>resolve(false),6000);a.onloadedmetadata=()=>{clearTimeout(timer);resolve(a.duration>0);};a.onerror=()=>{clearTimeout(timer);resolve(false);};a.src=t.file;});results.push({id:t.id,ok});a.pause();a.removeAttribute('src');a.load();}return results;});check('All 27 audio files load and report duration',audio.every(x=>x.ok));
- await page.goto(require('node:url').pathToFileURL(require('node:path').resolve('index.html')).href);await page.click('#newgame');await page.click('#begin');await page.click('#enter-stage');await page.waitForFunction(()=>LAST_EDEN.snapshot.audio.ready===4);check('Offline file launch plays local music',await page.evaluate(()=>LAST_EDEN.state==='play'&&LAST_EDEN.snapshot.audio.playing));
+ await page.goto(require('node:url').pathToFileURL(require('node:path').resolve('index.html')).href);await page.waitForFunction(()=>window.SEQUEL_RENDER&&SEQUEL_RENDER.ready);check('Offline file launch loads the stage pages',await page.evaluate(()=>SEQUEL_RENDER.pagesLoaded(0)>0));await page.click('#newgame');await page.click('#begin');await page.click('#enter-stage');await page.waitForFunction(()=>LAST_EDEN.snapshot.audio.ready===4);check('Offline file launch plays local music',await page.evaluate(()=>LAST_EDEN.state==='play'&&LAST_EDEN.snapshot.audio.playing));
  const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});mobile.on('pageerror',e=>errors.push(e.message));await mobile.goto(BASE);await mobile.tap('#newgame');await mobile.tap('#begin');await mobile.tap('#enter-stage');check('Mobile layout has no horizontal overflow',await mobile.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));check('Touch attack control is visible',await mobile.locator('[data-key="KeyJ"]').isVisible());await mobile.tap('[data-key="KeyK"]');await mobile.waitForFunction(()=>LAST_EDEN.snapshot.player.z>0);check('Touch jump activates physics',await mobile.evaluate(()=>LAST_EDEN.snapshot.player.z>0));await mobile.screenshot({path:'tests/results/mobile-play.png'});
  check('No browser runtime exceptions',errors.length===0);const report={passed:checks.length,checks,errors,audio,at:new Date().toISOString()};fs.writeFileSync('tests/results/regression-report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));await browser.close();
 })().catch(e=>{console.error(e);process.exit(1);});

@@ -1,5 +1,7 @@
 # Boss-centered environments (Prompt B)
 
+> **Retired (G8, 2026-10-22):** the scenery and boss art this page describes is no longer used or shipped; the game now draws stages composed from the arcade ROM (see ../ART-DIRECTION.md and ../SOURCE-NOTES.md). This page is kept as the generation record.
+
 The harbor opening is retained; the following five new environments replace the remaining scenery. Six chapters, six sections per chapter, their objectives and the original regular-enemy roster remain playable. The new story follows Echo's cloning supply chain instead of revisiting the first game's stage route.
 
 | Chapter / environment | Boss and reason for the location | Interactive foreground | Parallax layers |

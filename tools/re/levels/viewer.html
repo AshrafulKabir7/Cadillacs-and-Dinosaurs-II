@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stage Viewer</title>
+<!-- Authoring viewer for the composed stages (ARCHITECTURE §6.1 "Viewer", PLAN §6 WP-E). Open from file:// or over
+     node tools/serve.cjs: it loads ../../../stage-data.js and ../../../stage-render.js and draws the PNG pages by relative
+     path (no fetch, no pixel read-back). ?ch=ch1&area=0&x=0 picks the start. Keys: left/right scroll, space plays the
+     camera along the area, F/B/L/M toggle fg tint, band, locks, mask. -->
+<style>
+  :root { --bg:#14141a; --panel:#1f1f28; --ink:#e8e8ee; --dim:#9a9aae; --accent:#ffd84a; --line:#33334a; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --bg:#f2f2f5; --panel:#ffffff; --ink:#1b1b22; --dim:#5d5d70; --accent:#a06b00; --line:#d4d4de; } }
+  :root[data-theme="light"] { --bg:#f2f2f5; --panel:#ffffff; --ink:#1b1b22; --dim:#5d5d70; --accent:#a06b00; --line:#d4d4de; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:13px/1.4 system-ui, sans-serif; }
+  header { display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; padding:10px 16px; background:var(--panel); border-bottom:1px solid var(--line); }
+  header b { font-size:14px; }
+  label { display:inline-flex; gap:5px; align-items:center; color:var(--dim); }
+  select, button, input[type=range] { font:inherit; }
+  select, button { background:var(--bg); color:var(--ink); border:1px solid var(--line); border-radius:4px; padding:3px 7px; }
+  main { padding:12px 16px; max-width:100%; }
+  .screen { width:min(100%, 1024px); aspect-ratio:4/3; background:#000; image-rendering:pixelated; display:block; }
+  .screen.square { aspect-ratio:12/7; }
+  #overview { width:100%; height:auto; image-rendering:pixelated; display:block; margin-top:10px; background:#000; cursor:pointer; }
+  #info { margin-top:8px; color:var(--dim); white-space:pre-wrap; font:12px/1.45 ui-monospace, monospace; }
+  input[type=range] { width:min(520px, 60vw); }
+</style>
+</head>
+<body>
+<header>
+  <b>Stage viewer</b>
+  <label>Chapter <select id="ch"></select></label>
+  <label>Area <select id="area"></select></label>
+  <label>Camera x <input id="x" type="range" min="0" max="0" value="0"></label>
+  <button id="play">Play</button>
+  <label><input id="drive" type="checkbox"> road</label>
+  <label><input id="fg" type="checkbox" checked> fg tint</label>
+  <label><input id="band" type="checkbox" checked> band</label>
+  <label><input id="locks" type="checkbox" checked> locks</label>
+  <label><input id="mask" type="checkbox"> mask</label>
+  <label><input id="sq" type="checkbox"> square pixels</label>
+</header>
+<main>
+  <canvas id="view" class="screen" width="768" height="448"></canvas>
+  <canvas id="overview" width="1024" height="64"></canvas>
+  <div id="info">Loading stage-data.js ...</div>
+</main>
+<script src="../../../stage-data.js"></script>
+<script src="../../../stage-render.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var info = $('info');
+  if (!window.STAGE_DATA || !window.STAGE_RENDER) { info.textContent = 'stage-data.js or stage-render.js did not load (run: node tools/re/build-game-assets.cjs stages all).'; return; }
+  STAGE_RENDER.base = '../../../';
+  var q = {}; location.search.replace(/^\?/, '').split('&').forEach(function (kv) { var p = kv.split('='); if (p[0]) q[p[0]] = decodeURIComponent(p[1] || ''); });
+  var chSel = $('ch'), arSel = $('area'), xs = $('x'), view = $('view'), g = view.getContext('2d'), ov = $('overview'), og = ov.getContext('2d');
+  var fgCanvas = document.createElement('canvas'); fgCanvas.width = 384; fgCanvas.height = 224; var fgG = fgCanvas.getContext('2d');
+  Object.keys(STAGE_DATA.chapters).forEach(function (id) { var o = document.createElement('option'); o.value = id; o.textContent = id + ' ' + (STAGE_DATA.chapters[id].title || ''); chSel.appendChild(o); });
+  var state = { ch: q.ch || 'ch1', ai: +(q.area || 0), cam: { x: +(q.x || 0), y: 0 }, road: 0, playing: false, t0: performance.now() };
+  chSel.value = state.ch;
+  function chapter() { return STAGE_DATA.chapters[state.ch]; }
+  function area() { return chapter().areas[state.ai]; }
+  function fillAreas() {
+    arSel.innerHTML = '';
+    chapter().areas.forEach(function (a, i) { var o = document.createElement('option'); o.value = i; o.textContent = a.id + ' (' + a.w + ' px' + (a.loop ? ', loop' : '') + ')'; arSel.appendChild(o); });
+    if (state.ai >= chapter().areas.length) state.ai = 0;
+    arSel.value = state.ai; setArea();
+  }
+  function setArea() {
+    var a = area(); STAGE.use(state.ch);
+    xs.max = Math.max(0, a.w - 384); state.cam.x = Math.min(state.cam.x, +xs.max); xs.value = state.cam.x; state.road = 0;
+    $('drive').checked = !!a.loop;
+    STAGE_RENDER.require(state.ch).then(function (n) { info.dataset.loaded = n; });
+  }
+  chSel.onchange = function () { state.ch = chSel.value; state.ai = 0; state.cam.x = 0; fillAreas(); };
+  arSel.onchange = function () { state.ai = +arSel.value; state.cam.x = 0; setArea(); };
+  xs.oninput = function () { state.cam.x = +xs.value; };
+  $('play').onclick = function () { state.playing = !state.playing; $('play').textContent = state.playing ? 'Pause' : 'Play'; };
+  $('sq').onchange = function () { view.classList.toggle('square', $('sq').checked); };
+  ov.onclick = function (e) { var a = area(), r = ov.getBoundingClientRect(), k = (a.artW || a.w) / r.width; state.cam.x = Math.max(0, Math.min(+xs.max, Math.round((e.clientX - r.left) * k - 192))); xs.value = state.cam.x; };
+  addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'SELECT') return;
+    var k = e.key.toLowerCase();
+    if (k === 'arrowright') state.cam.x = Math.min(+xs.max, state.cam.x + (e.shiftKey ? 96 : 16));
+    else if (k === 'arrowleft') state.cam.x = Math.max(0, state.cam.x - (e.shiftKey ? 96 : 16));
+    else if (k === ' ') { $('play').onclick(); e.preventDefault(); }
+    else if (k === 'f') $('fg').checked = !$('fg').checked;
+    else if (k === 'b') $('band').checked = !$('band').checked;
+    else if (k === 'l') $('locks').checked = !$('locks').checked;
+    else if (k === 'm') $('mask').checked = !$('mask').checked;
+    else return;
+    xs.value = state.cam.x;
+  });
+
+  function overlays(a, cx) {
+    var band = a.walk.band, c0 = Math.max(0, Math.floor(cx / 16)), c1 = Math.min(a.walk.cols, Math.ceil((cx + 384) / 16));
+    if ($('mask').checked) {
+      g.fillStyle = 'rgba(0,255,120,0.18)';
+      for (var c = c0; c < c1; c++) for (var r = 0; r < a.walk.rows; r++) if (STAGE.walkable(a, c * 16 + 8, r * 16 + 8)) g.fillRect(c * 16 - cx, r * 16, 16, 16);
+    }
+    if ($('band').checked) {
+      g.fillStyle = '#50ff50'; for (var c2 = c0; c2 < c1; c2++) if (band[c2]) g.fillRect(c2 * 16 - cx, band[c2][0] - 1, 16, 1);
+      g.fillStyle = '#00c8c8'; for (var c3 = c0; c3 < c1; c3++) if (band[c3]) g.fillRect(c3 * 16 - cx, band[c3][1] - 1, 16, 1);
+    }
+    if ($('locks').checked) {
+      g.font = '8px monospace'; g.textBaseline = 'top';
+      a.locks.forEach(function (l) {
+        var col = l.boss ? '#ff4040' : '#ffe628'; g.strokeStyle = col; g.lineWidth = 1;
+        g.strokeRect(l.x - cx + 0.5, 80.5, 383, 143); g.fillStyle = col; g.fillText(l.id + (l.boss ? ' BOSS' : ''), l.x - cx + 3, 83);
+        g.fillStyle = '#00ffff'; g.fillRect(l.x - 48 - cx, 150, 1, 40); g.fillRect(l.x + 384 + 48 - cx, 150, 1, 40);
+      });
+      a.sections.forEach(function (s) { g.fillStyle = '#fff'; for (var y = 0; y < 224; y += 6) g.fillRect(s.x0 - cx, y, 1, 3); g.fillText(s.id + ' ' + (s.name || ''), s.x0 - cx + 3, 48); });
+      g.fillStyle = '#fff'; g.fillRect(a.start.x - 5 - cx, a.start.y, 11, 1); g.fillRect(a.start.x - cx, a.start.y - 5, 1, 11);
+    }
+  }
+  function drawOverview(a, cx) {
+    var w = a.artW || a.w, k = ov.width / w; ov.height = Math.max(32, Math.round(224 * k));
+    og.imageSmoothingEnabled = false; og.fillStyle = a.bg; og.fillRect(0, 0, ov.width, ov.height);
+    STAGE_RENDER.pages(state.ch).forEach(function () {});
+    // pages are drawn through STAGE_RENDER at reduced scale: one back pass per 384-px screen
+    og.save(); og.scale(k, k);
+    for (var sx = 0; sx < a.w; sx += 384) { og.save(); og.beginPath(); og.rect(sx, 0, 384, 224); og.clip(); og.translate(sx, 0); STAGE_RENDER.back(og, a, { x: Math.min(sx, Math.max(0, a.w - 384)), y: 0 }, 0, {}); og.restore(); }
+    og.restore();
+    og.strokeStyle = '#ffd84a'; og.lineWidth = 2; og.strokeRect(cx * k + 1, 1, 384 * k - 2, ov.height - 2);
+    a.locks.forEach(function (l) { og.fillStyle = l.boss ? '#ff4040' : '#ffe628'; og.fillRect(l.x * k, ov.height - 4, 384 * k, 3); });
+  }
+  var lastOv = '';
+  function frame(now) {
+    var a = area(), t = (now - state.t0) / 1000;
+    if (state.playing) { if ($('drive').checked && a.loop) state.road += 244 / 60; else { state.cam.x += 3; if (state.cam.x > +xs.max) state.cam.x = 0; } xs.value = state.cam.x; }
+    var cam = { x: state.cam.x, y: STAGE.pathY(a, state.cam.x) }, road = $('drive').checked ? state.road : 0;
+    g.setTransform(2, 0, 0, 2, 0, 0); g.imageSmoothingEnabled = false;
+    STAGE_RENDER.back(g, a, cam, t, { road: road });
+    var calls = STAGE_RENDER.stats.drawImage;
+    if ($('fg').checked) {
+      fgG.setTransform(1, 0, 0, 1, 0, 0); fgG.clearRect(0, 0, 384, 224);
+      STAGE_RENDER.front(fgG, a, cam, t, { road: road, rain: false });
+      fgG.globalCompositeOperation = 'source-atop'; fgG.fillStyle = 'rgba(255,0,0,0.45)'; fgG.fillRect(0, 0, 384, 224); fgG.globalCompositeOperation = 'source-over';
+      g.drawImage(fgCanvas, 0, 0);
+    } else STAGE_RENDER.front(g, a, cam, t, { road: road });
+    overlays(a, Math.round(cam.x));
+    var key = state.ch + a.id + Math.round(cam.x / 8) + STAGE_RENDER.loaded(state.ch);
+    if (key !== lastOv) { drawOverview(a, cam.x); lastOv = key; }
+    var b = STAGE.bandAt(a, cam.x + 192), sec = a.sections.filter(function (s) { return cam.x + 192 >= s.x0 && cam.x + 192 < s.x0 + s.len; })[0];
+    info.textContent = state.ch + ' ' + a.id + '  cam.x ' + Math.round(cam.x) + (road ? '  road ' + Math.round(road) : '') + '  band@centre ' + JSON.stringify(b) +
+      '  section ' + (sec ? sec.id + ' ' + (sec.name || '') : '-') + '\npages loaded ' + STAGE_RENDER.loaded(state.ch) + ' / ' + STAGE_RENDER.pages(state.ch).length +
+      '  drawImage calls (back) ' + calls + '  s3 spans ' + ((a.s3 && a.s3.spans.length) || 0) + (a.loop ? '  loop period ' + a.loop.period : '') + (a.rowscroll ? '  rowscroll rows ' + a.rowscroll.y + '-' + (a.rowscroll.y + a.rowscroll.rows) : '') +
+      (a.returnVisit ? '\nreturn visit: ' + a.returnVisit.why : '');
+    requestAnimationFrame(frame);
+  }
+  fillAreas();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

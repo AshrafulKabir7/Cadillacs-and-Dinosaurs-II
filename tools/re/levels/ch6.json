@@ -1,0 +1,861 @@
+{
+  "id": "ch6",
+  "title": "THE CROWN SPIRE",
+  "objPage": "S8A2",
+  "preset": "storm-crown",
+  "fx": {
+    "rain": true,
+    "lightning": {
+      "alpha": 0.4,
+      "frames": 2,
+      "every": [
+        240,
+        420
+      ],
+      "layer": "s3"
+    }
+  },
+  "notes": [
+    "CAMPAIGN.md §10.1 / §12.2 '6-1'..'6-6'. 6-1 reuses ch1's towers (E1a2 176-464, E1a0 928-1312) five chapters later in storm (user question 4 default); their 48-px lanes get the same floor-art walk patches as in ch1. 6-1 is re-ordered as E1a2, E1a2 flip, E1a0, E1a0 flip so the two sources meet once (under a pier) and every other join is a mirror join.",
+    "E8a1 past 2992 (CAMPAIGN 6-4, 6-6) is not used: the original camera falls there during a fade (segment 0x09 at 3008), its terrain is type 0 in every row and its scroll2 is empty from X 3100, so a lane there stands on nothing. 6-4's dam halls are E6a0 1216-1728 (mirror pair) and the dam control hall E7a3 880-1264 with its mirror (the E7a3 riser and consoles; ch5 uses E7a3 0-512 only, and the Slisaur monitor wall 1264+ is left out); 6-6's spillway is the E8a1 sluice basin 1504-1664 and its mirror (lane probed live, work/re/runs/wpe-depth-e8a1: top h 879 = y 129).",
+    "Seams (CAMPAIGN §4.1 join chunks, §12.2 6-3 'pillar chunk at the seam'): every join of two sources is covered by a spire pier (the brick jamb of the E7a0 arch, E7a0 1760-1792, palette row 27 lifted; a full-height foreground pillar) in the storm palette; every other join is a mirror join.",
+    "Far layer: one per section; 6-1 the E1a2 skyline, 6-2 none (the E1a1 hall is opaque and has no scroll3), 6-3/6-4 one E6a0 span, 6-5 E8a2, 6-6 E8a1; changes sit under a pier.",
+    "The Crown Engine is a boss sprite (WP-C bake from E8a3), never stage art. The spillway gate and wheels are code-created props at the listed section x.",
+    "Section casts (CAMPAIGN §4.4 'cast', merged over the chapter pool): lighter A/BOMB/KNIFE variants where the ROM-affine HP budget of the chapter's waves exceeded ENEMIES §2.6 by more than 15% (tests/campaign.cjs (8)); ratio now 1.139.",
+    "Palette: storm-crown on every slice; the role ops (sky borrow from E4a0, water tint) are skipped without roles, so the skies take s3ops (darkened, 30% toward #6a4a9a) to read as storm."
+  ],
+  "areas": [
+    {
+      "id": "a0",
+      "w": 2368,
+      "h": 224,
+      "bg": "auto",
+      "s2": [
+        {
+          "slice": {
+            "src": "E1a2",
+            "x": [
+              176,
+              464
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E1a2",
+            "x": [
+              176,
+              464
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            288,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E1a0",
+            "x": [
+              928,
+              1312
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            576,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E1a0",
+            "x": [
+              928,
+              1312
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            960,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E1a1",
+            "x": [
+              112,
+              592
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1344,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E1a1",
+            "x": [
+              112,
+              592
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1824,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E1a1",
+            "x": [
+              112,
+              176
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            2304,
+            0
+          ]
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              1760,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              27
+            ]
+          },
+          "at": [
+            560,
+            0
+          ],
+          "join": true,
+          "note": "spire pier over the E1a2 | E1a0 join"
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              1760,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              27
+            ]
+          },
+          "at": [
+            1328,
+            0
+          ],
+          "join": true,
+          "note": "spire pier over the section join 6-1 | 6-2"
+        }
+      ],
+      "s3": "auto",
+      "walk": {
+        "patch": [
+          {
+            "rect": [
+              0,
+              160,
+              576,
+              16
+            ],
+            "walk": true,
+            "why": "E1a2 sidewalk top row (floor art)"
+          },
+          {
+            "rect": [
+              576,
+              144,
+              768,
+              16
+            ],
+            "walk": true,
+            "why": "E1a0 roof surface row (floor art)"
+          }
+        ]
+      },
+      "sections": [
+        {
+          "id": "6-1",
+          "name": "THE SPIRE APPROACH",
+          "x0": 0,
+          "len": 1344,
+          "cap": "THE SPIRE TERRACES",
+          "locks": [
+            640,
+            960
+          ],
+          "bossLock": null,
+          "set": [
+            "zeke"
+          ],
+          "scenery": [
+            "pteranodon-bg"
+          ],
+          "cast": {
+            "gunner": [
+              "poacherJ",
+              "bomber"
+            ]
+          },
+          "s3": "E1a2",
+          "props": [
+            {
+              "kind": "crate",
+              "x": 222
+            },
+            {
+              "kind": "barrel",
+              "x": 607
+            },
+            {
+              "kind": "barrel",
+              "x": 992
+            }
+          ]
+        },
+        {
+          "id": "6-2",
+          "name": "THE MIRROR GANG",
+          "x0": 1344,
+          "len": 1024,
+          "locks": [
+            1536,
+            1984
+          ],
+          "bossLock": null,
+          "note": "the gothic hall: columns, carved double doors",
+          "cast": {
+            "gunner": [
+              "poacherJ",
+              "bomber"
+            ]
+          },
+          "props": [
+            {
+              "kind": "crate",
+              "x": 193
+            },
+            {
+              "kind": "barrel",
+              "x": 578
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a1",
+      "w": 2560,
+      "h": 224,
+      "bg": "auto",
+      "s2": [
+        {
+          "slice": {
+            "src": "E1a1",
+            "x": [
+              112,
+              592
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            0,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E1a1",
+            "x": [
+              112,
+              144
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            480,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E6a0",
+            "x": [
+              1216,
+              1728
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            512,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E6a0",
+            "x": [
+              1216,
+              1728
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1024,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E7a3",
+            "x": [
+              880,
+              1264
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1536,
+            0
+          ],
+          "step": true,
+          "note": "the dam control hall: the E7a3 riser and consoles (the Slisaur monitor wall 1264+ is not used)"
+        },
+        {
+          "slice": {
+            "src": "E7a3",
+            "x": [
+              880,
+              1264
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1920,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E6a0",
+            "x": [
+              1216,
+              1472
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            2304,
+            0
+          ],
+          "step": true
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              1760,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              27
+            ]
+          },
+          "at": [
+            496,
+            0
+          ],
+          "join": true,
+          "note": "spire pier over the E1a1 | E6a0 join"
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              1760,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              27
+            ]
+          },
+          "at": [
+            1520,
+            0
+          ],
+          "join": true,
+          "note": "spire pier over the E6a0 | E7a3 join"
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              1760,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              27
+            ]
+          },
+          "at": [
+            2288,
+            0
+          ],
+          "join": true,
+          "note": "spire pier over the E7a3 | E6a0 join"
+        }
+      ],
+      "s3": "auto",
+      "sections": [
+        {
+          "id": "6-3",
+          "name": "YOU VS. YOU",
+          "x0": 0,
+          "len": 1024,
+          "cap": "THE SPIRE HALLS",
+          "locks": [
+            192,
+            640
+          ],
+          "bossLock": null,
+          "note": "the hall opens into the dam gallery",
+          "cast": {
+            "gunner": [
+              "skinner",
+              "poacherJ"
+            ]
+          },
+          "s3": "E6a0",
+          "props": [
+            {
+              "kind": "barrel",
+              "x": 193
+            },
+            {
+              "kind": "crate",
+              "x": 578
+            }
+          ]
+        },
+        {
+          "id": "6-4",
+          "name": "BREAK THE COMMAND",
+          "x0": 1024,
+          "len": 1536,
+          "locks": [
+            1216,
+            1664,
+            2176
+          ],
+          "bossLock": null,
+          "props": [
+            {
+              "kind": "barrel",
+              "x": 193
+            },
+            {
+              "kind": "barrel",
+              "x": 578
+            },
+            {
+              "kind": "crate",
+              "x": 963
+            },
+            {
+              "kind": "barrel",
+              "x": 1348
+            },
+            {
+              "kind": "gate",
+              "name": "COMMAND PYLON A",
+              "x": 300
+            },
+            {
+              "kind": "gate",
+              "name": "COMMAND PYLON B",
+              "x": 760
+            },
+            {
+              "kind": "gate",
+              "name": "COMMAND PYLON C",
+              "x": 1220
+            }
+          ],
+          "cast": {
+            "gunner": [
+              "skinner",
+              "poacherJ"
+            ]
+          },
+          "s3": "E6a0"
+        }
+      ]
+    },
+    {
+      "id": "a2",
+      "w": 2176,
+      "h": 224,
+      "bg": "auto",
+      "s2": [
+        {
+          "slice": {
+            "src": "E8a2",
+            "x": [
+              2304,
+              2816
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E8a2",
+            "x": [
+              2304,
+              2816
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            512,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E1a1",
+            "x": [
+              112,
+              432
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1024,
+            0
+          ],
+          "step": true
+        },
+        {
+          "slice": {
+            "src": "E1a1",
+            "x": [
+              112,
+              432
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1344,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E1a1",
+            "x": [
+              112,
+              304
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1664,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E8a1",
+            "x": [
+              1504,
+              1664
+            ],
+            "h": [
+              784,
+              1008
+            ]
+          },
+          "at": [
+            1856,
+            0
+          ],
+          "step": true,
+          "note": "the spillway basin (E8a1 1504-1664, lane probed live: h 784-879)"
+        },
+        {
+          "slice": {
+            "src": "E8a1",
+            "x": [
+              1504,
+              1664
+            ],
+            "h": [
+              784,
+              1008
+            ]
+          },
+          "at": [
+            2016,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              1760,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              27
+            ]
+          },
+          "at": [
+            1008,
+            0
+          ],
+          "join": true,
+          "note": "spire pier over the section join 6-5 | 6-6 (the far layer changes under it)"
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              1760,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              27
+            ]
+          },
+          "at": [
+            1840,
+            0
+          ],
+          "join": true,
+          "note": "spire pier over the E1a1 | E8a1 join (the floodgate)"
+        }
+      ],
+      "s3": "auto",
+      "sections": [
+        {
+          "id": "6-5",
+          "name": "THE CLONE WAR",
+          "x0": 0,
+          "len": 1024,
+          "cap": "THE CROWN FLOODGATE",
+          "locks": [
+            192,
+            640
+          ],
+          "bossLock": null,
+          "set": [
+            "zeke"
+          ],
+          "note": "the arch gallery under the dam; a wide flat band for the battle",
+          "cast": {
+            "gunner": [
+              "skinner",
+              "poacherJ"
+            ]
+          },
+          "props": [
+            {
+              "kind": "barrel",
+              "x": 193
+            },
+            {
+              "kind": "crate",
+              "x": 578
+            }
+          ]
+        },
+        {
+          "id": "6-6",
+          "name": "THE CROWN FLOODGATE",
+          "x0": 1024,
+          "len": 1152,
+          "locks": [
+            1216
+          ],
+          "bossLock": 1792,
+          "props": [
+            {
+              "kind": "barrel",
+              "x": 193
+            },
+            {
+              "kind": "barrel",
+              "x": 578
+            },
+            {
+              "kind": "crate",
+              "x": 963
+            },
+            {
+              "kind": "spillway-gate",
+              "x": 1100
+            },
+            {
+              "kind": "spillway-wheel",
+              "x": 858
+            },
+            {
+              "kind": "spillway-wheel",
+              "x": 960
+            },
+            {
+              "kind": "crown-engine",
+              "x": 1056
+            }
+          ],
+          "note": "boss lock 1792-2176 = E1a1 240-304 + the spillway basin (E8a1 1504-1664 and its mirror; E8a1 has no boss window); the Crown Engine stands in the basin at 2080",
+          "cast": {
+            "gunner": [
+              "skinner",
+              "poacherJ"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "s3ops": [
+    {
+      "op": "scale",
+      "rgb": [
+        0.5,
+        0.5,
+        0.7
+      ]
+    },
+    {
+      "op": "hsl",
+      "h": -40,
+      "s": 0.6,
+      "l": 0.9
+    },
+    {
+      "op": "tint",
+      "rgb": "#6a4a9a",
+      "amount": 0.3
+    }
+  ]
+}

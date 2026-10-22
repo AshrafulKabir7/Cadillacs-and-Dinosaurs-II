@@ -15,22 +15,29 @@ for(let level=0;level<6;level++){
  for(;n<60000&&g.state==='play';n++){
   const s=g.snapshot,v=s.player;minhp=Math.min(minhp,v.hp);if(s.lives<lastLives)deaths++;lastLives=s.lives;
   if(sections[s.section]===undefined)sections[s.section]=Math.round(n*.033);
-  const targets=s.enemies.filter(e=>!e.dead&&e.state!=='flee'&&e.onstage&&!(e.state==='drop'&&e.z>30));
+  // Distances in arcade px (ARCHITECTURE §7 bot table: the old canvas-px values divided by 1.35).
+  const targets=s.enemies.filter(e=>!e.dead&&e.state!=='flee'&&e.onstage&&!(e.state==='drop'&&e.z>22));
   targets.sort((a,b)=>Math.hypot(a.x-v.x,a.y-v.y)-Math.hypot(b.x-v.x,b.y-v.y));
   const task=s.mission.active,e=targets[0],taskFirst=task&&(targets.length===0||task.bossTask||s.driving);
   let dx=1,dy=0,fight=false,operate=false;
-  if(taskFirst){const dd=task.x-v.x;dx=Math.abs(dd)>(s.driving?30:task.kind==='beacon'?48:18)?Math.sign(dd):0;dy=Math.abs(task.y-v.y)>8?Math.sign(task.y-v.y):0;
-   if(task.kind==='beacon'){if(Math.abs(dd)<70&&Math.abs(task.y-v.y)<25){fight=true;if(Math.sign(dd)!==v.dir)dx=Math.sign(dd);}}
+  if(taskFirst){const dd=task.x-v.x;dx=Math.abs(dd)>(s.driving?22:task.kind==='beacon'?36:13)?Math.sign(dd):0;dy=Math.abs(task.y-v.y)>6?Math.sign(task.y-v.y):0;
+   if(task.kind==='beacon'){if(Math.abs(dd)<52&&Math.abs(task.y-v.y)<19){fight=true;if(Math.sign(dd)!==v.dir)dx=Math.sign(dd);}}
    else if(task.kind==='tuner'){operate=dx===0&&dy===0&&n%8===0;}
    else operate=dx===0&&dy===0;
-  }else if(e){const dd=e.x-v.x,range=s.driving?70:v.weapon&&firearms.includes(v.weapon)?180:48;
-   dx=Math.abs(dd)>range?Math.sign(dd):Math.sign(dd)!==v.dir?Math.sign(dd):0;dy=Math.abs(e.y-v.y)>7?Math.sign(e.y-v.y):0;
+  }else if(e){const dd=e.x-v.x,range=s.driving?52:v.weapon&&firearms.includes(v.weapon)?133:36;
+   dx=Math.abs(dd)>range?Math.sign(dd):Math.sign(dd)!==v.dir?Math.sign(dd):0;dy=Math.abs(e.y-v.y)>5?Math.sign(e.y-v.y):0;
    // In the Cadillac the bash reaches a rider alongside the bumper, and a boost turns an approach into a ram.
-   fight=Math.abs(dd)<(s.driving?165:range+12)&&Math.abs(e.y-v.y)<26;
-   if(s.driving&&dd>140&&dd<420&&Math.abs(e.y-v.y)<26&&n%20===0)g.controls.jump();
-   if(e.state==='windup'&&Math.abs(dd)<130&&v.z===0&&n%8===0)g.controls.jump();
-   if(targets.filter(t=>Math.hypot(t.x-v.x,t.y-v.y)<120).length>1&&v.hp>25&&v.specialCd<=0)g.controls.special();
+   fight=Math.abs(dd)<(s.driving?122:range+9)&&Math.abs(e.y-v.y)<19;
+   if(s.driving&&dd>104&&dd<311&&Math.abs(e.y-v.y)<19&&n%20===0)g.controls.jump();
+   if(e.state==='windup'&&Math.abs(dd)<96&&v.z===0&&n%8===0)g.controls.jump();
+   if(targets.filter(t=>Math.hypot(t.x-v.x,t.y-v.y)<89).length>1&&v.hp>25&&v.specialCd<=0)g.controls.special();
   }else if(s.lock)dx=0;
+  // G5 (PLAN §7 5f, CAMPAIGN §16): the MACK lane rule. While its gore or head-on charge is telegraphed or running, keep off its
+  // lane; in its head-up window (recover) line up behind it and boost-ram.
+  const mack=s.driving&&s.enemies.find(t=>t.boss&&t.type==='truck'&&!t.dead&&t.state!=='flee'&&t.state!=='intro');
+  if(mack){const dd=mack.x-v.x,ly=mack.mvName==='headon'&&mack.hy!=null?mack.hy:mack.y,dl=ly-v.y,danger=(mack.state==='windup'||mack.state==='charge')&&(mack.mvName==='gore'||mack.mvName==='headon');
+   if(danger){dx=0;fight=false;if(Math.abs(dl)<34)dy=dl>0?-1:1;}
+   else if(mack.state==='recover'&&mack.mvName==='recover'){dy=Math.abs(dl)>5?Math.sign(dl):0;dx=Math.abs(dd)>70?Math.sign(dd):0;fight=Math.abs(dd)<122&&Math.abs(dl)<19;if(Math.abs(dl)<19&&dd>70&&dd<260&&n%10===0)g.controls.jump();}}
   key('KeyD',dx>0);key('KeyA',dx<0);key('KeyW',dy<0);key('KeyS',dy>0);key('KeyJ',fight);key('KeyE',operate);
   if(!taskFirst&&v.weapon&&v.ammo===0)g.controls.pickup();
   g.step(.033);

@@ -21,3 +21,8 @@ tests/results/
 
 # Local reference videos
 *.mp4
+
+# Asset build (ARCHITECTURE §6.3): tool scratch outputs, ROM dumps and the MAME rompath never ship
+tools/re/**/out/
+*.bin
+tools/re/mame/rompath/

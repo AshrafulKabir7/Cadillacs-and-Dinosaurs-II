@@ -1,0 +1,904 @@
+{
+  "id": "ch3",
+  "title": "THE VERDANT BIODOME",
+  "objPage": "S2A0",
+  "preset": "verdant",
+  "notes": [
+    "CAMPAIGN.md §7.1 / §12.2 '3-1'..'3-6' with the KI1 framings: E2a1 2880-3328 is framed at camY 48 (h 64-288) and E6a1 2848-3168 at camY 224 (h 240-464), where the original camera stood, so their 64-px lanes lie inside the clamp (at the §4.1 camY they were 48 and 32 px).",
+    "KI2: the E2a1 far layer of a2 S5 reads the scroll3 block map past the declared 1536 px (x3 672-1856, the live maximum), as the game streams it.",
+    "Section casts (CAMPAIGN §4.4 'cast', merged over the chapter pool): lighter A/BOMB/KNIFE variants where the ROM-affine HP budget of the chapter's waves exceeded ENEMIES §2.6 by more than 15% (tests/campaign.cjs (8)); ratio now 1.139.",
+    "3-1: the CAMPAIGN's E6a0 dome-frame patch over the E5a0 sky was tried and dropped: the dome ribs share their 16-px cells with the opaque rock ceiling, so the patch reads as a rectangle; the dome is seen from 3-2 on.",
+    "Not built: the 3-3 egg-rack chunks of CAMPAIGN §12.2 (E2a0's map has no nest or egg cells; the egg racks are left to props/sprites), and the 3-1 dome-frame patch (the E6a0 ribs share cells with opaque rock).",
+    "Seams (CAMPAIGN §4.1 join chunks): every join that is not a mirror join is covered by a dome tree, the vine-wrapped foreground trunk of E2a0 (400-448, palette rows 5-7 lifted off the forest behind it), centred on the join.",
+    "Far layer: one per section (the source with most columns in it): 3-1 E5a0, 3-2 E6a0, 3-3 E2a0, 3-4 E6a1, 3-5 E2a1 (streamed to 1856, KI2), 3-6 E6a1; it changes only behind a dome tree.",
+    "Not built: the 3-3 egg-rack chunks of CAMPAIGN §12.2 (E2a0's map has no nest or egg cells; the egg racks are left to props/sprites), and the 3-1 dome-frame patch (the E6a0 ribs share cells with opaque rock)."
+  ],
+  "areas": [
+    {
+      "id": "a0",
+      "w": 2368,
+      "h": 224,
+      "bg": "auto",
+      "s2": [
+        {
+          "slice": {
+            "src": "E5a0",
+            "x": [
+              0,
+              512
+            ],
+            "h": [
+              528,
+              752
+            ]
+          },
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E5a0",
+            "x": [
+              512,
+              1024
+            ],
+            "h": [
+              528,
+              752
+            ]
+          },
+          "at": [
+            512,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E5a0",
+            "x": [
+              0,
+              320
+            ],
+            "h": [
+              528,
+              752
+            ]
+          },
+          "at": [
+            1024,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E6a0",
+            "x": [
+              1216,
+              1728
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1344,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E6a0",
+            "x": [
+              1216,
+              1728
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1856,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "patch": {
+            "src": "E2a0",
+            "x": [
+              400,
+              448
+            ],
+            "h": [
+              80,
+              304
+            ],
+            "rows": [
+              5,
+              6,
+              7
+            ]
+          },
+          "at": [
+            992,
+            0
+          ],
+          "flip": false,
+          "join": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 28,
+              "s": 0.7,
+              "l": 0.8
+            },
+            {
+              "op": "tint",
+              "rgb": "#335c33",
+              "amount": 0.15
+            }
+          ],
+          "note": "dome tree over the E5a0 | E5a0 flip join"
+        },
+        {
+          "patch": {
+            "src": "E2a0",
+            "x": [
+              400,
+              448
+            ],
+            "h": [
+              80,
+              304
+            ],
+            "rows": [
+              5,
+              6,
+              7
+            ]
+          },
+          "at": [
+            1328,
+            0
+          ],
+          "flip": true,
+          "join": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 28,
+              "s": 0.7,
+              "l": 0.8
+            },
+            {
+              "op": "tint",
+              "rgb": "#335c33",
+              "amount": 0.15
+            }
+          ],
+          "note": "dome tree over the section join 3-1 | 3-2 (the far layer changes behind it)"
+        }
+      ],
+      "s3": "auto",
+      "sections": [
+        {
+          "id": "3-1",
+          "name": "THE LAST FENCE",
+          "x0": 0,
+          "len": 1344,
+          "cap": "THE GLASS PERIMETER",
+          "locks": [
+            640,
+            960
+          ],
+          "bossLock": null,
+          "scenery": [
+            "flock",
+            "herd"
+          ],
+          "cast": {
+            "gunner": [
+              "bomber",
+              "poacherJ"
+            ],
+            "knifer": [
+              "blade",
+              "knife"
+            ]
+          },
+          "props": [
+            {
+              "kind": "crate",
+              "x": 222
+            },
+            {
+              "kind": "barrel",
+              "x": 607
+            },
+            {
+              "kind": "barrel",
+              "x": 992
+            }
+          ]
+        },
+        {
+          "id": "3-2",
+          "name": "THE COLLAR PENS",
+          "x0": 1344,
+          "len": 1024,
+          "locks": [
+            1536,
+            1984
+          ],
+          "bossLock": null,
+          "set": [
+            "naguri-vignette"
+          ],
+          "props": [
+            {
+              "kind": "crate",
+              "x": 193
+            },
+            {
+              "kind": "barrel",
+              "x": 578
+            },
+            {
+              "kind": "beacon",
+              "name": "PEN SONIC LURE",
+              "x": 420
+            }
+          ],
+          "cast": {
+            "gunner": [
+              "bomber",
+              "poacherJ"
+            ],
+            "knifer": [
+              "blade",
+              "knife"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "a1",
+      "w": 2048,
+      "h": 224,
+      "bg": "auto",
+      "s2": [
+        {
+          "slice": {
+            "src": "E2a0",
+            "x": [
+              256,
+              768
+            ],
+            "h": [
+              80,
+              304
+            ]
+          },
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E2a0",
+            "x": [
+              256,
+              768
+            ],
+            "h": [
+              80,
+              304
+            ]
+          },
+          "at": [
+            512,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E6a1",
+            "x": [
+              1792,
+              2304
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            1024,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E6a1",
+            "x": [
+              1792,
+              2304
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            1536,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "patch": {
+            "src": "E2a0",
+            "x": [
+              400,
+              448
+            ],
+            "h": [
+              80,
+              304
+            ],
+            "rows": [
+              5,
+              6,
+              7
+            ]
+          },
+          "at": [
+            992,
+            0
+          ],
+          "flip": false,
+          "join": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 28,
+              "s": 0.7,
+              "l": 0.8
+            },
+            {
+              "op": "tint",
+              "rgb": "#335c33",
+              "amount": 0.15
+            }
+          ],
+          "note": "dome tree over the section join 3-3 | 3-4 (the far layer changes behind it)"
+        }
+      ],
+      "s3": "auto",
+      "sections": [
+        {
+          "id": "3-3",
+          "name": "THE EGG RACKS",
+          "x0": 0,
+          "len": 1024,
+          "cap": "THE HATCHERY",
+          "locks": [
+            192,
+            640
+          ],
+          "bossLock": null,
+          "scenery": [
+            "hatchlings"
+          ],
+          "note": "elite PACK ALPHA; fg vine trunks and fern band (priority pens)",
+          "props": [
+            {
+              "kind": "barrel",
+              "x": 193
+            },
+            {
+              "kind": "crate",
+              "x": 578
+            }
+          ]
+        },
+        {
+          "id": "3-4",
+          "name": "THE RIVER WALK",
+          "x0": 1024,
+          "len": 1024,
+          "locks": [
+            1216,
+            1664
+          ],
+          "bossLock": null,
+          "scenery": [
+            "herd"
+          ],
+          "props": [
+            {
+              "kind": "barrel",
+              "x": 193
+            },
+            {
+              "kind": "barrel",
+              "x": 578
+            },
+            {
+              "kind": "beacon",
+              "name": "RIVER SONIC LURE",
+              "x": 420
+            }
+          ],
+          "cast": {
+            "gunner": [
+              "poacherJ",
+              "bomber"
+            ],
+            "knifer": [
+              "blade",
+              "knife"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "a2",
+      "w": 2560,
+      "h": 224,
+      "bg": "auto",
+      "s2": [
+        {
+          "slice": {
+            "src": "E2a1",
+            "x": [
+              1504,
+              1856
+            ],
+            "h": [
+              80,
+              304
+            ]
+          },
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E2a1",
+            "x": [
+              2880,
+              3328
+            ],
+            "h": [
+              64,
+              288
+            ]
+          },
+          "at": [
+            352,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E2a1",
+            "x": [
+              1504,
+              1728
+            ],
+            "h": [
+              80,
+              304
+            ]
+          },
+          "at": [
+            800,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E6a1",
+            "x": [
+              0,
+              512
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            1024,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E6a1",
+            "x": [
+              256,
+              768
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            1536,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E6a1",
+            "x": [
+              2848,
+              3168
+            ],
+            "h": [
+              240,
+              464
+            ]
+          },
+          "at": [
+            2048,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E6a1",
+            "x": [
+              2848,
+              3040
+            ],
+            "h": [
+              240,
+              464
+            ]
+          },
+          "at": [
+            2368,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "patch": {
+            "src": "E2a0",
+            "x": [
+              400,
+              448
+            ],
+            "h": [
+              80,
+              304
+            ],
+            "rows": [
+              5,
+              6,
+              7
+            ]
+          },
+          "at": [
+            320,
+            0
+          ],
+          "flip": false,
+          "join": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 28,
+              "s": 0.7,
+              "l": 0.8
+            },
+            {
+              "op": "tint",
+              "rgb": "#335c33",
+              "amount": 0.15
+            }
+          ],
+          "note": "dome tree over the E2a1 1856 | 2880 join"
+        },
+        {
+          "patch": {
+            "src": "E2a0",
+            "x": [
+              400,
+              448
+            ],
+            "h": [
+              80,
+              304
+            ],
+            "rows": [
+              5,
+              6,
+              7
+            ]
+          },
+          "at": [
+            784,
+            0
+          ],
+          "flip": true,
+          "join": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 28,
+              "s": 0.7,
+              "l": 0.8
+            },
+            {
+              "op": "tint",
+              "rgb": "#335c33",
+              "amount": 0.15
+            }
+          ],
+          "note": "dome tree over the E2a1 | E2a1 flip join"
+        },
+        {
+          "patch": {
+            "src": "E2a0",
+            "x": [
+              400,
+              448
+            ],
+            "h": [
+              80,
+              304
+            ],
+            "rows": [
+              5,
+              6,
+              7
+            ]
+          },
+          "at": [
+            992,
+            0
+          ],
+          "flip": false,
+          "join": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 28,
+              "s": 0.7,
+              "l": 0.8
+            },
+            {
+              "op": "tint",
+              "rgb": "#335c33",
+              "amount": 0.15
+            }
+          ],
+          "note": "dome tree over the section join 3-5 | 3-6 (the far layer changes behind it)"
+        },
+        {
+          "patch": {
+            "src": "E2a0",
+            "x": [
+              400,
+              448
+            ],
+            "h": [
+              80,
+              304
+            ],
+            "rows": [
+              5,
+              6,
+              7
+            ]
+          },
+          "at": [
+            1520,
+            0
+          ],
+          "flip": true,
+          "join": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 28,
+              "s": 0.7,
+              "l": 0.8
+            },
+            {
+              "op": "tint",
+              "rgb": "#335c33",
+              "amount": 0.15
+            }
+          ],
+          "note": "dome tree over the E6a1 | E6a1 flip join"
+        },
+        {
+          "patch": {
+            "src": "E2a0",
+            "x": [
+              400,
+              448
+            ],
+            "h": [
+              80,
+              304
+            ],
+            "rows": [
+              5,
+              6,
+              7
+            ]
+          },
+          "at": [
+            2016,
+            0
+          ],
+          "flip": false,
+          "join": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 28,
+              "s": 0.7,
+              "l": 0.8
+            },
+            {
+              "op": "tint",
+              "rgb": "#335c33",
+              "amount": 0.15
+            }
+          ],
+          "note": "dome tree over the E6a1 768 | 2848 join"
+        },
+        {
+          "patch": {
+            "src": "E2a0",
+            "x": [
+              400,
+              448
+            ],
+            "h": [
+              80,
+              304
+            ],
+            "rows": [
+              5,
+              6,
+              7
+            ]
+          },
+          "at": [
+            2352,
+            0
+          ],
+          "flip": true,
+          "join": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 28,
+              "s": 0.7,
+              "l": 0.8
+            },
+            {
+              "op": "tint",
+              "rgb": "#335c33",
+              "amount": 0.15
+            }
+          ],
+          "note": "dome tree over the pool join"
+        }
+      ],
+      "s3": "auto",
+      "anims": [],
+      "sections": [
+        {
+          "id": "3-5",
+          "name": "THE NEST TRAIL",
+          "x0": 0,
+          "len": 1024,
+          "cap": "THE NEST",
+          "locks": [
+            192,
+            640
+          ],
+          "bossLock": null,
+          "props": [
+            {
+              "kind": "crate",
+              "x": 193
+            },
+            {
+              "kind": "barrel",
+              "x": 578
+            },
+            {
+              "kind": "beacon",
+              "name": "NEST APPROACH LURE",
+              "x": 860
+            }
+          ],
+          "note": "the animated water cells of E2a1 lie at X 1872-2576, outside the used ranges: nothing to carry",
+          "cast": {
+            "gunner": [
+              "poacherJ",
+              "bomber"
+            ]
+          }
+        },
+        {
+          "id": "3-6",
+          "name": "THE REGENT’S NEST",
+          "x0": 1024,
+          "len": 1536,
+          "locks": [
+            1216,
+            1664
+          ],
+          "bossLock": 2176,
+          "props": [
+            {
+              "kind": "barrel",
+              "x": 193
+            },
+            {
+              "kind": "crate",
+              "x": 578
+            },
+            {
+              "kind": "barrel",
+              "x": 963
+            },
+            {
+              "kind": "barrel",
+              "x": 1348
+            },
+            {
+              "kind": "chain-anchor",
+              "x": 1400
+            }
+          ],
+          "note": "boss lock 2176-2560 = the teal pool and stone skull (E6a1 2848-3168, not a boss window); NEST SONIC DRIVER spawned with the boss at lock.right-260",
+          "cast": {
+            "gunner": [
+              "bomber",
+              "poacherJ"
+            ],
+            "knifer": [
+              "blade",
+              "knife"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

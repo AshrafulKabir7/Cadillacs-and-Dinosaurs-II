@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Multiplayer harness</title>
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body><main class="cabinet">
+<div class="game-shell"><canvas id="game" width="768" height="448" tabindex="0"></canvas><div id="overlay"><section class="panel title-panel"><p class="eyebrow">MULTIPLAYER HARNESS · MOCK GAME</p><div class="menu-buttons"><button class="primary" id="mp-open" type="button">PLAY WITH FRIENDS</button></div></section></div></div>
+</main>
+<!-- tests/multiplayer.cjs (tier T1, work/mp/MULTIPLAYER.md §4.1): the real net.js and lobby.js against a toy game
+     (mp-mock-game.js) that implements the §5.3 adapter. ?net=loopback uses the loopback transport (window.__MP_BUS from
+     tests/lib/mp.cjs when present, else a BroadcastChannel between tabs); ?join=CODE auto-joins. -->
+<script src="../../net.js"></script>
+<script src="../../lobby.js"></script>
+<script src="mp-mock-game.js"></script>
+<script>
+(function () {
+  const overlay = document.getElementById('overlay');
+  const opts = () => ({ adapter: MOCK_GAME.adapter, net: window.EDEN_NET,
+    onStart: () => { overlay.hidden = true; },
+    onExit: () => { overlay.hidden = false; } });
+  document.getElementById('mp-open').addEventListener('click', () => EDEN_LOBBY.open(Object.assign(opts(), { mode: 'menu' })));
+  if (window.EDEN_LOBBY) EDEN_LOBBY.autoJoinFromUrl(opts());
+})();
+</script>
+</body></html>

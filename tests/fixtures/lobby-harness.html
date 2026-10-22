@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lobby harness</title>
+<script>if(matchMedia("(pointer:coarse)").matches||/[?&]touch=1/.test(location.search))document.documentElement.classList.add("touch-ui");</script>
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body><main class="cabinet">
+<div class="game-shell"><canvas id="game" width="768" height="448" tabindex="0"></canvas><div class="scanlines" aria-hidden="true"></div><div id="overlay"><section class="panel title-panel"><p class="eyebrow">LOBBY HARNESS</p><div class="menu-buttons"><button class="primary" id="mp-open">PLAY WITH FRIENDS</button></div></section></div></div>
+</main>
+<!-- tests/lobby.cjs: ?net=real loads the real net.js (with ?net=loopback for its BroadcastChannel transport); otherwise the
+     scripted stub. The adapter below stands in for game.js (MULTIPLAYER.md §5.3) and records every call. -->
+<script>
+(function () {
+  const real = /[?&]real=1/.test(location.search);
+  document.write(real ? '<script src="../../net.js"><\/script>' : '<script src="lobby-net-stub.js"><\/script>');
+})();
+</script>
+<script src="../../lobby.js"></script>
+<script>
+(function () {
+  const names = ['MUSTAPHA', 'JACK TENREC', 'HANNAH DUNDEE', "MESS O'BRADOVICH"], colors = ['#d5ec69', '#7dc4de', '#efaa77', '#b5cc85'];
+  const art = i => { const c = document.createElement('canvas'); c.width = 48; c.height = 48; const g = c.getContext('2d');
+    g.fillStyle = '#000'; g.fillRect(0, 0, 48, 48); g.fillStyle = colors[i]; g.fillRect(16, 6, 16, 14); g.fillRect(10, 20, 28, 28); return c; };
+  window.ADAPTER_CALLS = [];
+  window.KEYS_SEEN = [];
+  window.addEventListener('keydown', e => KEYS_SEEN.push(e.code)); // stands in for game.js's window keydown handler
+  const rec = (n, ...a) => ADAPTER_CALLS.push([n, ...a.map(x => JSON.parse(JSON.stringify(x === undefined ? null : x)))]);
+  window.HARNESS_ADAPTER = window.MOCK_GAME && window.MOCK_GAME.adapter || {
+    build: 'lobby-harness-1',
+    heroes: names.map((name, i) => ({ id: name.split(' ')[0].toLowerCase(), name, color: colors[i], portrait: art(i) })),
+    selectOrder: [1, 2, 0, 3],
+    chapters: () => ['WASSOON', 'THE CORAL CAUSEWAY', 'THE VERDANT BIODOME', 'THE SINK', 'THE OBSERVATORY', 'THE CROWN SPIRE'].map((name, index) => ({ index, name, unlocked: index < 3 })),
+    difficulties: () => [{ key: 'easy', label: 'EASY' }, { key: 'normal', label: 'NORMAL' }, { key: 'hard', label: 'ARCADE MANIA' }],
+    schema: { sections: {} },
+    startGame: c => rec('startGame', c), enterReplica: c => rec('enterReplica', c), exitReplica: r => rec('exitReplica', r), stopGame: r => rec('stopGame', r),
+    canAdmit: () => false, addPlayer: (...a) => rec('addPlayer', ...a), removePlayer: (...a) => rec('removePlayer', ...a),
+    setRemoteInput() {}, remoteButton() {}, serialize: () => ({}), drainEvents: () => [], pause() {}, applyView() {}, fireEvent() {},
+    echoStep: r => r, localInput: { attach() {}, detach() {} },
+  };
+  window.LOBBY_EVENTS = [];
+  window.lobbyOpts = extra => Object.assign({ adapter: HARNESS_ADAPTER, container: '.game-shell',
+    onExit: r => LOBBY_EVENTS.push(['exit', r]), onStart: (s, c) => LOBBY_EVENTS.push(['start', c]) }, extra || {});
+  document.getElementById('mp-open').onclick = () => EDEN_LOBBY.open(lobbyOpts({ mode: 'menu' }));
+  window.AUTO_JOINED = /[?&]join=/.test(location.search) && !/[?&]noauto=1/.test(location.search) ? EDEN_LOBBY.autoJoinFromUrl(lobbyOpts()) : null;
+})();
+</script>
+</body></html>

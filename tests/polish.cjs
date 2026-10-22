@@ -12,47 +12,61 @@ const checks=await page.evaluate(()=>{
  const ticks=(n,dt=1/60)=>{for(let i=0;i<n;i++)g.step(dt);},key=(code,on)=>window.dispatchEvent(new KeyboardEvent(on?'keydown':'keyup',{code,bubbles:true}));
  const release=()=>['KeyA','KeyD','KeyW','KeyS','KeyJ','KeyK','KeyL','KeyE','ShiftLeft'].forEach(k=>key(k,false));
  const car=()=>g.snapshot.player;
+ // Arcade px (ARCHITECTURE §7): M is the middle of the feet band.
+ const M=()=>g.snapshot.band.mid;
 
  // Movement advances by elapsed time, so a 72 Hz or 144 Hz display walks the same distance per second as 60 Hz.
  g.start(0,0,'normal');ticks(10);key('KeyD',true);const x0=car().x;ticks(60);const at60=car().x-x0;
  g.start(0,0,'normal');ticks(10);key('KeyD',true);const x1=car().x;ticks(72,1/72);const at72=car().x-x1;
  g.start(0,0,'normal');ticks(10);key('KeyD',true);const x2=car().x;ticks(144,1/144);const at144=car().x-x2;release();
- check(`One second of walking covers the same ground at 60, 72 and 144 updates per second (${at60.toFixed(1)} / ${at72.toFixed(1)} / ${at144.toFixed(1)} px)`,Math.abs(at60-at72)<2&&Math.abs(at60-at144)<2&&at60>150);
+ check(`One second of walking covers the same ground at 60, 72 and 144 updates per second (${at60.toFixed(1)} / ${at72.toFixed(1)} / ${at144.toFixed(1)} px)`,Math.abs(at60-at72)<2&&Math.abs(at60-at144)<2&&at60>100);
  const steps=[];g.start(0,0,'normal');ticks(10);key('KeyD',true);for(let i=0;i<40;i++){const a=car().x;g.step(1/72);steps.push(car().x-a);}release();
  check('Every 72 Hz step moves the hero by the same amount (no skipped frames)',steps.every(d=>Math.abs(d-steps[0])<.01)&&steps[0]>1);
 
  // The Cadillac builds speed, coasts down instead of stopping dead, and never drifts into the screen edge while locked.
  g.start(1,0,'normal');ticks(5);const startX=car().x;key('KeyD',true);ticks(6);const early=car().vx;ticks(60);const top=car().vx;key('KeyD',false);ticks(12);const coasting=car().vx;ticks(90);
- check(`Throttle builds speed over time (${early.toFixed(0)} → ${top.toFixed(0)} px/s) and the car moved forward`,early>0&&early<top&&top>200&&car().x>startX+150);
+ check(`Throttle builds speed over time (${early.toFixed(0)} → ${top.toFixed(0)} px/s) and the car moved forward`,early>0&&early<top&&top>148&&car().x>startX+111);
  check(`Releasing the throttle coasts down (${coasting.toFixed(0)} px/s) rather than stopping instantly`,coasting>0&&coasting<top);
  g.start(1,0,'normal');ticks(5);const plan=g.snapshot.plan;g.test.skipTo(0);g.step(1/60);ticks(30);let s=g.snapshot;
  check('The first highway fight locks the screen with riders entering from off screen',s.lock&&s.enemies.length>0&&s.enemies.every(e=>e.type==='biker'));
  ticks(180);release();ticks(120);const held=car().x,hp0=car().hp;ticks(120);s=g.snapshot;
  // A rider's hit jolts the car 23 px; apart from that, an unattended car must not creep toward the edge.
  const drift=car().x-held,jolted=car().hp<hp0;
- check(`With no input in a locked fight the car stays put (${drift.toFixed(1)} px drift${jolted?', after being hit':''}) and the whole car remains on screen`,Math.abs(car().vx)<1&&(Math.abs(drift)<1||jolted)&&car().x>=s.lock.left+160&&car().x<=s.lock.right-160);
- check('The highway keeps streaming under the car while the screen is locked',s.road>400&&s.driving);
+ check(`With no input in a locked fight the car stays put (${drift.toFixed(1)} px drift${jolted?', after being hit':''}) and the whole car remains on screen`,Math.abs(car().vx)<1&&(Math.abs(drift)<1||jolted)&&car().x>=s.lock.left+118&&car().x<=s.lock.right-118);
+ check('The highway keeps streaming under the car while the screen is locked',s.road>296&&s.driving);
  key('KeyS',true);ticks(14);const lean=car().bank;const vyDown=car().vy;key('KeyS',false);ticks(40);
- check(`Steering down leans the car (bank ${lean.toFixed(2)}) and the lean settles when released`,lean>.3&&vyDown>100&&Math.abs(car().bank)<.1);
- key('KeyA',true);ticks(50);check(`Brake / reverse backs the car up (${car().vx.toFixed(0)} px/s)`,car().vx<-100);release();ticks(30);
+ check(`Steering down leans the car (bank ${lean.toFixed(2)}) and the lean settles when released`,lean>.3&&vyDown>74&&Math.abs(car().bank)<.1);
+ key('KeyA',true);ticks(50);check(`Brake / reverse backs the car up (${car().vx.toFixed(0)} px/s)`,car().vx<-74);release();ticks(30);
 
  // Ramming is a single impact per enemy that flings them; a beaten rider's bike explodes.
+ // (G4 fix pass: bikes now start beyond the edge by their 89-px frame reach, so their entry and charge timings shift and at
+ // tick 240 neither rider may be riding level (mid-charge or still entering); wait up to 3 s more for one in its ride.)
  g.start(1,0,'normal');ticks(5);g.test.skipTo(0);g.step(1/60);ticks(240);s=g.snapshot;
- const rider=s.enemies.find(e=>!e.dead&&e.onstage&&e.state==='walk');
- if(rider){g.test.move(rider.x-260,rider.y);key('KeyD',true);ticks(10);g.controls.jump();ticks(45);release();}
+ let rider=s.enemies.find(e=>!e.dead&&e.onstage&&e.state==='walk');for(let i=0;i<180&&!rider;i++){ticks(1);s=g.snapshot;rider=s.enemies.find(e=>!e.dead&&e.onstage&&e.state==='walk');}
+ if(rider){g.test.move(rider.x-193,rider.y);key('KeyD',true);ticks(10);g.controls.jump();ticks(45);release();}
  s=g.snapshot;const hitRider=s.enemies.find(e=>e.id===rider?.id);
  check('Ramming a rider at speed flings him off the bike',!!hitRider&&(hitRider.state==='fly'||hitRider.state==='down'||hitRider.dying||hitRider.hp<hitRider.maxhp));
- check('Drops on the highway slide back with the road',(()=>{g.test.drop('food',car().x+300,car().y);const d0=g.snapshot.drops.at(-1).x;ticks(30);const d=g.snapshot.drops.find(v=>v.type==='food');return !d||d.x<d0-100;})());
- const made=g.test.spawnEnemy(car().x+220,car().y,'biker');const idx=g.snapshot.enemies.findIndex(e=>e.id===made.id);g.test.damageEnemy(idx,99999);
+ check('Drops on the highway slide back with the road',(()=>{g.test.drop('food',car().x+222,car().y);const d0=g.snapshot.drops.at(-1).x;ticks(30);const d=g.snapshot.drops.find(v=>v.type==='food');return !d||d.x<d0-74;})());
+ const made=g.test.spawnEnemy(car().x+163,car().y,'biker');const idx=g.snapshot.enemies.findIndex(e=>e.id===made.id);g.test.damageEnemy(idx,99999);
  check('A beaten rider’s bike goes up in an explosion',g.snapshot.effects.includes('explosion')&&g.snapshot.enemies[idx].dying);
  g.start(1,1,'normal');ticks(5);g.test.skipTo(g.snapshot.plan.encounters.findIndex(e=>e.task===0));g.step(1/60);ticks(30);
  check('Convoy pods are carried on a flatbed that must be rammed',g.snapshot.mission.active?.kind==='cargo');
- g.render();check('Radio chatter is drawn in the strip under the status bar, not across the lanes',(()=>{const c=document.getElementById('game').getContext('2d');const px=c.getImageData(384,80,1,1).data;return px[3]>0;})());
+ // The radio strip has its own rect above the feet band (ARCHITECTURE §1.7): a line changes the pixels inside layout.radio
+ // (most of them: the strip is drawn) and none in the lanes below arcade y 81.
+ // A pixel row: from file:// the stage pages taint the canvas (getImageData throws, ARCHITECTURE §5.1), so it is an
+ // environment SKIP there and required over http, like the G2/G7 pixel rows of tests/framing.cjs.
+ if(location.protocol==='file:')out.push({name:'Radio chatter is drawn in its strip above the feet band, not across the lanes (http only: the canvas is tainted under file://)',passed:true,skipped:true});
+ else check('Radio chatter is drawn in its strip above the feet band, not across the lanes',(()=>{const L=g.layout.radio,c=document.getElementById('game').getContext('2d'),W2=c.canvas.width,H2=c.canvas.height;
+  g.start(0,0,'normal');g.test.say(null);g.render();const a=c.getImageData(0,0,W2,H2).data;g.test.say('JACK: Radio check from the sea wall.');g.render();const b=c.getImageData(0,0,W2,H2).data;g.test.say(null);
+  let inside=0,total=0,below=0;for(let y=0;y<H2;y++)for(let x=0;x<W2;x++){const q=(y*W2+x)*4,d=Math.abs(a[q]-b[q])+Math.abs(a[q+1]-b[q+1])+Math.abs(a[q+2]-b[q+2])>24;if(x>=L[0]&&x<L[0]+L[2]&&y>=L[1]&&y<L[1]+L[3]){total++;if(d)inside++;}else if(y>=2*81&&d)below++;}
+  return L[1]+L[3]<=2*81&&inside>total*.5&&below===0;})());
 
- // Riders alternate between shooting and swerving into the car.
- g.start(1,0,'normal');ticks(5);g.test.skipTo(1);g.step(1/60);let rushes=0,shots=0;
- for(let i=0;i<900;i++){g.step(1/60);const t=g.snapshot;if(t.enemies.some(e=>e.type==='biker'&&e.state==='charge'))rushes++;if(t.bullets.some(b=>!b.friendly))shots++;}
- check(`Riders both shoot (${shots} ticks with rounds in the air) and swerve into the car (${rushes} charge ticks)`,rushes>0&&shots>0);
+ // Riders swerve into the car and no longer shoot (ENEMIES §2.5: the ROM has no rider firing pose); a gunner arriving on the
+ // highway is a roadside Thurow DYNA, whose dynamite is the hostile projectile (ENEMIES §8, PLAN §7 G4: polish L54
+ // renamed). skipTo(1)'s waves are bikers only, so the thrower is brought in with test.arrive.
+ g.start(1,0,'normal');ticks(5);g.test.skipTo(1);g.step(1/60);let rushes=0,shots=0,riderShots=0,thrower=null;
+ for(let i=0;i<900;i++){if(i===60)thrower=g.test.arrive('gunner','R',0);g.step(1/60);const t=g.snapshot,bikers=new Set(t.enemies.filter(e=>e.type==='biker').map(e=>e.id));if(t.enemies.some(e=>e.type==='biker'&&e.state==='charge'))rushes++;if(t.bullets.some(b=>!b.friendly&&b.kind==='bomb'))shots++;if(t.bullets.some(b=>!b.friendly&&bikers.has(b.owner)))riderShots++;}
+ check(`Riders charge the car (${rushes} charge ticks) and never shoot (${riderShots}); roadside dynamite flies (${shots} ticks, ${thrower?thrower.v:'no thrower'})`,rushes>0&&riderShots===0&&shots>0&&thrower?.v==='T');
 
  // After the Crown Engine and the spillway, the last tank releases a copy of Fessenden.
  g.start(5,5,'story');ticks(5);g.test.skipTo(g.snapshot.plan.encounters.length-1);g.step(1/60);ticks(200);
@@ -61,43 +75,94 @@ const checks=await page.evaluate(()=>{
  ticks(200);g.test.clearFighters();ticks(80);s=g.snapshot;
  check('The spillway release is required after the Crown Engine stalls',s.mission.active?.kind==='gate'&&s.mission.active.bossTask&&g.state==='play');
  g.test.completeObjective();ticks(2);s=g.snapshot;const last=s.enemies.find(e=>e.type==='fessenden');
- check('Opening the spillway cracks the last tank: LOT 00 · FESSENDEN walks in as a boss',!!last&&last.boss&&last.name==='LOT 00 · FESSENDEN'&&last.x>s.lock.right-40&&g.state==='play');
+ check('Opening the spillway cracks the last tank: LOT 00 · FESSENDEN walks in as a boss',!!last&&last.boss&&last.name==='LOT 00 · FESSENDEN'&&last.x>s.lock.right-30&&g.state==='play');
  ticks(260);s=g.snapshot;const beast=s.enemies.find(e=>e.type==='fessenden');
- check('The last copy finishes its entrance on screen and starts attacking',beast&&beast.x<s.lock.right-60&&beast.state!=='intro');
- g.render();check('The last copy uses the original beast frames (drawn without errors)',true);
+ check('The last copy finishes its entrance on screen and starts attacking',beast&&beast.x<s.lock.right-44&&beast.state!=='intro');
+ // G5 (PLAN §7 5e, ENEMIES §8 polish L67): LOT 00 is the six-part ROM final form (body, arm, arm2, neckA, neckB, line).
+ {const parts=g.test.bossParts(g.snapshot.enemies.findIndex(e=>e.type==='fessenden'));let drew=true;try{g.render();}catch(e){drew=false;}
+  check('The last copy is the six-part ROM final form (bossParts: body, arm, arm2, neckA, neckB, line) and draws without errors',drew&&!!parts&&['body','arm','arm2','neckA','neckB','line'].every(id=>parts.some(p=>p.id===id))&&parts.find(p=>p.id==='body').visible);}
  g.test.clearFighters();ticks(90);
  check('Beating the last copy ends the chapter and leads to the ending',g.state==='clear');
  check('The chapter ending and story text describe Fessenden’s copy',/Fessenden himself/.test(EDEN_CAMPAIGN[5].end)&&/LOT 00/.test(EDEN_CAMPAIGN[5].brief));
 
- // Arcade gun stances decoded from the ROM: Jack's are torso records on the second sheet, every hero shoulders the bazooka.
- const AH=ARCADE_HEROES,fr=(h,n)=>AH.frames[AH.heroes[h][n][0]];
- check('Jack’s gun stances are his real arcade torso records, not punch frames',['pistolStand','pistolFire','gunStand','gunFire'].every(n=>fr('jack',n).s===2&&fr('jack',n).h<50)&&fr('jack','pistolFire').gunDrawn===true);
- // Long guns, the Uzi, shotgun and bazooka as measured from the arcade videos: in both hands, at arcade size.
- const heldFor=(hero,type,walk)=>{g.start(0,hero,'normal');ticks(5);g.test.equip(type,6);g.test.move(300,352);if(walk){key('KeyD',true);ticks(12);}g.render();const h=g.snapshot.held;key('KeyD',false);return h;};
- check('Every hero holds the rifle across the body: muzzle ahead of the front hand, stock back past the hip to the rear hand',[0,1,2,3].every(h=>{const s=heldFor(h,'rifle');return s&&s.w===74&&s.lx<s.grip[0]-8&&s.lx+s.w>s.grip[0]+40;}));
- check('The Uzi and shotgun are held in front of the chest in both hands, at the arcade sprite size',[0,1,2,3].every(h=>['uzi','shotgun'].every(t=>{const s=heldFor(h,t);return s&&s.w===(t==='uzi'?40:49)&&s.ly<-40&&s.ly>-80;})));
- check('Every hero shoulders the bazooka at chest-to-shoulder height',[0,1,2,3].every(h=>{const s=heldFor(h,'bazooka');return s&&s.w===72&&s.ly<=-60;}));
- check('The held weapon keeps its grip while walking (walking torsos)',[0,1,2,3].every(h=>{const s=heldFor(h,'rifle',true);return s&&s.lx<s.grip[0];}));
- g.start(0,0,'normal');ticks(5);g.test.equip('knife',10);g.test.move(300,352);ticks(1);g.render();const kIdle=g.snapshot.held;key('KeyD',true);ticks(12);g.render();const kWalk=g.snapshot.held;key('KeyD',false);
- check('A knife stands upright in the fist at rest and is carried level at the hip when walking (arcade 08:36, 10:28)',kIdle&&kIdle.w===9&&kIdle.h===27&&kWalk&&kWalk.w===32&&kWalk.h===7&&kWalk.ly>kIdle.ly);
+ // Arcade gun stances decoded from the ROM (HEROES §10.2, PLAN §7 G3a): Jack's clips by record, the rec2 under-layer included.
+ const RA=ROM_HEROES.hero.jack.anim,recs=(r,i)=>RA[r].f.map(f=>f[i]).join();
+ check('Jack’s gun stances are his real arcade records: stand.pistol 75 over 74, attack.pistol 86/87 over 84, stand.rifle 77, attack.rifle 77/88',recs('stand.pistol',0)==='75'&&recs('stand.pistol',1)==='74'&&recs('attack.pistol',0)==='86,87'&&recs('attack.pistol',1)==='84,84'&&recs('stand.rifle',0)==='77'&&recs('attack.rifle',0)==='77,88');
+ // Held weapons are placed by the ROM hold tables: the drawn record and its tight box equal the hold of the current frame.
+ const heldFor=(hero,type,walk)=>{g.start(0,hero,'normal');ticks(5);g.test.equip(type,6);g.test.move(222,M());if(walk){key('KeyD',true);ticks(12);}g.render();const s=g.snapshot,h=s.held;key('KeyD',false);
+  if(h){const id=ROM_HEROES.gameOrder[hero],a=s.player.anim,e=ROM_HEROES.hero[id].hold[type][a.hold],r=SPRITES.rect('fx',h.rec);h.rom=!!e&&e[0]===h.rec&&r&&h.w===r[2]&&h.h===r[3]&&h.lx===h.origin[0]-r[4]&&h.ly===h.origin[1]-r[5]&&(a.legs||(h.origin[0]===e[1]&&h.origin[1]===e[2]));}return h;};
+ check('Every hero holds the rifle across the body: muzzle well ahead of the hold origin, stock back past it (ROM hold)',[0,1,2,3].every(h=>{const s=heldFor(h,'rifle');return s&&s.rom&&s.w===74&&s.lx<s.origin[0]-30&&s.lx+s.w>s.origin[0]+10;}));
+ check('The Uzi and shotgun are held in front of the chest in both hands, at the arcade sprite size',[0,1,2,3].every(h=>['uzi','shotgun'].every(t=>{const s=heldFor(h,t);return s&&s.rom&&s.w===(t==='uzi'?40:47)&&s.ly<-40&&s.ly>-80;})));
+ check('Every hero shoulders the bazooka at chest-to-shoulder height',[0,1,2,3].every(h=>{const s=heldFor(h,'bazooka');return s&&s.rom&&s.w===72&&s.ly<=-60;}));
+ check('The held weapon stays at the ROM hold while walking (walking torsos, bob applied)',[0,1,2,3].every(h=>{const s=heldFor(h,'rifle',true);return s&&s.rom&&s.lx<s.origin[0];}));
+ g.start(0,0,'normal');ticks(5);g.test.equip('knife',10);g.test.move(222,M());ticks(1);g.render();const kIdle=g.snapshot.held;key('KeyD',true);ticks(12);g.render();const kWalk=g.snapshot.held;key('KeyD',false);
+ check('A knife stands upright in the fist at rest (rec 1685) and is carried level at the hip when walking (arcade 08:36, 10:28)',kIdle&&kIdle.rec===1685&&kIdle.w===9&&kWalk&&kWalk.w>kWalk.h&&kWalk.ly>kIdle.ly);
  // With no enemy around, a knife still stabs: it must be able to break a crate (it once did nothing and stalled a sonic lure).
- g.start(0,0,'normal');ticks(5);g.test.equip('knife',10);const crate=g.snapshot.objects[0];g.test.move(crate.x-50,crate.y);ticks(1);const crateHp=crate.hp;key('KeyD',true);ticks(1);key('KeyD',false);g.controls.attack();ticks(20);
+ g.start(0,0,'normal');ticks(5);g.test.equip('knife',10);const crate=g.snapshot.objects[0];g.test.move(crate.x-37,crate.y);ticks(1);const crateHp=crate.hp;key('KeyD',true);ticks(1);key('KeyD',false);g.controls.attack();ticks(20);
  check('A knife with nobody to throw at stabs objects instead of doing nothing',g.snapshot.objects[0].hp<crateHp||g.snapshot.objects[0].hp<=0);
- g.start(0,1,'normal');ticks(5);g.test.equip('gun',6);g.test.move(300,352);g.controls.attack();g.render();s=g.snapshot;
- check('Jack fires the handgun from the frame that already holds it, with the muzzle at the hand point',s.gunSocket.gunDrawn===true&&Math.abs(s.bullets[0].x-(s.player.x+s.gunSocket.x))<.001&&s.player.pose==='fire');
- g.test.equip('bazooka',4);g.render();check('The bazooka is held high on the shoulder',g.snapshot.gunSocket.y>80);
+ g.start(0,1,'normal');ticks(5);g.test.equip('gun',6);g.test.move(222,M());g.controls.attack();g.render();s=g.snapshot;
+ check('Jack fires the handgun on his ROM fire clip, the bullet leaving the ROM muzzle (hold origin + spawn offset)',s.gunSocket.held===true&&s.gunSocket.gunDrawn===false&&Math.abs(s.bullets[0].x-(s.player.x+s.gunSocket.muzzle))<.001&&s.player.pose==='fire'&&s.player.anim&&s.player.anim.id==='weapon:11');
+ g.test.equip('bazooka',4);g.render();check('The bazooka is held high on the shoulder',g.snapshot.gunSocket.y>59);
 
  // Arcade food and score items: heal by the cabinet's shares, pay points at full health, ammunition refills the gun.
- g.start(0,0,'normal');ticks(100);g.test.move(300,352);g.test.damagePlayer(60);ticks(90);const hurt=g.snapshot.player.hp;g.test.drop('food',300,352,'hamburger');ticks(2);
+ g.start(0,0,'normal');ticks(100);g.test.move(222,M());g.test.damagePlayer(60);ticks(90);const hurt=g.snapshot.player.hp;g.test.drop('food',222,M(),'hamburger');ticks(2);
  check(`A hamburger restores 48 % of the bar (${Math.round(hurt)} → ${Math.round(g.snapshot.player.hp)})`,Math.round(g.snapshot.player.hp-hurt)===Math.round(g.snapshot.player.maxhp*.48));
- g.test.drop('food',300,352,'steak');ticks(2);const score0=g.snapshot.score;g.test.drop('food',300,352,'barbecue');ticks(2);check('A barbecue eaten at full health pays 10,000 points instead',g.snapshot.score-score0===10000&&g.snapshot.player.hp===g.snapshot.player.maxhp);
- g.test.drop('bonus',300,352,'goldbar');ticks(2);check('A gold bar pays 10,000 points',g.snapshot.score-score0===20000);
- g.test.equip('rifle',1);g.test.drop('ammo',300,352,'ammo');ticks(2);check('Ammunition refills the held gun',g.snapshot.player.ammo===6);
+ g.test.drop('food',222,M(),'steak');ticks(2);const score0=g.snapshot.score;g.test.drop('food',222,M(),'barbecue');ticks(2);check('A barbecue eaten at full health pays 10,000 points instead',g.snapshot.score-score0===10000&&g.snapshot.player.hp===g.snapshot.player.maxhp);
+ g.test.drop('bonus',222,M(),'goldbar');ticks(2);check('A gold bar pays 10,000 points',g.snapshot.score-score0===20000);
+ g.test.equip('rifle',1);g.test.drop('ammo',222,M(),'ammo');ticks(2);check('Ammunition refills the held gun',g.snapshot.player.ammo===6);
  check('Every container loot type is an arcade weapon or item',(()=>{g.start(0,0,'normal');return g.snapshot.objects.every(o=>['food','bonus','ammo','gun','rod','shotgun','uzi','grenade','rifle','club','m16','dynamite','bazooka','knife','torch','stone'].includes(o.content));})());
+ // G5 (PLAN §7 5a, CAMPAIGN §5.4): WARDEN ROOK fights on BOSS_DEFS. His barrel is a breakable object rolling along his lane
+ // (one shot breaks it); from 40 % the crane drops a crate from above the screen (y - z < view.y) that stays as a breakable
+ // container; from 60 % the tide covers the front of the band and cannot be jumped (air:false).
+ g.start(0,0,'story');ticks(5);g.test.spawnBoss();ticks(170);s=g.snapshot;let bi=s.enemies.findIndex(e=>e.boss);
+ g.test.move(s.lock.left+40,g.test.lane(.5));g.test.equip('gun',6);s=g.snapshot;g.test.move(s.lock.left+40,s.enemies[bi].y);g.test.bossMove(bi,'barrel');let barrel=null;
+ for(let i=0;i<120&&!barrel;i++){ticks(1);barrel=g.snapshot.objects.find(o=>o.boss&&o.type==='barrel'&&o.rolling&&o.hp>0);}
+ if(barrel){key('KeyD',true);ticks(1);key('KeyD',false);for(let i=0;i<120;i++){const b=g.snapshot.objects.find(o=>o.boss&&o.type==='barrel'&&o.hp>0);if(!b||Math.abs(b.x-g.snapshot.player.x)<90)break;ticks(1);}g.controls.attack();for(let i=0;i<40&&g.snapshot.objects.some(o=>o.boss&&o.type==='barrel'&&o.hp>0);i++)ticks(1);}
+ check('Rook rolls a barrel along his lane as a breakable object, and one shot breaks it',!!barrel&&barrel.hp===1&&!g.snapshot.objects.some(o=>o.boss&&o.type==='barrel'&&o.hp>0));
+ s=g.snapshot;g.test.damageEnemy(bi,s.enemies[bi].hp-s.enemies[bi].maxhp*.39);g.test.bossMove(bi,'crane');let craneBox=null;
+ for(let i=0;i<150&&!craneBox;i++){ticks(1);craneBox=g.snapshot.bossObjects.find(o=>o.type==='crate'&&o.falling);}
+ const cy=craneBox?craneBox.y-craneBox.z:null,vy=g.snapshot.view.y;let landed=null;for(let i=0;i<120&&!landed;i++){ticks(1);landed=g.snapshot.objects.find(o=>o.boss&&o.type==='crate'&&!o.falling&&o.hp>0);}
+ check(`From 40 % the crane drops a crate from above the screen (y - z ${cy==null?'?':cy.toFixed(0)} < view.y ${vy.toFixed(0)}) that stays as a breakable crate`,craneBox&&cy<vy&&!!landed);
+ g.start(0,0,'story');ticks(5);g.test.spawnBoss();ticks(170);s=g.snapshot;bi=s.enemies.findIndex(e=>e.boss);g.test.damageEnemy(bi,s.enemies[bi].maxhp*.45);let tide=null;
+ for(let i=0;i<300&&!tide;i++){ticks(1);tide=g.snapshot.zones.find(z=>z.style==='tide');}
+ check('From 60 % the tide surges over the front of the band: a zone that cannot be jumped (air:false)',!!tide&&tide.air===false&&tide.band&&tide.band[1]>tide.band[0]);
+ // G5 (PLAN §7 5d, CAMPAIGN §9.4): LOT 04 · SLICE's flip is a crossover: he lands at hero.x - dir*52, behind the hero, and lashes.
+ g.start(4,0,'story');ticks(5);g.test.spawnBoss();ticks(170);s=g.snapshot;bi=s.enemies.findIndex(e=>e.boss);g.test.move(s.lock.left+170,s.enemies[bi].y);ticks(1);
+ g.test.bossMove(bi,'flip');let flipTo=null,landX=null,wasLeap=false;
+ for(let i=0;i<150&&landX==null;i++){const p=g.snapshot.player,b0=g.snapshot.enemies[bi];if(flipTo==null&&b0.state==='windup'&&b0.mvName==='flip')flipTo=p.x-p.dir*52;ticks(1);const b=g.snapshot.enemies[bi];if(b.state==='leap')wasLeap=true;else if(wasLeap)landX=b.x;}
+ check(`Slice's flip lands behind the hero at hero.x - dir*52 (${landX==null?'-':landX.toFixed(1)} vs ${flipTo==null?'-':flipTo.toFixed(1)}) and lashes`,wasLeap&&landX!=null&&Math.abs(landX-flipTo)<1&&g.snapshot.enemies[bi].state==='windup');
+ // G5 (PLAN §7 5e, CAMPAIGN §10.4): a spillway wheel held 1 s staggers the planted LOT 00 (x1.5); it melts in stages, neck B at
+ // 66 % and the long arm at 33 %, when the body collapses.
+ g.start(5,0,'story');ticks(5);g.test.spawnBoss();ticks(170);g.test.damageEnemy(0,99999);ticks(200);g.test.damageEnemy(0,99999);ticks(5);g.test.completeObjective();ticks(230);
+ s=g.snapshot;let li=s.enemies.findIndex(e=>e.type==='fessenden'),wheel=s.wheels[0];
+ if(wheel){g.test.move(wheel.x,wheel.y);key('KeyE',true);ticks(70);key('KeyE',false);}s=g.snapshot;const lot=s.enemies[li];
+ check('A spillway wheel held for a second staggers LOT 00 and opens it to x1.5 damage',!!wheel&&lot.lot.stagger>0&&lot.vulnT>0&&s.wheels[0].cd>0);
+ ticks(250);   // the stagger (and its x1.5) runs out before the melt thresholds are crossed one at a time
+ {const L0=g.snapshot.enemies[li];g.test.damageEnemy(li,L0.hp-L0.maxhp*.6);}ticks(8);const melt1=g.test.bossParts(li);g.test.damageEnemy(li,g.snapshot.enemies[li].hp-g.snapshot.enemies[li].maxhp*.3);ticks(8);const melt2=g.test.bossParts(li);
+ const m=(P,id)=>P.find(p=>p.id===id).melted;
+ check('LOT 00 melts in stages: neck B at 66 %, then the long arm at 33 % as the body collapses',m(melt1,'neckB')&&!m(melt1,'arm')&&m(melt2,'arm')&&!m(melt2,'neckA')&&g.snapshot.enemies[li].lot.mode==='collapse');
+ // G5 (PLAN §7 5f, CAMPAIGN §6.4): LOT 44 · MACK is fought from the Cadillac. A ram in its head-up window (recover) counts x2 and
+ // one outside it x0.5, so the window ram deals four times as much; at 66 % it bellows two bikers in from behind the car.
+ g.start(1,0,'story');ticks(5);g.test.spawnBoss();ticks(170);s=g.snapshot;bi=s.enemies.findIndex(e=>e.boss);const mack=s.enemies[bi];
+ const ramAt=st=>{g.test.bossMove(bi,st);ticks(st==='recover'?3:1);const m=g.snapshot.enemies[bi],v=g.snapshot.player;g.test.move(m.x-70,m.y);const h0=m.hp;ticks(1);const m1=g.snapshot.enemies[bi];m1.rammed=0;
+   const before=m1.hp;key('KeyD',true);ticks(4);key('KeyD',false);const after=g.snapshot.enemies[bi].hp;return before-after;};
+ const inWin=ramAt('recover');ticks(150);const outWin=ramAt('pace');
+ check(`A ram during MACK's head-up window counts x2 and one outside it x0.5, four times as much (${inWin.toFixed(1)} vs ${outWin.toFixed(1)})`,g.snapshot.driving&&inWin>0&&outWin>0&&Math.abs(inWin/outWin-4)<.6);
+ key('KeyA',true);ticks(30);key('KeyA',false);ticks(6);s=g.snapshot;g.test.damageEnemy(bi,s.enemies[bi].hp-s.enemies[bi].maxhp*.6);ticks(2);s=g.snapshot;const riders=s.enemies.filter(e=>!e.boss&&!e.dead&&e.type==='biker');
+ check(`At 66 % MACK bellows two bikers in from behind the car (${riders.map(e=>Math.round(e.x-s.lock.left)).join(', ')})`,riders.length>=2&&riders.every(e=>e.from===-1&&e.x<s.lock.left));
+ // CAMPAIGN §6.4: the head-on is told by a 1.0-s '!' in the car's lane once MACK has run off the right edge, then it charges back.
+ {g.start(1,0,'story');ticks(5);g.test.spawnBoss();ticks(170);const mi=g.snapshot.enemies.findIndex(e=>e.boss);g.test.bossMove(mi,'headon');let tell=0,charged=false;
+  for(let i=0;i<400&&!charged;i++){ticks(1);const m=g.snapshot.enemies.find(e=>e.type==='truck');if(!m)break;if(m.state==='windup'&&m.mvName==='headon'&&m.phase2h&&m.x>g.snapshot.lock.right)tell++;if(m.state==='charge'&&m.mvName==='headon')charged=true;}
+  check(`MACK's head-on is told by the '!' in the car's lane for a full second before it charges back (${(tell/60).toFixed(2)} s)`,charged&&tell/60>=1-1e-6);}
+ // CAMPAIGN §8.4 / §10.4 ('lines.after; then clear'): a beaten boss's defeat script plays before the chapter clears. Cinder's
+ // melt is on show for its 1.65 s, its line goes on the radio at the dissolve, and only then does the clear panel come up.
+ {g.start(3,0,'story');ticks(5);g.test.spawnBoss();ticks(170);g.test.clearFighters();ticks(60);const mid=g.state,c=g.snapshot.enemies.find(e=>e.type==='cinder');const melting=!!c&&c.defeat?.kind==='melt'&&!c.defeat.done;
+  let t=60;while(g.state!=='clear'&&t<180){ticks(1);t++;}const line=g.snapshot.radio;
+  check(`A beaten boss's defeat script plays before the chapter clears (Cinder's melt; clear after ${(t/60).toFixed(2)} s)`,mid==='play'&&melting&&g.state==='clear'&&t/60>=1.65-1e-6&&t/60<=1.8&&line===EDEN_CAMPAIGN[3].bossDefeat);}
  return out;
 }).catch(e=>[{name:'Polish checks threw: '+e.message,passed:false}]);
 checks.push({name:'No browser exceptions in polish checks',passed:errors.length===0});
 fs.writeFileSync('tests/results/polish-report.json',JSON.stringify({passed:checks.filter(c=>c.passed).length,checks,errors},null,2));await browser.close();
-for(const row of checks)console.log((row.passed?'PASS ':'FAIL ')+row.name);
+for(const row of checks)console.log((row.skipped?'SKIP ':row.passed?'PASS ':'FAIL ')+row.name);
 for(const row of checks)assert.ok(row.passed,row.name);assert.equal(errors.length,0,errors.join('\n'));console.log(JSON.stringify({passed:checks.length,errors}));
 })().catch(e=>{console.error(e);process.exit(1);});

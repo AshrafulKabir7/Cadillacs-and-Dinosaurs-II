@@ -1,0 +1,8 @@
+{
+  "name": "boot-to-select",
+  "frames": 520,
+  "coinStart": { "coin": 330, "start": 370 },
+  "inputs": [ { "from": 430, "to": 433, "keys": ["P1 Right"] } ],
+  "snapshots": [300, 340, 410, 440, 500],
+  "dump": { "from": 400, "to": 520, "every": 20, "obj": true, "cpsA": true }
+}

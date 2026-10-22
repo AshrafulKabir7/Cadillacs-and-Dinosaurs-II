@@ -1,0 +1,1292 @@
+{
+  "id": "ch1",
+  "title": "WASSOON",
+  "objPage": "S1A0",
+  "preset": "harbor-night",
+  "fx": {
+    "rain": true
+  },
+  "notes": [
+    "Transcribed from CAMPAIGN.md §5.1 / §12.2 '1-1'..'1-6' and corrected for KI1 (the lane limit): E4a0 352-864 has a 64-px lane (feet 161-224), E1a2 176-464 48 px (177-224), E1a0 928-1312 48 px (161-208) and the E7a0 512-1024 quay 48 px (113-160, over the canal), so CAMPAIGN's 'full band' pieces fail gates 2 and 3 as written.",
+    "Test-safe start (gate 3 needs a band covering mid +-48, i.e. >= 97 px): the E4a0 pavement is extended toward the sea wall by copying its own floor cells (E4a0 h 16-64, the rows at y 176-224) up to y 112 with their terrain (type 0), so the lane 113-224 stands on scroll2 floor art over its whole height. A walk patch over the far layer (the first build) is not used any more.",
+    "Other lanes: walk patches only over floor art (E1a2 sidewalk row y 161-176; E1a0 roof row y 145-160); gate 2 rejects a walk patch over a cell less than half opaque. The E7a0 quay becomes a promenade: E7a0 plaza slabs (E7a0 0-256, h 16-96, every other copy mirrored so the copies meet on mirror joins) replace its balustrade, wall and canal rows (y 144-224), giving a 112-px lane.",
+    "1-1 order changed so the test-safe 640 px are one flat band: E4a0 352-864, E4a0 608-864 flip, E1a2 176-464, E4a0 352-640 (CAMPAIGN had the E1a2 join at 512, inside the 640 px gate 3 needs flat).",
+    "Seams (CAMPAIGN §4.1 join chunks): every join of two different sources is covered by the harbor pillar, the brick jamb of the E7a0 arch (E7a0 1760-1792, palette row 27 lifted off the tunnel behind it; a full-height foreground pillar), centred on the join. Same-source joins are mirror joins.",
+    "Far layer: one per section (CAMPAIGN §12.2, ARCHITECTURE §3.3): 1-1 the E4a0 sea wall (shift 1) behind every piece of the section, 1-2 the E7a0 city across the bay (shift 2), 1-3 the E4a2 factory (shift 2, amber), 1-4 the E7a0 bay, 1-5 the E1a0 sea (shift 3), 1-6 the E4a0 sea wall. Where it changes inside an area the change sits under a pillar.",
+    "Palette: harbor-night on every scroll2 slice, with the 'stone' role given for E4a0, E7a0, E4a2 and E1a0 (all rows: the night scale keeps pens 1-3, the stone tint changes them too) so no slice keeps most of its 1993 colours (gate 4 counts recoloured pixels); E1a2 slices take the night scale without the kept window pens and the scroll3 skies take s3ops (night scale + 20% toward #1a2a5a); the sea borrow role is not given."
+  ],
+  "areas": [
+    {
+      "id": "a0",
+      "w": 2368,
+      "h": 224,
+      "bg": "auto",
+      "s2": [
+        {
+          "slice": {
+            "src": "E4a0",
+            "x": [
+              352,
+              864
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E4a0",
+            "x": [
+              608,
+              864
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            512,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E1a2",
+            "x": [
+              176,
+              464
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            768,
+            0
+          ],
+          "step": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "scale",
+              "rgb": [
+                0.45,
+                0.5,
+                0.75
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#1a2a5a",
+              "amount": 0.12
+            }
+          ]
+        },
+        {
+          "slice": {
+            "src": "E4a0",
+            "x": [
+              352,
+              640
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1056,
+            0
+          ],
+          "step": true
+        },
+        {
+          "slice": {
+            "src": "E7a0",
+            "x": [
+              512,
+              1024
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1344,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E7a0",
+            "x": [
+              512,
+              1024
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1856,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "patch": {
+            "src": "E4a0",
+            "x": [
+              352,
+              864
+            ],
+            "h": [
+              16,
+              64
+            ]
+          },
+          "at": [
+            0,
+            112
+          ],
+          "terrain": "copy",
+          "floor": true,
+          "note": "the pavement widened toward the sea wall: E4a0 floor cells (y 176-224) copied up to y 112 with their terrain, so the test-safe lane 113-224 is floor art"
+        },
+        {
+          "patch": {
+            "src": "E4a0",
+            "x": [
+              608,
+              864
+            ],
+            "h": [
+              16,
+              64
+            ]
+          },
+          "at": [
+            512,
+            112
+          ],
+          "flip": true,
+          "terrain": "copy",
+          "floor": true,
+          "note": "the same under the mirrored piece"
+        },
+        {
+          "patch": {
+            "src": "E4a0",
+            "x": [
+              352,
+              640
+            ],
+            "h": [
+              16,
+              64
+            ]
+          },
+          "at": [
+            1056,
+            112
+          ],
+          "terrain": "copy",
+          "floor": true,
+          "note": "the same past the ruined block"
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              0,
+              256
+            ],
+            "h": [
+              16,
+              96
+            ]
+          },
+          "at": [
+            1344,
+            144
+          ],
+          "every": 256,
+          "alternate": true,
+          "terrain": "copy",
+          "note": "promenade: plaza slabs over the quay balustrade, wall and canal (every other copy mirrored)"
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              1760,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              27
+            ]
+          },
+          "at": [
+            752,
+            0
+          ],
+          "join": true,
+          "note": "harbor pillar over the E4a0 | E1a2 join",
+          "preset": false,
+          "ops": [
+            {
+              "op": "scale",
+              "rgb": [
+                0.45,
+                0.5,
+                0.75
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#1a2a5a",
+              "amount": 0.25
+            }
+          ]
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              1760,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              27
+            ]
+          },
+          "at": [
+            1040,
+            0
+          ],
+          "join": true,
+          "note": "harbor pillar over the E1a2 | E4a0 join",
+          "preset": false,
+          "ops": [
+            {
+              "op": "scale",
+              "rgb": [
+                0.45,
+                0.5,
+                0.75
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#1a2a5a",
+              "amount": 0.25
+            }
+          ]
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              1760,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              27
+            ]
+          },
+          "at": [
+            1328,
+            0
+          ],
+          "join": true,
+          "note": "harbor pillar over the section join 1-1 | 1-2 (the far layer changes under it)",
+          "preset": false,
+          "ops": [
+            {
+              "op": "scale",
+              "rgb": [
+                0.45,
+                0.5,
+                0.75
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#1a2a5a",
+              "amount": 0.25
+            }
+          ]
+        }
+      ],
+      "s3": [
+        {
+          "x": [
+            0,
+            1344
+          ],
+          "src": "E4a0",
+          "shift": 1,
+          "note": "1-1: the sea wall behind the whole section"
+        },
+        {
+          "x": [
+            1344,
+            2368
+          ],
+          "src": "E7a0",
+          "shift": 2,
+          "x3": [
+            0,
+            768
+          ],
+          "note": "1-2: the city across the bay"
+        }
+      ],
+      "walk": {
+        "patch": [
+          {
+            "rect": [
+              768,
+              160,
+              288,
+              16
+            ],
+            "walk": true,
+            "why": "E1a2 sidewalk top row (floor art), lane 64 px"
+          }
+        ]
+      },
+      "anims": [
+        {
+          "cells": {
+            "src": "E5a1",
+            "x": [
+              3360,
+              3552
+            ],
+            "h": [
+              528,
+              560
+            ]
+          },
+          "at": [
+            1136,
+            80
+          ],
+          "note": "the burning jail barge beyond the gate: E5a1 ground-fire cells along the foot of the wall",
+          "preset": false,
+          "pens": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "rows": [
+            26
+          ],
+          "fg": false
+        }
+      ],
+      "start": {
+        "x": 60
+      },
+      "sections": [
+        {
+          "id": "1-1",
+          "name": "THE SEA WALL",
+          "x0": 0,
+          "len": 1344,
+          "cap": "WASSOON HARBOR",
+          "locks": [
+            640,
+            960
+          ],
+          "bossLock": null,
+          "props": [
+            {
+              "kind": "crate",
+              "x": 170
+            },
+            {
+              "kind": "crate",
+              "x": 330
+            },
+            {
+              "kind": "drop",
+              "type": "gun",
+              "x": 260
+            }
+          ],
+          "scenery": [
+            "flock"
+          ],
+          "note": "test-safe start: flat 0-640, band 113-224 on the widened pavement, no lock before 600"
+        },
+        {
+          "id": "1-2",
+          "name": "THE COLD CRATES",
+          "x0": 1344,
+          "len": 1024,
+          "locks": [
+            1536,
+            1984
+          ],
+          "bossLock": null,
+          "props": [
+            {
+              "kind": "crate",
+              "x": 120
+            },
+            {
+              "kind": "crate",
+              "x": 152
+            },
+            {
+              "kind": "crate",
+              "x": 470
+            },
+            {
+              "kind": "pod",
+              "name": "COLD POD · LOT 07",
+              "x": 700
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a1",
+      "w": 2048,
+      "h": 224,
+      "bg": "auto",
+      "s2": [
+        {
+          "slice": {
+            "src": "E4a2",
+            "x": [
+              0,
+              512
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E4a2",
+            "x": [
+              0,
+              512
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            512,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E4a0",
+            "x": [
+              352,
+              864
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1024,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E7a0",
+            "x": [
+              512,
+              1024
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1536,
+            0
+          ],
+          "step": true
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              0,
+              256
+            ],
+            "h": [
+              16,
+              96
+            ]
+          },
+          "at": [
+            1536,
+            144
+          ],
+          "every": 256,
+          "alternate": true,
+          "terrain": "copy",
+          "note": "promenade slabs (every other copy mirrored)"
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              1760,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              27
+            ]
+          },
+          "at": [
+            1008,
+            0
+          ],
+          "join": true,
+          "note": "harbor pillar over the section join 1-3 | 1-4 (the far layer changes under it)",
+          "preset": false,
+          "ops": [
+            {
+              "op": "scale",
+              "rgb": [
+                0.45,
+                0.5,
+                0.75
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#1a2a5a",
+              "amount": 0.25
+            }
+          ]
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              1760,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              27
+            ]
+          },
+          "at": [
+            1520,
+            0
+          ],
+          "join": true,
+          "note": "harbor pillar over the E4a0 | E7a0 join",
+          "preset": false,
+          "ops": [
+            {
+              "op": "scale",
+              "rgb": [
+                0.45,
+                0.5,
+                0.75
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#1a2a5a",
+              "amount": 0.25
+            }
+          ]
+        }
+      ],
+      "s3": [
+        {
+          "x": [
+            0,
+            1024
+          ],
+          "src": "E4a2",
+          "shift": 2,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 35,
+              "s": 1,
+              "l": 1,
+              "rows": [
+                7
+              ],
+              "pens": [
+                1,
+                2,
+                3,
+                4,
+                5
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 35,
+              "s": 1,
+              "l": 1,
+              "rows": [
+                1
+              ],
+              "pens": [
+                10,
+                11,
+                12,
+                13,
+                14
+              ]
+            }
+          ],
+          "note": "amber: the red LIQUID rows of E4a2 scroll3 (row 7 pens 1-5, row 1 pens 10-14) turned to fish-oil amber (CAMPAIGN §4.3)"
+        },
+        {
+          "x": [
+            1024,
+            2048
+          ],
+          "src": "E7a0",
+          "shift": 2,
+          "x3": [
+            0,
+            768
+          ],
+          "note": "1-4: the bay behind the barge quay"
+        }
+      ],
+      "anims": [
+        {
+          "cells": {
+            "src": "E5a1",
+            "x": [
+              3360,
+              3552
+            ],
+            "h": [
+              528,
+              560
+            ]
+          },
+          "at": [
+            1312,
+            112
+          ],
+          "note": "the gutted barge hull, fire low (E5a1 ground-fire cells)",
+          "preset": false,
+          "pens": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "rows": [
+            26
+          ],
+          "fg": false
+        }
+      ],
+      "sections": [
+        {
+          "id": "1-3",
+          "name": "THE CANNERY",
+          "x0": 0,
+          "len": 1024,
+          "cap": "THE JAIL QUAY",
+          "locks": [
+            192,
+            640
+          ],
+          "bossLock": null,
+          "note": "elite LOT 07 · HEAVY; fg catwalk rails (priority pens)",
+          "props": [
+            {
+              "kind": "barrel",
+              "x": 193
+            },
+            {
+              "kind": "crate",
+              "x": 578
+            }
+          ]
+        },
+        {
+          "id": "1-4",
+          "name": "THE JAIL BARGE",
+          "x0": 1024,
+          "len": 1024,
+          "locks": [
+            1216,
+            1664
+          ],
+          "bossLock": null,
+          "props": [
+            {
+              "kind": "barrel",
+              "x": 193
+            },
+            {
+              "kind": "barrel",
+              "x": 578
+            },
+            {
+              "kind": "pod",
+              "name": "COLD POD · LOT 12",
+              "x": 700
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a2",
+      "w": 2176,
+      "h": 224,
+      "bg": "auto",
+      "s2": [
+        {
+          "slice": {
+            "src": "E1a0",
+            "x": [
+              928,
+              1312
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E1a0",
+            "x": [
+              928,
+              1312
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            384,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E1a0",
+            "x": [
+              928,
+              1184
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            768,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E1a2",
+            "x": [
+              176,
+              464
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            1024,
+            0
+          ],
+          "preset": false,
+          "ops": [
+            {
+              "op": "scale",
+              "rgb": [
+                0.45,
+                0.5,
+                0.75
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#1a2a5a",
+              "amount": 0.12
+            }
+          ]
+        },
+        {
+          "slice": {
+            "src": "E4a0",
+            "x": [
+              352,
+              864
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1312,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E4a0",
+            "x": [
+              512,
+              864
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1824,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              1760,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              27
+            ]
+          },
+          "at": [
+            1008,
+            0
+          ],
+          "join": true,
+          "note": "harbor pillar over the section join 1-5 | 1-6 (the far layer changes under it)",
+          "preset": false,
+          "ops": [
+            {
+              "op": "scale",
+              "rgb": [
+                0.45,
+                0.5,
+                0.75
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#1a2a5a",
+              "amount": 0.25
+            }
+          ]
+        },
+        {
+          "patch": {
+            "src": "E7a0",
+            "x": [
+              1760,
+              1792
+            ],
+            "h": [
+              16,
+              240
+            ],
+            "rows": [
+              27
+            ]
+          },
+          "at": [
+            1296,
+            0
+          ],
+          "join": true,
+          "note": "harbor pillar over the E1a2 | E4a0 join",
+          "preset": false,
+          "ops": [
+            {
+              "op": "scale",
+              "rgb": [
+                0.45,
+                0.5,
+                0.75
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#1a2a5a",
+              "amount": 0.25
+            }
+          ]
+        }
+      ],
+      "s3": [
+        {
+          "x": [
+            0,
+            1024
+          ],
+          "src": "E1a0",
+          "shift": 3
+        },
+        {
+          "x": [
+            1024,
+            2176
+          ],
+          "src": "E4a0",
+          "shift": 1,
+          "note": "1-6: the sea wall behind the warden gate"
+        }
+      ],
+      "walk": {
+        "patch": [
+          {
+            "rect": [
+              0,
+              144,
+              1024,
+              16
+            ],
+            "walk": true,
+            "why": "E1a0 roof surface row (floor art), lane 64 px"
+          },
+          {
+            "rect": [
+              1024,
+              160,
+              288,
+              16
+            ],
+            "walk": true,
+            "why": "E1a2 sidewalk top row (floor art)"
+          }
+        ]
+      },
+      "sections": [
+        {
+          "id": "1-5",
+          "name": "THE BELL ROOFS",
+          "x0": 0,
+          "len": 1024,
+          "cap": "THE HARBOR GATE",
+          "locks": [
+            192,
+            640
+          ],
+          "bossLock": null,
+          "scenery": [
+            "flock"
+          ],
+          "props": [
+            {
+              "kind": "crate",
+              "x": 193
+            },
+            {
+              "kind": "barrel",
+              "x": 578
+            },
+            {
+              "kind": "pod",
+              "name": "PODS · MANIFEST CASE",
+              "x": 880
+            }
+          ]
+        },
+        {
+          "id": "1-6",
+          "name": "THE WARDEN’S GATE",
+          "x0": 1024,
+          "len": 1152,
+          "locks": [
+            1216
+          ],
+          "bossLock": 1792,
+          "props": [
+            {
+              "kind": "barrel",
+              "x": 900
+            },
+            {
+              "kind": "barrel",
+              "x": 940
+            },
+            {
+              "kind": "barrel",
+              "x": 1040
+            },
+            {
+              "kind": "barrel",
+              "x": 1080
+            },
+            {
+              "kind": "crane-shadow",
+              "x": 960
+            }
+          ],
+          "set": [
+            "barrel",
+            "crane"
+          ],
+          "note": "boss lock 1792-2176 = E4a0 columns only (E4a0 has no boss window)"
+        }
+      ]
+    }
+  ],
+  "s3ops": [
+    {
+      "op": "scale",
+      "rgb": [
+        0.45,
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "op": "tint",
+      "rgb": "#1a2a5a",
+      "amount": 0.2
+    }
+  ],
+  "roles": {
+    "E4a0": {
+      "s2": {
+        "stone": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ]
+      }
+    },
+    "E7a0": {
+      "s2": {
+        "stone": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ]
+      }
+    },
+    "E4a2": {
+      "s2": {
+        "stone": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ]
+      }
+    },
+    "E1a0": {
+      "s2": {
+        "stone": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ]
+      }
+    }
+  }
+}

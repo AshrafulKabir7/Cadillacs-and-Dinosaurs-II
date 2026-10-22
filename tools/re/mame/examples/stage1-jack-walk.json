@@ -1,0 +1,11 @@
+{
+  "name": "stage1-jack-walk",
+  "frames": 240,
+  "loadState": "stage1-jack",
+  "inputs": [
+    { "from": 0, "to": 180, "keys": ["P1 Right"] },
+    { "from": 200, "to": 202, "keys": ["P1 Button 1"] }
+  ],
+  "dump": { "from": 0, "to": 240, "every": 1, "obj": true, "cpsA": true, "palette": true, "ram": [["0xFFB270", 64], ["0xFF8744", 8]] },
+  "snapshotEvery": { "from": 30, "every": 30 }
+}

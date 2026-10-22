@@ -1,58 +1,39 @@
 # Cadillacs & Dinosaurs II: Fessenden's Legacy
 
-An unofficial single-player fan sequel for Mostafa's next adventure. Mustapha, Jack, Hannah and Mess return six months after the first game's ending for six chapters, mid-bosses, six bosses and a final clone war.
+An unofficial single-player fan sequel to Capcom's 1993 arcade game, made for Mostafa's next adventure. Mustapha, Jack, Hannah and Mess return six months after the first game's exact ending for six chapters, six elites, six bosses and a final clone war.
 
-Fessenden died when his laboratory blew apart — but his assistant, Dr. Echo, saved his archive and finished his cloning work. Copies of the poachers the gang beat are walking the harbor, an armored prehistoric Regent guards a bio-dome nursery, and the Mirror Gang — copies of the four heroes — waits at the Crown dam. [Read the sequel script](STORY.md).
+Fessenden died a beast in the throne room of his Under World beneath the City in the Sea, and the sea poured into the hole his lab left. His chief assistant, Dr. Echo, walked out with his archive and grows numbered copies ("lots") of anyone whose blood the lab ever took. Marshal Sable, the Wassoon lawman who was guarding the captured Black Marketeers, buys them to build an army that never runs out. [Read the sequel script](STORY.md).
+
+| Ch | Chapter | Place | Elite | Boss |
+|---|---|---|---|---|
+| 1 | WASSOON · *Faces from the Lab* | Hannah's harbour city, a burning jail barge | LOT 07 · Heavy | Warden Rook, a copy of the Butcher |
+| 2 | THE CORAL CAUSEWAY · *The Pod Convoy* | a tidal highway and an old toll post; the Cadillac chapter | LOT 31 · Outrider | LOT 44 · Mack, a collared vat triceratops, fought from the car |
+| 3 | THE VERDANT BIODOME · *The Nursery* | a glass refinery dome turned hatchery | Pack Alpha · Vat Raptor | the Verdant Regent, a vat Shivat chained to a sonic driver |
+| 4 | THE SINK · *Where It Ended* | the one deliberate return: the flooded Under World, six months on | the Brood Mother (a Tyrog) | Foreman Cinder, a copy of Morgan, who melts on his own serum |
+| 5 | THE OBSERVATORY · *Dr. Echo* | Echo's lab on the cliffs, copied room for room from the Vault | the Mirror Test | LOT 04 · Slice |
+| 6 | THE CROWN SPIRE · *Mirror War* | a gothic spire over the Crown dam | the Mirror Gang, your own clone | Marshal Sable, the Crown Engine, LOT 00 · Fessenden |
+
+The last chapter is a clone war: Hannah breaks Echo's command pylons, the freed copies of the heroes (gold outline) fight Sable's controlled copies (the mirror palette) beside you, and after the Crown Engine the last sealed tank releases LOT 00, a copy of Fessenden's final form that melts in stages in the flooding spillway.
 
 ![Fessenden's Legacy gameplay](preview.png)
 
 ## Play or deploy
 
-Open **index.html** or **PLAY GAME.bat**. Keep the whole folder, including `assets/audio`. Offline play requires no installation or emulator.
+Open **index.html** (or **PLAY GAME.bat**). Keep the whole folder, including `assets/stages`, `assets/audio` and `assets/sfx`. Offline play from `file://` needs no installation, server or emulator.
 
-For **Vercel**, import this repository, choose **Other**, leave build/install commands empty, and use output directory **`.`**. The root `vercel.json` supplies those settings. No environment variables are needed. [DEPLOYMENT.md](DEPLOYMENT.md) also covers GitHub Pages.
+For **Vercel**, import this repository, choose **Other**, leave the build and install commands empty and use the output directory **`.`** (`vercel.json` supplies these). There is no build step on Vercel: the generated files are committed. [DEPLOYMENT.md](DEPLOYMENT.md) also covers GitHub Pages.
 
-## Arcade feel update
+## What it is made of
 
-Compared with sampled sequences from both supplied arcade videos and the original game’s sprite data. The latest full-playthrough reference is 46:15 at 30 fps; see [VIDEO-REVIEW.md](VIDEO-REVIEW.md).
+Everything you see is the original arcade's own art, read from the 1993 ROM set and recomposed into new places:
 
-- **The heroes now use the arcade’s own animation frames.** All four heroes are drawn from frame records decoded from the supplied ROM’s sprite tables, anchored at the feet exactly as the arcade places them: 12-frame walk, 9-frame run, jumps, crouch, punches, kicks, finishers, grabs, knees, throws, hurt, knockdown, lying, getting up and victory poses.
-- **Horizontal firearm handling.** Original ready/firing poses and moving legs now carry each gun level with the hip or shoulder during walking, running and jumping. Muzzles, projectiles and casings share the same measured hand socket. Each round adds bounded backward recoil; the lower HUD shows the original weapon icon and ammunition. Holding a gun never adds a punch.
-- **Original selection portraits and ratings.** Jack, Hannah, Mustapha and Mess appear in their original order, with original portrait art and Power/Speed/Skill panels. Free-play difficulty controls replace the unused join-in panels; this remains a single-player game.
-- **Red impact sprays and explosion smoke.** Knife cuts and firearm hits on living targets spray directional red pixels. Explosions throw fragments and expand into smoke. Machinery uses sparks, and beaten clones retain their green dissolution.
-- **Punches that smash.** The ground combo is the original punch, punch, kick, finisher, and it only continues while blows connect. Each hit has hitstop (attacker and victim hold the impact frame and the victim shakes), an impact starburst from the original effects sheet, and screen shake. Finishers and knockdowns fling enemies back in an arc; they bounce once, slide, lie down and get up. Defeated enemies are flung before they fade. Gun hits show the arcade’s “POW!”.
-- **Grab and throw.** Walk into an ordinary enemy to grab them. J knees; back + J throws them over your shoulder; the fourth J throws forward. A thrown body bowls over anyone in its path.
-- **Original sound effects.** Punch, kick, body-slam, pistol, rifle/shotgun, Uzi/M-16 and explosion sounds come from the supplied arcade sound-effect set, identified by matching each sample against the video’s audio.
+- **Heroes** are the arcade's frame records with their own animation timing, holds and weapon placements; the empty gun is hurled at the enemy, as the user asked.
+- **Enemies and bosses** are the original bodies with their ROM animations, attack tables and HP; the sequel's villains are copies with new palettes (Rook is a Butcher body, Cinder a Morgan, the Regent a Shivat) and LOT 00 is Fessenden's six-part final form.
+- **Stages** are new layouts built from the arcade's own tiles, palettes and walkable bands (no original level is replayed as it was); the Cadillac, the food and score items, the weapons and the effects are ROM records too.
+- **The screen** is the cabinet's: 384 × 224 arcade pixels drawn at 2× on a 768 × 448 canvas, the top HUD and the weapon panel in the ROM font at the cabinet's coordinates, chapter cards, intermission panels, the stage-clear tally and the boss cards in the arcade's presentation.
+- **Feel**: the heroes walk at the ROM's own speeds (0x50E4, run 0x5064), the hit sparks and POW! are the arcade's records, and the soundtrack and sound effects are the supplied arcade audio.
 
-## Story and level update
-
-
-- **A story that continues the first game.** Every chapter grows out of Fessenden's lab: copied poachers at the harbor, a convoy through a coral canyon, an armored-predator nursery in a bio-dome, a geothermal vat forge, Echo's radar fortress and the Mirror Gang. Each chapter ending leads into the next chapter, and radio dialogue carries the story during play.
-- **The last chapter is a clone war.** Fight copies of the other three heroes and then your own copy. Breaking Echo's command pylons frees them; freed clones (gold glow) fight Sable's controlled clones (violet glow, inverted colours) alongside you, including during the final boss.
-- **The last copy.** When the spillway drowns the vat hall after the Crown Engine, the one sealed tank (LOT 00) cracks open and releases a copy of Fessenden himself, dosed with his serum: the pink beast from the end of the first game, drawn from the original beast frames. It charges, bites, stomps and leaps, calls copies at two thirds and one third of its health, and dissolves into gel like every other clone.
-- **Chapters take four to five minutes.** Each chapter has six sections with two fights of two waves each (the objectives, radio lines and mid-boss are kept), then a boss who calls reinforcements at two thirds and one third of its health. The deterministic test player clears each chapter in 2.9–4.0 simulated minutes; human play is a little slower.
-- **Enemies arrive from off screen.** Each fight locks the screen; enemies walk or run in from beyond either edge, drop from above the top of the screen, or ride in. They cannot attack until they are on screen. Bosses walk in. Weapons come from enemies and crates rather than appearing from nowhere.
-- **Gun pickup.** Picking up a weapon is a short crouch, and only when you stand on it. (Holding and carrying guns is described under Arcade feel above.)
-- **Running.** Running is horizontal only (double-tap ← / → or hold Shift), raises dust and now uses the arcade’s 9-frame run cycle.
-- **The original Cadillac.** The car is now the arcade's long steel-blue convertible with tailfins, a rolled cream top, a skirted rear wheel, whitewall tires, chrome trim and your hero visible at the wheel. Chapter 2 mixes driving with an on-foot toll fort where the Cadillac waits.
-
-## Handling update
-
-- **Smooth movement on any display.** The simulation now advances by the real time between displayed frames (split into steps of at most a sixtieth of a second). The previous fixed 60 Hz accumulator skipped an update every few frames on 72, 120 and 144 Hz screens, which showed as a hitch in walking and running several times a second.
-- **The Cadillac has momentum.** Holding → builds speed over about half a second, ← brakes and backs up, and releasing both coasts down to a slow cruise between fights or to a standstill while the screen is locked, so the car no longer drifts into the edge of the screen on its own. The whole car always stays on screen. It leans into lane changes, lifts its nose under boost, rumbles on the road and bounces on impacts; dust streams off the rear wheel and exhaust flame appears while boosting.
-- **The highway keeps moving.** The road and scenery stream under the car at road speed even while a fight has locked the screen, dropped food slides back with the road and is scooped up by driving over it, and the convoy pods ride on flatbeds with turning wheels.
-- **Ramming is an impact.** Hitting an enemy is one blow per contact: the faster the car, the harder they are flung. Slow nudges only shove. A rider already swerving into the car lands his hit unless the Cadillac is boosting (boosting also makes the car invulnerable).
-- **Riders ride.** Bikers now approach at motorcycle speed, pull up alongside the bumper, and alternate between shooting and swerving into the car; foot gunners in the driving sections ride in as armed bikers instead of standing on a moving highway. A beaten rider's bike explodes in a fireball, as in the arcade's highway stage. Hits taken in the car are a jolt rather than a knockdown.
-- **Readable screen.** Radio chatter now runs in a strip directly under the status bar instead of across the fighting lanes, and bosses arrive under a name card.
-- **Cabinet top bar.** The status bar copies the arcade's: your portrait, remaining lives (=3), score, name and rank, a yellow health bar, and the name and bar of the enemy you are fighting; the two empty player slots blink INSERT COIN (JOIN-IN once a coin is in). CREDIT N shows at the bottom.
-- **Coin continues.** When the last life goes, the hero lies where they fell and a ten-second CONTINUE? count runs with the arcade continue jingle. Drop a coin (Enter, J, Space, the touch HIT button or a pad button) and the hero gets up on the same spot with full health and three lives while the enemies stand off for a moment. Let the count reach zero and it is game over, restarting from the section start.
-- **Weapons held exactly as in the arcade.** Each hold was measured by fitting the ROM's hero records and the weapon-sheet sprites to the two arcade videos and native captures. The rifle and M-16 run from ahead of the front hand back past the hip to the rear hand; the Uzi and shotgun are held in front of the chest in both hands; the bazooka rests on the shoulder; a knife stands upright in the guarding fist when still and is carried level at the hip on the move. Weapons are drawn at the arcade's own pixel size (the sheet matches it 1:1).
-- **Weapons at arcade size.** Guns and knives are drawn at the arcade's proportions (a rifle about three quarters of a hero's height, a handgun a quarter, a knife smaller still). The handgun follows the arcade's three carries: at rest it is held up beside the head with the barrel skyward (Hannah and Mess hold it forward from the chest), while walking or running it hangs in the lowered hand pointing down, and firing extends the arm and levels it. Long guns use the arcade's running torso over its running legs, so the body is no longer cut at the hips.
-- **The arcade's own gun stances for every hero.** Jack's gun poses were placeholder guard and punch frames; his real arcade torsos (handgun ready, handgun firing with the pistol in hand, two-handed ready and recoil, running torso) were decoded from the ROM and drawn over his leg records as the cabinet does. Every hero now shoulders the bazooka in the arcade pose, the tube resting beside the head with the rear hand on its grip.
-- **Arcade food, score items and ammunition.** The hand-drawn burgers are gone. Eighteen meals from the ROM (barbecue, steak, roast, lobster, sushi, hamburger, pizza, hot dog, salad, cake, fries, pudding, parfait, donut, coffee, croissant, gum, chocolate) restore the arcade's share of the health bar, from 100 % for a barbecue to 16 % for a coffee; a meal eaten at full health pays its points instead. Gold bars, diamonds, a dinosaur skull, an ammonite, pearls, a placer pouch, a necklace, a ring and sunglasses pay 1,000–10,000 points, and ammunition refills the held gun. Containers now also hold the torch, stone, ammunition and score items, so every arcade weapon appears.
-- **Enemy frame fixes.** The heavy's walk cycle no longer includes a half-height crouch frame (he looked as if he sank into the road every third step), and the knifer's knocked-down pose is his own kneeling frame instead of the motorcycle wreck sprite (which made him appear to roll away). Knockdowns throw enemies about a body length and a half with a small bounce rather than across the screen.
-- **More of the original soundtrack.** Nine further supplied tracks are wired in: the last stage's themes play through the Crown Spire, the original final boss theme plays against the last copy, the ending uses the original ending theme, the continue screen plays the continue and game-over jingles, and the credits use the name-entry theme. All 36 tracks are in the Sound Room.
-- **Other glitches fixed:** armed poachers no longer flash into a triceratops sprite when they fire; Mustapha's jump no longer shows him holding a torch; bikers sit on their bikes facing forward and crash when knocked down; checkpoints now save at every section.
+**Display.** The cabinet's 4:3 picture is the default. The Sound Room's aspect button switches to square pixels (12:7) and back; the setting is saved.
 
 ## Controls
 
@@ -64,51 +45,59 @@ Compared with sampled sequences from both supplied arcade videos and the origina
 | Jump / Cadillac boost | K or X | A / bottom face button |
 | Special / ram | L or C; also tap attack + jump together | Y / top face button |
 | Interact / pick up / throw | E or V | B / right face button |
-| Run | Shift + ← / →, or double tap ← / → | — |
+| Run | double tap ← / → (the run keeps going until you press the other way), or hold Shift | — |
 | Pause | Esc or P | Start |
 | Drop a coin (continue) | Enter; on the continue screen also J / Space / HIT | Any face button on the continue screen |
 
-**Phones and tablets:** a thumb stick on the left and PICK/USE, SPECIAL, JUMP and HIT/FIRE buttons on the right. Slide your thumb anywhere in the stick to move (diagonals work); push it to the rim to run. Use a second finger for the buttons while moving; hold PICK/USE at consoles. In portrait the controls sit below the playfield; in landscape the playfield fills the screen height and the controls float over its lower corners. Tap ⛶ for fullscreen: the header disappears, the playfield fills the screen and Android locks to landscape; ✕ or the pause menu exits. iPhone Safari has no page fullscreen, so it fills the screen instead; for true fullscreen on iPhone use Share → Add to Home Screen, which launches the game without browser bars. The desktop page is unchanged. Connect a controller and press a button to activate it.
+**Phones and tablets:** a thumb stick on the left and PICK/USE, SPECIAL, JUMP and HIT/FIRE buttons on the right. Slide your thumb anywhere in the stick to move (diagonals work); push it to the rim to run. Use a second finger for the buttons while moving; hold PICK/USE at consoles. In portrait the controls sit below the playfield; in landscape the playfield fills the screen height and the controls float over its lower corners. Tap ⛶ for fullscreen; ✕ or the pause menu exits. iPhone Safari has no page fullscreen, so use Share → Add to Home Screen for a full-screen launch. Connect a controller and press a button to activate it.
 
-Hold attack for combos. Jump first, then attack for a flying kick; attack while running for a dash strike. Specials cost eight health **when they hit an enemy** and drop the held weapon. Heavy hits also drop weapons, retaining ammunition.
+Hold attack for combos. Jump first, then attack for a flying kick; attack while running for a dash strike. Specials cost eight health **when they hit an enemy** and drop the held weapon. Heavy hits also drop weapons, keeping their ammunition.
 
-Pistols, shotguns and rifles carry six rounds; bazookas carry four. Uzis and M-16A1s fire bursts. Shotguns hit a wider lane, rifles penetrate and rockets cause splash damage. **While holding a firearm, J only fires. When the last round is gone the hero hurls the empty gun at the enemy, as in the arcade; E throws it earlier or swaps it.** Knives stab nearby enemies or are thrown at distant ones. Broken rods become sticks. Grenades and dynamite arc before exploding.
+Pistols, shotguns and rifles carry six rounds; bazookas carry four. Uzis and M-16A1s fire bursts. Shotguns hit a wider lane, rifles penetrate and rockets cause splash damage. **While holding a firearm, J only fires. When the last round is gone the hero hurls the empty gun at the enemy; E throws it earlier or swaps it.** Knives stab nearby enemies or are thrown at distant ones. Broken rods become sticks. Grenades and dynamite arc before exploding.
 
 At a cold pod, valve, winch or pylon, **hold E / PICK** while standing still. At a radio, tap E until its display matches the marked channel. Attack sonic lures and drive into pod crates. Both the enemies and the active objective must be cleared to open the next area.
 
-Break containers for supplies; walk over food to heal. Change lanes for charges, volleys and blue spillway-surge markers; jump over shockwaves. Attack during recovery. In the Cadillac, hold → to build speed, ← to brake or back up, and ↑ / ↓ to change lanes; steer into enemies at speed to fling them. J bashes, K boosts and L rams.
+Break containers for supplies; walk over food to heal (a meal eaten at full health pays its points instead). In the Cadillac, hold → to build speed, ← to brake or back up, and ↑ / ↓ to change lanes; steer into enemies at speed to fling them. J bashes, K boosts and L rams.
 
-## Campaign and saving
+## Difficulty, lives and saving
 
-1. **The Drowned Harbor** — *Faces from the Lab* — Lot 07 · Heavy, Warden Rook.
-2. **The Coral Causeway** — *The Pod Convoy* — Lot 31 · Outrider, Iron Convoy.
-3. **The Verdant Biodome** — *The Nursery* — Pack Alpha, Verdant Regent.
-4. **The Geothermal Forge** — *The Vat Forge* — Lot 12 · Brawler, Foreman Cinder.
-5. **Skyhook Radar Fortress** — *Dr. Echo* — Mirror Clone, Dr. Echo.
-6. **The Crown Spire** — *Mirror War* — the Mirror Gang, your own clone, Marshal Sable, the Crown Engine and LOT 00 · FESSENDEN.
+**Easy, Normal and Arcade Mania** change health, food frequency, crowd limits, attack slots, recovery and melee-weapon durability; Mania adds rear flanking, quicker boss decisions and telegraphed dinosaur rage. Three lives per attempt; when they are gone, a ten-second CONTINUE? count runs where the hero fell, and a coin respawns you in place with three more. Only an expired count sends you back to the start of the section.
 
-**Easy, Normal and Arcade Mania** change health, food frequency, crowd limits, attack slots, recovery and melee-weapon durability. Mania also adds rear flanking, quicker boss decisions and recovery, and telegraphed dinosaur rage. Normal preserves standard firearm ammo caps; those caps also stay consistent on the other tiers. Old Story/Arcade saves map to Easy/Mania. Three lives per attempt; when they are gone, a coin on the continue screen respawns you in place with three more, and only an expired count sends you back to the start of the current section.
+Progress saves at the start of every section and at chapter completion in browser local storage; cleared chapters unlock for replay. Each site origin (local file, Vercel, GitHub Pages) has its own save. Audio starts after a click or keypress; the Sound Room has music and effects switches, volume, the aspect setting and every track.
 
-Progress saves at the start of every section and at chapter completion in browser local storage. Continue resumes at the saved section, with earlier objectives (and freed clones) kept. Cleared chapters unlock for replay. Browser/site origins have separate saves; clearing browser data removes progress.
+## How it is built
 
-Audio begins after a click or keypress. SOUND toggles all audio. **Sound Room / Audio Settings** provides independent music/effects switches, music volume and every track. Switching away pauses active play.
+There is no build step to play or deploy. The shipped art and data are generated files, committed to the repository:
 
-## Development
+| File | What it is | Made by |
+|---|---|---|
+| `sprite-data-heroes.js`, `-fx.js`, `-enemies.js`, `-bosses.js`, `-ui.js` | slot-indexed sprite sheets (data-URL PNGs) with records, animations, holds and palette maps | `node tools/re/build-game-assets.cjs sprites <family>` / `ui` |
+| `stage-data.js`, `assets/stages/ch<N>/<area>/*.png`, `assets/stages/pics/*.png` | stage pages (lazy-loaded per chapter), bands, camera, locks, props, intermission pictures | `node tools/re/build-game-assets.cjs stages all` from `tools/re/levels/ch<N>.json` |
+| `combat-config.js` | the offline copy of `combat-config.json` | `node tools/build-config.cjs` (or `build-game-assets.cjs config`) |
+| `sprites.js` | the runtime colouriser (palette maps over the indexed sheets) and the `ROM_*` globals | hand-written |
+| `hero-rig.js`, `enemy-kinds.js` | hero animation player; enemy kinds and `BOSS_DEFS` on ROM data | hand-written |
+| `stage-render.js`, `arcade-ui.js`, `sequel-render.js` | stage drawing; the ROM-font HUD, cards and panels; the readiness facade the tests wait on | hand-written |
+| `campaign.js`, `mission-data.js` | story, chapters, sections, waves, objectives, radio lines | hand-written |
+| `game.js` | the engine: input, combat, AI, bosses, camera, rendering | hand-written |
 
-- `combat-config.json`: tunable combat and difficulty source; `python tools/build-config.py` synchronizes its offline JavaScript copy. [COMBAT-DESIGN.md](docs/COMBAT-DESIGN.md) explains firearm state transitions, sockets and effect configuration.
-- [ART-DIRECTION.md](docs/ART-DIRECTION.md): five boss-themed environments, foreground interactions, parallax and exact image-generation prompts.
-- `selection-art.js`: embedded original portraits; `environment-art.js` and `assets/scenery/`: local lossless scenery.
-- `game.js`: combat, input, chapter layout, encounters and entrances, allies, rendering and boss state machines.
-- `campaign.js`, `mission-data.js`: story, chapter sections, fights, mid-bosses, dialogue and required objectives.
-- `arcade-items.js`: the arcade's food, score items and ammunition decoded from the ROM records and coloured with its object palette table.
-- `arcade-heroes.js`: hero animation frames decoded from the arcade ROM’s sprite tables, with feet origins and hand points (a second sheet inside it holds the gun stances decoded on October 8) (`assets/arcade-heroes.png` is a reference copy). `assets/sfx/`: the selected arcade sound effects.
-- `audio.js`, `soundtrack-data.js`, `assets/audio/`: soundtrack and source manifest.
-- `assets.js`, `hero-art.js`, `combat-art.js`, `weapon-art.js`, `sequel-art.js`: embedded artwork for local-file loading. `sequel-render.js` draws the scenery and human bosses.
-- [STORY.md](STORY.md), [SOURCE-NOTES.md](SOURCE-NOTES.md), [VALIDATION.md](VALIDATION.md), [VIDEO-REVIEW.md](VIDEO-REVIEW.md): story, provenance, testing and reference review.
-- `tests/`: optional development tests, including `tests/specification.cjs` (latest feature specification), `tests/combat.cjs` (combat feel, guns, sounds), `tests/story.cjs` (story and levels), `tests/polish.cjs` (frame pacing, Cadillac handling, riders and the last copy) and `tests/bot.cjs`, which fails if any chapter clears in under seven minutes. No test dependency is required to play or deploy.
+Rebuilding needs Node 22 and the arcade ROM set outside the repository (`DINO_ROMS`, default `E:/mostafa/dino`) plus the research extracts in `work/re/extract` (not committed). `node tools/re/build-game-assets.cjs check` rebuilds everything into a scratch folder and fails on any pixel or data difference with the shipped files, on the stage gates, and on the budgets (eager download at most 3.5 MB, any shipped file at most 1.5 MB, stage pages at most 1 MB per chapter). Run it before pushing. [SOURCE-NOTES.md](SOURCE-NOTES.md) lists the ROM tables each file comes from.
 
-There is no production build step. `LAST_EDEN.snapshot` and explicitly named `LAST_EDEN.test` helpers support testing (the object keeps its earlier name so saves and tests stay compatible). This follows selected arcade mechanics; it is not a frame-perfect recreation or an official sequel.
+## Tests
+
+The tests are optional development tools (Playwright, Node 22); nothing in them is needed to play. Install once with `npm install` inside `tests/` and `npx playwright install chromium`. Then, from the repository root (PowerShell):
+
+```text
+node tools/serve.cjs 8766
+$env:GAME_URL='http://127.0.0.1:8766'; node tools/re/run-suites.cjs --step G8
+$env:GAME_URL='http://127.0.0.1:8766'; node tests/bot.cjs
+node tests/assets.cjs
+node tools/re/compare-frames.cjs
+```
+
+`run-suites.cjs` runs every suite in `tests/*.cjs` (the gameplay suites, `framing`, `enemies`, `campaign`, `ui`, `rom-heroes`, `assets`, `perf`) plus a `file://` launch. A single suite runs as `node tests/<suite>.cjs`; setting `GAME_URL` to the `file:///…/index.html` address runs it from `file://`. `tests/bot.cjs` plays all six chapters on Easy with ordinary inputs and fails if a chapter takes less than 150 or more than 300 simulated seconds. `tests/assets.cjs` is the asset gate (the build check, budgets, every stage page present). `compare-frames.cjs` sets up the scenes of `tests/fixtures/visual-scenes.json` and writes side-by-side sheets against arcade video frames and MAME snapshots. Results and logs go to the ignored `tests/results/`. [VALIDATION.md](VALIDATION.md) has the latest results.
+
+`LAST_EDEN.snapshot` and the explicitly named `LAST_EDEN.test` helpers support testing (the object keeps its earlier name so saves and tests stay compatible).
 
 ## Credits
 
-Original artwork and music: **Capcom, Cadillacs and Dinosaurs (1993)**. Characters and setting: **Mark Schultz's Xenozoic Tales**. Earlier background references retained with credits: **shunninghuang**, via [Sprite Database](https://spritedatabase.net/game/597). Active scenery and human boss designs are original generated assets. Weapon sheet and MP3s were supplied by the user. New fan-game engine, story and encounters were created for this project. Source ROMs and Downloads files remain unchanged.
+Original game, artwork and music: **Capcom, Cadillacs and Dinosaurs (1993)**. Characters and setting: **Mark Schultz's Xenozoic Tales**. The art in this sequel is read from the supplied ROM set and recomposed; the ROMs themselves are not included and were only read. The soundtrack and sound effects were supplied by the user. The engine, story, stage layouts and encounters were made for this project. This is an unofficial fan game, not a frame-perfect recreation or an official sequel.

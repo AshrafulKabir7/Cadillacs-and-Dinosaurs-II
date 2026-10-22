@@ -1,0 +1,213 @@
+{
+  "_doc": [
+    "Build configuration for tools/re/build-game-assets.cjs (PLAN §3.2, §5, §6). Skeleton written by WP-A.",
+    "Ownership: WP-B fills `heroes`, WP-C fills `enemies` and `bosses` (variants, contexts, slot pins), WP-D fills `fx` and `ui`.",
+    "Each package edits only its own top-level key. `build`, `budgets` and `check` are WP-A's.",
+    "Rows are indices into the OBJ palette table 0xB7A52 (32 bytes each); map keys are 'S<episode>A<area>' (0x8E8E) or hand names from palettes.cjs HAND."
+  ],
+  "version": 1,
+  "build": {
+    "mode": "indexed",
+    "sheet": { "max": 1024, "pad": 1 },
+    "float": 4,
+    "chapterContexts": { "ch1": "S1A0", "ch2": "S3A0", "ch3": "S2A0", "ch4": "S8A1", "ch5": "S7A1", "ch6": "S8A2" },
+    "lastCopyContext": "S8A3",
+    "rgbaFallback": "build-game-assets.cjs sprites --rgba emits mode:'rgba' sheets coloured by the home map (RC2)"
+  },
+  "budgets": {
+    "_doc": "PLAN §5.4, bytes. eagerTotal is enforced when enforceEager is true (G8: the legacy art is retired, so it is).",
+    "eagerTotal": 3670016,
+    "enforceEager": true,
+    "files": {
+      "sprite-data-heroes.js": 943718,
+      "sprite-data-fx.js": 367001,
+      "sprite-data-enemies.js": 1153433,
+      "sprite-data-bosses.js": 1572864,
+      "sprite-data-ui.js": 157286,
+      "stage-data.js": 153600
+    },
+    "anyShippedFile": 1572864,
+    "stagePagesPerChapter": 1048576,
+    "stagePagesTotal": 5242880,
+    "pageMax": 1024,
+    "trackedFileMax": 2097152
+  },
+  "check": {
+    "_doc": "legacyLarge: tracked files over trackedFileMax that the plan retires in G8 (ARCHITECTURE §5.6); emptied in G8, when they were deleted.",
+    "legacyLarge": [],
+    "forbiddenTracked": [".bin", ".zip"]
+  },
+  "heroes": {
+    "_doc": "WP-B: used-record lists per hero, palette maps (hero-<id>, mirror-<id>, freed-<id>, half-<id>, gel, flash), golden sample size.",
+    "sheets": ["jack", "mustapha", "hannah", "mess"],
+    "maps": { "hero": "set 0 rows 0-3", "mirror": "palettes.cjs HAND mirror-<id>", "freed": "HAND freed-<id>", "half": "HAND half-<id>" }
+  },
+  "fx": {
+    "_doc": "WP-D (tools/re/build/sprites-fx.cjs): one sheet 'items' with every weapon-set record (rotations, fast spin, ground, empty poses, fuse), the hold records, the PLAN §4.1 effect ranges + every firing-run record, torch flame 1408-1417, bubbles 1593-1607, containers, food/score/magazine items and the boss projectiles; pal.maps = every 0x8E8E area page (live rows) + home; objPages are the chapter pages (PLAN §4.1).",
+    "objPages": ["S1A0", "S3A0", "S2A0", "S8A1", "S7A1", "S8A2", "S8A3"],
+    "pins": { "_doc": "KI7: B. KNIFE slot 30 from E2a2 (row 29), YOROI slot 28 from E1a1 (row 488): the home map", "bknife": { "slot": 30, "row": 29 }, "yoroi": { "slot": 28, "row": 488 } },
+    "items": {
+      "_doc": "ROM_FX.items.frames: the 28 names of game.js FOOD_WEIGHTS / BONUS_WEIGHTS + ammo, frozen here (arcade-items.js is retired in G8). sub = the ROM item the name draws ('food N' = pool A type 0x10 subtype N, 'score N' = type 0x24 subtype N, mechanics.json items), chosen by its picture; rec = the frame drawn when the item lies still (a record of that subtype's animation); heal / score / kind are today's values (polish.cjs L91-96). The ROM has 17 foods for 18 food names: roast and barbecue both draw the roast meat on the bone (food 1). No ROM item is a pouch: it draws the gold coin (score 13). 7 score items have no name and stay in items.score: 3 trophy, 4 jade dinosaur, 5 (2671, orange with a spark trail), 7 (2670, a stone slab), 11 watch, 12 radio, 14 silver bars.",
+      "hamburger": { "sub": "food 5", "rec": 2658, "heal": 48, "score": 5000, "kind": "food" },
+      "hotdog": { "sub": "food 6", "rec": 2659, "heal": 48, "score": 5000, "kind": "food" },
+      "pizza": { "sub": "food 7", "rec": 2655, "heal": 48, "score": 5000, "kind": "food" },
+      "salad": { "sub": "food 8", "rec": 2660, "heal": 32, "score": 5000, "kind": "food" },
+      "steak": { "sub": "food 2", "rec": 2650, "heal": 80, "score": 10000, "kind": "food" },
+      "barbecue": { "sub": "food 1", "rec": 2646, "heal": 100, "score": 10000, "kind": "food" },
+      "roast": { "sub": "food 1", "rec": 2646, "heal": 80, "score": 10000, "kind": "food" },
+      "lobster": { "sub": "food 3", "rec": 2656, "heal": 64, "score": 10000, "kind": "food" },
+      "sushi": { "sub": "food 4", "rec": 2657, "heal": 64, "score": 10000, "kind": "food" },
+      "cake": { "sub": "food 9", "rec": 2661, "heal": 32, "score": 3000, "kind": "food" },
+      "fries": { "sub": "food 12", "rec": 2827, "heal": 32, "score": 3000, "kind": "food" },
+      "pudding": { "sub": "food 11", "rec": 2664, "heal": 32, "score": 3000, "kind": "food" },
+      "parfait": { "sub": "food 10", "rec": 2662, "heal": 32, "score": 3000, "kind": "food" },
+      "donut": { "sub": "food 15", "rec": 2828, "heal": 16, "score": 1000, "kind": "food" },
+      "coffee": { "sub": "food 16", "rec": 2663, "heal": 16, "score": 1000, "kind": "food" },
+      "croissant": { "sub": "food 17", "rec": 2829, "heal": 16, "score": 1000, "kind": "food" },
+      "gum": { "sub": "food 13", "rec": 2788, "heal": 16, "score": 1000, "kind": "food" },
+      "chocolate": { "sub": "food 14", "rec": 2789, "heal": 16, "score": 1000, "kind": "food" },
+      "sunglasses": { "sub": "score 15", "rec": 2669, "score": 1000, "kind": "bonus" },
+      "necklace": { "sub": "score 9", "rec": 2665, "score": 3000, "kind": "bonus" },
+      "ring": { "sub": "score 10", "rec": 2668, "score": 3000, "kind": "bonus" },
+      "pouch": { "sub": "score 13", "rec": 2680, "score": 5000, "kind": "bonus" },
+      "pearls": { "sub": "score 8", "rec": 2723, "score": 5000, "kind": "bonus" },
+      "ammonite": { "sub": "score 16", "rec": 2694, "score": 5000, "kind": "bonus" },
+      "skull": { "sub": "score 6", "rec": 2693, "score": 5000, "kind": "bonus" },
+      "goldbar": { "sub": "score 1", "rec": 2682, "score": 10000, "kind": "bonus" },
+      "diamond": { "sub": "score 2", "rec": 2687, "score": 10000, "kind": "bonus" },
+      "ammo": { "sub": "magazine", "rec": 2130, "score": 1000, "kind": "ammo" }
+    }
+  },
+  "ui": {
+    "_doc": "WP-D (tools/re/build/sprites-ui.cjs): scroll1 fonts (8x8 ASCII, narrow 8x16) covering this set plus every character of campaign.js, mission-data.js and the HUD strings, portraits 0x00-0x0D with talk/blink frames, HUD faces, life bar, INSERT COIN, the title-card panel (stg-screens-card3 f300, tile list frozen in sprites-ui.cjs; the place-name plate ships blank) and the boot logo (stg-screens-boot f330, KI5; OBJ list frozen in sprites-ui.cjs).",
+    "glyphs": "A-Z 0-9 .,:;!?'’“”-·/()"
+  },
+  "enemies": {
+    "_doc": [
+      "WP-C (tools/re/build/sprites-enemies.cjs): types, variants, palette contexts and slot pins. Pins below are the PLAN's KI13/KI17 decisions.",
+      "types.<type>: src (extract JSON under work/re/extract), format ('enemies' | 'bosses'), variants {<sequel key>: {rom: <extract variant id>, override?, main?, hpName?, hud?, walk?}},",
+      "main: extra main-set anim indices to ship besides every ENEMY_KINDS reference ('all' = every one), reactions: ship the held/down (hit/grab) sets (default true),",
+      "objects: absolute anim keys of the objects the type creates, palettes {<V>: {<ctx>: {ctx:[ep, area, slot?]} | {hand:<name>, base, ops, slot, uniform}}} -> palMap '<type>:<V>/<ctx>'.",
+      "Variant keys are single letters so ENEMY_KINDS `variants:'AB'` filters never collide: knifeonly P, thurow T = DYNA / U = BOMB, naguri N, ishinage L, bike R = RIDE / J = JUMP, maiasura M."
+    ],
+    "pins": {
+      "kingkimo": { "_doc": "KI13: TYROG colours are the S6A2 rows for slots 29/30/31 in every chapter; the pale S8A3 row is never used", "29": 113, "30": 30, "31": 114 },
+      "ishinage": { "_doc": "KI17: LASH T. ball/chain slot 23 = row 63 in stage 2", "23": 63 }
+    },
+    "types": {
+      "chinpira": { "src": "enemies/chinpira.json", "format": "enemies", "variants": { "A": { "rom": "A" }, "B": { "rom": "B" }, "C": { "rom": "C" } }, "main": [] },
+      "knifeman": { "src": "enemies/knifeman.json", "format": "enemies", "variants": { "A": { "rom": "A", "walk": 1.5 }, "B": { "rom": "B" } }, "main": [],
+        "objects": ["0x6FB6A:0", "0x6FB6A:10", "0x6FB6A:19", "0x6FB6A:20", "0x6FB6A:21", "0x6FB6A:23", "0x6FB6A:24", "0x6FB6A:25", "0x6FB6A:26", "0x6FB6A:27", "0x6FB6A:28", "0x6FB6A:32", "0x6FB6A:33", "0x6FB6A:34"] },
+      "knifeonly": { "src": "enemies/knifeonly.json", "format": "enemies", "variants": { "P": { "rom": "A", "walk": 3.5 } }, "main": [], "objects": ["0x6FB6A:33"] },
+      "mituryou": { "src": "enemies/mituryou.json", "format": "enemies", "variants": { "A": { "rom": "A", "walk": 1.13 }, "B": { "rom": "B" }, "C": { "rom": "C" } }, "main": [], "objects": ["0x57E0E:1", "0x6FB1A:0"] },
+      "thurow": { "src": "enemies/thurow.json", "format": "enemies", "variants": { "T": { "rom": "DYNA", "walk": 4.5 }, "U": { "rom": "BOMB", "walk": 4 } }, "main": [],
+        "objects": ["0x5F0AC:0", "0x5F0AC:1", "0x5F0AC:2", "0x5F0AC:3", "0x5F0AC:4", "0x5F0AC:5", "0x5F0AC:6", "0x5F0AC:7", "0x5F0AC:8", "0x5F0AC:9", "0x5F0AC:10", "0x5F0AC:11", "0x5F0AC:12", "0x5F128:0", "0x5F128:6", "0x5F128:8", "0x5F128:10", "0x5F128:11", "0x5F128:12"] },
+      "hutori": { "src": "enemies/hutori.json", "format": "enemies", "variants": { "A": { "rom": "A" }, "B": { "rom": "B" }, "C": { "rom": "C" } }, "main": [] },
+      "naguri": { "src": "enemies/naguri.json", "format": "enemies", "variants": { "N": { "rom": "A", "walk": 0.6 } }, "main": [] },
+      "ishinage": { "src": "enemies/ishinage.json", "format": "enemies", "variants": { "L": { "rom": "A" } }, "main": [], "objects": ["0x7020A:0", "0x7020A:1", "0x712A0:11"] },
+      "kameleon": { "src": "enemies/kameleon.json", "format": "enemies", "variants": { "A": { "rom": "A" } }, "main": [] },
+      "kingkimo": { "src": "enemies/kingkimo.json", "format": "enemies", "variants": { "A": { "rom": "A" } }, "main": [], "objects": ["0x71408:10", "0x71408:11"],
+        "palettes": { "A": { "brood": { "_doc": "BROOD MOTHER (CAMPAIGN §8.3): the slot-29 TYROG row #113 under the drowned ops, every colour snapped to a ROM colour", "hand": "drowned", "base": { "romRow": 113 }, "ops": ["flood", "ruin"], "slot": 29, "uniform": true } } } },
+      "bike": { "src": "enemies/bike.json", "format": "enemies", "variants": { "R": { "rom": "RIDE" }, "J": { "rom": "JUMP" } }, "main": [] },
+      "dinonics": { "src": "bosses/dinonics.json", "format": "bosses", "variants": { "A": { "rom": "A", "hpName": "R HOPPER", "hud": "R HOPPER" } }, "main": [],
+        "palettes": { "A": { "alpha": { "_doc": "PACK ALPHA: context t74-e8a0-pal31 (CAMPAIGN §7.3)", "ctx": [8, 0, 31] }, "calm": { "_doc": "OPTION (ENEMIES §2.5): the E1a2 green context t74-e1a2-pal17", "ctx": [1, 2, 17] } } } },
+      "pteranodon": { "src": "bosses/pteranodon.json", "format": "bosses", "variants": { "A": { "rom": "A", "hpName": "ZEKE", "hud": "ZEKE" } }, "main": [] },
+      "pteranodonBg": { "src": "bosses/pteranodon-bg.json", "format": "bosses", "scenery": true, "variants": { "A": { "rom": "A", "hud": "" } }, "main": [] },
+      "archaeopteryx": { "src": "bosses/archaeopteryx.json", "format": "bosses", "scenery": true, "variants": { "A": { "rom": "C8", "main": "0x5708C", "override": 29, "hud": "" }, "B": { "rom": "B8", "main": "0x5674E", "override": 24, "hud": "" } }, "main": "all" },
+      "ankirosaurs": { "src": "bosses/ankirosaurs.json", "format": "bosses", "scenery": true, "variants": { "A": { "rom": "A", "hud": "" } }, "main": "all" },
+      "maiasura": { "src": "bosses/maiasura.json", "format": "bosses", "scenery": true, "variants": { "M": { "rom": "A", "hud": "" } }, "main": "all" },
+      "smallRaptor": { "src": "bosses/small-raptor.json", "format": "bosses", "scenery": true, "variants": { "A": { "rom": "A", "hud": "" } }, "main": "all" }
+    },
+    "objects": {
+      "_doc": "named object anims (ENEMIES §2.1/§2.8); <set>:* = every rotation anim of that set that ships; fx: = drawn from the fx family",
+      "knifeThrown": "0x6FB6A:33", "knifeSpin": "0x6FB6A:32", "knifeInHand": "0x6FB6A:0", "rifleMuzzle": "0x57E0E:1", "rifleShot": "0x6FB1A:0",
+      "bomb": "0x5F0AC:*", "dyna": "0x5F128:*", "explosion": "fx: records 460-469 then 2140-2142 (the dynamite explosion of the fx family, PLAN §4.1)", "parasite": ["0x71408:10", "0x71408:11"], "chainBall": ["0x7020A:0", "0x7020A:1"], "chainLash": "0x712A0:11"
+    },
+    "attackMap": {
+      "_doc": "anim key (or <set>:*) -> {id, note}: attack ids the build cannot read from the live runs or the handler code (sprites-enemies.cjs attackIdsOfType); a derived id always wins, a disagreement is a build warning",
+      "0x6DA40:4": { "id": 30, "note": "BLADE one-two: the body frames carry no active flag; the punch hits through the knife held in the hand (object 0xF0, attack id 30 written at 0x580E6)" },
+      "0x6DA40:7": { "id": 30, "note": "BLADE hooks: as the one-two (the hand knife object 0xF0, id 30)" },
+      "0x6DF2A:4": { "id": 30, "note": "RAZOR one-two: as BLADE (the hand knife object 0xF0, id 30)" },
+      "0x6DF2A:7": { "id": 30, "note": "RAZOR hooks: as BLADE (the hand knife object 0xF0, id 30)" },
+      "0x5F128:*": { "id": 106, "note": "DYNA stick in flight: it hurts through its explosion (object 0x4, id 106, live 10 through 0x10EC4)" },
+      "0x5F0AC:*": { "id": 106, "note": "BOMB grenade in flight: as DYNA (the explosion object 0x4, id 106)" },
+      "0x71408:10": { "id": 78, "note": "TYROG parasite subtype 4: 0x4D6BE sets +0x23 0x81, writes id 78 at 0x4D6E4 and starts anim 10 at 0x4D77C; id 78 landed live (16)" },
+      "0x71408:11": { "id": 78, "note": "the parasite crawl that follows the leap: +0x58 keeps 78 (no other write in the object code)" },
+      "0x712A0:11": { "id": 84, "note": "LASH T. ball and chain (object 0x20): ids 84, 85 and 86 share one record (12, 11, 6, 16, 12); the lash hits through 0x11DCA" }
+    },
+    "sheetGroups": {
+      "_doc": "sheet sets: each group packs into its own sheets 'e-<group>[-n]' (PLAN R4: sprites.js allocates a canvas per sheet x palette map, so a variant's maps touch only its group's sheets); a type not listed is its own group",
+      "knifeman": ["knifeman", "knifeonly"],
+      "scenery": ["ankirosaurs", "archaeopteryx", "maiasura", "smallRaptor", "pteranodon", "pteranodonBg"]
+    },
+    "knifeRuns": ["en-knifeman-a", "en-knifeman-b", "en-b-knifeman-a", "en-b-knifeman-b"],
+    "sort": "id"
+  },
+  "bosses": {
+      "_doc": [
+        "WP-C (tools/re/build/sprites-bosses.cjs): bodies, palettes, Crown Engine bake, Fessenden attach, Morgan throw frame.",
+        "bodies.<id>: src (extract JSON), main? (set), parts? (Fessenden), palettes {<name>: {ctx:[ep, area, ov?]} | {hand:<palettes key>}}, use (the palette the sequel draws), gel (clone dissolve map).",
+        "palettes.<name>: hand palettes of the new characters (ENEMIES §6.1): slots {<slot>: {ops (palettes.cjs ops on the clothing pens, colours snapped to ROM colours), keep? (pens kept), romRow? (base row)}}, map 'home' | 'uniform', siblings {<slot>: [[ep, area, slot]]} = the other contexts of the same body (WALTHER for VICE T.; the other MACK / SHIVAT colourings); the acceptance compares against all of them.",
+        "The WP-A drafts in palettes.cjs HAND_SPECS were the starting point; the rows below are the WP-C picks shown in work/re/pack/boss-palettes.png."
+      ],
+      "bodies": {
+        "butcher": { "src": "bosses/butcher.json", "palettes": { "rook": { "hand": "rook" } }, "use": "rook", "gel": true },
+        "torikeratopss": { "src": "bosses/torikeratopss.json", "palettes": { "t98-e5a0-pal30": { "ctx": [5, 0, 30] }, "ironhide": { "hand": "ironhide" } }, "use": "ironhide",
+          "_use": "CAMPAIGN §6.4: t98-e5a0-pal30 is ROM row 45, a green (not steel-grey) colouring, so the fallback ironhide is used" },
+        "arosaurus": { "src": "bosses/arosaurus.json", "palettes": { "t60-e2a1-pal30": { "ctx": [2, 1, 30] }, "verdant": { "hand": "verdant" } }, "use": "t60-e2a1-pal30",
+          "_use": "CAMPAIGN §7.4: t60-e2a1-pal30 is ROM row 45, the nest-green SHIVAT colouring (also its E5A0 home), so the context is used; verdant stays the alternative" },
+        "morgan": { "src": "bosses/morgan.json", "palettes": { "cinder": { "hand": "cinder" } }, "use": "cinder", "gel": true },
+        "slice": { "src": "bosses/slice.json", "palettes": { "slicevat": { "hand": "slicevat" } }, "use": "slicevat", "gel": true },
+        "richmond": { "src": "bosses/vice-t.json", "palettes": { "sable": { "hand": "sable" } }, "use": "sable" },
+        "fessenden": { "src": "bosses/fessenden.json", "main": "0x64452",
+          "parts": [ { "id": "body", "type": "0x150", "set": "0x64452" }, { "id": "line", "type": "0x154", "set": "0x712A0" }, { "id": "arm", "type": "0x158", "set": "0x647D8" },
+                     { "id": "arm2", "type": "0x15C", "set": "0x648AA" }, { "id": "neckA", "type": "0x160", "set": "0x646A4" }, { "id": "neckB", "type": "0x164", "set": "0x646A4" } ],
+          "palettes": { "S8A3": { "ctx": [8, 3] } }, "use": "home", "gel": true },
+        "vice-chain": { "src": "bosses/vice-chain.json", "use": "home" },
+        "boss-projectiles": { "src": "bosses/boss-projectiles.json", "palettes": { "acid": { "ctx": [6, 2, 1] } }, "use": "home" }
+      },
+      "palettes": {
+        "rook": { "note": "WARDEN ROOK on the BUTCHER body: black oilskin, navy headband, iron gaff blade; the bald head, shoulders and arms keep the skin ramp 10-14 (14 = the cream highlight #ffffdd)", "slots": { "30": { "keep": [0, 5, 10, 11, 12, 13, 14], "recolour": [1], "why": { "1": "the dark end of the red cloth ramp 1-4 (its contacts are pen 2), not the outline" }, "ops": [ { "op": "hsl", "h": 0, "s": 0.25, "l": 0.55 }, { "op": "tint", "rgb": "#1a2a5a", "amount": 0.3 } ] } }, "siblings": { "30": [ [2, 2, 30] ] } },
+        "cinder": { "note": "FOREMAN CINDER on the MORGAN body: soot coat (the shirt, boots and hair pens 1-5 to charcoal), ember scarf (the neckerchief and trousers share pens 6-9: green to ember orange); skin pens 10-14 kept. Slots 28/31 only colour Morgan's transformation-flash frames.", "slots": {
+          "30": { "keep": [0, 10, 11, 12, 13, 14], "recolour": [4, 5], "why": { "4": "the light end of the shirt ramp 1-4 (contacts 1-3), not skin", "5": "the shirt highlight (contacts 1-4), not an eye" }, "ops": [ { "op": "hsl", "h": 0, "s": 0.25, "l": 0.62, "pens": [1, 2, 3, 4, 5] }, { "op": "tint", "rgb": "#334", "amount": 0.35, "pens": [1, 2, 3, 4, 5] },
+                                                         { "op": "hsl", "h": -70, "s": 1.35, "l": 1.0, "pens": [6, 7, 8, 9] }, { "op": "tint", "rgb": "#e62", "amount": 0.25, "pens": [6, 7, 8, 9] } ] },
+          "28": { "keep": [0, 10, 11, 12, 13, 14], "ops": [ { "op": "hsl", "h": 0, "s": 0.3, "l": 0.7 }, { "op": "tint", "rgb": "#432", "amount": 0.25 } ] },
+          "31": { "recolour": [4], "why": { "4": "the light end of the shirt ramp 1-4 in the flash frames (contacts 1-3, 5), not skin" }, "ops": [ { "op": "hsl", "h": 0, "s": 0.2, "l": 1.1 } ] } } },
+      "sable": { "note": "MARSHAL SABLE on the VICE T. body: black long coat, charcoal trousers, silver hair, gold badge", "slots": {
+            "25": { "keep": [0, 1, 10, 11, 12, 13, 14], "recolour": [5], "why": { "5": "the coat highlight (contacts 4, 6, 7), not an eye" }, "ops": [ { "op": "hsl", "h": 0, "s": 0.2, "l": 0.5 } ] },
+            "30": { "keep": [0, 1, 10, 11, 12, 13, 14], "recolour": [5, 9], "why": { "5": "the coat highlight (contacts 4, 6), not an eye", "9": "the dark violet end of the coat ramp 6-9 (contacts 8, 7), not the outline" }, "ops": [ { "op": "hsl", "h": 0, "s": 0.15, "l": 0.45 }, { "op": "tint", "rgb": "#222", "amount": 0.3 } ] },
+            "31": { "keep": [0, 1, 5, 10, 11, 12, 13, 14], "recolour": [8, 9], "why": { "8": "the gold hair ramp 6-9 (contacts 7, 6): classifyPens calls the orange pens skin", "9": "the gold hair ramp's dark end (contacts 8)" }, "ops": [ { "op": "hsl", "h": 0, "s": 0.1, "l": 1.2 } ] } },
+          "siblings": { "25": [ [3, 0, 25], [4, 1, 25], [5, 0, 25], [6, 0, 25], [8, 2, 25] ] } },
+        "slicevat": { "note": "LOT 04 SLICE: the home palette with the vest teal (a copy keeps its skin)", "slots": {
+            "30": { "keep": [0, 1, 2, 3, 4, 14], "recolour": [5, 6, 7], "why": { "5": "the vest ramp 5-7 (red, orange, yellow): its contacts are pen 6", "6": "the vest's orange middle pen, which classifyPens calls skin (contacts 5, 7)", "7": "the vest ramp's highlight (contacts 6)" }, "ops": [ { "op": "hsl", "h": 150, "s": 1.0, "l": 1.0 }, { "op": "hsl", "h": 0, "s": 1.0, "l": 0.8, "pens": [6], "_why": "keep the ramp order 5 < 6 < 7 after the rotation" } ] },
+            "31": { "ops": [ { "op": "hsl", "h": 150, "s": 1.0, "l": 1.0 }, { "op": "tint", "rgb": "#2a8", "amount": 0.3 } ] } } },
+        "ironhide": { "note": "LOT 44 MACK fallback: the E5A0 row 45 colouring turned steel-grey", "map": "uniform", "slots": { "17": { "romRow": 45, "ops": [ { "op": "hsl", "h": 0, "s": 0.3, "l": 0.9 }, { "op": "tint", "rgb": "#8a96a6", "amount": 0.25 } ] } }, "siblings": { "17": [ [2, 0, 17], [5, 0, 30] ] } },
+        "verdant": { "note": "VERDANT REGENT alternative: the SHIVAT row pushed toward a deeper nest green", "map": "uniform", "slots": { "30": { "romRow": 45, "ops": [ { "op": "hsl", "h": 25, "s": 1.1, "l": 0.95 }, { "op": "tint", "rgb": "#5c4", "amount": 0.25 } ] } }, "siblings": { "30": [ [5, 0, 30], [5, 0, 31] ] } }
+      },
+      "crownEngine": {
+        "_doc": "CAMPAIGN §10.4: the throne steps and the glass capsule of E8a3 (scroll2 cells, pen 15 transparent) baked into one boss sprite; rows = scroll2 palette rows kept (5 steps, 6 capsule and cables, 7 gold base, 8 pillar heads, 25 floor cables); the scroll3 tank columns are opaque background art and are not cut",
+        "stage": 8, "area": 3, "mapArea": 2, "cols": 20, "x": [4432, 4720], "h": [368, 496], "rows": [5, 6, 7, 8, 25], "rowPens": { "25": [10, 11, 12, 13, 14] }, "feet": [4576, 368],
+        "pod": { "x": [4528, 4648], "h": [438, 482], "row": 6, "glassPens": [2, 3, 4, 5, 6, 7, 8, 9] },
+        "crown": { "rows": {
+            "5": [ { "op": "hsl", "h": 0, "s": 0.15, "l": 0.85 }, { "op": "tint", "rgb": "#4a5a6a", "amount": 0.15 } ],
+            "8": [ { "op": "hsl", "h": 0, "s": 0.15, "l": 0.85 }, { "op": "tint", "rgb": "#4a5a6a", "amount": 0.15 } ],
+            "6": [ { "op": "hsl", "h": 70, "s": 1.1, "l": 1.0 }, { "op": "tint", "rgb": "#6a4a9a", "amount": 0.2 } ],
+            "7": [ { "op": "hsl", "h": 0, "s": 0.2, "l": 0.85 } ],
+            "25": [ { "op": "hsl", "h": 0, "s": 0.3, "l": 0.9 } ] },
+          "keep": { "6": [0, 1, 10, 11, 12, 13, 14], "7": [7, 8, 9, 10, 11, 12, 13, 14] } },
+        "cracked": { "drop": [5, 6, 7, 8, 9], "ops": [ { "op": "hsl", "h": 0, "s": 0.6, "l": 0.6 } ] }
+      },
+      "fessenden": { "logs": ["fess-boss.json", "fess-boss-passive.json"], "run": "bz-fess-boss", "orderLog": "fess-boss.json", "orderFallback": ["neckB", "arm2", "body", "neckA", "arm", "line"] },
+      "morgan": { "logs": ["morgan.json", "morgan-passive.json", "morgan-demo.json", "morgan-demo-passive.json"] },
+      "paletteSheet": [
+        { "body": "butcher", "title": "WARDEN ROOK (BUTCHER)", "anims": ["main:0", "main:1", "main:11", "main:9", "main:18"], "frames": [0, 2, 3, 1, 3], "palettes": ["home", "rook"] },
+        { "body": "morgan", "title": "FOREMAN CINDER (MORGAN)", "anims": ["main:0", "main:1", "main:3", "main:11", "main:8"], "frames": [0, 1, 1, 0, 4], "palettes": ["home", "cinder"] },
+        { "body": "slice", "title": "LOT 04 SLICE", "anims": ["main:0", "main:4", "main:8", "main:7", "main:9"], "frames": [0, 2, 2, 3, 0], "palettes": ["home", "slicevat"] },
+        { "body": "richmond", "title": "MARSHAL SABLE (VICE T.)", "anims": ["main:0", "main:1", "main:13", "main:14", "main:16"], "frames": [0, 2, 5, 1, 3], "palettes": ["home", "sable"] },
+        { "body": "torikeratopss", "title": "LOT 44 MACK", "anims": ["main:0", "main:2", "main:4", "main:7"], "frames": [0, 1, 0, 2], "palettes": ["home", "t98-e5a0-pal30", "ironhide"] },
+        { "body": "arosaurus", "title": "VERDANT REGENT (SHIVAT)", "anims": ["main:0", "main:9", "main:11", "main:13"], "frames": [0, 1, 1, 0], "palettes": ["home", "t60-e2a1-pal30", "verdant"] },
+        { "body": "fessenden", "title": "LOT 00 FESSENDEN (body)", "anims": ["main:0", "main:1", "main:7", "main:10"], "frames": [0, 2, 1, 0], "palettes": ["home", "gel"] }
+      ],
+      "sort": "id"
+  }
+}
