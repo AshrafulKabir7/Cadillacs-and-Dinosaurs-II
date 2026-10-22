@@ -970,6 +970,25 @@
     relayKnown = list.some(s => [].concat(s.urls || s.url || []).some(u => /^turns?:/i.test(u)));
     return relayKnown;
   }
+  // TURN relay credentials from the site's own /api/turn (api/turn.js on Vercel). Without a relay, two players behind
+  // strict NATs (mobile data, campus, office networks) can never reach each other. Same-origin http(s) only; any
+  // failure falls back to PeerJS's defaults so a missing endpoint never blocks direct play.
+  const BASE_ICE = [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun.cloudflare.com:3478' }];
+  async function relayServers(timeout = 5000) {
+    const loc = root.location;
+    if (!loc || !/^https?:$/.test(loc.protocol) || typeof root.fetch !== 'function') return [];
+    try {
+      const ctl = typeof root.AbortController === 'function' ? new root.AbortController() : null;
+      const timer = ctl && setTimeout(() => ctl.abort(), timeout);
+      const res = await root.fetch('/api/turn', { cache: 'no-store', signal: ctl && ctl.signal });
+      if (timer) clearTimeout(timer);
+      if (!res.ok) return [];
+      const body = await res.json();
+      const list = [].concat(body && body.iceServers || []).filter(s => s && (s.urls || s.url));
+      if (list.some(s => [].concat(s.urls || s.url).some(u => /^turns?:/i.test(u)))) relayKnown = true;
+      return list;
+    } catch (e) { return []; }
+  }
   function loadPeerJS({ timeout = 10000, urls = [PEERJS_URL, PEERJS_FALLBACK_URL] } = {}) {
     if (peerCtor()) { detectRelay(); return Promise.resolve(); }
     if (peerjsPromise) return peerjsPromise;
@@ -1138,9 +1157,9 @@
     if (kind === 'peerjs') {
       if (typeof root.RTCPeerConnection !== 'function') throw netError('webrtc-unsupported');
       progress('loading');
-      await loadPeerJS();
+      const [, ice] = await Promise.all([loadPeerJS(), relayServers()]);
       progress('broker');
-      return transports.peerjs();
+      return transports.peerjs(ice.length ? { peerOptions: { config: { iceServers: BASE_ICE.concat(ice) } } } : undefined);
     }
     if (!transports[kind]) throw netError('broker', 'unknown transport ' + kind);
     return transports[kind]();
