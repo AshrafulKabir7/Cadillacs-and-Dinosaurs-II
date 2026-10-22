@@ -31,6 +31,7 @@
   const ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
   const KEY_NAME = 'cnd2-mp-name', KEY_HERO = 'cnd2-mp-hero', KEY_CID = 'cnd2-mp-cid';
   const PRIVACY = 'Online play connects your browser directly to your friends’ browsers (they can see your IP address, as in any peer-to-peer game). The free PeerJS server only introduces you.';
+  const PRIVACY_RELAY = ' When a network blocks direct connections, the game’s own relay server passes the game data between you instead (nothing is stored).';
 
   // The words of MULTIPLAYER.md §1.14. EDEN_NET.errors wins when it has the code; these cover a missing net.js and the
   // lobby-only codes (host-quit, unknown).
@@ -43,7 +44,8 @@
     'version': { title: 'DIFFERENT VERSIONS', text: 'Your copy of the game is different from the host’s. Both of you: reload the page, then try again.', retry: false },
     'build': { title: 'DIFFERENT VERSIONS', text: 'Your copy of the game is different from the host’s. Both of you: reload the page, then try again.', retry: false },
     'hero-taken': { title: 'HERO TAKEN', text: 'Another player took that hero — pick another.', retry: false },
-    'ice-failed': { title: 'CAN’T CONNECT TO THE HOST', text: 'Your network (or the host’s) blocks direct player-to-player connections — common on school, office, hotel and some mobile networks. This game has no relay server of its own. Try another network, such as a phone hotspot, or let another player host.', retry: true },
+    'ice-failed': { title: 'CAN’T CONNECT TO THE HOST', text: 'Your network (or the host’s) blocks direct player-to-player connections — common on school, office, hotel and some mobile networks — and the game’s relay server couldn’t connect you either. Check that the host still has the room open, then try again, or try another network, such as a phone hotspot.', retry: true },
+    'relay-down': { title: 'CAN’T REACH THE RELAY SERVER', text: 'The game’s relay server isn’t answering. Check your internet connection, wait a minute and try again.', retry: true },
     'timeout': { title: 'LOST THE CONNECTION', text: 'The host stopped answering.', retry: true },
     'host-left': { title: 'THE HOST LEFT THE GAME', text: 'The game ended because the host closed it.', retry: false },
     'host-quit': { title: 'THE HOST ENDED THE GAME', text: 'The host closed the room. Ask for a new code to play again.', retry: false },
@@ -325,7 +327,7 @@
         btn('mp-join', 'JOIN A GAME', 'secondary', () => renderJoin('')),
         btn('mp-back', '← BACK', 'secondary', () => exitLobby('back'), { 'data-mp-esc': true })),
       h('p', { class: 'mp-tip', text: 'Each player picks a different hero. Your friends need your game code.' }),
-      h('p', { class: 'mp-fine', text: PRIVACY })));
+      h('p', { class: 'mp-fine', text: PRIVACY + (relayOn() ? PRIVACY_RELAY : '') })));
   }
 
   function renderJoin(code, err) {
@@ -397,11 +399,21 @@
     return kind;
   }
   // net.js reports 'loading' / 'broker' / 'host' / 'hello' while it connects (EDEN_NET 'progress').
-  const STEP_TEXT = { loading: 'LOADING ONLINE PLAY', broker: 'REACHING THE MATCHMAKING SERVER', host: 'CONNECTING TO THE HOST', hello: 'CONNECTING TO THE HOST' };
+  // 'direct' / 'relay': the auto transport tries a direct WebRTC link first, then falls back to the game's relay server.
+  const STEP_TEXT = { loading: 'LOADING ONLINE PLAY', broker: 'REACHING THE MATCHMAKING SERVER', host: 'CONNECTING TO THE HOST', hello: 'CONNECTING TO THE HOST',
+    direct: 'CONNECTING DIRECTLY…', relay: 'USING RELAY…' };
+  function relayOn() { try { return !!(S.net && typeof S.net.relayUrl === 'function' && S.net.relayUrl()); } catch (e) { return false; } }
   function watchProgress(op, role) {
     const net = S.net;
     if (!net || typeof net.on !== 'function') return () => {};
-    const fn = step => { if (op === S.op && S.screen === 'mp-connecting' && STEP_TEXT[step]) setStep(role === 'host' && step === 'broker' ? 'OPENING YOUR ROOM' : STEP_TEXT[step]); };
+    const fn = step => {
+      if (op !== S.op || S.screen !== 'mp-connecting' || !STEP_TEXT[step]) return;
+      if (step === 'direct' || step === 'relay') { clearTimeout(S.stepTimer); S.pathStep = step; }
+      // once the path is known, the generic "connecting" steps keep saying which one (hello: USING RELAY… stays)
+      if ((step === 'host' || step === 'hello') && S.pathStep) return;
+      setStep(role === 'host' && step === 'broker' ? 'OPENING YOUR ROOM' : STEP_TEXT[step]);
+    };
+    S.pathStep = null;
     try { net.on('progress', fn); } catch (e) { return () => {}; }
     return () => { try { if (typeof net.off === 'function') net.off('progress', fn); } catch (e) { /* gone */ } };
   }
@@ -452,7 +464,7 @@
       const transport = await makeTransport();
       if (op !== S.op) return;
       setStep('REACHING THE MATCHMAKING SERVER');
-      S.stepTimer = setTimeout(() => { if (op === S.op) setStep('CONNECTING TO THE HOST ' + code); }, 1200);
+      S.stepTimer = setTimeout(() => { if (op === S.op && !S.pathStep) setStep('CONNECTING TO THE HOST ' + code); }, 1200);
       const hero = preferredHero();
       const sess = await S.net.join(code, { adapter: S.adapter, transport, name: myName(), hero, cid: clientId() });
       if (op !== S.op) { try { sess && sess.leave && sess.leave('cancel'); } catch (e) { /* cancelled */ } return; }

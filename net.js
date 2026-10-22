@@ -25,6 +25,13 @@
   const PROTOCOL = 1, MAX_PLAYERS = 3;
   const PEERJS_URL = 'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';
   const PEERJS_FALLBACK_URL = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
+  // The game's own WebSocket relay (relay/ in this repo, a Cloudflare Worker): players whose networks block direct
+  // WebRTC connections (mobile data, ISP CGNAT, campus and office networks) play through it over wss:// on port 443.
+  // Put the deployed Worker's address here, e.g. 'wss://cnd2-relay.<your-subdomain>.workers.dev' (relay/README.md).
+  // Set to '' to turn the relay off: online play is then direct WebRTC only, exactly as before the relay existed. A page URL's ?relay=<url>
+  // overrides it (testing: ws:// only to this computer, wss:// anywhere).
+  const RELAY_URL = 'wss://cnd2-relay.ashrafulkabir2021.workers.dev';
+  const RELAY_WINDOW_MS = 7000;   // how long a joiner tries the direct connection before it switches to the relay
   const RATES = { input: 60, snap: 20, keyframeMs: 2000, pingMs: 1000, warnMs: 3000, dropMs: 10000, reserveMs: 30000, lobbyMs: 2000, helloMs: 5000,
     linkBytesPerSec: 48 * 1024, ctlPerSec: 20, ctlBurst: 40, kickLockMs: 60000 };
   const FRAG = 12000, MAX_TEXT = 256 * 1024, HISTORY = 64;
@@ -99,12 +106,18 @@
     'ice-failed': {
       title: "CAN'T CONNECT TO THE HOST",
       get text() {
+        if (relayUrl()) {
+          return "Your network (or the host's) blocks direct player-to-player connections — common on school, office, hotel and some mobile networks — " +
+            "and the game's relay server couldn't connect you to the host either. Check that the host still has the room open and both of you are online, " +
+            'then try again, or try another network, such as a phone hotspot.';
+        }
         return "Your network (or the host's) blocks direct player-to-player connections — common on school, office, hotel and some mobile networks. " +
           (relayKnown ? "This game has no relay server of its own, and the public relay couldn't be reached either. " : 'This game has no relay server of its own. ') +
           'Try another network, such as a phone hotspot, or let another player host.';
       },
       retry: true,
     },
+    'relay-down': { title: "CAN'T REACH THE RELAY SERVER", text: "The game's relay server isn't answering. Check your internet connection, wait a minute and try again.", retry: true },
     'timeout': { title: 'LOST THE CONNECTION', text: 'The host stopped answering.', retry: true },
     'host-left': { title: 'THE HOST LEFT THE GAME', text: 'The game ended because the host closed it.', retry: false },
     'host-quit': { title: 'THE HOST ENDED THE GAME', text: 'The host closed this room.', retry: false },
@@ -1138,8 +1151,310 @@
     return t;
   }
 
+  // ------------------------------------------------------------------ relay: one WebSocket per peer through relay/
+  // Protocol (relay/src/index.js has the full description; tests/fixtures/relay-node.cjs is the same thing in Node):
+  //   wss://<relay>/room/DINO-XXXX?role=host|join&cid=<client id>
+  //   frames "<peer>|<ch>\n<payload>": to the relay <peer> is the destination (the host names a joiner's relay id,
+  //   a joiner's frames always reach the host), from the relay it is the source. Control frames "@\n<json>":
+  //   welcome{id,role}, joined{id,cid}, left{id}, close{code,reason} from the relay; close{id} from the host.
+  //   Close codes: 4000 host-left, 4001 room-full, 4002 host-exists, 4004 no-host, 4005 replaced, 4009 too-big,
+  //   4010 closed-by-host, 4029 rate-limit. "ping" is answered "pong" (keep-alive).
+  // Batching: what a socket sends to one peer within batchMs goes out as one frame, the messages joined by "\n" (JSON
+  // text never contains a raw newline; the frame is labelled "ctl" when any of them is), so a relayed player costs the
+  // relay ~30 messages a second per direction instead of 60-80 (the free plan bills incoming messages). The relay
+  // never looks inside a payload.
+  let relayOverride = null;   // tests (Node): NET._test.setRelay(url | '' | null)
+  function cleanRelay(v, fromPage) {
+    let s = String(v == null ? '' : v).trim();
+    if (!s || /^(off|none|0|false)$/i.test(s)) return '';
+    s = s.replace(/^http(s?):\/\//i, 'ws$1://').replace(/\/+$/, '');
+    const m = /^(wss?):\/\/([^/?#\s]+)(\/[^?#\s]*)?$/i.exec(s);
+    if (!m) return null;
+    // a page link may point at a test relay on this computer, or at any relay over wss:// (never plain ws:// elsewhere)
+    if (fromPage && m[1].toLowerCase() === 'ws' && !/^(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/i.test(m[2])) return null;
+    return s;
+  }
+  function relayUrl() {
+    const q = (root.location && root.location.search) || '';
+    const m = /[?&]relay=([^&#]*)/i.exec(q);
+    if (m) {
+      let v = m[1]; try { v = decodeURIComponent(v); } catch (e) { /* keep raw */ }
+      const u = cleanRelay(v, true);
+      if (u !== null) return u;
+    }
+    return cleanRelay(relayOverride !== null ? relayOverride : RELAY_URL) || '';
+  }
+  const RELAY_CLOSE = { 4000: 'host-left', 4001: 'full', 4002: 'id-taken', 4004: 'bad-code', 4005: 'replaced', 4009: 'relay-down', 4010: 'host-left', 4029: 'relay-down' };
+  function relayError(code) {
+    const c = RELAY_CLOSE[code] || 'relay-down';
+    if (c === 'id-taken') return Object.assign(netError('broker', 'room code taken on the relay'), { code: 'id-taken' });
+    if (c === 'replaced') return netError('cancelled', 'replaced');
+    return netError(c, c === 'relay-down' ? 'relay close ' + (code || 'abnormal') : '');
+  }
+  const relayRoom = peerId => code.normalize(String(peerId || '').replace(/^cnd2-/i, ''));
+
+  function relayTransport({ url = relayUrl(), cid = null, openMs = 8000, keepAliveMs = 25000, reconnectMs = 4000, batchMs = 33, maxBatch = 48000 } = {}) {
+    url = cleanRelay(url);
+    if (!url) throw netError('relay-down', 'no relay configured');
+    const WS = root.WebSocket;
+    if (typeof WS !== 'function') throw netError('webrtc-unsupported', 'WebSocket missing');
+    const t = emitter({ kind: 'relay', id: null, closed: false, brokerUp: false, url });
+    const myCid = cid && /^[A-Za-z0-9_-]{4,32}$/.test(cid) ? cid : randomId(12);
+    const links = new Map();   // host: joiner relay id -> link
+    let incoming = null, hostSock = null, hostPeerId = null, reconnecting = null;
+
+    // One socket: resolves {ws, id} on the relay's welcome; rejects with the mapped error if it closes first.
+    function openSocket(peerId, role) {
+      const room = relayRoom(peerId);
+      if (!room) return Promise.reject(netError('bad-code', 'not a room id'));
+      return new Promise((resolve, reject) => {
+        let ws;
+        try { ws = new WS(url + '/room/' + room + '?role=' + role + '&cid=' + encodeURIComponent(myCid)); } catch (e) { reject(netError('relay-down', e && e.message)); return; }
+        try { ws.binaryType = 'arraybuffer'; } catch (e) { /* default */ }
+        const sock = { ws, id: null, open: false, onMsg: null, onGone: null, timer: null, ka: null, queue: [], qlen: 0, flushT: null };
+        let done = false;
+        const fail = err => { if (done) return; done = true; clearTimeout(timer); try { ws.close(); } catch (e) { /* closing */ } reject(err); };
+        const timer = setTimeout(() => fail(netError('relay-down', 'timeout')), openMs);
+        const gone = (code, why) => {
+          if (!done) { fail(relayError(code)); return; }
+          if (!sock.open) return;
+          sock.open = false; clearInterval(sock.ka); clearTimeout(sock.flushT);
+          try { ws.close(1000); } catch (e) { /* closing */ }
+          if (sock.onGone) safely(sock.onGone, code, why);
+        };
+        ws.onmessage = e => {
+          const d = e.data;
+          if (typeof d === 'string') {
+            if (d === 'pong') return;
+            if (d.charCodeAt(0) === 64 && d.charCodeAt(1) === 10) {   // "@\n"
+              let o; try { o = JSON.parse(d.slice(2)); } catch (x) { return; }
+              if (!o || typeof o.op !== 'string') return;
+              if (o.op === 'welcome' && !done) {
+                done = true; clearTimeout(timer); sock.id = String(o.id || ''); sock.open = true;
+                sock.ka = setInterval(() => { try { if (ws.readyState === 1) ws.send('ping'); } catch (x) { /* closing */ } }, keepAliveMs);
+                if (sock.ka && sock.ka.unref) sock.ka.unref();
+                resolve(sock);
+                return;
+              }
+              if (o.op === 'close') { gone(o.code | 0, o.reason || ''); return; }
+              if (done && sock.onMsg) safely(sock.onMsg, '@', '', o);
+              return;
+            }
+            const i = d.indexOf('\n'); if (i < 1 || !done || !sock.onMsg) return;
+            const head = d.slice(0, i), bar = head.indexOf('|');
+            const ch = head.slice(bar + 1) === 'st' ? 'st' : 'ctl', body = d.slice(i + 1);
+            for (const part of body.split('\n')) if (part) sock.onMsg(head.slice(0, bar), ch, part);
+            return;
+          }
+          if (!done || !sock.onMsg) return;
+          const u8 = new Uint8Array(d && d.buffer ? d.buffer : d), n = u8[0];
+          if (!n || u8.length < 1 + n) return;
+          let head = ''; for (let k = 1; k <= n; k++) head += String.fromCharCode(u8[k]);
+          const bar = head.indexOf('|');
+          sock.onMsg(head.slice(0, bar), head.slice(bar + 1) === 'st' ? 'st' : 'ctl', u8.subarray(1 + n));
+        };
+        ws.onclose = e => gone(e && e.code, e && e.reason);
+        ws.onerror = () => { /* the close event follows */ };
+      });
+    }
+    function flush(sock) {
+      sock.flushT = null;
+      const q = sock.queue;
+      sock.queue = []; sock.qlen = 0;
+      if (!sock.open || !q.length) return;
+      // one frame per destination for both channels (over the relay everything is reliable and ordered anyway, and the
+      // sessions don't depend on the channel a message came in on), in send order, each frame under maxBatch characters
+      const by = new Map();
+      for (const m of q) { const l = by.get(m[0]); if (l) l.push(m); else by.set(m[0], [m]); }
+      for (const [to, list] of by) {
+        let buf = [], len = 0, ch = 'st';
+        const out = () => { if (!buf.length) return; try { sock.ws.send(to + '|' + ch + '\n' + buf.join('\n')); } catch (e) { /* closing */ } buf = []; len = 0; ch = 'st'; };
+        for (const [, c, text] of list) { if (len + text.length + 1 > maxBatch) out(); buf.push(text); len += text.length + 1; if (c !== 'st') ch = 'ctl'; }
+        out();
+      }
+    }
+    function queue(sock, to, ch, text) {
+      if (!sock.open) return;
+      if (typeof text !== 'string') {   // binary payloads are sent at once, unbatched
+        const head = to + '|' + ch, u8 = text instanceof ArrayBuffer ? new Uint8Array(text) : new Uint8Array(text.buffer, text.byteOffset, text.byteLength);
+        const buf = new Uint8Array(1 + head.length + u8.length); buf[0] = head.length;
+        for (let k = 0; k < head.length; k++) buf[1 + k] = head.charCodeAt(k);
+        buf.set(u8, 1 + head.length);
+        flush(sock); try { sock.ws.send(buf); } catch (e) { /* closing */ }
+        return;
+      }
+      sock.queue.push([to, ch === 'st' ? 'st' : 'ctl', text]); sock.qlen += text.length;
+      if (sock.qlen >= maxBatch) flush(sock);
+      else if (!sock.flushT) sock.flushT = setTimeout(() => flush(sock), batchMs);
+    }
+
+    // ---- host
+    function hostLink(sock, rid) {
+      const l = makeLink(t.id, rid, {
+        kind: 'relay',
+        send: (ch, text) => queue(sock, rid, ch, text),
+        buffered: () => (sock.ws.bufferedAmount || 0) + sock.qlen,
+        close: () => { links.delete(rid); flush(sock); if (sock.open) try { sock.ws.send('@\n' + JSON.stringify({ op: 'close', id: rid })); } catch (e) { /* closing */ } },
+        dispose: () => links.delete(rid),
+      });
+      links.set(rid, l);
+      return l;
+    }
+    function adoptHost(sock) {
+      hostSock = sock;
+      sock.onMsg = (from, ch, payload) => {
+        if (from === '@') {
+          const o = payload;
+          if (o.op === 'joined' && typeof o.id === 'string') { const old = links.get(o.id); if (old) old._remoteClosed('replaced'); const l = hostLink(sock, o.id); if (incoming) incoming(l); }
+          else if (o.op === 'left') { const l = links.get(o.id); if (l) l._remoteClosed('remote-close'); }
+          return;
+        }
+        const l = links.get(from);
+        if (l && l.open) l.emit('message', ch, payload);
+      };
+      sock.onGone = () => {
+        if (hostSock !== sock) return;
+        hostSock = null;
+        for (const l of Array.from(links.values())) l._remoteClosed('cut');
+        t.brokerUp = false; t.emit('broker', false);
+        if (!t.closed) reconnect();
+      };
+      t.brokerUp = true; t.emit('broker', true);
+    }
+    function reconnect() {
+      if (reconnecting || t.closed || !hostPeerId) return;
+      reconnecting = setTimeout(() => {
+        reconnecting = null;
+        if (t.closed || hostSock) return;
+        openSocket(hostPeerId, 'host').then(sock => { if (t.closed) { try { sock.ws.close(1000); } catch (e) { /* closing */ } return; } adoptHost(sock); },
+          err => { if (err && err.code === 'id-taken') { t.emit('peer-error', netError('relay-down', 'room taken')); return; } reconnect(); });
+      }, reconnectMs);
+    }
+    t.listen = async peerId => {
+      if (t.closed) throw netError('relay-down', 'transport closed');
+      if (hostSock) { const s = hostSock; hostSock = null; try { s.ws.close(1000); } catch (e) { /* closing */ } }
+      const sock = await openSocket(peerId, 'host');
+      if (t.closed) { try { sock.ws.close(1000); } catch (e) { /* closing */ } throw netError('cancelled'); }
+      t.id = peerId; hostPeerId = peerId;
+      adoptHost(sock);
+    };
+    t.onIncoming = fn => { incoming = fn; };
+
+    // ---- joiner
+    t.connect = async peerId => {
+      if (t.closed) throw netError('relay-down', 'transport closed');
+      t.emit('progress', 'relay');
+      const sock = await openSocket(peerId, 'join');
+      if (t.closed) { try { sock.ws.close(1000); } catch (e) { /* closing */ } throw netError('cancelled'); }
+      t.id = sock.id; t.brokerUp = true;
+      const l = makeLink(sock.id, peerId, {
+        kind: 'relay',
+        send: (ch, text) => queue(sock, 'h', ch, text),
+        buffered: () => (sock.ws.bufferedAmount || 0) + sock.qlen,
+        close: () => { flush(sock); sock.open = false; clearInterval(sock.ka); try { sock.ws.close(1000, 'left'); } catch (e) { /* closing */ } },
+        dispose: () => { sock.open = false; clearInterval(sock.ka); try { sock.ws.close(1000); } catch (e) { /* closing */ } },
+      });
+      sock.onMsg = (from, ch, payload) => { if (from === 'h' && l.open) l.emit('message', ch, payload); };
+      sock.onGone = code => l._remoteClosed(code === 4000 || code === 4010 ? 'remote-close' : code === 4005 ? 'replaced' : 'cut');
+      links.set('h', l);
+      return l;
+    };
+    t.close = () => {
+      if (t.closed) return;
+      t.closed = true;
+      if (reconnecting) { clearTimeout(reconnecting); reconnecting = null; }
+      for (const l of Array.from(links.values())) l.close('transport-closed');
+      links.clear();
+      if (hostSock) { const s = hostSock; hostSock = null; flush(s); s.open = false; clearInterval(s.ka); try { s.ws.close(1000); } catch (e) { /* closing */ } }
+      t.brokerUp = false;
+    };
+    t.links = () => Array.from(links.values());
+    return t;
+  }
+
+  // ------------------------------------------------------------------ auto: direct first, the relay as the fallback
+  // Host: listens on both (the same room code on the PeerJS broker and on the relay), so a joiner reaches it either way;
+  // one of the two failing is not fatal. Joiner: tries the direct link first ('direct' progress); when it fails, or has
+  // not opened after windowMs, it connects through the relay ('relay' progress) and drops the slower direct attempt.
+  function autoTransport({ direct = null, relay = null, windowMs = RELAY_WINDOW_MS } = {}) {
+    const parts = [direct, relay].filter(Boolean);
+    if (!parts.length) throw netError('webrtc-unsupported', 'no transport');
+    const t = emitter({ kind: 'auto', id: null, closed: false, brokerUp: false, via: null, listening: [] });
+    const up = p => !p.closed && p.brokerUp !== false;
+    const update = () => { const u = parts.some(up); if (u !== t.brokerUp) { t.brokerUp = u; t.emit('broker', u); } };
+    for (const p of parts) if (p.on) {
+      p.on('broker', update);
+      p.on('peer-error', e => t.emit('peer-error', e));
+      p.on('progress', s => { if (s === 'relay') t.emit('progress', s); });
+    }
+    t.onIncoming = fn => { for (const p of parts) p.onIncoming(fn); };
+    t.listen = async peerId => {
+      const res = await Promise.allSettled(parts.map(p => p.listen(peerId)));
+      const taken = res.find(r => r.status === 'rejected' && r.reason && r.reason.code === 'id-taken');
+      if (taken) throw taken.reason;
+      t.listening = parts.filter((p, i) => res[i].status === 'fulfilled').map(p => p.kind);
+      if (!t.listening.length) throw res[0].reason;
+      t.id = peerId; t.brokerUp = parts.some(up);
+      // a part that could not open the room (the broker or the relay unreachable) is reported, the room runs on the other
+      res.forEach((r, i) => { if (r.status === 'rejected') t.emit('peer-error', Object.assign(asNetError(r.reason), { part: parts[i].kind })); });
+      // the relay could not be reached when the room opened: keep trying in the background, so joiners whose direct
+      // link fails can still come in once it answers
+      const retry = p => { const h = setTimeout(() => {
+        if (t.closed || p.closed || t.id !== peerId) return;
+        p.listen(peerId).then(() => { if (!t.listening.includes(p.kind)) t.listening.push(p.kind); update(); }, e => { if (!(e && e.code === 'id-taken')) retry(p); });
+      }, 10000); if (h && h.unref) h.unref(); };
+      res.forEach((r, i) => { if (r.status === 'rejected' && parts[i].kind === 'relay' && !(r.reason && r.reason.code === 'id-taken')) retry(parts[i]); });
+    };
+    t.connect = peerId => {
+      if (!direct) return relay.connect(peerId).then(l => { t.via = 'relay'; t.id = relay.id; return l; });
+      if (!relay) return direct.connect(peerId).then(l => { t.via = direct.kind; t.id = direct.id; return l; });
+      return new Promise((resolve, reject) => {
+        let settled = false, relayStarted = false, directDone = false, directErr = null, relayErr = null;
+        t.emit('progress', 'direct');
+        const win = setTimeout(goRelay, windowMs);
+        const won = (l, via, loser) => {
+          settled = true; clearTimeout(win); t.via = via; t.id = via === 'relay' ? relay.id : direct.id;
+          setTimeout(() => { try { loser.close(); } catch (e) { /* closed */ } }, 0);
+          resolve(l);
+        };
+        const finish = () => {
+          settled = true; clearTimeout(win);
+          const rc = relayErr && relayErr.code;
+          let err;
+          if (!relayErr) err = directErr;
+          else if (rc === 'full' || rc === 'host-left' || rc === 'cancelled') err = relayErr;
+          else if (rc === 'bad-code') err = directErr && directErr.code === 'ice-failed' ? directErr : relayErr;   // the host is not on the relay
+          else err = directErr || relayErr;                                                                         // the relay is unreachable
+          reject(err);
+        };
+        direct.connect(peerId).then(l => {
+          directDone = true;
+          if (settled) { l.close('superseded'); return; }
+          won(l, direct.kind, relay);
+        }, e => {
+          directDone = true; directErr = e;
+          if (settled) return;
+          if (!relayStarted) goRelay(); else if (relayErr) finish();
+        });
+        function goRelay() {
+          if (relayStarted || settled) return;
+          relayStarted = true; clearTimeout(win);
+          relay.connect(peerId).then(l => {
+            if (settled) { l.close('superseded'); return; }
+            won(l, 'relay', direct);
+          }, e => { relayErr = e; if (settled) return; if (directDone) finish(); /* else the direct attempt may still open */ });
+        }
+      });
+    };
+    t.close = () => { if (t.closed) return; t.closed = true; for (const p of parts) try { p.close(); } catch (e) { /* closed */ } };
+    t.parts = { direct, relay };
+    return t;
+  }
+
   const transports = {
     peerjs: opts => peerjsTransport(opts),
+    relay: (opts = {}) => relayTransport(opts),
+    auto: (opts = {}) => autoTransport(opts),
     loopback: (opts = {}) => busTransport('loopback', opts),
     rtcLocal: (opts = {}) => busTransport('rtc-local', opts),
   };
@@ -1149,17 +1464,37 @@
     const m = /[?&]net=([a-z-]+)/i.exec(q);
     if (m && /^loopback$/i.test(m[1])) return 'loopback';
     if (m && /^rtc(-local)?$/i.test(m[1])) return 'rtc-local';
+    if (m && /^relay$/i.test(m[1])) return 'relay';
+    if (m && /^auto$/i.test(m[1])) return 'auto';
+    if (m && /^(peerjs|direct)$/i.test(m[1])) return 'peerjs';
+    return relayUrl() ? 'auto' : 'peerjs';
+  }
+  // The direct half of 'auto': PeerJS, or (tests, ?direct=loopback|rtc-local) a bus transport.
+  function directKind() {
+    const m = /[?&]direct=([a-z-]+)/i.exec((root.location && root.location.search) || '');
+    if (m && /^loopback$/i.test(m[1])) return 'loopback';
+    if (m && /^rtc(-local)?$/i.test(m[1])) return 'rtc-local';
     return 'peerjs';
   }
-  async function makeTransport(spec, progress) {
+  async function peerjsDirect(progress) {
+    if (typeof root.RTCPeerConnection !== 'function') throw netError('webrtc-unsupported');
+    progress('loading');
+    const [, ice] = await Promise.all([loadPeerJS(), relayServers()]);
+    progress('broker');
+    return transports.peerjs(ice.length ? { peerOptions: { config: { iceServers: BASE_ICE.concat(ice) } } } : undefined);
+  }
+  async function makeTransport(spec, progress, opts = {}) {
     if (spec && typeof spec === 'object') return spec;
     const kind = spec || defaultTransport();
-    if (kind === 'peerjs') {
-      if (typeof root.RTCPeerConnection !== 'function') throw netError('webrtc-unsupported');
-      progress('loading');
-      const [, ice] = await Promise.all([loadPeerJS(), relayServers()]);
-      progress('broker');
-      return transports.peerjs(ice.length ? { peerOptions: { config: { iceServers: BASE_ICE.concat(ice) } } } : undefined);
+    if (kind === 'peerjs') return peerjsDirect(progress);
+    if (kind === 'relay') return transports.relay({ cid: opts.cid });
+    if (kind === 'auto') {
+      if (!relayUrl()) return peerjsDirect(progress);
+      let direct = null;
+      const dk = directKind();
+      // PeerJS missing (blocked CDN, no WebRTC) is not fatal here: the relay still works
+      try { direct = dk === 'peerjs' ? await peerjsDirect(progress) : transports[dk](); } catch (e) { direct = null; }
+      return transports.auto({ direct, relay: transports.relay({ cid: opts.cid }) });
     }
     if (!transports[kind]) throw netError('broker', 'unknown transport ' + kind);
     return transports[kind]();
@@ -1518,7 +1853,7 @@
       const cs = Array.from(this.clients.values());
       return { role: 'host', code: this.code, slot: 0, phase: this.phase, roster: this.roster, rtt: cs.length ? Math.round(Math.max(...cs.map(c => c.rtt || 0))) : 0,
         delay: 0, snapSeq: this.snapSeq, kbpsIn: this.stats.kbpsIn, kbpsOut: this.stats.kbpsOut, dropped: this.stats.dropped + cs.reduce((a, c) => a + c.receiver.dropped, 0),
-        error: this.lastError ? this.lastError.code : null, brokerUp: this.brokerUp, slow: this.slow, transport: this.transport.kind, relay: relayKnown, paused: this.paused.on, locked: this.isLocked };
+        error: this.lastError ? this.lastError.code : null, brokerUp: this.brokerUp, slow: this.slow, transport: this.transport.kind, via: this.transport.listening || [this.transport.kind], relay: relayKnown, paused: this.paused.on, locked: this.isLocked };
     }
   }
 
@@ -1695,7 +2030,7 @@
     status() {
       return { role: 'client', code: this.code, slot: this.slot, phase: this.phase, roster: this.roster, rtt: Math.round(this.rtt), delay: Math.round(this.interp.delay),
         snapSeq: this.latest, kbpsIn: this.stats.kbpsIn, kbpsOut: this.stats.kbpsOut, dropped: this.stats.dropped, error: this.error, warn: this.warn,
-        transport: this.transport.kind, relay: relayKnown, paused: this.paused.on };
+        transport: this.transport.kind, via: this.link && this.link.kind, relay: relayKnown, paused: this.paused.on };
     }
   }
 
@@ -1709,8 +2044,9 @@
     cancelPending();
     let cancelled = false, transport = null;
     pendingOp = { cancel: () => { cancelled = true; if (transport) transport.close(); } };
+    const hostCid = opts.cid || clientId();
     try {
-      transport = await makeTransport(opts.transport, progress);
+      transport = await makeTransport(opts.transport, progress, { cid: hostCid });
       if (cancelled) { transport.close(); throw netError('cancelled'); }
       progress('broker');
       let roomCode = null;
@@ -1719,7 +2055,10 @@
         try { await transport.listen(code.peerId(c)); roomCode = c; }
         catch (e) {
           if (cancelled) throw netError('cancelled');
-          if (e && e.code === 'id-taken') { if (transport.kind === 'peerjs') { transport.close(); transport = await makeTransport(opts.transport, progress); } continue; }
+          if (e && e.code === 'id-taken') {
+            if ((transport.kind === 'peerjs' || transport.kind === 'auto') && !(opts.transport && typeof opts.transport === 'object')) { transport.close(); transport = await makeTransport(opts.transport, progress, { cid: hostCid }); }
+            continue;
+          }
           throw asNetError(e);
         }
       }
@@ -1746,15 +2085,16 @@
     if (!roomCode) { const err = netError(code.problem(codeText) === 'symbols' ? 'code-format' : 'bad-code', 'format'); NET.emit('error', err); throw err; }
     let cancelled = false, transport = null;
     pendingOp = { cancel: () => { cancelled = true; if (transport) transport.close(); } };
+    const cid = opts.cid || clientId();
     try {
-      transport = await makeTransport(opts.transport, progress);
+      transport = await makeTransport(opts.transport, progress, { cid });
       if (cancelled) { transport.close(); throw netError('cancelled'); }
       if (transport.on) transport.on('progress', progress);
-      progress(transport.kind === 'peerjs' ? 'broker' : 'host');
+      progress(transport.kind === 'peerjs' ? 'broker' : transport.kind === 'relay' ? 'relay' : 'host');
       const link = await transport.connect(code.peerId(roomCode));
       if (cancelled) { link.close('cancelled'); throw netError('cancelled'); }
       progress('hello');
-      const s = new ClientSession(Object.assign({}, opts, { transport, link, code: roomCode, cid: opts.cid || clientId() }));
+      const s = new ClientSession(Object.assign({}, opts, { transport, link, code: roomCode, cid }));
       await s._handshake();
       if (cancelled) { s.leave('cancelled'); throw netError('cancelled'); }
       replaceSession(s, opts.register);
@@ -1799,9 +2139,9 @@
   }
 
   Object.assign(NET, {
-    PROTOCOL, MAX_PLAYERS, PEERJS_URL, PEERJS_FALLBACK_URL, RATES, FRAG, MAX_TEXT,
+    PROTOCOL, MAX_PLAYERS, PEERJS_URL, PEERJS_FALLBACK_URL, RELAY_URL, RELAY_WINDOW_MS, RATES, FRAG, MAX_TEXT,
     code,
-    loadPeerJS, transports, defaultTransport, memoryBus, broadcastBus,
+    loadPeerJS, transports, defaultTransport, relayUrl, memoryBus, broadcastBus,
     host, join, cancel: cancelPending, session: null, status, rejoinCode,
     input: { BUTTONS, CODES, KEYMAP, Sampler, Receiver, validFrame },
     codec: { make: makeCodec, Q },
@@ -1809,7 +2149,7 @@
     errors: ERRORS, error: netError, cleanName,
     _test: {
       clock: { now }, setClock(fn) { clockFn = typeof fn === 'function' ? fn : null; }, poll, lastMessages: tap,
-      makeLink, subscribe, after,
+      makeLink, subscribe, after, setRelay(url) { relayOverride = url === null || url === undefined ? null : String(url); },
     },
   });
   Object.defineProperty(NET, 'relay', { enumerable: true, get: () => relayKnown });   // true: PeerJS lists TURN servers

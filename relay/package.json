@@ -1,0 +1,12 @@
+{
+  "name": "cnd2-relay",
+  "private": true,
+  "description": "WebSocket relay for Cadillacs & Dinosaurs II online co-op (Cloudflare Workers free plan, one Durable Object per room)",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.152.0"
+  }
+}

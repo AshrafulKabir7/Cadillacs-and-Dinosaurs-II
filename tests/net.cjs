@@ -523,7 +523,12 @@ async function nodeRows() {
     // relay-injected ice failure and a taken room id
     r.bus.block('ice');
     const ice = await settleErr(r.bus, NET.join(r.host.code, { adapter: makeToy(NET).adapter, transport: NET.transports.loopback({ bus: r.bus }), register: false }));
-    ck("relay block('ice') → ice-failed with the no-relay wording", ice && ice.code === 'ice-failed' && /no relay server of its own/.test(ice.text), ice && ice.code);
+    NET._test.setRelay('');   // the wording without a relay configured (RELAY_URL = '')
+    const noRelayText = NET.errors['ice-failed'].text;
+    NET._test.setRelay('wss://relay.example');
+    const relayText = NET.errors['ice-failed'].text;
+    NET._test.setRelay(null);
+    ck("relay block('ice') → ice-failed; the text says there is no relay (RELAY_URL empty) or that the relay couldn't connect either", ice && ice.code === 'ice-failed' && /no relay server of its own/.test(noRelayText) && /relay server couldn't connect you/.test(relayText), ice && ice.code);
     const hostB = await drive(r.bus, NET.host({ adapter: makeToy(NET).adapter, transport: NET.transports.loopback({ bus: r.bus }), code: r.host.code }));
     ck('room id collision → a fresh code is generated', hostB.code !== r.host.code && /^DINO-/.test(hostB.code), hostB.code);
     hostB.end(); endAll(r);
@@ -644,18 +649,216 @@ async function reviewRows() {
   }
 }
 
+// ---------------------------------------------------------------- the WebSocket relay (relay/, tests/lib/relay.cjs)
+// Protocol conformance of the Node fixture and of the real Worker under `wrangler dev`, then whole net.js sessions
+// through the relay in Node (host + 2 joiners, inputs, snapshots, room full, host leaving) and the auto transport's
+// direct-first / relay-fallback rules. NET_RELAY_LIVE=1 also runs host + 1 joiner over the deployed relay (RELAY_URL).
+const RSTEP = 'relay';
+const rck = (title, ok, detail) => (ok ? C.pass(RSTEP, title, detail && String(detail).slice(0, 300)) : C.fail(RSTEP, title, String(detail).slice(0, 1500)));
+const sleepMs = ms => new Promise(r => setTimeout(r, ms));
+const until = async (fn, ms = 8000) => { const end = Date.now() + ms; while (Date.now() < end) { if (fn()) return true; await sleepMs(20); } return !!fn(); };
+let RELAY = null, NODE_RELAY = null;   // the relay the browser rows use too: {kind, url, stop, note}
+
+// host + joiners in Node over real WebSockets, real clock; a 60 Hz loop steps the toy game and sends joiner input
+async function relayRoom(url, n) {
+  NET._test.setClock(null);
+  const toy = makeToy(NET);
+  const host = await NET.host({ adapter: toy.adapter, transport: NET.transports.relay({ url, cid: 'hostcid' + Math.random().toString(36).slice(2, 8) }), name: 'alif', hero: 0, register: false });
+  const clients = [];
+  for (let i = 0; i < n; i++) {
+    const ctoy = makeToy(NET), cid = 'rcid' + i + Math.random().toString(36).slice(2, 8);
+    const s = await NET.join(host.code, { adapter: ctoy.adapter, transport: NET.transports.relay({ url, cid }), name: 'p' + (i + 2), hero: i + 1, register: false, cid });
+    clients.push({ s, toy: ctoy, cid, sampler: s.sampler });
+  }
+  const loop = setInterval(() => {
+    toy.step(1 / 60); host.tick(1 / 60);
+    for (const c of clients) if (!c.s.ended) c.s.sendInput(c.sampler.sample(1000 / 60));
+  }, 1000 / 60);
+  return { toy, host, clients, stop: () => clearInterval(loop) };
+}
+const joinErr = (code, transport, cid) => NET.join(code, { adapter: makeToy(NET).adapter, transport, register: false, cid }).then(s => s, e => e);
+
+async function relayRows() {
+  const R = require('./lib/relay.cjs');
+  // 1) protocol conformance: the Node fixture always, the real Worker under wrangler dev when relay/ has wrangler
+  NODE_RELAY = await R.startNode();
+  for (const r of await R.conformance(NODE_RELAY.url)) rck('relay protocol (node fixture): ' + r.name, r.ok, r.detail);
+  let wr = null;
+  if (process.env.RELAY_BACKEND !== 'node') {
+    try { wr = await R.startWrangler(); } catch (e) { C.skip(RSTEP, 'relay protocol (wrangler dev, relay/src/index.js)', String(e.message).slice(0, 200)); }
+    if (wr) for (const r of await R.conformance(wr.url)) rck('relay protocol (wrangler dev): ' + r.name, r.ok, r.detail);
+  }
+  RELAY = wr ? Object.assign(wr, { note: 'wrangler dev' }) : Object.assign(NODE_RELAY, { note: 'node fixture' });
+  const url = RELAY.url, tag = ' [' + RELAY.note + ']';
+
+  // 2) net.js sessions through the relay: host + 2 joiners
+  {
+    const r = await relayRoom(url, 2);
+    try {
+      rck('relay sessions: host + 2 joiners join by code over the relay (slots 1 and 2, relay links)' + tag,
+        r.clients[0].s.slot === 1 && r.clients[1].s.slot === 2 && r.clients.every(c => c.s.link.kind === 'relay') && r.host.clients.size === 2, JSON.stringify(r.clients.map(c => [c.s.slot, c.s.link.kind])));
+      const fourth = await joinErr(r.host.code, NET.transports.relay({ url, cid: 'fourth01' }), 'fourth01');
+      rck('relay sessions: a 4th player is refused with "full" (THIS GAME IS FULL)', fourth && fourth.code === 'full' && /FULL/.test(fourth.title), fourth && (fourth.code || 'joined?'));
+      for (const c of r.clients) c.s.ready(true);
+      await until(() => r.host.canStart() && r.host.clients.size === 2);
+      r.host.start();
+      await until(() => r.clients.every(c => c.s.latest > 0), 5000);
+      const t0 = r.toy.players[1].x;
+      r.clients[0].sampler.keyDown('ArrowRight');
+      for (let i = 0; i < 3; i++) { r.clients[1].sampler.keyDown('KeyJ'); await sleepMs(60); r.clients[1].sampler.keyUp('KeyJ'); await sleepMs(60); }
+      await sleepMs(400);
+      r.clients[0].sampler.keyUp('ArrowRight');
+      await until(() => r.toy.players[2] && r.toy.players[2].taps === 3, 3000);
+      await sleepMs(500);
+      const hx = r.toy.players[1].x, taps = r.toy.players[2].taps;
+      rck('relay sessions: joiner input reaches the host (held right moves slot 1, three J taps on slot 2 counted exactly)', hx > t0 + 20 && taps === 3, JSON.stringify({ t0, hx, taps }));
+      const views = r.clients.map(c => { const v = c.s.interp.newest(); const p = v && v.state.p.find(q => q.slot === 1); return { latest: c.s.latest, x: p && p.x }; });
+      rck('relay sessions: snapshots reach both joiners and match the host (slot 1 x within 1 px)', views.every(v => v.latest > 10 && Math.abs(v.x - hx) <= 1), JSON.stringify({ hx, views }));
+      const ends = r.clients.map(c => new Promise(res => { c.s.on('end', e => res(e.reason)); setTimeout(() => res('no end'), 5000); }));
+      r.host.end('host-left');
+      const reasons = await Promise.all(ends);
+      rck('relay sessions: the host leaving ends the session for both joiners (host-left)', reasons.every(x => x === 'host-left'), JSON.stringify(reasons));
+    } finally { r.stop(); if (!r.host.ended) r.host.end(); for (const c of r.clients) if (!c.s.ended) c.s.leave(); }
+  }
+  // the host's socket drops without a goodbye: the relay closes the joiners with host-left
+  {
+    const r = await relayRoom(url, 1);
+    const end = new Promise(res => { r.clients[0].s.on('end', e => res(e.reason)); setTimeout(() => res('no end'), 6000); });
+    r.stop(); if (r.host._stopTimer) r.host._stopTimer(); r.host.ended = true; r.host.transport.close();
+    const why = await end;
+    rck('relay sessions: the host socket dropping (no end message) ends the joiner with host-left', why === 'host-left', why);
+  }
+  // a joiner leaving frees its slot
+  {
+    const r = await relayRoom(url, 2);
+    r.clients[1].s.leave();
+    await until(() => r.host.clients.size === 1, 3000);
+    await sleepMs(300);
+    const third = await joinErr(r.host.code, NET.transports.relay({ url, cid: 'newcomer1' }), 'newcomer1');
+    rck('relay sessions: a joiner who leaves frees the relay slot for a newcomer', third && third.slot === 2, third && (third.code || third.slot));
+    r.stop(); if (third && third.leave) third.leave(); r.clients[0].s.leave(); r.host.end();
+  }
+  // a keyframe bigger than the relay's 64 KB frame cap (net.js fragments it, the transport batches under the cap)
+  {
+    const r = await relayRoom(url, 1);
+    const orig = r.toy.adapter.serialize;
+    r.toy.adapter.serialize = () => { const s = orig(); s.e = s.e.concat(Array.from({ length: 600 }, (_, i) => ({ nid: 10000 + i, type: 'filler-' + (i % 7), x: i * 3.3, y: i, hp: i, state: 'idle', x_: { pad: 'p'.repeat(120) } }))); return s; };
+    r.clients[0].s.ready(true);
+    await until(() => r.host.canStart());
+    r.host.start();
+    await until(() => r.clients[0].s.latest > 0, 5000);
+    const c = r.clients[0].s, got = c.latest > 0 ? c.history.get(c.latest).e.length : 0;
+    const kf = JSON.stringify(r.host.codec.encode(r.host.history[r.host.history.length - 1].q, null)).length;
+    rck('relay sessions: a ' + Math.round(kf / 1024) + ' KB keyframe crosses the relay and decodes', got === 603 && kf > 64 * 1024, JSON.stringify({ got, kf }));
+    r.stop(); c.leave(); r.host.end();
+  }
+
+  // 3) auto transport: direct first, relay fallback
+  const bus = NET.memoryBus({ latency: 2 });
+  const autoFor = (cid, o = {}) => NET.transports.auto({ direct: o.direct === undefined ? NET.transports.loopback({ bus }) : o.direct, relay: NET.transports.relay({ url, cid }), windowMs: o.windowMs || 7000 });
+  const joinAuto = async (code, cid, o) => {
+    const steps = [], onp = s => steps.push(s);
+    NET.on('progress', onp);
+    const t0 = Date.now();
+    try {
+      const s = await NET.join(code, { adapter: makeToy(NET).adapter, transport: autoFor(cid, o), register: false, cid });
+      return { s, steps, ms: Date.now() - t0, via: s.link.kind };
+    } catch (e) { return { err: e, steps, ms: Date.now() - t0 }; } finally { NET.off('progress', onp); }
+  };
+  {
+    const htoy = makeToy(NET);
+    const host = await NET.host({ adapter: htoy.adapter, transport: autoFor('autohost1'), name: 'host', hero: 0, register: false });
+    rck('auto: the host listens on the direct transport and on the relay for the same room', JSON.stringify(host.transport.listening) === '["loopback","relay"]', JSON.stringify(host.status().via));
+    const a = await joinAuto(host.code, 'autojoin1');
+    rck('auto: a direct link that opens is used', a.via === 'loopback' && a.steps.includes('direct') && !a.steps.includes('relay'), JSON.stringify({ via: a.via, steps: a.steps, err: a.err && a.err.code }));
+    bus.block('ice');
+    const b = await joinAuto(host.code, 'autojoin2');
+    rck('auto: direct fails (ICE blocked) → progress direct then relay, joined through the relay', b.via === 'relay' && b.s.slot === 2 && b.steps.indexOf('direct') >= 0 && b.steps.indexOf('direct') < b.steps.indexOf('relay'), JSON.stringify({ via: b.via, slot: b.s && b.s.slot, steps: b.steps, ms: b.ms, err: b.err && b.err.code }));
+    if (a.s && b.s) {
+      for (const s of [a.s, b.s]) s.ready(true);
+      await until(() => host.canStart());
+      host.start();
+      const loop = setInterval(() => { htoy.step(1 / 60); host.tick(1 / 60); for (const s of [a.s, b.s]) if (!s.ended) s.sendInput(s.sampler.sample(1000 / 60)); }, 1000 / 60);
+      await until(() => b.s.latest > 0, 4000);
+      const x0 = htoy.players[2].x; b.s.sampler.keyDown('ArrowLeft'); await sleepMs(500); b.s.sampler.keyUp('ArrowLeft'); await sleepMs(300);
+      rck('auto: a direct joiner and a relayed joiner play in one room (relayed input moves slot 2; both get snapshots)', htoy.players[2].x < x0 - 20 && b.s.latest > 5 && a.s.latest > 5, JSON.stringify({ x0, x: htoy.players[2].x, a: a.s.latest, b: b.s.latest }));
+      clearInterval(loop);
+      a.s.leave(); b.s.leave();
+    }
+    host.end();
+  }
+  {
+    // the direct attempt never answers: the relay takes over after the window
+    const hang = NET.transports.loopback({ bus }); hang.connect = () => new Promise(() => {});
+    const host = await NET.host({ adapter: makeToy(NET).adapter, transport: NET.transports.relay({ url, cid: 'hanghost1' }), register: false });
+    const c = await joinAuto(host.code, 'hangjoin1', { direct: hang, windowMs: 900 });
+    rck('auto: a direct link that does not open within the window → relay (900 ms here, ' + NET.RELAY_WINDOW_MS + ' ms in play)', c.via === 'relay' && c.ms >= 850 && c.ms < 4000, JSON.stringify({ via: c.via, ms: c.ms, err: c.err && c.err.code }));
+    const d = await joinAuto(host.code, 'hangjoin2');
+    rck('auto: direct finds no such game but the host is on the relay → joined through the relay', d.via === 'relay' && d.s.slot === 2, JSON.stringify({ via: d.via, err: d.err && d.err.code }));
+    if (c.s) c.s.leave(); if (d.s) d.s.leave(); host.end();
+  }
+  {
+    const host = await NET.host({ adapter: makeToy(NET).adapter, transport: NET.transports.loopback({ bus }), register: false });
+    bus.block('ice');
+    const e = await joinAuto(host.code, 'errjoin01');
+    rck("auto errors: direct ICE fails and the host isn't on the relay → CAN'T CONNECT, and the text mentions the relay", e.err && e.err.code === 'ice-failed' && /relay/.test(e.err.text) && e.steps.includes('relay'), JSON.stringify({ code: e.err && e.err.code, steps: e.steps }));
+    const f = await joinAuto('DINO-ZZZZ', 'errjoin02');
+    rck('auto errors: an unknown code on both paths → bad-code', f.err && f.err.code === 'bad-code', f.err && f.err.code);
+    bus.block('ice');
+    const g = await joinErr(host.code, NET.transports.auto({ direct: NET.transports.loopback({ bus }), relay: NET.transports.relay({ url: 'ws://127.0.0.1:9', cid: 'downjoin1', openMs: 1500 }) }), 'downjoin1');
+    rck('auto errors: relay unreachable → the direct error stands (ice-failed)', g && g.code === 'ice-failed', g && g.code);
+    const h = await joinErr(host.code, NET.transports.relay({ url: 'ws://127.0.0.1:9', cid: 'downjoin2', openMs: 1500 }), 'downjoin2');
+    rck("relay only, relay unreachable → CAN'T REACH THE RELAY SERVER", h && h.code === 'relay-down' && /RELAY/.test(h.title), h && h.code);
+    host.end();
+  }
+  bus.close();
+  // relay URL handling
+  {
+    const had = 'location' in globalThis, saved = globalThis.location;
+    const at = q => { globalThis.location = { search: q, protocol: 'http:', href: 'http://x/' + q }; return [NET.relayUrl(), NET.defaultTransport()]; };
+    const res = { none: at(''), relay: at('?net=relay&relay=ws://127.0.0.1:8787'), https: at('?relay=https://r.example.dev/'), evil: at('?relay=ws://evil.example'), off: at('?relay=off'), loop: at('?net=loopback') };
+    if (had) globalThis.location = saved; else delete globalThis.location;
+    rck('relay URL: RELAY_URL by default (auto transport), ?relay= overrides (https→wss), plain ws:// only to this computer, ?relay=off = direct only',
+      res.none[0] === NET.RELAY_URL && res.none[1] === (NET.RELAY_URL ? 'auto' : 'peerjs') && res.relay[0] === 'ws://127.0.0.1:8787' && res.relay[1] === 'relay' && res.https[0] === 'wss://r.example.dev' && res.https[1] === 'auto'
+      && res.evil[0] === NET.RELAY_URL && res.off[0] === '' && res.off[1] === 'peerjs' && res.loop[1] === 'loopback', JSON.stringify(res));
+  }
+  // 4) the deployed relay (opt-in: needs the internet)
+  if (process.env.NET_RELAY_LIVE === '1' && NET.RELAY_URL) {
+    try {
+      const r = await relayRoom(NET.RELAY_URL, 1);
+      r.clients[0].s.ready(true); await until(() => r.host.canStart(), 8000); r.host.start();
+      await until(() => r.clients[0].s.latest > 0, 8000);
+      const x0 = r.toy.players[1].x; r.clients[0].sampler.keyDown('ArrowRight'); await sleepMs(600); r.clients[0].sampler.keyUp('ArrowRight'); await sleepMs(600);
+      const ok = r.clients[0].s.slot === 1 && r.clients[0].s.latest > 5 && r.toy.players[1].x > x0 + 20;
+      rck('LIVE relay ' + NET.RELAY_URL + ': host + 1 joiner, input reaches the host, snapshots reach the joiner', ok, JSON.stringify({ code: r.host.code, slot: r.clients[0].s.slot, snaps: r.clients[0].s.latest, x0, x: r.toy.players[1].x, rttMs: Math.round(r.clients[0].s.rtt) }));
+      r.stop(); r.clients[0].s.leave(); r.host.end();
+    } catch (e) { rck('LIVE relay ' + NET.RELAY_URL, false, 'threw ' + (e.code || '') + ' ' + e.message); }
+  } else C.skip(RSTEP, 'LIVE relay smoke (host + 1 joiner over RELAY_URL)', 'set NET_RELAY_LIVE=1 (needs the internet)');
+}
+
 // ---------------------------------------------------------------- browser rows
 const ORIGIN = 'http://mp.test';
 const PAGE = '<!doctype html><meta charset="utf-8"><title>net</title><script src="/net.js"></script><script src="/toy.js"></script><body>net</body>';
-async function serve(ctx) {
+async function serve(ctx, origin = ORIGIN) {
   const netSrc = fs.readFileSync(path.join(A.ROOT, 'net.js'), 'utf8');
   const toySrc = 'window.makeToy = ' + makeToy.toString() + ';';
-  await ctx.route(ORIGIN + '/**', route => {
+  await ctx.route(origin + '/**', route => {
     const u = new URL(route.request().url());
     if (u.pathname === '/net.js') return route.fulfill({ status: 200, contentType: 'text/javascript', body: netSrc });
     if (u.pathname === '/toy.js') return route.fulfill({ status: 200, contentType: 'text/javascript', body: toySrc });
     return route.fulfill({ status: 200, contentType: 'text/html', body: PAGE });
   });
+}
+// The same page, net.js and toy game from a real HTTP server on 127.0.0.1 (for the relay rows).
+function servePages() {
+  const http = require('node:http');
+  const netSrc = fs.readFileSync(path.join(A.ROOT, 'net.js'), 'utf8'), toySrc = 'window.makeToy = ' + makeToy.toString() + ';';
+  const server = http.createServer((req, res) => {
+    const p = new URL(req.url, 'http://x').pathname;
+    const [type, body] = p === '/net.js' ? ['text/javascript', netSrc] : p === '/toy.js' ? ['text/javascript', toySrc] : ['text/html', PAGE];
+    res.writeHead(200, { 'content-type': type + '; charset=utf-8' }); res.end(body);
+  });
+  return new Promise(r => server.listen(0, '127.0.0.1', () => r({ server, port: server.address().port })));
 }
 // In-page driver: host or join, then a 60 Hz loop (setInterval) that steps the toy game, ticks the host session and
 // sends the joiner's sampled input. window.R holds the results the Node side reads.
@@ -683,12 +886,63 @@ window.runJoin = async (code, o) => {
   return s.slot;
 };`;
 
-async function browserRows() {
+async function browserRows({ relayOnly = false } = {}) {
   let pw;
   try { pw = A.playwright(); } catch (e) { C.skip(STEP, 'browser rows', e.message); return; }
   const browser = await pw.chromium.launch({ args: ['--disable-features=WebRtcHideLocalIpsWithMdns'] });
   const watch = page => { page.on('pageerror', e => errors.push(e.message)); return page; };
   try {
+    // 0) the relay from real pages: ?net=relay&relay=ws://127.0.0.1:<port> on an allow-listed origin (localhost:*),
+    //    one context per player; then the auto fallback (?net=auto&direct=loopback) to a relay-only host
+    if (RELAY) {
+      // a real local server (a page whose response came from a route counts as a public origin, and Chromium then blocks
+      // its WebSockets to 127.0.0.1); localhost:* is on the relay's Origin allow-list
+      const pageSrv = await servePages();
+      const RO = 'http://localhost:' + pageSrv.port, q = '?net=relay&relay=' + encodeURIComponent(RELAY.url), tag = ' [' + RELAY.note + ']';
+      const mk = async query => { const ctx = await browser.newContext(); const p = watch(await ctx.newPage()); await p.goto(RO + '/' + query); await p.evaluate(DRIVER); await p.evaluate(() => { R.steps = []; EDEN_NET.on('progress', s => R.steps.push(s)); }); return { ctx, p }; };
+      const all = [];
+      try {
+        const h = await mk(q), j1 = await mk(q), j2 = await mk(q), j3 = await mk(q);
+        all.push(h, j1, j2, j3);
+        const code = await h.p.evaluate(() => runHost({}));
+        const s1 = await j1.p.evaluate(c => runJoin(c, {}), code), s2 = await j2.p.evaluate(c => runJoin(c, {}), code);
+        const kinds = await Promise.all([h, j1, j2].map(x => x.p.evaluate(() => [R.kind, S.link ? S.link.kind : null])));
+        rck('browser relay: host + 2 joiner pages join through the relay (?net=relay)' + tag, s1 === 1 && s2 === 2 && kinds.every(k => k[0] === 'relay'), JSON.stringify({ code, s1, s2, kinds }));
+        const full = await j3.p.evaluate(async c => { try { await runJoin(c, {}); return 'joined'; } catch (e) { return e.code + ' / ' + e.title; } }, code);
+        rck('browser relay: a 4th player page gets THIS GAME IS FULL', /^full \/ THIS GAME IS FULL/.test(full), full);
+        await j1.p.evaluate(() => S.ready(true)); await j2.p.evaluate(() => S.ready(true));
+        await h.p.waitForFunction(() => S.canStart() && S.clients.size === 2, null, { timeout: 8000 });
+        await h.p.evaluate(() => S.start());
+        await j2.p.waitForFunction(() => R.started && R.view && R.view.length === 3, null, { timeout: 8000 });
+        await j1.p.keyboard.down('ArrowRight'); await j1.p.waitForTimeout(600); await j1.p.keyboard.up('ArrowRight');
+        for (let i = 0; i < 3; i++) await j2.p.keyboard.press('KeyJ');
+        await j1.p.waitForTimeout(700);
+        const hp = await h.p.evaluate(() => ({ x1: toy.players[1].x, taps2: toy.players[2].taps }));
+        const v = await Promise.all([j1.p, j2.p].map(p => p.evaluate(() => (R.view.find(r => r.slot === 1) || {}).x)));
+        rck('browser relay: keys on the joiner pages reach the host; both replicas show slot 1 where the host has it', hp.x1 > 100 && hp.taps2 === 3 && v.every(x => Math.abs(x - hp.x1) <= 1), JSON.stringify({ hp, v }));
+        await h.p.close();   // pagehide → end{host-left}, then the socket closes
+        await Promise.all([j1.p, j2.p].map(p => p.waitForFunction(() => R.ended, null, { timeout: 6000 }).catch(() => {})));
+        const ended = await Promise.all([j1.p, j2.p].map(p => p.evaluate(() => R.ended)));
+        rck('browser relay: closing the host tab ends both joiners with host-left', ended.every(e => e === 'host-left'), JSON.stringify(ended));
+        // fallback: the host is relay-only; the joiner tries a direct (loopback) link first, finds no host, uses the relay
+        const h2 = await mk(q), jf = await mk('?net=auto&direct=loopback&relay=' + encodeURIComponent(RELAY.url));
+        all.push(h2, jf);
+        const code2 = await h2.p.evaluate(() => runHost({}));
+        const sf = await jf.p.evaluate(c => runJoin(c, {}), code2);
+        const info = await jf.p.evaluate(() => ({ kind: R.kind, link: S.link.kind, steps: R.steps, transport: EDEN_NET.defaultTransport() }));
+        await jf.p.evaluate(() => S.ready(true));
+        await h2.p.waitForFunction(() => S.canStart() && S.clients.size === 1, null, { timeout: 8000 });
+        await h2.p.evaluate(() => S.start());
+        await jf.p.waitForFunction(() => R.started && R.view, null, { timeout: 8000 });
+        await jf.p.keyboard.down('ArrowRight'); await jf.p.waitForTimeout(500); await jf.p.keyboard.up('ArrowRight'); await jf.p.waitForTimeout(400);
+        const x = await h2.p.evaluate(() => toy.players[1].x);
+        rck('browser relay: ?net=auto — the direct attempt fails, the joiner falls back to the relay (CONNECTING DIRECTLY → USING RELAY) and plays',
+          sf === 1 && info.kind === 'auto' && info.link === 'relay' && info.steps.indexOf('direct') >= 0 && info.steps.indexOf('direct') < info.steps.indexOf('relay') && x > 100, JSON.stringify({ sf, info, x }));
+      } catch (e) { rck('browser relay rows', false, 'threw ' + e.message); }
+      for (const x of all) await x.ctx.close().catch(() => {});
+      await new Promise(r => pageSrv.server.close(r));
+    } else C.skip(RSTEP, 'browser relay rows', 'no relay started');
+    if (relayOnly) return;
     // 1) two pages, one context, BroadcastChannel loopback (what ?net=loopback uses)
     {
       const ctx = await browser.newContext(); await serve(ctx);
@@ -793,9 +1047,14 @@ async function browserRows() {
 
 (async () => {
   // NET_REVIEW_ONLY=1: only the review regression rows (handy for checking them against an older net.js)
-  try { if (process.env.NET_REVIEW_ONLY === '1') await reviewRows(); else await nodeRows(); } catch (e) { C.fail(STEP, 'node rows', 'threw: ' + (e && e.stack || e)); }
+  // NET_RELAY_ONLY=1: only the relay rows (Node + browser)
+  const relayOnly = process.env.NET_RELAY_ONLY === '1';
+  if (!relayOnly) { try { if (process.env.NET_REVIEW_ONLY === '1') await reviewRows(); else await nodeRows(); } catch (e) { C.fail(STEP, 'node rows', 'threw: ' + (e && e.stack || e)); } }
   NET._test.setClock(null);
-  if (process.env.NET_NODE_ONLY !== '1') { try { await browserRows(); } catch (e) { C.fail(STEP, 'browser rows', 'threw: ' + (e && e.stack || e)); } }
+  if (process.env.NET_REVIEW_ONLY !== '1') { try { await relayRows(); } catch (e) { C.fail(RSTEP, 'relay rows', 'threw: ' + (e && e.stack || e)); } }
+  NET._test.setClock(null);
+  if (process.env.NET_NODE_ONLY !== '1') { try { await browserRows({ relayOnly }); } catch (e) { C.fail(STEP, 'browser rows', 'threw: ' + (e && e.stack || e)); } }
+  for (const r of [RELAY, NODE_RELAY]) if (r) await r.stop().catch(() => {});
   A.finish(C, errors);
   process.exit(0);
 })();

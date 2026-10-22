@@ -9,7 +9,8 @@
 //                                                   single-player LAST_EDEN.snapshot key list)
 //                                                   (the G9b agent runs this once before it edits game.js)
 //   node tests/multiplayer.cjs --only=T1           run one tier (T0 units, T1 harness, T2 game single page,
-//                                                   T3 game over loopback, T4 rtc-local, T5 PeerJS)
+//                                                   T3 game over loopback, T4 rtc-local, T5 PeerJS, T6 the game
+//                                                   through the WebSocket relay: wrangler dev or the Node fixture)
 //   MP_RTC=1 / MP_PEERJS=1                          enable the G9c tiers (T5 needs the internet)
 //
 // Tiers: T0 net.js units in a blank page (no game, no bus) · T1 net.js + lobby.js on tests/fixtures/mp-harness.html with
@@ -928,6 +929,97 @@ async function tierRTC() {
   });
 }
 
+// ================================================================ T6: the game through the WebSocket relay (relay/)
+// index.html on 3-4 pages with ?net=relay&relay=ws://127.0.0.1:<port> (the real Worker under `wrangler dev` when
+// relay/ has wrangler installed, else tests/fixtures/relay-node.cjs: tests/lib/relay.cjs), driven through the lobby:
+// join, inputs reach the host, snapshots reach the joiners, a 4th player gets "full", the host leaving ends the session;
+// then ?net=auto&direct=loopback with the direct path blocked: CONNECTING DIRECTLY… → USING RELAY… → playing.
+async function tierRelay() {
+  const RS = 'relay';
+  const rows = {
+    join: 'relay game: host + 2 joiners start a game through the relay (lobby, ?net=relay)', input: 'relay game: a joiner\'s keys move its hero on the host (and only its hero)',
+    snaps: 'relay game: joiners receive snapshots that decode to the host\'s states', full: 'relay game: a 4th player is rejected with full',
+    hostLeft: 'relay game: host leaving ends the session for the joiners (host-left)', fallback: 'relay game: direct blocked → CONNECTING DIRECTLY… then USING RELAY…, and the joiner plays through the relay',
+    noErr: 'relay game: no page errors',
+  };
+  if (!S.net) { for (const t of Object.values(rows)) C.skip(RS, t, 'net.js missing'); return; }
+  const R = require('./lib/relay.cjs');
+  let relay;
+  try { relay = await R.start(); } catch (e) { for (const t of Object.values(rows)) C.fail(RS, t, 'no relay: ' + e.message); return; }
+  const tag = ' [' + relay.note + ']';
+  const errs = [];
+  try {
+    await withSession({ page: 'game', players: 3, query: { net: 'relay', relay: relay.url }, tag: 'T6' }, async s => {
+      const [host, j1, j2] = [s.host, ...s.joiners];
+      try { await MP.startAll(s, { heroes: [0, 1, 2] }); } catch (e) { C.fail(RS, rows.join, e.message); return; }
+      const okHost = await MP.waitFor(host, () => MPT.world().state === 'play' ? true : null, null, 10000);
+      const okJ = []; for (const j of [j1, j2]) okJ.push(await MP.waitFor(j, () => { const w = MPT.world(); return w.role === 'client' && w.players.filter(Boolean).length === 3 ? true : null; }, null, 10000));
+      const via = []; for (const pg of [host, j1, j2]) via.push(await pg.evaluate(() => { const st = EDEN_NET.status(); return [st.transport, st.via]; }));
+      chk(RS, rows.join + tag, !!okHost && okJ.every(Boolean) && via.every(v => v[0] === 'relay'), JSON.stringify({ okHost, okJ, via }));
+      for (const pg of [host, j1, j2]) await MP.blurInputs(pg);
+      const b = await MP.snap(host);
+      await MP.hold(j1, 'right', true); await sleep(600); await MP.hold(j1, 'right', false); await sleep(600);
+      const a = await MP.snap(host); const d = [0, 1, 2].map(k => a.players[k] && b.players[k] ? a.players[k].x - b.players[k].x : NaN);
+      chk(RS, rows.input, d[1] > 5 && Math.abs(d[0]) < 0.5 && Math.abs(d[2]) < 0.5, 'host dx per slot ' + d.map(v => v.toFixed(2)));
+      const d1 = await MP.decodedMatch(host, j1), d2 = await MP.decodedMatch(host, j2), seq = await MP.net(j2);
+      chk(RS, rows.snaps, d1.ok && d2.ok && d1.compared >= 5 && d2.compared >= 5 && seq.snapSeq > 20, `2P compared ${d1.compared} (${d1.diffs.slice(0, 2).join('; ')}), 3P compared ${d2.compared}, 3P snapSeq ${seq.snapSeq}`);
+      const j3 = await s.open('j3'); const code = (await MP.net(host)).code;
+      const r3 = await MP.joinRoom(j3, code, { timeout: 8000 }); const st3 = await MP.net(j3);
+      chk(RS, rows.full, r3.slot == null && (r3.error === 'full' || errCode(st3) === 'full' || /FULL/i.test(r3.title || '')), JSON.stringify(r3));
+      await j3.close();
+      errs.push(...s.errors);
+      await host.close({ runBeforeUnload: true });
+      const res = [];
+      for (const j of [j1, j2]) res.push(await MP.waitFor(j, () => { const st = MPT.status() || {}, L = MPT.lobby() || {}; const e = st.error && (st.error.code || st.error) || L.error; const off = LAST_EDEN.mp.role() === 'off'; return (e === 'host-left' || /HOST LEFT/i.test(MPT.text('#mp-error-screen') || '')) && off ? { e, off } : null; }, null, 12000));
+      chk(RS, rows.hostLeft, res.every(Boolean), JSON.stringify(res));
+    });
+    // fallback: both pages on ?net=auto with a loopback "direct" path; the bus blocks it like a strict NAT
+    await withSession({ page: 'game', players: 2, query: { net: 'auto', direct: 'loopback', relay: relay.url }, tag: 'T6' }, async s => {
+      const [host, j1] = [s.host, s.joiners[0]];
+      const code = await MP.hostRoom(host, { hero: 0 });
+      await j1.evaluate(() => {
+        window.__steps = [];
+        const rec = () => { const n = document.querySelector('#mp-step'); const t = n && n.textContent.trim(); if (t && window.__steps[window.__steps.length - 1] !== t) window.__steps.push(t); };
+        new MutationObserver(rec).observe(document.body, { subtree: true, childList: true, characterData: true });
+      });
+      s.bus.block('ice');
+      const r = await MP.joinRoom(j1, code, { hero: 1, timeout: 15000 });
+      const info = await j1.evaluate(() => ({ steps: window.__steps, st: (({ transport, via, slot }) => ({ transport, via, slot }))(EDEN_NET.status()) }));
+      let played = false;
+      if (r.slot === 1) {
+        await MP.ready(j1); await MP.start(host);
+        await MP.waitFor(j1, () => MPT.world().role === 'client' && MPT.world().players.filter(Boolean).length === 2 ? true : null, null, 10000);
+        await MP.blurInputs(j1);
+        const b = await MP.snap(host); await MP.hold(j1, 'right', true); await sleep(600); await MP.hold(j1, 'right', false); await sleep(500);
+        const a = await MP.snap(host); played = a.players[1] && b.players[1] && a.players[1].x - b.players[1].x > 5;
+      }
+      const di = info.steps.findIndex(t => /CONNECTING DIRECTLY/.test(t)), ri = info.steps.findIndex(t => /USING RELAY/.test(t));
+      chk(RS, rows.fallback + tag, r.slot === 1 && info.st.transport === 'auto' && info.st.via === 'relay' && di >= 0 && ri > di && played, JSON.stringify({ r, info, played }));
+      errs.push(...s.errors);
+    });
+    chk(RS, rows.noErr, !errs.length, errs.slice(0, 3).join(' | ') || 'none');
+    // the deployed relay (RELAY_URL in net.js), from a page on this machine's game server (opt-in: internet)
+    const live = 'LIVE relay: host + 1 joiner play through RELAY_URL from the game page (?net=relay)';
+    const liveUrl = await (async () => { const p = await MP.session({ page: 'game', players: 1 }); try { return await p.host.evaluate(() => EDEN_NET.RELAY_URL); } finally { await p.close(); } })().catch(() => '');
+    if (process.env.MP_RELAY_LIVE !== '1' || !liveUrl) await C.gated(RS, live, false, liveUrl ? 'set MP_RELAY_LIVE=1 (needs the internet)' : 'RELAY_URL is empty', null, { env: true });
+    else await withSession({ page: 'game', players: 2, query: { net: 'relay' }, tag: 'T6' }, async s => {
+      const [host, j1] = [s.host, s.joiners[0]];
+      let detail = '', ok = false;
+      try {
+        await MP.startAll(s, { heroes: [0, 1] });
+        await MP.waitFor(j1, () => MPT.world().role === 'client' && MPT.world().players.filter(Boolean).length === 2 ? true : null, null, 15000);
+        await MP.blurInputs(j1);
+        const b = await MP.snap(host); await MP.hold(j1, 'right', true); await sleep(700); await MP.hold(j1, 'right', false); await sleep(800);
+        const a = await MP.snap(host), st = await MP.net(j1);
+        const dx = a.players[1] && b.players[1] ? a.players[1].x - b.players[1].x : NaN;
+        ok = dx > 5 && st.snapSeq > 10 && st.transport === 'relay';
+        detail = JSON.stringify({ relay: liveUrl, code: st.code, dx: +dx.toFixed(2), snapSeq: st.snapSeq, rttMs: st.rtt });
+      } catch (e) { detail = 'threw ' + e.message; }
+      chk(RS, live, ok, detail);
+    });
+  } finally { await relay.stop(); }
+}
+
 // ================================================================ single-player trace (§4.3)
 const TRACE_PAGE = `async ({ chapters, steps, every }) => {
   const g = LAST_EDEN, out = {};
@@ -991,6 +1083,7 @@ async function recordTrace(browser, seed = 9090, steps = 3600, every = 60, chapt
     if (tier('T1')) await tierT1();
     if (tier('T2') || tier('T3')) await tierGame(browser);
     await tierRTC();
+    if (tier('T6')) await tierRelay();
     // global rows over every bus session
     if (tier('T1') || tier('T3')) {
       const ran = busStats.filter(b => b.totals.msgs > 0);
