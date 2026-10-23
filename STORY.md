@@ -1,125 +1,182 @@
-# Fessenden's Legacy — sequel script
+# The Crown Tide: story bible
 
-This is an unofficial continuation of the 1993 arcade game. It starts six months after its exact ending and sends the gang through new places connected by one new conflict: the doctor is dead, but his work is being copied.
+Cadillacs & Dinosaurs II is an unofficial continuation of the 1993 arcade game. It starts six months after that game's exact ending. This file is the canonical story: `campaign.js`, `mission-data.js`, the boss sprite sheets (`work/story2/BOSS-SPECS.md`) and the tests follow it. The creative direction comes from `design/boss-concepts-2026-10-22/CREATIVE-BRIEF.md`. The title screen, the page title and the staff roll read CADILLACS & DINOSAURS II · THE CROWN TIDE.
 
 ## Where the first game ended
 
-Jack Tenrec, Hannah Dundee, Mustapha Cairo and Mess O'Bradovich broke the poachers' ring and went down through the Vault, the City in the Sea's old computer rooms, into the Under World beneath it: Dr. Fessenden's Bio Lab with its numbered tanks, the caves, and the throne room. There Fessenden took his own serum and died a beast. Jack shouted that the lab was going to explode and the four ran for the escape tunnel. Hannah fell; Jack went back for her on foot. Mustapha and Mess walked out across the desert, and at sunset the Cadillac pulled up on the road with Jack driving and Hannah beside him. "Nature always balances itself," Jack said, and the car drove off with Mustapha and Mess running after it.
+Jack Tenrec, Hannah Dundee, Mustapha Cairo and Mess O'Bradovich broke the poachers' ring and went down through the Vault, the City in the Sea's old computer rooms, into the Under World beneath it: Dr. Fessenden's Bio Lab with its numbered tanks, the caves, and the throne room. There Fessenden took his own serum and died a beast. Jack shouted that the lab was going to explode and the four ran for the escape tunnel. Hannah fell, and Jack went back for her on foot. Mustapha and Mess walked out across the desert, and at sunset the Cadillac pulled up on the road with Jack driving and Hannah beside him. "Nature always balances itself," Jack said, and the car drove off with Mustapha and Mess running after it.
 
-Those events are history, not stages to replay. No original level is reused as it is, no episode is re-told and no boss fight is played again. Four things grew out of that night:
+Those events are history, not stages to replay. **Fessenden stays dead.** No 1993 boss comes back, as a copy or otherwise.
 
-1. **The Sink.** The blast collapsed the Under World and the sea filled it. Under the old quarter of the City in the Sea there is now a flooded crater the locals call the Sink. Things float up out of it.
-2. **Dr. Echo.** Fessenden's chief assistant ran the numbered tanks in the Bio Lab. She left through the escape tunnel while Jack was carrying Hannah, with the Vault's archive core under her arm, and she stopped where Hannah had fallen. The first sample she ever took was off those rocks. She grows copies now: numbered **lots**, like the numbers on the old tanks.
-3. **Marshal Sable.** The Wassoon lawman who took the captured Black Marketeers into custody. He never brought one to trial; he hired them. Now he buys Echo's lots to build an army that never runs out.
-4. **The throne-room drain.** The floor where the gang fought Fessenden drained into a tank that caught everything spilled in that fight: the four heroes' blood, and what was left of the beast when it burst. Echo has dug it out. That is how the Mirror Gang exists, and it is the one sample in her catalogue with no number: **LOT 00**.
+## Premise
 
-## The rules of copies
+The blast collapsed the Under World and the sea filled it. The flooding that followed drowned half the east coast. Under the old quarter of the City in the Sea there is now a flooded crater the locals call **the Sink**, and salvage crews pull Fessenden's equipment out of it.
 
-The game makes every one of these true in play.
+**Marshal Sable**, the Wassoon lawman who took the captured Black Marketeers into custody six months ago, stepped into the chaos promising clean water and safe roads. He kept his prisoners, hired the poachers, and seized the **Crown dam**, which holds back the floodwater and feeds every tap on the coast. Now water comes by permit only. Every ration notice carries his **brass gate seal** and his motto: *"Order keeps the water flowing."* Upstream he can starve a settlement; open the gates and he can drown it.
 
-1. **Body and memory.** A copy has the original's body and its memories up to the moment the sample was taken. Rook remembers the northern woods. Slice's copy remembers the garage and the tank both.
-2. **The signal.** Echo's command signal is a voice in every copy's head. It can overwrite a name: the Butcher's copy believes he is "Rook". Collared dinosaurs carry it through sonic drivers and lures.
-3. **Gel.** A beaten copy dissolves into green gel. Hero copies stagger away instead, which is why they can be freed.
-4. **The serum.** Fessenden made his serum for one man. On a human it mutates him, as it did Morgan and the Tyrog poacher. On a copy it melts the body. Cinder finds out in chapter 4. Only LOT 00 survives it, and only because of rule 7.
-5. **Freedom.** Break the signal and a copy chooses for itself. Freed copies carry a gold outline and fight beside you.
-6. **Dinosaurs are freed, not killed.** Break the collar, the lure or the driver and the animal calms and leaves.
-7. **LOT 00 is a copy of the beast, not of the man.** The sample came out of the throne-room drain after the fight: Fessenden's own tissue, already changed by the serum, already dead. So the copy grows straight into the final form, and its memory runs to the last second of the 1993 fight. It remembers dying. That is why "Not again" is the last thing it says.
+To hold the dam he needs labor, materials, animals and control, so he runs a supply chain along the coast, and each link is run by a boss:
 
-## The cast
+| Link | Chapter | Run by | What moves along it |
+|---|---|---|---|
+| Prison labor | 1 · Wassoon harbor | Warden Rook | ration breakers, sedated and shipped in prison pods |
+| Freight | 2 · Coral Causeway | Haulmaster Krag, who runs the convoy | pressure regulators and gate brass "TO THE CROWN"; a case of trial serum doses for Sable's crews |
+| Animals | 3 · Verdant Biodome | Headkeeper Thorne, who runs the hatchery | collared raptors hatched from eggs robbed out of wild nests; graft tissue trials |
+| Salvage | 4 · The Sink | Foreman Cinder | Fessenden's tanks, serum benches, the shoulder-brace test rig |
+| Control | 5 · The Observatory | Dr. Echo | the command signal that steers every collar, lure and graft subject |
+| The dam | 6 · The Crown dam | Marshal Sable, then Crownback | the water itself |
+
+**Dr. Echo** ran the numbered tanks in Fessenden's Bio Lab and slipped out before it blew. She does not want Fessenden back; she wants people to survive the drowning coast. She bought his notes out of the Sink and built two things on them: a **command signal** (collars, sonic lures and drivers, broadcast from her dish) and **adaptive tissue grafts** that toughen human skin and muscle. Sable pays for both. He wants to own the people and animals they produce; she believes controlled adaptation will save them. That is the theme: control against freedom.
+
+**The Crown treatment** is the one order Echo never finished: Fessenden's serum cut with her grafts, made for one customer. Sable's left arm was crushed under a floodgate in the first week of the flood and is dying under the brass shoulder plate he wears; he has been taking pressure treatments for months. He ordered a body that could outlast the flood. At the dam, when the gang breaks his remote control, he takes the unfinished treatment rather than open a gate, and becomes **Crownback**: a new mutant, not a copy of anything. His body becomes the gate he would not let go of.
+
+### Rules the game makes true
+
+1. **The signal steers, it does not own.** Collars, lures and drivers carry Echo's command signal. Break the device and the animal or person under it chooses for itself.
+2. **Dinosaurs are freed, not killed.** Pack Alpha and the hatchery's pack leave alive when their driver or collar breaks; the stolen eggs are saved.
+3. **Grafts are not monsters.** The scaled men in chapters 4 to 6 are graft subjects: conscripts and ration breakers who took Echo's grafts for water. They are steered by the signal and freed when it breaks.
+4. **One mirror.** Echo grew one finished test body from blood scraped off the Under World floor and drilled it on the Vault's old recordings of the gang: the Mirror Test. It has a hero's moves and nothing behind the eyes. Four unfinished copies, one of each hero, float in her vat hall and never leave it. That is the whole clone subplot.
+5. **Fessenden's research is the cause; Sable's choice is the climax.** No one says Fessenden's name as a living threat after chapter 4.
+
+## Cast
 
 The heroes are the original arcade sprites with their original moves. The chosen hero fights on screen; radio dialogue tells what the rest of the gang is doing.
 
-| Hero | Voice in this script |
+| Hero | Voice |
 |---|---|
-| Jack Tenrec | Leader and mechanic. Dry: "we break the remote, not the dinosaur". Drives the Cadillac. Carries the balance theme. |
-| Hannah Dundee | Wassoon's envoy. Angry about her city. Reads the manifests and ledgers; takes Echo's command key. Her fall in the 1993 tunnel is the hinge. |
-| Mustapha Cairo | Engineer. Spots the first familiar face. Names the clone "Mostafa" in the ending. |
-| Mess O'Bradovich | Muscle. Cranks the winch. Comic dread of meeting himself. |
+| Jack Tenrec | Leader and mechanic. Dry. "We break the remote, not the dinosaur." Drives the Cadillac. Carries the balance line. |
+| Hannah Dundee | Wassoon's envoy. Sable is starving her city, so this is personal. Reads manifests and ledgers; takes Echo's command key; sets the gates at the end. |
+| Mustapha Cairo | Engineer. Reads gauges, regulators and tells. Names an ankylosaur calf "Mostafa" on the road home. |
+| Mess O'Bradovich | Muscle. Cranks the winch. Hates the Sink and the jars. Gets the last gag. |
 
-Every villain, boss and elite is an original arcade body. A new character gets a new palette, the way the arcade made Walther from Vice T.'s body; a copy under its own name keeps the home colours.
+| Name | Who | Chapter |
+|---|---|---|
+| **Marshal Sable** | Wassoon's marshal, the single antagonist. Dark green greatcoat, ivory diagonal sash, brass floodgate shoulder plate over a dying left arm, diagonal cheek scar, long pistol. Calm, dry, certain that control is order. | seal in 1, voice in 2, named customer in 3 and 4, Echo's warning in 5, fought in 6 |
+| **Crownback** | Sable after the unfinished Crown treatment: low, asymmetrical, wet, a living floodgate. Keeps the sash, the scar and the split brass plate. | 6, final boss |
+| **Dr. Echo / Echo Engine** | Older scientist, Fessenden's former tank keeper. Narrow silhouette, long coat, crescent acoustic dish on a back frame, tuning-fork baton. She invented the serum but never tests it on herself: cornered, she climbs into the Echo Engine, a four-legged brass sound-walker with two dishes (a sonic beam, a stomp shockwave, a low leap). Beaten, the walker collapses and she kneels and surrenders. Arrested, not killed. | voice in 5's panels, boss 5 |
+| **Warden Rook** | Human jailer of Wassoon's prison barge. Orange flotation vest, long boat hook, rope coil. Ships ration breakers to the dam as labor. Arrested. | boss 1 |
+| **Haulmaster Krag / Ironclub** | Sable's convoy boss: mohawk, black beard, sleeveless denim jacket with the convoy badge, anchor chain wrapped round one fist. Cornered on the causeway he injects a trial dose of the Crown serum (Echo tested the treatment on Sable's own men first) and becomes Ironclub, an armoured ankylosaur-man with a club tail who can curl into a rolling ball. Beaten, the plates crumble and he is arrested. | boss 2, fought on foot when the convoy halts |
+| **Headkeeper Thorne / Glassback** | Sable's hatchery keeper: red braid, brass goggles, olive keeper's coat, leather apron, brass electric cattle prod. She steers the collared pack with the sonic driver in the old nest. Cornered, she injects one of Echo's jars of adaptive graft and becomes Glassback, a tall feathered beast-woman with huge scythe claws. Beaten, the graft burns out and she is arrested; the eggs and the pack are safe. ("Glass" is her dome, not her anatomy.) | boss 3 |
+| **Foreman Cinder / Overdrive Cinder** | Human salvage diver in a squat brass pressure suit with a steam rig on his back and one huge pile-driver arm. Runs the Sink pump station. Losing, he slams his helmet shut and overloads the rig into heavy brass armour with a steam cannon (no serum). Beaten, he climbs out of the broken rig, surrenders and talks. | boss 4 |
+| Barge Bosun | Rook's heavy, keeper of the barge keys | elite 1 |
+| Tide Outrider | the convoy boss on a jumping bike | elite 2 |
+| Pack Alpha | a big collared raptor from the nursery; freed | elite 3 |
+| Brood Mother | a Tyrog-line creature from Fessenden's lab that bred in the flooded caves; retreats underwater | elite 4 |
+| Mirror Test | Echo's one finished mirror body | elite 5 |
+| Gate Captain, Sluice Captain, Crown Sergeant | officers of Sable's Crown Guard | elites 6 |
+| Conscripts | collared Wassoon prisoners and graft subjects at the dam; freed by the collar pylons, they fight beside you | 6 |
 
-| Name | Who | Original body | Chapter |
-|---|---|---|---|
-| Marshal Sable | Human. Wassoon's marshal, now the Black Marketeers' master. Never a copy. | Vice T., with the pistol the 1993 game never fired; palette `sable` | named in 1, heard in 2, fought in 6 |
-| Dr. Echo | Human. Fessenden's chief assistant, the copier. A woman, never drawn: a voice on the radio and the observatory's speakers; arrested at the end of chapter 5. | none | 1, 4, 5 |
-| Warden Rook (LOT 09) | The warden of Wassoon's jail barge, Sable's man. A copy of the Butcher; the signal named him. | Butcher, with the Vice chain as his boat-hook line; palette `rook` | boss 1 |
-| LOT 07 · Heavy | A copy of Blk Elmer | Blk Elmer, home palette | elite 1 |
-| LOT 31 · Outrider | A copy of a Ferris biker | the jumping bike with its rider, home palette | elite 2 |
-| LOT 44 · Mack | A vat triceratops from Fessenden's pens, collared, hauling the last wagon | Mack, with the chain as a snapped tow leash | boss 2, fought from the Cadillac |
-| Pack Alpha · Vat Raptor | A vat R Hopper | R Hopper in the Bio Lab colouring | elite 3 |
-| Verdant Regent (LOT 50) | A vat Shivat, chained to the nest's sonic driver | Shivat, the allosaurus, with the chain to the driver | boss 3 |
-| Brood Mother | A Tyrog that survived the blast and bred in the flooded lab | Tyrog, in the drowned colouring | elite 4 |
-| Foreman Cinder (LOT 05) | A copy of Morgan. Runs Echo's salvage dig in the Sink. Knows what he is. | Morgan; palette `cinder` | boss 4 |
-| LOT 04 · Slice | A copy of Slice grown from the human sample Fessenden took before he made the Slisaurs. Echo's bodyguard. | Slice; palette `slicevat` | boss 5 |
-| Mirror Test, the Mirror Clones, Your Own Clone | Copies of the heroes | the hero sprites in the controlled (mirror) palette | elites 5 and 6 |
-| The Crown Engine | Fessenden's throne capsule, salvaged from the drained throne room and wired to the dam turbines | the throne-room capsule cells, baked into one sprite; palette `crown` | chapter 6, phase 2 |
-| LOT 00 · Fessenden | The last copy: the beast, grown from the drain sample | Fessenden's final form, all six parts, in the original pink; gel on death | chapter 6, finale |
+**Dinosaurs:** collared raptors (the nursery stock and Pack Alpha), the Brood Mother in the Sink, pteranodons over the causeway and cliffs, archaeopteryx flocks, and far-layer herds. Nobody rides a dinosaur and no dinosaur is killed.
 
-**Dinosaurs:** R Hopper (the nursery regulars, Pack Alpha, the Naguri's captive), Mack, Shivat, Zeke swoops, pteranodons in the sky, archaeopteryx flocks over the harbour and the dome, ankylosaurus and maiasaura herds in the far layer, and small raptors scurrying through the hatchery. Nobody rides, and no dinosaur is killed.
+## Foreshadowing ladder
 
-**Allies:** the freed hero copies from chapter 6 onward. They fight LOT 00.
+Every chapter plants one piece of Crownback, and every chapter's place and objective set up its own boss.
 
-**Lot register** (pod plates, manifests, HUD): LOT 00 Fessenden · LOT 04 Slice · LOT 05 Morgan, called "Cinder" · LOT 07 Blk Elmer · LOT 09 the Butcher, called "Rook" · LOT 12 Lash T. · LOT 31 Ferris · LOT 44 Mack · LOT 50 Shivat, called "Regent". Lot numbers are Echo's catalogue numbers, "numbered like the tanks"; the text says "from tank 03" only for the raptor stock, because tank 03 in the Bio Lab holds a raptor. The heroes have no lot numbers; Echo files them by name.
+| Ch | Crownback foreshadowing | The boss, foreshadowed by place and objective |
+|---|---|---|
+| 1 | Ration notices with Sable's brass gate seal and "Order keeps the water flowing." | Hooks, ropes and chains on every beam of the jail quay; prisoners in pods: a jailer's dock. |
+| 2 | Cargo of pressure regulators and gate brass stencilled TO THE CROWN; Sable on the convoy radio: "The Crown only needs the brass." | Wide round tracks in the coral and reef swept flat on both sides: something armored with a club tail is pulling the convoy. |
+| 3 | Jars of graft tissue labelled ADAPTIVE TRIAL, and a ledger line: "Priority order for the marshal. Shoulder and arm." | Claw marks high on the glass, robbed egg racks with giant eggs, the hum of a driver near the nest. |
+| 4 | The brass shoulder brace, twin of Sable's plate, on an anatomical test rig; plans stamped CROWN TREATMENT · UNFINISHED; Cinder: the marshal's arm is dying. | Pumps and pile-driver holes down the cave walls; the sea valves the player opens are the foreman's own machinery. |
+| 5 | Echo: "He ordered a body that could outlast the flood. I never said he could control it." | The dish hum on the cliff road, brass instruments tuned to it, three control channels to jam before the dish itself. |
+| 6 | Sable refuses to leave the gate controls; taking the treatment is his own last choice. | The dam, its gates and its spillway are the arena and the final weapon. |
 
-## Chapter 1 — Wassoon · *Faces from the Lab*
+## Chapter 1 · Wassoon · 01 / The Prison Barge
 
-The gang is in Wassoon, Hannah's city, to testify against the captured Black Marketeers. The jail barge burns in the harbour, and the men rolling cold crates off it are men the gang watched fall in the Under World. The heroes fight along the sea wall, through the cannery and the gutted barge and over the bell roofs, open three cold pods (each holds a sleeping copy of a beaten poacher) and meet **LOT 07 · Heavy**, a copy of the heavyweight Mess flattened in the Bio Lab. When it melts, Jack says it plainly: "That was never a man. It was a copy."
+**Place:** Wassoon harbor at night in the rain; the sea wall, the ration sheds, the cannery and the quay sheds, the prison barge at the stone jail quay, and the warden's dock. **Objective:** FREE THE PRISONERS (open three prison pods; the third holds the manifest case). **Boss:** Warden Rook on his own dock.
 
-**Boss: Warden Rook**, the warden of the barge, on a night pier with a boat-hook pull, rolled barrels, a crane and the tide, while the signal glitches in his head. He is LOT 09, a copy of the Butcher who believes the name the signal gave him. His manifest names Dr. Echo as the seller and Marshal Sable, the marshal who was guarding those prisoners, as the buyer. The jail-break was staged, and the rest of the pods left at sundown up the Coral Causeway.
+1. Card (EASTCOAST 2513 · SIX MONTHS LATER), then panels: the barge loading by firelight; prisoners sedated and sealed, "labor for the Crown"; Mustapha recognizes Wassoon fishermen; Hannah: their crime was drawing water without a permit; Jack: somebody is holding the coast by the throat.
+2. The sea wall: the barge is loading at night. Ambush from behind.
+3. The ration sheds: the brass seal on every notice; guards protect the water tanks, not the town. First pod.
+4. The cannery and the quay sheds: hooks and chains on every beam. The Barge Bosun and his keys.
+5. The quay sheds: holding sheds; nobody broke out, they were sold. Second pod.
+6. The prison barge at the stone jail quay: pods numbered like cargo. The manifest case.
+7. The warden's dock: Rook. Hook lowered, then a straight pull; crane drops with a shadow; the tide over the front of the pier.
+8. End: Rook is arrested. His manifest signs the prisoners over to Sable "for the works at the Crown". A ration notice lists the cargo the convoy must not lose, including a crate marked BIODOME. The convoy left at low tide up the Coral Causeway.
 
-## Chapter 2 — The Coral Causeway · *The Pod Convoy*
+## Chapter 2 · The Coral Causeway · 02 / The Tide Convoy
 
-Jack drives the rebuilt Cadillac after Sable's convoy on a highway the tide gives back only at low water. The gang rams outriders, knocks pods off the wagons and dodges pteranodons. At the old Mechanics' toll post the road is chained shut, so they fight through on foot while Mess cranks the winch. Back in the car, the last wagon is hauled by **LOT 44 · Mack**, a collared vat triceratops: the fight the 1993 game never had, the car against a dinosaur. The gang rams its collar off and it walks into the surf.
+**Place:** a highway the sea gives back only at low tide; the old Mechanics' toll post; the rising tide. **Objective:** SEIZE THE CROWN CARGO (ram two cargo wagons loose, crank the toll barrier winch). **Boss:** Haulmaster Krag, who becomes Ironclub, fought on foot when the convoy halts.
 
-The last pod holds a collared hatchling tagged STOCK FROM TANK 03 · NURSERY · VERDANT BIODOME. Sable speaks for the first time: "Keep the pod, Tenrec. I have a whole nursery."
+1. Panels: Rook's manifest; the convoy at dusk; Jack's rebuilt Cadillac.
+2. Low tide: bikes behind. Krag rides the last wagon; nobody gets past his chain.
+3. The convoy: pteranodons; the reef swept flat by a club; the first wagon carries regulators stamped TO THE CROWN; the second hides collared hatchlings.
+4. Outriders: the Tide Outrider. The convoy stops at the chained toll post.
+5. On foot through the toll fort (a Mechanics' post Sable seized); Mess cranks the winch.
+6. Back in the car after Krag's wagon. At the last lock the convoy halts on the causeway and everybody gets out. Krag lashes his chain along a lane and charges; beaten, he injects a trial dose from the case he guards and becomes Ironclub: a tail-club sweep (the club lifts behind him first), an overhead smash whose shockwave you jump, and a rolling-ball charge down a lane (sidestep it, then hit him while he uncurls).
+7. End: the plates crumble off Krag and he is arrested; the empty vials carry a tuning-fork seal and the label CROWN TRIAL · CREW DOSE (the first hint of the Crown treatment). The cargo: gate brass for the Crown, and hatchlings tagged VERDANT BIODOME · NURSERY STOCK. Sable speaks for the first time, on the convoy radio: "Keep the hatchlings, Tenrec. The Crown only needs the brass."
 
-## Chapter 3 — The Verdant Biodome · *The Nursery*
+## Chapter 3 · The Verdant Biodome · 03 / The Nest
 
-The tag leads inland to a ruined glass refinery dome on the jungle frontier, turned into a hatchery. Handlers steer collared raptors with sonic lures and Naguri beat the stubborn ones. The gang breaks three lures, calms **Pack Alpha**, and in the nest wakes the **Verdant Regent**: a vat Shivat, never a boss in 1993, chained to the nest's sonic driver. The fight is about the driver, the chain's reach and the beast's drowsiness; breaking the driver puts it to sleep. "It never asked to be born."
+**Place:** a ruined glass dome on the jungle frontier: the glass perimeter, the collar pens, the hatchery egg racks, the river walk, the nest. **Objective:** SILENCE THE NURSERY (three sonic lures). **Boss:** Headkeeper Thorne, who becomes Glassback; her sonic driver keeps her standing until it is smashed.
 
-The farm ledger says every animal was grown from samples hauled out of the Sink, and that Echo's dig is cutting toward the throne room where Fessenden died.
+1. Panels: a collar on a baby raptor; the dome; a keeper: "Keep the driver humming. The headkeeper wants the pack hungry."
+2. The last fence; collared raptors in the trees.
+3. The collar pens: nests robbed to fill them; Naguri beating a raptor. First lure.
+4. The egg racks: giant stolen eggs. Pack Alpha, freed when its collar cracks.
+5. The river walk: second lure; handlers calling the pack.
+6. The nest trail: jars of scaly skin labelled ADAPTIVE TRIAL; the third lure.
+7. The nest: Headkeeper Thorne prods along a lane, swings her staff overhead and whistles the pack in. Beaten, she injects a jar of graft and becomes Glassback: raised crossed claws announce the long low sweep (jump it), a crouch announces the pounce (its shadow marks the landing), and her screech calls the pack. While the driver hums she cannot be brought down; smash it and she is open.
+8. End: the graft burns out and Thorne is arrested; the eggs and the pack are saved. Her hut holds Echo's graft trials (one empty jar is the dose she took) and the ledger: every sample came out of the Sink, where Cinder's divers strip Fessenden's lab; one line reads "Priority order for the marshal. Shoulder and arm."
 
-## Chapter 4 — The Sink · *Where It Ended*
+## Chapter 4 · The Sink · 04 / The Pump Station
 
-The one deliberate return. The gang goes back down. The escape tunnel where Hannah fell opens onto black water; the Bio Lab's tanks are shattered and tank 03, the raptor's, is empty; a Tyrog that survived the blast has been breeding in the flood, the **Brood Mother**. Echo's salvage crews have pumped half the crater dry, run by **Foreman Cinder**, who is LOT 05, a copy of Morgan and knows it. The gang opens three sea valves and drowns the dig. In the throne room the capsule is gone and the floor is cut open: under it was the drain tank that caught everything spilled in the 1993 fight, and its tag carries the four heroes' names and a fifth entry, 00.
+**Place:** the one deliberate return. The escape tunnel where Hannah fell, now a salvage yard; the Bio Lab's tanks stripped for parts; the pump station and its scaffolds; the dig caves cut down to the stripped throne room; Cinder's dig. **Objective:** FLOOD THE DIG (three sea valves). **Boss:** Foreman Cinder.
 
-Beaten in his pump house, Cinder doses himself with the serum and melts: the serum rule, on screen, once. Dying, he names "the doctor": not Fessenden, his echo, up at the observatory on the cliffs.
+1. Panels: Hannah and the ledger; Mess never wanted to come back; Jack: somebody is pumping it dry.
+2. Where Hannah fell: salvage divers on the ropes.
+3. The shattered tanks: serum benches hauled up in nets. First valve.
+4. The pump station: pile-driver holes down the walls. The Brood Mother surfaces from the sump and retreats.
+5. The pump scaffolds: second valve.
+6. The dig caves, cut down to the throne room and stripped to the bolts; scaled graft subjects. Third valve.
+7. Cinder's dig: Sable's shoulder brace on a test rig. Cinder raises his driver and slams the floor (a shockwave to jump), drives it along his lane and charges. Losing, he overloads into Overdrive Cinder: a red gauge on the cannon before a steam shot down his lane, then the arm sticks in smoke and he is open; his stacks blow a scalding cloud round his feet; a shoulder charge skids to a stop; the pumps surge between.
+8. End: the overloaded rig cracks open, Cinder climbs out beside it, surrenders and talks. Echo paid for the notes and benches; the marshal paid for the rest. The plans read CROWN TREATMENT · UNFINISHED: Fessenden's serum cut with Echo's grafts, for one customer whose arm is dying under a brass plate. They are signed at the observatory.
 
-## Chapter 5 — The Observatory · *Dr. Echo*
+## Chapter 5 · The Observatory · 05 / Dr. Echo
 
-An old-world observatory on the cliffs north of the City in the Sea: Echo's lab, copied room for room from the Vault (the same shelves, the same consoles, the same numbered tanks), its dish sending the command signal. The gang jams three channels, beats the **Mirror Test** (the first hero copy) and, in the lens hall, Echo's bodyguard: **LOT 04 · Slice**, grown human again from the sample Fessenden took before he made the Slisaurs, with a flip crossover the original never used while Echo vents the vats and wakes half-grown copies. Beaten, he thanks them when the voice stops.
+**Place:** an old-world observatory on the cliffs north of the City in the Sea: the cliff road, the instrument floor, the archive copied from the Vault, the vat hall, the broadcast room, the dish gallery. **Objective:** JAM THE COMMAND SIGNAL (three control channels). **Boss:** Dr. Echo with her acoustic dish, then the Echo Engine, her four-legged sound-walker.
 
-Echo, never seen, surrenders at her console: "You can't punch an idea." The Mirror Gang and the sealed LOT 00 have shipped to the Crown dam; she plays Fessenden's last recording, "Genius does not die. It is copied." Hannah takes Echo's command key, and the council's riders take Echo to Wassoon.
+1. Panels: the dish still turns; Echo on the speaker: "Fessenden died of his ideas. I intend to survive mine."; Hannah answers.
+2. The cliff road: the hum in your teeth; pteranodons.
+3. The instrument floor: brass tuned to the dish; graft subjects out of the drains. First channel.
+4. The archive: the Vault's shelves, copied. The Mirror Test, Echo's one indulgence (the single mirror encounter).
+5. The vat hall: tanks with the gang's names, all four half-grown. Second channel.
+6. The broadcast room: third channel.
+7. The dish gallery: Echo herself. She raises her dish before a ring shot down her lane and jabs with her tuning fork up close. Beaten on foot, she boards the Echo Engine: its dishes glow before a sonic beam down one lane (change lanes, then hit it while it overheats), it rears and stomps a shockwave ring (jump it), and it leaps onto a lane where its shadow falls.
+8. End: the walker collapses, the dishes crack and every collar on the coast goes quiet. Echo climbs out, kneels with her hands up and hands over the command key and explains the Crown treatment: "He ordered a body that could outlast the flood. I never said he could control it." The treatment went to the dam with Sable. The council's riders take her to Wassoon to answer to the people her work hurt.
 
-## Chapter 6 — The Crown Spire · *Mirror War*
+## Chapter 6 · The Crown Dam · 06 / The Crown Tide
 
-A gothic spire over the Crown dam. Sable has wired Echo's last vat hall into the turbines and set Fessenden's salvaged throne capsule, the one the gang saw missing in chapter 4, at the heart of his Crown Engine.
+**Place:** the dam terraces, the Crown Guard's gallery, the collar pylons, the floodgate gallery, the gate controls and the spillway. **Objective:** BREAK THE COLLAR PYLONS with Echo's key (2 + 1 + 1 conscripts freed; they fight beside you), then open the spillway. **Boss:** Marshal Sable, then Crownback.
 
-1. **The Spire Approach** — Sable's clone army, with copies of the heroes in the regular ranks.
-2. **The Mirror Gang** — the copies of the other heroes, one after another.
-3. **You vs. You** — the copy of the hero you chose. "Why are you holding back? …Why am I?"
-4. **Break the Command** — Hannah uses Echo's key on three command pylons. Each one frees copies: two, then one, then one. They fight on your side.
-5. **The Clone War** — freed clones (gold outline) and Sable's controlled clones (the mirror palette) fight each other on the dam gallery while you fight alongside.
-6. **The Crown Floodgate** — **Marshal Sable**, with the pistol his body never fired in 1993 and a reload window, then the **Crown Engine**: the capsule, stationary, with turrets, surges, steam vents and summoned copies. Stalled, it leaves the spillway; opening the spillway drowns the turbines that power the vats and Echo's signal goes dark.
-7. **The Last Copy** — the power dies and the capsule cracks. **LOT 00 · Fessenden** climbs out already in the final form: a copy of the beast grown from the archive's own sample. "It isn't him. It's a copy. Copies can be deleted." Pinned in the flooding spillway, it melts in stages as the arena wheels turn the river against it, and the freed clones fight beside the hero. When it falls it dissolves like every other copy, and there is nothing left to grow another from.
+1. Panels: the dam (every drop on the coast runs through those gates); Sable: "Order keeps the water flowing. I am the order."; Hannah has the key and knows about the treatment; Jack: he wants to hold the sea back with one hand.
+2. The terraces: collared prisoners in the ranks.
+3. The Crown Guard: the Gate Captain and the Sluice Captain.
+4. The gallery: the Crown Sergeant.
+5. Break the collars: three pylons, four freed conscripts.
+6. The floodgate gallery: freed crews against the guard.
+7. The final fight, in order:
+   - **Marshal Sable** (human duel, short): deliberate two-shot pistol volleys along an aim line, then a punishable reload.
+   - **The gate controls**: Sable holds the dam's control chair, wired with the Crown cargo; surges and guards. Smash the controls and his remote is gone.
+   - **The spillway**: the player opens it before the reservoir tops out.
+   - **Crownback**: Sable refuses to lose the gates and injects the unfinished treatment ("No gate will hold for me? Then I will be the gate."). Armored phase behind a planted shield arm; broken-guard phase as the plates crack; the spillway bypass wheel sends a surge that knocks him off his brace.
+8. End: Crownback falls in the spillway; what is left is mostly the marshal, sash, scar and split plate. The gang does not blow the dam. Hannah sets a slow, even release, the collars come off every conscript, and the taps run downstream. Nobody owns the water now.
 
-## Ending — Nobody's copy
+## Ending: Nobody owns the water
 
-The last words are the beast's: "No! Not again! I'm not finish—". The dam lets go; the gang and the four freed copies run through the spire halls, and when one of the freed copies stumbles it is **your clone** that runs back and lifts it ("Get up. I remember how this goes."). Morning finds the Crown dam quiet. The vat hall is under water, Echo's archive is ash, and a green stain on the spillway is all that is left of the last copy. Sable sits in a cell in Wassoon with a trial date, and Dr. Echo in the one beside it. Not one copy goes back into a tank. Mack grazes on the causeway; the Regent sleeps in the dome.
+| Beat | Text |
+|---|---|
+| fall | Sable (name tag): "The water... was mine... to hold..." |
+| alarm | Mustapha: the gates are stuck open, get off the spillway |
+| run | TO THE GATEHOUSE! A freed conscript stumbles |
+| choice | your own hero goes back: "Get up. Nobody gets left on this dam." (the 1993 beat of going back for Hannah, without re-enacting it) |
+| dawn | MORNING. THE WATER RUNS FREE. |
+| road | Mustapha: every tap is running. Hannah: his seal comes off every door in Wassoon. Jack: "Fessenden tried it. Sable tried it. Nature always balances itself." Mess spots an ankylosaur calf by the causeway; Mustapha names him Mostafa ("nobody spells it right anyway"); Mess: "Hey... that car seats two up front. Jack? JACK!" |
+| thanks | THANK YOU FOR PLAYING · A FAN SEQUEL MADE FOR MOSTAFA |
 
-On the sunset road, Mustapha and Mess walk with four copies of the gang behind them, and the Cadillac pulls up with Jack driving and Hannah beside him.
+Rook, Krag, Cinder and Echo stand trial in Wassoon. An ankylosaur calf grazes on the causeway; the hatchery's eggs go back to the wild nests. The Cadillac drives off and Mustapha and Mess run after it, as in 1993.
 
-**Mustapha:** Everybody's alright! …Twice over.
-**Jack:** Twice now Fessenden tried to tip the scales.
-**Hannah:** Fessenden tried to cheat nature twice. Twice, nature balanced itself.
-**Your clone:** Guess I need my own name.
-**Mustapha:** Take "Mostafa". Nobody spells it right anyway.
-**Mess:** Hey… that car seats two up front. Jack? JACK!
+## Playable scope and what still runs on the old story
 
-The Cadillac drives off. Mustapha and Mess run after it again, and this time four copies of the gang run behind them.
+Chapter content is in `campaign.js` (`EDEN_CAMPAIGN`, the attract `EDEN_INTRO`, the ending beats `EDEN_ENDING`) and `mission-data.js` (`EDEN_MISSIONS`). The stage layouts are new compositions of the original arcade's tiles (`work/re/design/CAMPAIGN.md` §12.2), authored in `tools/re/levels/ch1.json` … `ch6.json` and shipped as `stage-data.js`. Each chapter has three areas, six sections and twelve or thirteen locked fights, and plays in about four minutes.
 
-## Playable scope
-
-The title plays the attract story (five panels in the 1993 shape), chapter cards carry the map marker and the opening caption EASTCOAST 2513 · SIX MONTHS LATER, and intermission panels, area captions, boss cards, the stage-clear tally and the staff roll use the arcade's presentation. Section openings, fights, objectives and mid-boss defeats carry radio dialogue during play. The objectives (cold pods, stasis pods, toll winch, sonic lures, sea valves, command channels, command pylons and the final spillway), all mid-bosses, all six bosses, Sable's Crown Engine phase, the last copy of Fessenden and the freed-clone allies are playable. Chapter content is in `campaign.js` (`EDEN_CAMPAIGN`, the attract `EDEN_INTRO` and the ending beats `EDEN_ENDING`) and `mission-data.js` (`EDEN_MISSIONS`); the stage layouts are new compositions of the original arcade's tiles (`work/re/design/CAMPAIGN.md` §12.2), authored in `tools/re/levels/ch1.json` … `ch6.json` and shipped as `stage-data.js` with the pages in `assets/stages/`.
-
-Each chapter has three areas, six sections and twelve or thirteen locked fights, and plays in about four minutes (the test player clears them in 3.6–4.7 simulated minutes on Easy). Chapter 2's driving sections carry four extra two-bike waves (CAMPAIGN option O12), since the ROM's bikes are lighter than the riders they replaced.
+The game's text follows this story: the bosses' names, cards and summons in `BOSS_DEFS` (`enemy-kinds.js`), the toasts, the defeats (Rook, Krag, Thorne and Echo are arrested (Echo kneeling beside her wrecked walker), Cinder climbs out of his broken rig and surrenders, Crownback falls in the spillway; nothing melts into gel), the title, the ending sequence and its final panel. Warden Rook, Haulmaster Krag / Ironclub, Headkeeper Thorne / Glassback, Foreman Cinder / Overdrive, Dr. Echo / Echo Engine, Marshal Sable and Crownback are drawn on their own generated sprite sheets (`tools/art/specs/*.json`, `sprite-data-boss-*.js`); until the rest of the boss rebuild the gate controls on the Crown capsule bake. Chapter 6's regulars and officers are human kinds named CROWN GUARD on the HUD, and the conscripts freed at the collar pylons are collared prisoners (FERRIS in a gold outline), not copies of the heroes; the `mirror` kind is used only for the Mirror Test in chapter 5. The engine's field names (`lastCopy`, `phase2`, `fessenden`, `melted`, `freeClones`) are kept as they are. The new boss models are specified in `work/story2/BOSS-SPECS.md`.

@@ -5,7 +5,7 @@ const BASE=process.env.GAME_URL||'http://127.0.0.1:8766';
 const only=process.argv[2]===undefined?null:Number(process.argv[2]);
 (async()=>{const browser=await chromium.launch({headless:true}),page=await browser.newPage(),results=[];
 await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;let seed=15454;Math.random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};});
-await page.goto(BASE);await page.waitForFunction(()=>SEQUEL_RENDER.ready&&window.ARCADE_HEROES);await page.click('#sound');
+await page.goto(BASE);await page.waitForFunction(()=>SEQUEL_RENDER.ready&&window.ARCADE_HEROES,null,{polling:100});await page.click('#sound');
 for(let level=0;level<6;level++){
  if(only!==null&&level!==only)continue;
  const result=await page.evaluate(level=>{const g=LAST_EDEN;g.start(level,0,'story');const held=new Set();

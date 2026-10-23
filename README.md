@@ -1,21 +1,21 @@
-# Cadillacs & Dinosaurs II: Fessenden's Legacy
+# Cadillacs & Dinosaurs II: The Crown Tide
 
-An unofficial single-player fan sequel to Capcom's 1993 arcade game, made for Mostafa's next adventure. Mustapha, Jack, Hannah and Mess return six months after the first game's exact ending for six chapters, six elites, six bosses and a final clone war.
+An unofficial single-player fan sequel to Capcom's 1993 arcade game, made for Mostafa's next adventure. Mustapha, Jack, Hannah and Mess return six months after the first game's exact ending for six chapters, six elites and six bosses.
 
-Fessenden died a beast in the throne room of his Under World beneath the City in the Sea, and the sea poured into the hole his lab left. His chief assistant, Dr. Echo, walked out with his archive and grows numbered copies ("lots") of anyone whose blood the lab ever took. Marshal Sable, the Wassoon lawman who was guarding the captured Black Marketeers, buys them to build an army that never runs out. [Read the sequel script](STORY.md).
+Fessenden died a beast in his Under World beneath the City in the Sea, the lab blew, and the flood that followed drowned half the coast. Marshal Sable, the Wassoon lawman who took the captured Black Marketeers into custody, seized the Crown dam and now sells water by permit. Every chapter breaks one link of his supply chain, and at the dam he takes the unfinished Crown treatment rather than open a gate. Fessenden stays dead. [Read the story bible](STORY.md).
 
 | Ch | Chapter | Place | Elite | Boss |
 |---|---|---|---|---|
-| 1 | WASSOON · *Faces from the Lab* | Hannah's harbour city, a burning jail barge | LOT 07 · Heavy | Warden Rook, a copy of the Butcher |
-| 2 | THE CORAL CAUSEWAY · *The Pod Convoy* | a tidal highway and an old toll post; the Cadillac chapter | LOT 31 · Outrider | LOT 44 · Mack, a collared vat triceratops, fought from the car |
-| 3 | THE VERDANT BIODOME · *The Nursery* | a glass refinery dome turned hatchery | Pack Alpha · Vat Raptor | the Verdant Regent, a vat Shivat chained to a sonic driver |
-| 4 | THE SINK · *Where It Ended* | the one deliberate return: the flooded Under World, six months on | the Brood Mother (a Tyrog) | Foreman Cinder, a copy of Morgan, who melts on his own serum |
-| 5 | THE OBSERVATORY · *Dr. Echo* | Echo's lab on the cliffs, copied room for room from the Vault | the Mirror Test | LOT 04 · Slice |
-| 6 | THE CROWN SPIRE · *Mirror War* | a gothic spire over the Crown dam | the Mirror Gang, your own clone | Marshal Sable, the Crown Engine, LOT 00 · Fessenden |
+| 1 | WASSOON · *The Prison Barge* | Hannah's harbour city at night, the jail quay and the prison barge | the Barge Bosun | Warden Rook, the dock jailer |
+| 2 | THE CORAL CAUSEWAY · *The Tide Convoy* | a highway the sea gives back at low tide; the Cadillac chapter | the Tide Outrider | Haulmaster Krag, who becomes the armoured Ironclub, fought on foot when the convoy halts |
+| 3 | THE VERDANT BIODOME · *The Nest* | a ruined glass dome on the jungle frontier, its collar pens and egg racks | Pack Alpha, freed | Headkeeper Thorne, who grafts herself into Glassback; smash her sonic driver to bring her down |
+| 4 | THE SINK · *The Pump Station* | the one deliberate return: the flooded Under World, pumped dry for salvage | the Brood Mother | Foreman Cinder, a salvage diver with a pile driver who overloads his rig into Overdrive Cinder, then surrenders |
+| 5 | THE OBSERVATORY · *Dr. Echo* | Echo's observatory on the cliffs, its archive and vat hall | the Mirror Test | Dr. Echo and her acoustic dish, then the Echo Engine, her four-legged sound-walker |
+| 6 | THE CROWN DAM · *The Crown Tide* | the dam terraces, the collar pylons and the spillway | the Crown Guard's officers | Marshal Sable, the gate controls, then Crownback |
 
-The last chapter is a clone war: Hannah breaks Echo's command pylons, the freed copies of the heroes (gold outline) fight Sable's controlled copies (the mirror palette) beside you, and after the Crown Engine the last sealed tank releases LOT 00, a copy of Fessenden's final form that melts in stages in the flooding spillway.
+In the last chapter Hannah breaks the collar pylons with Echo's key and the freed conscripts fight beside you; after the gate controls fall and the spillway opens, Sable becomes Crownback. Warden Rook, Haulmaster Krag / Ironclub, Headkeeper Thorne / Glassback, Foreman Cinder / Overdrive, Dr. Echo / Echo Engine, Marshal Sable and Crownback fight on their own generated sprites (loaded per chapter); the gate controls are still the Crown capsule bake from the ROM tiles.
 
-![Fessenden's Legacy gameplay](preview.png)
+![The Crown Tide gameplay](preview.png)
 
 ## Play or deploy
 
@@ -28,7 +28,7 @@ For **Vercel**, import this repository, choose **Other**, leave the build and in
 Everything you see is the original arcade's own art, read from the 1993 ROM set and recomposed into new places:
 
 - **Heroes** are the arcade's frame records with their own animation timing, holds and weapon placements; the empty gun is hurled at the enemy, as the user asked.
-- **Enemies and bosses** are the original bodies with their ROM animations, attack tables and HP; the sequel's villains are copies with new palettes (Rook is a Butcher body, Cinder a Morgan, the Regent a Shivat) and LOT 00 is Fessenden's six-part final form.
+- **Enemies and bosses** are the original bodies with their ROM animations, attack tables and HP; the sequel's bosses (Rook, Krag / Ironclub, Thorne / Glassback, Cinder / Overdrive, Echo / Echo Engine, Sable and Crownback) have their own generated sprites (tools/art/specs), whose pixels load with their chapter.
 - **Stages** are new layouts built from the arcade's own tiles, palettes and walkable bands (no original level is replayed as it was); the Cadillac, the food and score items, the weapons and the effects are ROM records too.
 - **The screen** is the cabinet's: 384 × 224 arcade pixels drawn at 2× on a 768 × 448 canvas, the top HUD and the weapon panel in the ROM font at the cabinet's coordinates, chapter cards, intermission panels, the stage-clear tally and the boss cards in the arcade's presentation.
 - **Feel**: the heroes walk at the ROM's own speeds (0x50E4, run 0x5064), the hit sparks and POW! are the arcade's records, and the soundtrack and sound effects are the supplied arcade audio.

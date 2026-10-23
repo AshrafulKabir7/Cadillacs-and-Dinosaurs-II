@@ -1,0 +1,26 @@
+{
+  "id": "thorne",
+  "name": "HEADKEEPER THORNE",
+  "note": "Sources: design/sprites-raw/glassback (ChatGPT sheets, magenta, facing left). Each input carries its own scale so Thorne stands ~86 arcade px (1.05 hero). Anim numbers are BOSS_DEFS.raptor 'main:<n>' references (phase 1).",
+  "height": 86,
+  "bg": "#FF00FF",
+  "chapterTag": 97,
+  "ship": "sprite-data-boss-thorne.js",
+  "anchor": "feet",
+  "inputs": [
+    { "file": "design/sprites-raw/glassback/ref-sheet.png", "crop": [40, 240, 440, 760], "name": "idle0", "scale": 0.117 },
+    { "file": "design/sprites-raw/glassback/thorne-human.png", "split": "auto", "names": ["walk0", "thrust", "swing", "recoil"], "scale": 0.187 },
+    { "file": "design/sprites-raw/glassback/thorne-transform.png", "crop": [0, 150, 790, 517], "split": "auto", "names": ["inject", "burst"], "scale": 0.192 }
+  ],
+  "anims": [
+    { "name": "idle", "frames": ["idle0"], "dur": 30 },
+    { "name": "walk", "frames": ["walk0", "idle0"], "dur": 12, "loop": 0, "alignTo": "idle0" },
+    { "name": "thrust", "frames": ["idle0", "thrust", "idle0"], "dur": [20, 16, 8], "act": [1], "alignTo": "idle0" },
+    { "name": "swing", "frames": ["swing", "walk0"], "dur": [26, 14], "act": [1], "alignTo": "idle0" },
+    { "name": "hurt", "frames": ["recoil"], "dur": 14, "alignTo": "idle0" },
+    { "name": "whistle", "frames": ["inject"], "dur": 36, "act": [0], "alignTo": "idle0" },
+    { "name": "transform", "frames": ["inject", "burst"], "dur": [40, 34], "alignTo": "idle0" }
+  ],
+  "palette": { "mode": "ramps", "lock": ["#333333"] },
+  "clean": { "smooth": 1 }
+}

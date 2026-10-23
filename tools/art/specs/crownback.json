@@ -1,0 +1,266 @@
+{
+  "id": "crownback",
+  "name": "CROWNBACK",
+  "note": "Sources: design/sprites-raw/crownback (ChatGPT sheets, magenta, facing left). Per-sheet scales normalise the body (head, shield forearm, plates) to the idle sheet; the jet is cut out of surge1 and imported as the crownjet body. Anim numbers are BOSS_DEFS.fessenden 'main:<n>' references.",
+  "height": 140,
+  "bg": "#FF00FF",
+  "chapterTag": 92,
+  "ship": "sprite-data-boss-crownback.js",
+  "anchor": "torso",
+  "inputs": [
+    {
+      "file": "design/sprites-raw/crownback/crown-idle-walk.png",
+      "split": "auto",
+      "names": [
+        "idle0",
+        "idle1",
+        "walk0",
+        "walk1",
+        "walk2",
+        "walk3"
+      ],
+      "scale": 0.37
+    },
+    {
+      "file": "design/sprites-raw/crownback/crown-sweep.png",
+      "split": "auto",
+      "names": [
+        "sweep0",
+        "sweep1",
+        "sweep2",
+        "sweep3"
+      ],
+      "scale": 0.346
+    },
+    {
+      "file": "design/sprites-raw/crownback/crown-tail.png",
+      "split": "auto",
+      "names": [
+        "tail0",
+        "tail1",
+        "tail2",
+        "tail3"
+      ],
+      "scale": 0.346
+    },
+    {
+      "file": "design/sprites-raw/crownback/crown-surge.png",
+      "split": "auto",
+      "names": [
+        "surge0",
+        "surge1",
+        "surge2",
+        "surge3"
+      ],
+      "scale": 0.346,
+      "erase": [
+        [
+          600,
+          150,
+          348,
+          200
+        ]
+      ]
+    },
+    {
+      "file": "design/sprites-raw/crownback/crown-hurt-defeat.png",
+      "split": "auto",
+      "names": [
+        "hurt0",
+        "hurt1",
+        "fall0",
+        "down0"
+      ],
+      "scale": 0.346
+    },
+    {
+      "file": "design/sprites-raw/crownback/sable-transform.png",
+      "crop": [
+        700,
+        0,
+        1300,
+        667
+      ],
+      "split": "auto",
+      "names": [
+        "mutate",
+        "roar"
+      ],
+      "scale": 0.25
+    }
+  ],
+  "anims": [
+    {
+      "name": "idle",
+      "frames": [
+        "idle0",
+        "idle1"
+      ],
+      "dur": 32,
+      "loop": 0
+    },
+    {
+      "name": "walk",
+      "frames": [
+        "walk0",
+        "walk1",
+        "walk2",
+        "walk3"
+      ],
+      "dur": 11,
+      "loop": 0,
+      "alignTo": "idle0"
+    },
+    {
+      "name": "sweep",
+      "frames": [
+        "sweep0",
+        "sweep1",
+        "sweep2",
+        "sweep3"
+      ],
+      "dur": [
+        30,
+        6,
+        16,
+        40
+      ],
+      "act": [
+        2
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "tail",
+      "frames": [
+        "tail0",
+        "tail1",
+        "tail2",
+        "tail3"
+      ],
+      "dur": [
+        30,
+        8,
+        16,
+        24
+      ],
+      "act": [
+        1,
+        2
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "jet",
+      "frames": [
+        "surge0",
+        "surge1",
+        "surge2"
+      ],
+      "dur": [
+        36,
+        34,
+        50
+      ],
+      "act": [
+        1
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "brace",
+      "frames": [
+        "surge2",
+        "surge2"
+      ],
+      "dur": [
+        36,
+        40
+      ],
+      "act": [
+        1
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "rush",
+      "frames": [
+        "surge3"
+      ],
+      "dur": 30,
+      "act": [
+        0
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "hurt",
+      "frames": [
+        "hurt1"
+      ],
+      "dur": 14,
+      "alignTo": "idle0"
+    },
+    {
+      "name": "roar",
+      "frames": [
+        "hurt0"
+      ],
+      "dur": 42,
+      "alignTo": "idle0"
+    },
+    {
+      "name": "defeat",
+      "frames": [
+        "hurt0",
+        "hurt1",
+        "fall0",
+        "down0"
+      ],
+      "dur": [
+        24,
+        16,
+        22,
+        60
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "transform",
+      "frames": [
+        "mutate",
+        "roar"
+      ],
+      "dur": [
+        30,
+        44
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "down",
+      "frames": [
+        "down0"
+      ],
+      "dur": 60,
+      "alignTo": "idle0"
+    },
+    {
+      "name": "crouch",
+      "frames": [
+        "surge2"
+      ],
+      "dur": 28,
+      "alignTo": "idle0"
+    }
+  ],
+  "palette": {
+    "mode": "ramps",
+    "lock": [
+      "#cc4433"
+    ]
+  },
+  "clean": {
+    "smooth": 1
+  }
+}

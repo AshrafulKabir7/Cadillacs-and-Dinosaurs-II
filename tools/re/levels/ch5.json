@@ -4,14 +4,10 @@
   "objPage": "S7A1",
   "preset": "coldlab",
   "notes": [
-    "CAMPAIGN.md §9.1 / §12.2 '5-1'..'5-6'; areas a0 = S1 (outside, night), a1 = S2-S3, a2 = S4-S6.",
-    "KI1: E7a2 336-448 is a mesh door and a ramp (no floor at 320-368), so the copied stacks are E7a2 448-960 (a 96-px lane) in 5-2 and 448-960 flip in 5-6.",
-    "The hero idle frames behind the tank glass of 5-4 need hero records drawn into the stage page; they are left for the G6 overlay (gap noted in the WP-E report). The E7a3 monitors stay in their ROM state (waveform cells were not identified as dynamic states), never a face: E7a3 1264+ (the monitor wall of the Fessenden reveal) is not used.",
-    "Section casts (CAMPAIGN §4.4 'cast', merged over the chapter pool): lighter A/BOMB/KNIFE variants where the ROM-affine HP budget of the chapter's waves exceeded ENEMIES §2.6 by more than 15% (tests/campaign.cjs (8)); ratio now 1.137.",
-    "5-4..5-6 re-cut so that joins are mirror joins or sit under a vault post: 5-4 = E8a0 592-1104 (tanks 05-08, all four in the hall since G6 verify r2; never mirrored: a mirrored tank row shows the plate 08 as '80') and E7a3 0-512 flip; 5-5 = E7a3 0-512 and its mirror; 5-6 = E8a0 864-1120, E7a2 448-960 flip, E4a2 512-768 and E4a2 640-768 flip.",
-    "Seams (CAMPAIGN §4.1 join chunks): every join that is not a mirror join is covered by a vault post, the chained steel post of the E7a2 archive door (E7a2 400-432, palette row 21 lifted: full height, foreground).",
-    "Far layer: one per section; only E5a0, E4a2 and E8a0 have a scroll3 here (5-1 E5a0 night, 5-2 E4a2, 5-4 and 5-6 E8a0); the E7a2 and E7a3 interiors are opaque above the floor.",
-    "The coldlab preset washes the interiors out, so a1/a2 add saturation x1.25, lightness x0.82."
+    "COHERENCE (2026-10-22): ch5 climbs to Echo's observatory and goes inside, one way: a0 THE CLIFF ROAD is the rock road up the cliff at night (E5a0 1696-2464 only), a1 THE COPIED VAULT is the observatory's library and instrument halls (E7a2 448-1472 only: shelves, chart rolls, the dark stacks), a2 is the dome itself (E7a3 0-1264 only): the vat hall under the ribbed dome (the tunnel ribs), the broadcast room (the consoles) and the dish gallery where Echo fights. Each area walks back and forth through its one source strip (legs <= 512 px, leftward legs mirrored), so every join is a mirror join or a continuation; the place changes only at the fades.",
+    "Palette: night (scale + 15% toward #2a3a6a) on the cliff; inside, one cold blue-violet light for the halls and the dome (saturation 0.75, lightness 0.92, 22% toward #4a5aa0; the tanks 12%), so the library and the dome read as one building at night. The cliff's far layer is E5a0's mountains under the night sky; the library and the dome have no far layer (their open stacks and openings show the dark backdrop).",
+    "5-4 THE VAT HALL keeps Echo's clean tank row: E8a0 592-1104 tanks 05-08 (h 112-240, blend over the dome ribs) at area x 0, so game.js HERO_TANKS (x 30, 175, 320, 464) stand in their glass; 5-6 carries tanks 07-08 again (E8a0 864-1120 at x 2048: HERO_TANKS x 2096, 2240).",
+    "Boss arena (5-6, DR. ECHO with the acoustic dish): the dish gallery under the dome ribs, the broadcast consoles and their screens (Echo's command transmitter) on both sides of the lock (E7a3 880-1264, before the original COMPUTER ROOM boss window at 1264); the runtime adds the vat vents."
   ],
   "areas": [
     {
@@ -49,7 +45,7 @@
           "slice": {
             "src": "E5a0",
             "x": [
-              1696,
+              1952,
               2208
             ],
             "h": [
@@ -67,8 +63,8 @@
           "slice": {
             "src": "E5a0",
             "x": [
-              1696,
-              2016
+              1952,
+              2400
             ],
             "h": [
               528,
@@ -76,12 +72,39 @@
             ]
           },
           "at": [
-            1024,
+            768,
             0
           ]
+        },
+        {
+          "slice": {
+            "src": "E5a0",
+            "x": [
+              2272,
+              2400
+            ],
+            "h": [
+              528,
+              752
+            ]
+          },
+          "at": [
+            1216,
+            0
+          ],
+          "flip": true
         }
       ],
-      "s3": "auto",
+      "s3": [
+        {
+          "x": [
+            0,
+            1344
+          ],
+          "src": "E5a0",
+          "note": "the mountains under the night sky"
+        }
+      ],
       "sections": [
         {
           "id": "5-1",
@@ -131,41 +154,6 @@
       "s2": [
         {
           "slice": {
-            "src": "E4a2",
-            "x": [
-              512,
-              768
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            0,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E4a2",
-            "x": [
-              512,
-              768
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            256,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
             "src": "E7a2",
             "x": [
               448,
@@ -177,17 +165,93 @@
             ]
           },
           "at": [
-            512,
+            0,
             0
           ],
-          "step": true
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.75,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.22
+            }
+          ]
         },
         {
           "slice": {
             "src": "E7a2",
             "x": [
-              1360,
-              1872
+              704,
+              960
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            512,
+            0
+          ],
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.75,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.22
+            }
+          ]
+        },
+        {
+          "slice": {
+            "src": "E7a2",
+            "x": [
+              704,
+              960
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            768,
+            0
+          ],
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.75,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.22
+            }
+          ]
+        },
+        {
+          "slice": {
+            "src": "E7a2",
+            "x": [
+              960,
+              1472
             ],
             "h": [
               16,
@@ -197,14 +261,28 @@
           "at": [
             1024,
             0
+          ],
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.75,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.22
+            }
           ]
         },
         {
           "slice": {
             "src": "E7a2",
             "x": [
-              1360,
-              1872
+              1216,
+              1472
             ],
             "h": [
               16,
@@ -215,54 +293,54 @@
             1536,
             0
           ],
-          "flip": true
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.75,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.22
+            }
+          ]
         },
         {
-          "patch": {
+          "slice": {
             "src": "E7a2",
             "x": [
-              400,
-              432
+              1216,
+              1472
             ],
             "h": [
               16,
               240
-            ],
-            "rows": [
-              21
             ]
           },
           "at": [
-            496,
+            1792,
             0
           ],
-          "join": true,
-          "note": "vault post over the E4a2 | E7a2 join"
-        },
-        {
-          "patch": {
-            "src": "E7a2",
-            "x": [
-              400,
-              432
-            ],
-            "h": [
-              16,
-              240
-            ],
-            "rows": [
-              21
-            ]
-          },
-          "at": [
-            1008,
-            0
-          ],
-          "join": true,
-          "note": "vault post over the section join 5-2 | 5-3"
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.75,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.22
+            }
+          ]
         }
       ],
-      "s3": "auto",
       "sections": [
         {
           "id": "5-2",
@@ -330,14 +408,7 @@
           ]
         }
       ],
-      "ops": [
-        {
-          "op": "hsl",
-          "h": 0,
-          "s": 1.25,
-          "l": 0.82
-        }
-      ]
+      "ops": []
     },
     {
       "id": "a2",
@@ -347,10 +418,10 @@
       "s2": [
         {
           "slice": {
-            "src": "E8a0",
+            "src": "E7a3",
             "x": [
-              592,
-              1104
+              0,
+              384
             ],
             "h": [
               16,
@@ -361,13 +432,58 @@
             0,
             0
           ],
-          "note": "tanks 05-08 in their ROM state (never mirrored: the plates would read backwards); 592-1104 (G6 verify r2 #3) so tank 05 is in the hall too: its glass from x 0, tank 08 to the vault post at 496, all four hero copies in one hall; ch4 uses E8a0 0-544 only"
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.75,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.22
+            }
+          ]
         },
         {
           "slice": {
             "src": "E7a3",
             "x": [
-              0,
+              128,
+              384
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            384,
+            0
+          ],
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.75,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.22
+            }
+          ]
+        },
+        {
+          "slice": {
+            "src": "E7a3",
+            "x": [
+              128,
               512
             ],
             "h": [
@@ -376,17 +492,30 @@
             ]
           },
           "at": [
-            512,
+            640,
             0
           ],
-          "flip": true
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.75,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.22
+            }
+          ]
         },
         {
           "slice": {
             "src": "E7a3",
             "x": [
-              0,
-              512
+              512,
+              1024
             ],
             "h": [
               16,
@@ -396,14 +525,28 @@
           "at": [
             1024,
             0
+          ],
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.75,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.22
+            }
           ]
         },
         {
           "slice": {
             "src": "E7a3",
             "x": [
-              0,
-              512
+              1024,
+              1264
             ],
             "h": [
               16,
@@ -414,14 +557,59 @@
             1536,
             0
           ],
-          "flip": true
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.75,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.22
+            }
+          ]
         },
         {
           "slice": {
-            "src": "E8a0",
+            "src": "E7a3",
             "x": [
-              864,
-              1120
+              992,
+              1264
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1776,
+            0
+          ],
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.75,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.22
+            }
+          ]
+        },
+        {
+          "slice": {
+            "src": "E7a3",
+            "x": [
+              992,
+              1264
             ],
             "h": [
               16,
@@ -432,14 +620,27 @@
             2048,
             0
           ],
-          "note": "864-1120 (G6 verify r2 #3): inside the vat hall’s 592-1104 plus 16 columns, so E8a0 stays under the 60 % originality gate; tanks 07 and 08 again, 08 whole before the vault post at 2288"
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.75,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.22
+            }
+          ]
         },
         {
           "slice": {
-            "src": "E7a2",
+            "src": "E7a3",
             "x": [
-              448,
-              960
+              880,
+              1264
             ],
             "h": [
               16,
@@ -447,17 +648,31 @@
             ]
           },
           "at": [
-            2304,
+            2320,
             0
           ],
-          "flip": true
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.75,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.22
+            }
+          ]
         },
         {
           "slice": {
-            "src": "E4a2",
+            "src": "E7a3",
             "x": [
-              512,
-              768
+              880,
+              1264
             ],
             "h": [
               16,
@@ -465,17 +680,30 @@
             ]
           },
           "at": [
-            2816,
+            2704,
             0
           ],
-          "step": true
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.75,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.22
+            }
+          ]
         },
         {
           "slice": {
-            "src": "E4a2",
+            "src": "E7a3",
             "x": [
-              640,
-              768
+              1152,
+              1264
             ],
             "h": [
               16,
@@ -483,46 +711,103 @@
             ]
           },
           "at": [
-            3072,
+            3088,
             0
           ],
-          "flip": true
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.75,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.22
+            }
+          ]
         },
         {
           "patch": {
-            "src": "E7a2",
+            "src": "E8a0",
             "x": [
-              400,
-              432
+              592,
+              1104
             ],
             "h": [
-              16,
+              112,
               240
-            ],
-            "rows": [
-              21
             ]
           },
           "at": [
-            496,
+            0,
             0
           ],
-          "join": true,
-          "note": "vault post over the E8a0 | E7a3 join"
+          "blend": "over",
+          "prio": "none",
+          "note": "Echo's clean tank row (E8a0 tanks, blend over the dome wall)",
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.85,
+              "l": 0.95
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.12
+            }
+          ]
         },
         {
           "patch": {
-            "src": "E7a2",
+            "src": "E8a0",
             "x": [
-              400,
-              432
+              848,
+              1120
             ],
             "h": [
-              16,
+              112,
               240
+            ]
+          },
+          "at": [
+            2032,
+            0
+          ],
+          "blend": "over",
+          "prio": "none",
+          "note": "Echo's clean tank row (E8a0 tanks, blend over the dome wall)",
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.85,
+              "l": 0.95
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.12
+            }
+          ]
+        },
+        {
+          "patch": {
+            "src": "E7a3",
+            "x": [
+              880,
+              912
             ],
-            "rows": [
-              21
+            "h": [
+              112,
+              240
             ]
           },
           "at": [
@@ -530,54 +815,24 @@
             0
           ],
           "join": true,
-          "note": "vault post over the section join 5-5 | 5-6"
-        },
-        {
-          "patch": {
-            "src": "E7a2",
-            "x": [
-              400,
-              432
-            ],
-            "h": [
-              16,
-              240
-            ],
-            "rows": [
-              21
-            ]
-          },
-          "at": [
-            2288,
-            0
-          ],
-          "join": true,
-          "note": "vault post over the E8a0 | E7a2 join"
-        },
-        {
-          "patch": {
-            "src": "E7a2",
-            "x": [
-              400,
-              432
-            ],
-            "h": [
-              16,
-              240
-            ],
-            "rows": [
-              21
-            ]
-          },
-          "at": [
-            2800,
-            0
-          ],
-          "join": true,
-          "note": "vault post over the E7a2 | E4a2 join (the boss lock edge)"
+          "prio": "none",
+          "note": "the dome's riser pipe over the 5-5 | 5-6 join (tank 07 begins at the join)",
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.75,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#4a5aa0",
+              "amount": 0.22
+            }
+          ]
         }
       ],
-      "s3": "auto",
       "sections": [
         {
           "id": "5-4",
@@ -697,14 +952,7 @@
           }
         }
       ],
-      "ops": [
-        {
-          "op": "hsl",
-          "h": 0,
-          "s": 1.25,
-          "l": 0.82
-        }
-      ]
+      "ops": []
     }
   ]
 }

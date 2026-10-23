@@ -1,0 +1,31 @@
+{
+  "id": "glassback",
+  "name": "GLASSBACK",
+  "note": "Sources: design/sprites-raw/glassback (ChatGPT sheets, magenta, facing left). Per-sheet scales normalise the body to the idle sheet (~150 arcade px, 1.7 hero). Anim numbers are BOSS_DEFS.raptor phase2 'main:<n>' references.",
+  "height": 150,
+  "bg": "#FF00FF",
+  "chapterTag": 98,
+  "ship": "sprite-data-boss-glassback.js",
+  "anchor": "feet",
+  "inputs": [
+    { "file": "design/sprites-raw/glassback/glass-idle-walk.png", "split": "auto", "names": ["idle0", "idle1", "walk0", "walk1", "walk2", "walk3"], "scale": 0.309 },
+    { "file": "design/sprites-raw/glassback/glass-claw-sweep.png", "split": "auto", "names": ["cross", "slash", "sweep", "recover"], "scale": 0.28 },
+    { "file": "design/sprites-raw/glassback/glass-leap-screech.png", "split": "auto", "names": ["crouch", "air", "land", "screech"], "scale": 0.28 },
+    { "file": "design/sprites-raw/glassback/glass-hurt-defeat.png", "split": "auto", "names": ["hurt0", "hurt1", "kneel", "lie"], "scale": 0.29 },
+    { "file": "design/sprites-raw/glassback/thorne-transform.png", "crop": [790, 0, 1210, 667], "split": "auto", "names": ["half", "full"], "scale": 0.24 }
+  ],
+  "anims": [
+    { "name": "idle", "frames": ["idle0", "idle1"], "dur": 30, "loop": 0 },
+    { "name": "walk", "frames": ["walk0", "walk1", "walk2", "walk3"], "dur": 10, "loop": 0, "alignTo": "idle0" },
+    { "name": "sweep", "frames": ["cross", "slash", "sweep", "recover"], "dur": [30, 8, 16, 22], "act": [2], "alignTo": "idle0" },
+    { "name": "crouch", "frames": ["crouch"], "dur": 24, "alignTo": "idle0" },
+    { "name": "pounce", "frames": ["air", "land"], "dur": [26, 20], "act": [1], "align": "none", "alignTo": "idle0" },
+    { "name": "screech", "frames": ["screech"], "dur": 40, "act": [0], "alignTo": "idle0" },
+    { "name": "hurt", "frames": ["hurt0"], "dur": 14, "alignTo": "idle0" },
+    { "name": "defeat", "frames": ["hurt0", "hurt1", "kneel", "lie"], "dur": [16, 18, 30, 60], "alignTo": "idle0" },
+    { "name": "transform", "frames": ["half", "full"], "dur": [30, 44], "alignTo": "idle0" },
+    { "name": "lie", "frames": ["lie"], "dur": 60, "alignTo": "idle0" }
+  ],
+  "palette": { "mode": "ramps", "lock": ["#333333"] },
+  "clean": { "smooth": 1 }
+}

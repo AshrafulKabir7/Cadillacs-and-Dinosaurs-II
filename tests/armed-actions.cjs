@@ -27,21 +27,24 @@ const BASE=process.env.GAME_URL||'http://127.0.0.1:8766';
    results.push([`Hero ${hero+1}: picking up a gun crouches, cancels a pending punch and then fires`,crouch&&!punched&&g.snapshot.player.weapon==='gun'&&Math.abs(e.maxhp-e.hp-32*(hero===2?1.25:1))<.01]);
   }
   g.start(0);g.test.move(74,M());const e=target(47);g.test.equip('gun');g.controls.attack();ticks(25);results.push(['Gunfire does not hit a close target behind the hero',e.hp===e.maxhp]);
-  // G5 (PLAN §7 5b, CAMPAIGN §7.4): the Regent is chained to the nest driver: it never goes more than BOSS_DEFS.raptor.tether
+  // G5 (PLAN §7 5b, CAMPAIGN §7.4): Thorne / Glassback will not leave her nest (leashed to the nest driver beside it): she never goes more than BOSS_DEFS.raptor.tether
   // (260 px) from it, wherever the hero leads it (L554 reads the tether from BOSS_DEFS).
   {g.start(2,0,'story');g.test.spawnBoss();ticks(160);const s0=g.snapshot,dr=s0.mission.active,teth=BOSS_DEFS.raptor.tether;let far=0;
    for(const [dx,f] of [[18,.5],[18,.2],[200,.8],[18,.83]]){g.test.move(s0.lock.left+dx,g.test.lane(f));for(let i=0;i<150;i++){g.step(.016);const b=g.snapshot.enemies.find(e=>e.boss);if(b&&b.state!=='intro'&&b.state!=='flee')far=Math.max(far,Math.abs(b.x-dr.x));}}
-   results.push([`The Verdant Regent never strays more than its ${teth}-px tether from the nest driver (max ${far.toFixed(1)} px)`,teth===260&&far>0&&far<=teth+.5]);}
-  // CAMPAIGN §7.4: beyond the chain's edge is a safe rest. A hero more than the tether from the driver (lock.left + 20) is never
-  // reached by the Regent's blows, while one inside the chain's reach is.
+   results.push([`Glassback never strays more than her ${teth}-px leash from the nest driver (max ${far.toFixed(1)} px)`,teth===260&&far>0&&far<=teth+.5]);}
+  // CAMPAIGN §7.4: beyond her leash is a safe rest. A hero more than the tether from the driver (lock.left + 20) is never
+  // reached by Glassback's blows, while one inside her reach is.
   {const hits=dx=>{g.start(2,0,'story');g.test.spawnBoss();ticks(160);const L=g.snapshot.lock,dr=g.snapshot.mission.active;let lost=0,last=g.snapshot.player.hp,lives=g.snapshot.lives;
     for(let i=0;i<600;i++){g.test.move(L.left+dx,g.snapshot.player.y);g.step(.016);const p=g.snapshot.player;if(p.hp<last)lost+=last-p.hp;last=p.hp;}return {lost:lost+(lives-g.snapshot.lives)*999,far:Math.abs(dr.x-(L.left+dx))};};
    const out=hits(20),inn=hits(150);
-   results.push([`Beyond the Regent's chain is a safe rest (a hero ${out.far.toFixed(0)} px from the driver loses ${out.lost.toFixed(0)} HP; ${inn.far.toFixed(0)} px away, ${inn.lost.toFixed(0)} HP)`,out.far>BOSS_DEFS.raptor.tether&&out.lost===0&&inn.far<BOSS_DEFS.raptor.tether&&inn.lost>0]);}
-  g.start(2);g.test.spawnBoss();ticks(160);g.test.damageEnemy(0,9999);results.push(['The Verdant Regent remains alive while the sonic driver is active',g.snapshot.enemies[0].hp===1&&g.snapshot.mission.active?.kind==='beacon']);g.test.damageObjective(9999);results.push(['The Verdant Regent retreats when the sonic driver is destroyed',g.snapshot.enemies[0].state==='flee']);
-  g.start(5);g.test.spawnBoss();ticks(160);g.test.damageEnemy(0,9999);ticks(190);const b=g.snapshot.enemies.find(e=>e.boss);results.push(['Sable survives into the mechanical Crown Engine phase',b.type==='sable'&&b.phase===2&&b.hp>0]);
+   results.push([`Beyond Glassback's leash is a safe rest (a hero ${out.far.toFixed(0)} px from the driver loses ${out.lost.toFixed(0)} HP; ${inn.far.toFixed(0)} px away, ${inn.lost.toFixed(0)} HP)`,out.far>BOSS_DEFS.raptor.tether&&out.lost===0&&inn.far<BOSS_DEFS.raptor.tether&&inn.lost>0]);}
+  // The boss rebuild: chapter 3's boss is Headkeeper Thorne, who grafts herself into GLASSBACK at 0 HP (phase 2 on its own
+  // body); the nest driver keeps Glassback standing (HP floor 1) and smashing it brings her down (arrested, not fled).
+  g.start(2);g.test.spawnBoss();ticks(160);g.test.damageEnemy(0,9999);ticks(200);results.push(['Headkeeper Thorne grafts herself into Glassback at 0 HP',g.snapshot.enemies[0].phase===2&&g.snapshot.enemies[0].name==='GLASSBACK'&&g.snapshot.enemies[0].state!=='mutate']);
+  g.test.damageEnemy(0,9999);results.push(['Glassback stays in the fight while the sonic driver is active',g.snapshot.enemies[0].hp===1&&g.snapshot.mission.active?.kind==='beacon']);g.test.damageObjective(9999);results.push(['Glassback falls (arrested, human again) when the sonic driver is destroyed',g.snapshot.enemies[0].defeat?.kind==='arrest']);
+  g.start(5);g.test.spawnBoss();ticks(160);g.test.damageEnemy(0,9999);ticks(190);const b=g.snapshot.enemies.find(e=>e.boss);results.push(['Sable survives into the gate controls phase',b.type==='sable'&&b.phase===2&&b.hp>0]);
   for(let i=0;i<700&&!g.snapshot.zones.some(z=>z.style==='flood');i++)g.step(.016);
-  results.push(['Crown Engine announces a spillway surge that requires changing lanes',g.snapshot.zones.some(z=>z.style==='flood'&&!z.air&&z.total===1.25)]);
+  results.push(['The gate controls announce a spillway surge that requires changing lanes',g.snapshot.zones.some(z=>z.style==='flood'&&!z.air&&z.total===1.25)]);
   return results;
  });for(const [name,ok] of rows)check(name,ok);
  // Real input: running persists while its direction stays held (the release is the KI22 check below).

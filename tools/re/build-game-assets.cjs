@@ -134,11 +134,16 @@ function targetManifest(ctx) {
 
 // ---------------------------------------------------------------- check: the gate registry
 // A gate is {id, run(ctx) -> {ok, errors:[…], warnings:[…], skipped?:string, info?:string}}.
+// the data URL a lazy sheet's script hands to SPRITE_DATA.sheetPng (tools/art/import-sprite.cjs ship)
+function lazyPng(root, rel) { if (!rel) return undefined; const m = /'(data:image\/png;base64,[^']+)'/.exec(fs.readFileSync(path.join(root, rel), 'utf8')); return m ? m[1] : undefined; }
 function loadScript(file) { try { return emit.load(file); } catch (e) { return { __error: e }; } }
-// The shipped files of a family: sprite-data-<f>.js, plus sprite-data-bosses-ch<N>.js when bosses ship per chapter (§5.2).
+// The shipped files of a family: sprite-data-<f>.js, plus sprite-data-bosses-ch<N>.js when bosses ship per chapter (§5.2)
+// and the generated boss bodies.
 function familyFiles(root, f) {
   const files = [path.join(root, `sprite-data-${f}.js`)];
   if (f === 'bosses') files.push(...CHAPTERS.map(c => path.join(root, `sprite-data-bosses-${c}.js`)));
+  // the generated boss bodies (tools/art/import-sprite.cjs: sprite-data-boss-<id>.js, loaded after the ROM family)
+  if (f === 'bosses' && fs.existsSync(root)) files.push(...fs.readdirSync(root).filter(n => /^sprite-data-boss-[a-z0-9-]+\.js$/.test(n)).sort().map(n => path.join(root, n)));
   return files.filter(exists);
 }
 // -> { '<stem>': {fam, file, family} | {error, file, family} } keyed by the file stem ('enemies', 'bosses', 'bosses-ch1', …).
@@ -307,7 +312,8 @@ function checkAnimKeys({ kinds = {}, bosses = {}, enemies = null, bossFam = null
   else {
     const bodies = bossFam.bodies || {}, reported = new Set();
     for (const ref of bossRefs) {
-      const def = bosses[ref.def], bodyName = def && def.body, body = bodyName != null && bodies[bodyName];
+      // a second form on its own body (phase2.body: Krag -> IRONCLUB) resolves the refs under phase2 on that body
+      const def = bosses[ref.def], ph2 = def && def.phase2 && def.phase2.body && /\.phase2\./.test(ref.where), bodyName = ph2 ? def.phase2.body : def && def.body, body = bodyName != null && bodies[bodyName];
       if (!body) { if (!reported.has(ref.def)) { reported.add(ref.def); errors.push(`BOSS_DEFS.${ref.def}: body '${bodyName}' not in ROM_BOSSES.bodies`); } continue; }
       if (!ref.refs) { warnings.push(`${ref.where}: cannot parse anim ref ${JSON.stringify(ref.token)}`); continue; }
       for (const { set, i } of ref.refs) {
@@ -344,7 +350,8 @@ const GATES = [
       const fam = r.fam;
       if (fam.v !== 1 || (fam.family !== r.family && fam.family !== f)) errors.push(`${f}: envelope v/family wrong`);
       for (const [id, sh] of Object.entries(fam.sheets || {})) {
-        let img; try { img = png.fromDataURL(sh.png); } catch (e) { errors.push(`${f}/${id}: ${e.message}`); continue; }
+        // a lazy sheet (the generated boss bodies) keeps its pixels in its own script (sh.lazy), loaded per chapter
+        let img; try { img = png.fromDataURL(sh.png || lazyPng(ctx.root, sh.lazy)); } catch (e) { errors.push(`${f}/${id}: ${e.message}`); continue; }
         if (img.width !== sh.w || img.height !== sh.h) errors.push(`${f}/${id}: size ${img.width}x${img.height} != ${sh.w}x${sh.h}`);
         if (img.width > 1024 || img.height > 1024) errors.push(`${f}/${id}: page over 1024x1024`);
         const sum = png.fnvIndexed(img.rgba).toString(16);
@@ -358,7 +365,8 @@ const GATES = [
   { id: 'sprite-rebuild', run(ctx) {
     const fams = familiesIn(ctx.root), errors = [], warnings = [], done = [];
     for (const f of FAMILIES) {
-      const mod = optionalModule(`sprites-${f}.cjs`), shipped = Object.entries(fams).filter(([, r]) => r.family === f && !r.error);
+      // the generated boss bodies (sprite-data-boss-*.js) come from tools/art/import-sprite.cjs, not from this ROM build
+      const mod = optionalModule(`sprites-${f}.cjs`), shipped = Object.entries(fams).filter(([k, r]) => r.family === f && !r.error && !/^boss-/.test(k));
       if (!mod || !shipped.length) continue;
       const out = path.join(ctx.work, 'build-check'); fs.mkdirSync(out, { recursive: true });
       let r; try { r = mod.build({ rom: ctx.rom, extract: ctx.extract, config: ctx.config, out, rgba: ctx.rgba, lib: { png, atlas, emit, manifest, palettes: ctx.palettes }, log: () => {} }); } catch (e) { errors.push(`${f}: rebuild threw ${e.message}`); continue; }

@@ -1,0 +1,36 @@
+{
+  "id": "rook",
+  "name": "WARDEN ROOK",
+  "note": "Sources: design/sprites-raw/rook (ChatGPT sheets, magenta, facing left). One scale for every sheet (they are drawn at one size), the idle ~104 arcade px. Anim numbers are BOSS_DEFS.warden 'main:<n>' references; the knockdown set is 'rook-hit' (2 the fall, 4 the get-up), as bossKnock reads it.",
+  "height": 104,
+  "bg": "#FF00FF",
+  "chapterTag": 94,
+  "ship": "sprite-data-boss-rook.js",
+  "body": { "hit": "rook-hit" },
+  "anchor": "feet",
+  "inputs": [
+    { "file": "design/sprites-raw/rook/rook-idle-walk.png", "split": "auto", "names": ["idle0", "idle1", "walk0", "walk1", "walk2", "walk3"], "scale": 0.242 },
+    { "file": "design/sprites-raw/rook/rook-hook-pull.png", "split": "auto", "names": ["hook0", "hook1", "hook2", "hook3"], "scale": 0.242 },
+    { "file": "design/sprites-raw/rook/rook-stuck-barrel.png", "split": "auto", "names": ["stuck0", "stuck1", "barrel0", "barrel1", "keg"], "scale": 0.242 },
+    { "file": "design/sprites-raw/rook/rook-rope-crane.png", "split": "auto", "names": ["crane0", "crane1", "rope0", "rope1"], "scale": 0.242 },
+    { "file": "design/sprites-raw/rook/rook-hurt-knockdown.png", "split": "auto", "names": ["hurt0", "hurt1", "fall0", "lie0"], "scale": 0.242 },
+    { "file": "design/sprites-raw/rook/rook-getup-defeat.png", "split": "auto", "names": ["kneel", "drop", "sit", "surrender"], "scale": 0.242 }
+  ],
+  "anims": [
+    { "name": "idle", "frames": ["idle0", "idle1"], "dur": 32, "loop": 0 },
+    { "name": "walk", "frames": ["walk0", "walk1", "walk2", "walk3"], "dur": 9, "loop": 0, "alignTo": "idle0" },
+    { "name": "hook", "frames": ["hook0", "hook1", "hook2", "hook3"], "dur": [30, 6, 14, 14], "act": [2], "alignTo": "idle0" },
+    { "name": "stuck", "frames": ["stuck0", "stuck1", "stuck0"], "dur": [16, 16, 16], "alignTo": "idle0" },
+    { "name": "barrel", "frames": ["barrel0", "barrel1"], "dur": [26, 18], "act": [1], "alignTo": "idle0" },
+    { "name": "crane", "frames": ["crane0", "crane1"], "dur": [18, 36], "act": [1], "alignTo": "idle0" },
+    { "name": "rope", "frames": ["rope0", "rope1", "idle0"], "dur": [12, 16, 8], "act": [1], "alignTo": "idle0" },
+    { "name": "hurt", "frames": ["hurt0", "hurt1"], "dur": 8, "alignTo": "idle0" },
+    { "name": "desperate", "frames": ["crane1"], "dur": 40, "alignTo": "idle0" },
+    { "name": "defeat", "frames": ["hurt0", "hurt1", "drop", "sit", "surrender"], "dur": [10, 10, 24, 30, 60], "alignTo": "idle0" },
+    { "name": "keg", "frames": ["keg"], "dur": 60 },
+    { "name": "knockdown", "key": "rook-hit:2", "frames": ["hurt1", "fall0", "lie0"], "dur": [6, 16, 40], "alignTo": "idle0" },
+    { "name": "getup", "key": "rook-hit:4", "frames": ["kneel", "idle0"], "dur": [20, 6], "alignTo": "idle0" }
+  ],
+  "palette": { "mode": "ramps" },
+  "clean": { "smooth": 1 }
+}

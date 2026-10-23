@@ -15,7 +15,7 @@
     "rgbaFallback": "build-game-assets.cjs sprites --rgba emits mode:'rgba' sheets coloured by the home map (RC2)"
   },
   "budgets": {
-    "_doc": "PLAN §5.4, bytes. eagerTotal is enforced when enforceEager is true (G8: the legacy art is retired, so it is).",
+    "_doc": "PLAN §5.4, bytes. eagerTotal is enforced when enforceEager is true (G8: the legacy art is retired, so it is). The generated boss bodies (sprite-data-boss-*.js) replaced the ROM stand-ins, which moved to bosses.droppedBodies, so the 3.5 MiB budget holds.",
     "eagerTotal": 3670016,
     "enforceEager": true,
     "files": {
@@ -151,20 +151,23 @@
         "The WP-A drafts in palettes.cjs HAND_SPECS were the starting point; the rows below are the WP-C picks shown in work/re/pack/boss-palettes.png."
       ],
       "bodies": {
+        "vice-chain": { "src": "bosses/vice-chain.json", "use": "home" },
+        "boss-projectiles": { "src": "bosses/boss-projectiles.json", "palettes": { "acid": { "ctx": [6, 2, 1] } }, "use": "home" }
+      },
+      "droppedBodies": {
+        "_doc": "ROM bodies that stood in for the rebuilt bosses (Warden Rook, Krag / Ironclub, Thorne / Glassback, Cinder / Overdrive, Dr. Echo / Echo Engine, Marshal Sable, Crownback). Their generated bodies ship as sprite-data-boss-*.js (tools/art/specs/*.json), so these no longer ship; move an entry back into bodies to rebuild it.",
         "butcher": { "src": "bosses/butcher.json", "palettes": { "rook": { "hand": "rook" } }, "use": "rook", "gel": true },
         "torikeratopss": { "src": "bosses/torikeratopss.json", "palettes": { "t98-e5a0-pal30": { "ctx": [5, 0, 30] }, "ironhide": { "hand": "ironhide" } }, "use": "ironhide",
           "_use": "CAMPAIGN §6.4: t98-e5a0-pal30 is ROM row 45, a green (not steel-grey) colouring, so the fallback ironhide is used" },
         "arosaurus": { "src": "bosses/arosaurus.json", "palettes": { "t60-e2a1-pal30": { "ctx": [2, 1, 30] }, "verdant": { "hand": "verdant" } }, "use": "t60-e2a1-pal30",
           "_use": "CAMPAIGN §7.4: t60-e2a1-pal30 is ROM row 45, the nest-green SHIVAT colouring (also its E5A0 home), so the context is used; verdant stays the alternative" },
         "morgan": { "src": "bosses/morgan.json", "palettes": { "cinder": { "hand": "cinder" } }, "use": "cinder", "gel": true },
-        "slice": { "src": "bosses/slice.json", "palettes": { "slicevat": { "hand": "slicevat" } }, "use": "slicevat", "gel": true },
         "richmond": { "src": "bosses/vice-t.json", "palettes": { "sable": { "hand": "sable" } }, "use": "sable" },
         "fessenden": { "src": "bosses/fessenden.json", "main": "0x64452",
           "parts": [ { "id": "body", "type": "0x150", "set": "0x64452" }, { "id": "line", "type": "0x154", "set": "0x712A0" }, { "id": "arm", "type": "0x158", "set": "0x647D8" },
                      { "id": "arm2", "type": "0x15C", "set": "0x648AA" }, { "id": "neckA", "type": "0x160", "set": "0x646A4" }, { "id": "neckB", "type": "0x164", "set": "0x646A4" } ],
           "palettes": { "S8A3": { "ctx": [8, 3] } }, "use": "home", "gel": true },
-        "vice-chain": { "src": "bosses/vice-chain.json", "use": "home" },
-        "boss-projectiles": { "src": "bosses/boss-projectiles.json", "palettes": { "acid": { "ctx": [6, 2, 1] } }, "use": "home" }
+        "slice": { "src": "bosses/slice.json", "palettes": { "slicevat": { "hand": "slicevat" } }, "use": "slicevat", "gel": true }
       },
       "palettes": {
         "rook": { "note": "WARDEN ROOK on the BUTCHER body: black oilskin, navy headband, iron gaff blade; the bald head, shoulders and arms keep the skin ramp 10-14 (14 = the cream highlight #ffffdd)", "slots": { "30": { "keep": [0, 5, 10, 11, 12, 13, 14], "recolour": [1], "why": { "1": "the dark end of the red cloth ramp 1-4 (its contacts are pen 2), not the outline" }, "ops": [ { "op": "hsl", "h": 0, "s": 0.25, "l": 0.55 }, { "op": "tint", "rgb": "#1a2a5a", "amount": 0.3 } ] } }, "siblings": { "30": [ [2, 2, 30] ] } },

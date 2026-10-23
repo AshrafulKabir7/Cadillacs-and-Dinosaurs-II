@@ -1,0 +1,15 @@
+{
+  "id": "crownjet",
+  "name": "CROWNBACK JET",
+  "note": "The pressure-release water jet, cut from crown-surge.png pose 2 (the jet in front of the mouth), same scale as the crownback surge sheet. Origin at the mouth end (right edge) on the jet's centre line.",
+  "height": 40,
+  "bg": "#FF00FF",
+  "chapterTag": 93,
+  "ship": "sprite-data-boss-crownjet.js",
+  "inputs": [
+    { "file": "design/sprites-raw/crownback/crown-surge.png", "crop": [640, 170, 305, 180], "name": "jet0", "scale": 0.346, "keepFrac": 0.002, "anchor": { "jet0": [99, 27] } }
+  ],
+  "anims": [ { "name": "jet", "frames": ["jet0"], "dur": 60 } ],
+  "outline": "none",
+  "palette": { "mode": "ramps" }
+}

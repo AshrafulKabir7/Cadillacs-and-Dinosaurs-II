@@ -1,0 +1,42 @@
+{
+  "id": "echoring",
+  "name": "ECHO DISH RING",
+  "note": "The violet ring Echo's dish fires, cut from echo-human.png left of pose 3 at the echo scale. Origin at its centre.",
+  "height": 30,
+  "bg": "#FF00FF",
+  "chapterTag": 103,
+  "ship": "sprite-data-boss-echoring.js",
+  "inputs": [
+    {
+      "file": "design/sprites-raw/echo/echo-human.png",
+      "crop": [
+        962,
+        80,
+        110,
+        143
+      ],
+      "name": "ring0",
+      "scale": 0.2088,
+      "keyInner": 24,
+      "keyOuter": 48,
+      "despill": false
+    }
+  ],
+  "anims": [
+    {
+      "name": "ring",
+      "frames": [
+        "ring0"
+      ],
+      "dur": 60
+    }
+  ],
+  "outline": "none",
+  "palette": {
+    "mode": "ramps"
+  },
+  "anchor": [
+    13,
+    16
+  ]
+}

@@ -1,12 +1,12 @@
 const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs');
 fs.mkdirSync('tests/results',{recursive:true});
 const BASE=process.env.GAME_URL||'http://127.0.0.1:8766';
-// Checks for the Fessenden's Legacy update: story structure, off-screen entrances, movement poses,
-// the Cadillac, the clone war and section checkpoints.
+// Checks for The Crown Tide (STORY.md): story structure, off-screen entrances, movement poses, the Cadillac, the freed
+// conscripts of the Crown dam and section checkpoints.
 (async()=>{const browser=await chromium.launch({headless:true}),page=await browser.newPage({viewport:{width:1280,height:900}}),errors=[];
 page.on('pageerror',e=>errors.push(e.message));
 await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;let seed=2024;Math.random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};});
-await page.goto(BASE);await page.waitForFunction(()=>SEQUEL_RENDER.ready&&window.ARCADE_HEROES);await page.click('#sound');
+await page.goto(BASE);await page.waitForFunction(()=>SEQUEL_RENDER.ready&&window.ARCADE_HEROES,null,{polling:100});await page.click('#sound');
 const checks=await page.evaluate(()=>{
  const g=LAST_EDEN,out=[];const check=(name,value)=>out.push({name,passed:!!value});
  const ticks=n=>{for(let i=0;i<n;i++)g.step(1/60);},key=(code,on)=>window.dispatchEvent(new KeyboardEvent(on?'keydown':'keyup',{code,bubbles:true}));
@@ -18,7 +18,8 @@ const checks=await page.evaluate(()=>{
  // Story continuity and structure.
  check('Chapter 1 continues directly from Fessenden’s death in the first game',/Fessenden/.test(EDEN_CAMPAIGN[0].brief)&&/lab/.test(EDEN_CAMPAIGN[0].brief));
  check('Every chapter ending sets up the next chapter',EDEN_CAMPAIGN.slice(0,5).every((c,i)=>c.end.length>120));
- check('The final chapter is the clone war',/MIRROR WAR/.test(EDEN_CAMPAIGN[5].area)&&EDEN_MISSIONS[5].tasks.reduce((n,t)=>n+(t[4]||0),0)===4);
+ // Story 2: the finale is the Crown dam, where Sable becomes CROWNBACK (no Mirror War); the collar pylons still free four allies.
+ check('The final chapter is the Crown dam: Sable’s last form is CROWNBACK and the collar pylons free four of his crews',/CROWN/.test(EDEN_CAMPAIGN[5].area)&&/CROWNBACK/.test(EDEN_CAMPAIGN[5].lastCopy.card)&&EDEN_MISSIONS[5].tasks.reduce((n,t)=>n+(t[4]||0),0)===4);
  for(let i=0;i<6;i++){g.start(i);const p=g.snapshot.plan;check(`Chapter ${i+1}: six sections, at least eleven fights and a mid-boss`,p.sections.length===6&&p.encounters.length>=11&&p.encounters.some(e=>e.elite)&&p.encounters[p.encounters.length-1].boss&&g.snapshot.length>6000);}
 
  // Enemies enter from beyond the screen edges (or drop in from above), including later waves.
@@ -74,15 +75,19 @@ const checks=await page.evaluate(()=>{
  const foot=g.snapshot.plan.sections.findIndex(s=>!s.drive);g.test.skipTo(g.snapshot.plan.sections[foot].first);check('The Cadillac parks for the on-foot toll fort',!g.snapshot.driving);
  g.test.skipTo(g.snapshot.plan.sections[5].first);check('The chase resumes in the Cadillac for the convoy boss',g.snapshot.driving);
 
- // The clone war: freed copies fight hostile copies.
+ // The Crown dam: the conscripts freed at the collar pylons fight Sable's Crown Guard beside the gang (STORY.md ch6).
  g.start(5,0,'story',3);ticks(5);g.test.freeClones(2);ticks(90);const a0=g.snapshot.allies[0];g.test.move(a0.x+244,g.snapshot.band.top+12);
- const enemy=g.test.spawnEnemy(a0.x+52,a0.y,'mirror');
+ const enemy=g.test.spawnEnemy(a0.x+52,a0.y,'gunner');
  const hostile=g.snapshot.enemies.length-1;let allyHit=false,enemyHit=false;const ehp=enemy.hp;
  for(let i=0;i<600&&!(allyHit&&enemyHit);i++){g.step(1/60);const s=g.snapshot;if(s.allies.some(a=>a.hp<a.maxhp))allyHit=true;const e=s.enemies[hostile];if(e&&(e.hp<ehp||e.dead))enemyHit=true;}
- check('Freed clones attack hostile clones without the player',enemyHit);
- check('Hostile clones turn on the freed clones',allyHit);
- g.start(5,1,'story',4);check('A checkpoint after the pylons keeps the freed clones and the finished objectives',g.snapshot.allies.length===4&&g.snapshot.mission.completed===3);
- g.start(5,2,'story',3);const mirrors=g.snapshot.allies.length;g.test.skipTo(g.snapshot.plan.encounters.findIndex(e=>e.task===0));g.step(1/60);g.test.finishEncounter();ticks(2);check('Breaking the first command pylon frees two copies of the heroes',mirrors===0&&g.snapshot.allies.length===2&&g.snapshot.allies.every(a=>a.hero!==2));
+ check('Freed conscripts attack the Crown Guard without the player',enemyHit);
+ check('The Crown Guard turns on the freed conscripts',allyHit);
+ g.start(5,1,'story',4);check('A checkpoint after the pylons keeps the freed conscripts and the finished objectives',g.snapshot.allies.length===4&&g.snapshot.mission.completed===3);
+ g.start(5,2,'story',3);const before=g.snapshot.allies.length;g.test.skipTo(g.snapshot.plan.encounters.findIndex(e=>e.task===0));g.step(1/60);g.test.finishEncounter();ticks(2);
+ check('Breaking the first collar pylon frees two conscripts, drawn on their own ROM records (FERRIS), not as copies of the heroes',before===0&&g.snapshot.allies.length===2&&g.snapshot.allies.every(a=>a.conscript&&!a.rig&&a.rom&&a.rom.fid!=null&&/^0x/.test(a.rom.key||'')));
+ // STORY.md rule 4 (one mirror): the final chapter's regulars and officers are people (Crown Guard), never hero copies
+ {const kinds=new Set();for(let k=0;k<12;k++){g.start(5,0,'story');const n=g.snapshot.plan.encounters.length;if(k>=n-1)break;g.test.skipTo(k);g.step(1/60);for(let i=0;i<240;i++){g.step(1/60);for(const e of g.snapshot.enemies)if(!e.boss)kinds.add(e.type);if(i%40===39)g.snapshot.enemies.forEach((e,j)=>{if(!e.boss&&!e.dead&&!e.elite)g.test.damageEnemy(j,99999);});}}
+  check(`Chapter 6 sends Crown Guard and graft subjects, no hero copies (${[...kinds].sort().join(', ')})`,kinds.size>=4&&!kinds.has('mirror'));}
 
  // Checkpoints at every section.
  g.start(0,0);const sec=g.snapshot.plan.sections[3];g.test.skipTo(sec.first);check('Entering a section saves a checkpoint there',g.snapshot.checkpoint.section===3);
@@ -143,11 +148,12 @@ const g6=await page.evaluate(async()=>{
   let bad=[];for(let i=0;i<6;i++){g.start(i);const P=g.snapshot.plan;for(const s of P.sections){const box=s.props.filter(p=>p.kind==='crate'||p.kind==='barrel');if(!s.drive&&!box.length)bad.push(s.stage+' none');for(const p of box){const r=ROM_FX.props[p.kind];if(!r||r.rec==null)bad.push(s.stage+' '+p.kind);}}}
   check('Every on-foot section authors its containers, each a ROM container record (crate = DRAMCAN, barrel = TARU)',bad.length===0);}
  {// the ending: EDEN_ENDING's beats in order, then the final panel
-  g.start(5,1,'story',5);g.test.freeClones(4);g.test.clear();g.test.ending();const beats=[],stumbled=[],carStops=[];let n=0;
-  while(n<12000&&!g.snapshot.ending.done){g.step(1/60);n++;if(n%10)continue;const e=g.snapshot.ending;if(e.beat&&beats[beats.length-1]!==e.beat)beats.push(e.beat);if(e.beat==='run'&&e.actors.some(a=>a.state==='down'))stumbled.push(n);if(e.beat==='road'&&e.car&&e.car.v===0)carStops.push(n);if(n%600===0)g.render();}
+  g.start(5,1,'story',5);g.test.freeClones(4);g.test.clear();g.test.ending();const beats=[],stumbled=[],carStops=[];let n=0,wentBack=false,conscripts=0,roadCast='';
+  while(n<12000&&!g.snapshot.ending.done){g.step(1/60);n++;if(n%10)continue;const e=g.snapshot.ending;if(e.beat&&beats[beats.length-1]!==e.beat)beats.push(e.beat);if(e.beat==='run'&&e.actors.some(a=>a.state==='down'))stumbled.push(n);if(e.beat==='run')conscripts=Math.max(conscripts,e.actors.filter(a=>a.conscript&&a.hero<0).length);
+   if(e.beat==='choice'&&e.actors[0]&&Math.abs(g.snapshot.player.x-e.actors[0].x)<30&&g.snapshot.player.dir===-1)wentBack=true;if(e.beat==='road')roadCast=e.actors.map(a=>a.hero).join(',');if(e.beat==='road'&&e.car&&e.car.v===0)carStops.push(n);if(n%600===0)g.render();}
   g.render();
   check(`The ending plays EDEN_ENDING's beats in order (${beats.join(' ')})`,JSON.stringify(beats)===JSON.stringify(EDEN_ENDING.map(b=>b.beat))&&g.state==='ending'&&!!document.getElementById('chapters'));
-  check('In the ending a freed copy stumbles in the spire halls and the Cadillac pulls up on the sunset road',stumbled.length>0&&carStops.length>0);
+  check('In the ending the four freed conscripts run for the gatehouse, one stumbles, your own hero goes back for him, and on the sunset road only Mustapha and Mess walk until the Cadillac pulls up',conscripts===4&&stumbled.length>0&&wentBack&&roadCast==='0,3'&&carStops.length>0);
   // the staff roll is traced: red categories and white names in the ROM font over the road (chapter 2's E3a0 loop, many
   // colours, not a blank screen), then THANK YOU once the roll has passed (G6 verify #7)
   await load(1);g.test.credits();for(let i=0;i<300;i++)g.step(1/60);let gl=[];ARCADE_UI.trace=e=>gl.push(e);g.render();ARCADE_UI.trace=null;
@@ -163,29 +169,30 @@ const g6=await page.evaluate(async()=>{
  return out;
 }).catch(e=>[{name:'G6 story checks threw: '+e.message,passed:false}]);
 checks.push(...g6);
-// G6 verify fixes: the ending opens on LOT 00's fall (CAMPAIGN §11.2 #1); every picture of the §4.7 table carries its
+// G6 verify fixes: the ending opens on Crownback's fall in the spillway (CAMPAIGN §11.2 #1); every picture of the §4.7 table carries its
 // subject (pics.json `sprites`) over its shipped background, Echo's sound bars move; the ch5 vat hall tanks hold the
 // hero copies under their name plates (CAMPAIGN §9.1 S4).
 const subjectPics=Object.entries(JSON.parse(fs.readFileSync('tools/re/levels/pics.json','utf8')).pics).filter(([,p])=>(p.sprites||[]).length).map(([id])=>id);
 const g6b=await page.evaluate(async ids=>{
  const g=LAST_EDEN,out=[];const check=(name,value)=>out.push({name,passed:!!value});
  const load=async i=>{await SEQUEL_RENDER.loadChapter(i);for(let k=0;k<100&&!STAGE_RENDER.ready(i);k++)await new Promise(r=>setTimeout(r,20));};
- {g.start(5,1,'story',5);g.test.freeClones(4);g.test.clear();g.test.ending();const L0=g.snapshot.ending?.lot;let gel=0,drawn=false,n=0;
-  while(n<600&&g.snapshot.ending?.beat==='fall'){g.step(1/60);n++;const l=g.snapshot.ending.lot;if(l)gel=Math.max(gel,l.gel);if(n===30){g.render();drawn=!!g.snapshot.ending.lot?.drawn;}}
+ {g.start(5,1,'story',5);g.test.freeClones(4);g.test.clear();g.test.ending();const L0=g.snapshot.ending?.lot;let own=true,drawn=false,n=0;
+  while(n<600&&g.snapshot.ending?.beat==='fall'){g.step(1/60);n++;const l=g.snapshot.ending.lot;if(l&&(!l.map||l.map===l.gelMap))own=false;if(n===30){g.render();drawn=!!g.snapshot.ending.lot?.drawn;}}
   while(n<1200&&g.snapshot.ending?.beat!=='run'){g.step(1/60);n++;}
-  check(`The ending opens on LOT 00 falling (body main 10) and turning to gel under Fessenden’s box (gel ${gel.toFixed(2)})`,!!L0&&L0.key==='0x64452:10'&&L0.gel===0&&L0.parts>=3&&drawn&&gel>=.9&&g.snapshot.ending?.beat==='run'&&!g.snapshot.ending.lot);}
- // G6 verify r2 #1: the player's path (beat LOT 00, wait out the tally, SEE THE ENDING). The beaten LOT 00 falls over
- // (body main 10) at its defeat; in the fall beat it is that same body, drawn once (it leaves the enemy list), still gel.
+  check('The ending opens on CROWNBACK fallen in the spillway (his lying frame, crownback main 11) in his own colours, never gel, under Sable’s fall box',!!L0&&L0.key==='crownback:11'&&L0.parts>=1&&drawn&&own&&EDEN_ENDING[0].who==='sable'&&g.snapshot.ending?.beat==='run'&&!g.snapshot.ending.lot);}
+ // G6 verify r2 #1: the player's path (beat Crownback, wait out the tally, SEE THE ENDING). The beaten Crownback falls
+ // over (crownback main 9: roar, stagger, fall, lying) at his defeat; in the fall beat it is that same body lying (main 11),
+ // drawn once (it leaves the enemy list). The boss rebuild replaced the six-part stand-in's body main 10 with these anims.
  {const ticks=n=>{for(let i=0;i<n;i++)g.step(1/60);},key=(code,on)=>window.dispatchEvent(new KeyboardEvent(on?'keydown':'keyup',{code,bubbles:true}));
   g.start(5,1,'story');g.test.spawnBoss();ticks(170);g.test.damageEnemy(0,9999);ticks(180);g.test.damageEnemy(0,9999);ticks(110);
   const t=g.snapshot.mission.active;if(t){g.test.move(t.x,t.y);key('KeyE',true);ticks(100);key('KeyE',false);}ticks(240);
   const bi=g.snapshot.enemies.findIndex(e=>e.type==='fessenden');if(bi>=0)g.test.damageEnemy(bi,99999);
-  let n=0,fell=null;while(g.state!=='clear'&&n<900){g.step(1/60);n++;if(n===20)fell=g.snapshot.enemies.find(e=>e.type==='fessenden')?.lot?.parts?.body?.key||null;}
+  let n=0,fell=null;while(g.state!=='clear'&&n<900){g.step(1/60);n++;if(n===20)fell=g.snapshot.enemies.find(e=>e.type==='fessenden')?.ba?.key||null;}
   const rem=g.snapshot.enemies.find(e=>e.type==='fessenden'),rx=rem?rem.x:NaN;ticks(360);document.getElementById('next')?.click();
-  const L1=g.snapshot.ending?.lot;let once=true,gelMin=1,seen=0,drawn=false;n=0;
+  const L1=g.snapshot.ending?.lot;let once=true,own=true,seen=0,drawn=false;n=0;
   while(n<1200&&['fall','alarm'].includes(g.snapshot.ending?.beat)){g.step(1/60);n++;const s=g.snapshot;if(s.enemies.some(e=>e.type==='fessenden'))once=false;const l=s.ending.lot;
-   if(l&&s.ending.beat==='fall'){seen++;gelMin=Math.min(gelMin,l.gel);if(seen===20){g.render();drawn=!!g.snapshot.ending.lot?.drawn;}}}
-  check(`After the real fight LOT 00 falls over at its defeat and the ending’s fall beat shows that body once, where it was beaten and still gel (gel ≥ ${gelMin.toFixed(2)})`,fell==='0x64452:10'&&!!rem&&!!L1&&L1.remnant&&L1.key==='0x64452:10'&&Math.abs(L1.x-rx)<1&&once&&seen>0&&drawn&&gelMin>=.99&&g.snapshot.ending?.beat==='run');}
+   if(l&&s.ending.beat==='fall'){seen++;if(!l.map||l.map===l.gelMap)own=false;if(seen===20){g.render();drawn=!!g.snapshot.ending.lot?.drawn;}}}
+  check('After the real fight Crownback falls over at his defeat and the ending’s fall beat shows that body once, where it was beaten, in his own colours',fell==='crownback:9'&&!!rem&&!!L1&&L1.remnant&&L1.key==='crownback:11'&&Math.abs(L1.x-rx)<1&&once&&seen>0&&drawn&&own&&g.snapshot.ending?.beat==='run');}
  {for(let k=0;k<400&&!ids.every(id=>g.test.composePic(id));k++)await new Promise(r=>setTimeout(r,25));
   const art=g.test.picArt(),file=location.protocol==='file:',img=src=>new Promise(r=>{const im=new Image();im.onload=()=>r(im);im.onerror=()=>r(null);im.src=src;});
   const px=(im,sx,sy,w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(im,sx,sy,w,h,0,0,w,h);return x.getImageData(0,0,w,h).data;};

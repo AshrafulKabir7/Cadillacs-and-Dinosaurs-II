@@ -4,14 +4,10 @@
   "objPage": "S2A0",
   "preset": "verdant",
   "notes": [
-    "CAMPAIGN.md §7.1 / §12.2 '3-1'..'3-6' with the KI1 framings: E2a1 2880-3328 is framed at camY 48 (h 64-288) and E6a1 2848-3168 at camY 224 (h 240-464), where the original camera stood, so their 64-px lanes lie inside the clamp (at the §4.1 camY they were 48 and 32 px).",
-    "KI2: the E2a1 far layer of a2 S5 reads the scroll3 block map past the declared 1536 px (x3 672-1856, the live maximum), as the game streams it.",
-    "Section casts (CAMPAIGN §4.4 'cast', merged over the chapter pool): lighter A/BOMB/KNIFE variants where the ROM-affine HP budget of the chapter's waves exceeded ENEMIES §2.6 by more than 15% (tests/campaign.cjs (8)); ratio now 1.139.",
-    "3-1: the CAMPAIGN's E6a0 dome-frame patch over the E5a0 sky was tried and dropped: the dome ribs share their 16-px cells with the opaque rock ceiling, so the patch reads as a rectangle; the dome is seen from 3-2 on.",
-    "Not built: the 3-3 egg-rack chunks of CAMPAIGN §12.2 (E2a0's map has no nest or egg cells; the egg racks are left to props/sprites), and the 3-1 dome-frame patch (the E6a0 ribs share cells with opaque rock).",
-    "Seams (CAMPAIGN §4.1 join chunks): every join that is not a mirror join is covered by a dome tree, the vine-wrapped foreground trunk of E2a0 (400-448, palette rows 5-7 lifted off the forest behind it), centred on the join.",
-    "Far layer: one per section (the source with most columns in it): 3-1 E5a0, 3-2 E6a0, 3-3 E2a0, 3-4 E6a1, 3-5 E2a1 (streamed to 1856, KI2), 3-6 E6a1; it changes only behind a dome tree.",
-    "Not built: the 3-3 egg-rack chunks of CAMPAIGN §12.2 (E2a0's map has no nest or egg cells; the egg racks are left to props/sprites), and the 3-1 dome-frame patch (the E6a0 ribs share cells with opaque rock)."
+    "COHERENCE (2026-10-22): ch3 walks into the Verdant Biodome from outside in: a0 THE GLASS PERIMETER is the jungle edge at the lake (E2a0 0-1472 only), a1 THE HATCHERY is the greenhouse ruin under the broken glass dome (E6a0 944-1968 only: the dome frame with the sky through it, the pipe ribs, the lamp-hung rock beds), a2 THE NEST is the overgrown nest jungle inside (E6a1 512-1792 only, the mother's kind standing among the trunks). Each area walks back and forth through its one source strip (legs <= 512 px, leftward legs mirrored), so every join is a mirror join or a continuation; the place changes only at the fades.",
+    "Palette: verdant on every slice (rock and timber rows hue +35, 15% toward #5c4, sky lightness 1.1) plus a greenhouse tint per area; the far layer of each area is its own source's (the lake and sky, the sky through the dome glass, the jungle canopy).",
+    "Boss arena (3-6, GLASSBACK, the therizinosaur mother guarding her eggs): egg clutches in straw nests along the back of the lane (the E5a0 field boulders, lifted, their stone pens tinted eggshell and the grass around them dried to straw) and the bones of what came too close (the E5a0 triceratops skull, lifted); all behind the sprites.",
+    "Section casts (CAMPAIGN §4.4 'cast', merged over the chapter pool): lighter A/BOMB/KNIFE variants where the ROM-affine HP budget of the chapter's waves exceeded ENEMIES §2.6 by more than 15% (tests/campaign.cjs (8)); ratio now 1.139."
   ],
   "areas": [
     {
@@ -22,14 +18,14 @@
       "s2": [
         {
           "slice": {
-            "src": "E5a0",
+            "src": "E2a0",
             "x": [
               0,
               512
             ],
             "h": [
-              528,
-              752
+              80,
+              304
             ]
           },
           "at": [
@@ -39,49 +35,67 @@
         },
         {
           "slice": {
-            "src": "E5a0",
+            "src": "E2a0",
             "x": [
-              512,
-              1024
+              320,
+              512
             ],
             "h": [
-              528,
-              752
+              80,
+              304
             ]
           },
           "at": [
             512,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E5a0",
-            "x": [
-              0,
-              320
-            ],
-            "h": [
-              528,
-              752
-            ]
-          },
-          "at": [
-            1024,
             0
           ],
           "flip": true
         },
         {
           "slice": {
-            "src": "E6a0",
+            "src": "E2a0",
             "x": [
-              1216,
-              1728
+              320,
+              832
             ],
             "h": [
-              16,
-              240
+              80,
+              304
+            ]
+          },
+          "at": [
+            704,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E2a0",
+            "x": [
+              704,
+              832
+            ],
+            "h": [
+              80,
+              304
+            ]
+          },
+          "at": [
+            1216,
+            0
+          ],
+          "flip": true
+        },
+        {
+          "slice": {
+            "src": "E2a0",
+            "x": [
+              704,
+              1216
+            ],
+            "h": [
+              80,
+              304
             ]
           },
           "at": [
@@ -91,102 +105,50 @@
         },
         {
           "slice": {
-            "src": "E6a0",
+            "src": "E2a0",
             "x": [
               1216,
-              1728
+              1472
             ],
             "h": [
-              16,
-              240
+              80,
+              304
             ]
           },
           "at": [
             1856,
             0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E2a0",
+            "x": [
+              1216,
+              1472
+            ],
+            "h": [
+              80,
+              304
+            ]
+          },
+          "at": [
+            2112,
+            0
           ],
           "flip": true
-        },
-        {
-          "patch": {
-            "src": "E2a0",
-            "x": [
-              400,
-              448
-            ],
-            "h": [
-              80,
-              304
-            ],
-            "rows": [
-              5,
-              6,
-              7
-            ]
-          },
-          "at": [
-            992,
-            0
-          ],
-          "flip": false,
-          "join": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 28,
-              "s": 0.7,
-              "l": 0.8
-            },
-            {
-              "op": "tint",
-              "rgb": "#335c33",
-              "amount": 0.15
-            }
-          ],
-          "note": "dome tree over the E5a0 | E5a0 flip join"
-        },
-        {
-          "patch": {
-            "src": "E2a0",
-            "x": [
-              400,
-              448
-            ],
-            "h": [
-              80,
-              304
-            ],
-            "rows": [
-              5,
-              6,
-              7
-            ]
-          },
-          "at": [
-            1328,
-            0
-          ],
-          "flip": true,
-          "join": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 28,
-              "s": 0.7,
-              "l": 0.8
-            },
-            {
-              "op": "tint",
-              "rgb": "#335c33",
-              "amount": 0.15
-            }
-          ],
-          "note": "dome tree over the section join 3-1 | 3-2 (the far layer changes behind it)"
         }
       ],
-      "s3": "auto",
+      "s3": [
+        {
+          "x": [
+            0,
+            2368
+          ],
+          "src": "E2a0",
+          "note": "the lake and the sky over the jungle edge"
+        }
+      ],
       "sections": [
         {
           "id": "3-1",
@@ -277,14 +239,14 @@
       "s2": [
         {
           "slice": {
-            "src": "E2a0",
+            "src": "E6a0",
             "x": [
-              256,
-              768
+              944,
+              1456
             ],
             "h": [
-              80,
-              304
+              16,
+              240
             ]
           },
           "at": [
@@ -294,98 +256,89 @@
         },
         {
           "slice": {
-            "src": "E2a0",
+            "src": "E6a0",
             "x": [
-              256,
-              768
+              1456,
+              1968
             ],
             "h": [
-              80,
-              304
+              16,
+              240
             ]
           },
           "at": [
             512,
             0
-          ],
-          "flip": true
+          ]
         },
         {
           "slice": {
-            "src": "E6a1",
+            "src": "E6a0",
             "x": [
-              1792,
-              2304
+              1456,
+              1968
             ],
             "h": [
-              272,
-              496
+              16,
+              240
             ]
           },
           "at": [
             1024,
             0
-          ]
+          ],
+          "flip": true
         },
         {
           "slice": {
-            "src": "E6a1",
+            "src": "E6a0",
             "x": [
-              1792,
-              2304
+              1456,
+              1712
             ],
             "h": [
-              272,
-              496
+              16,
+              240
             ]
           },
           "at": [
             1536,
             0
-          ],
-          "flip": true
+          ]
         },
         {
-          "patch": {
-            "src": "E2a0",
+          "slice": {
+            "src": "E6a0",
             "x": [
-              400,
-              448
+              1456,
+              1712
             ],
             "h": [
-              80,
-              304
-            ],
-            "rows": [
-              5,
-              6,
-              7
+              16,
+              240
             ]
           },
           "at": [
-            992,
+            1792,
             0
           ],
-          "flip": false,
-          "join": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 28,
-              "s": 0.7,
-              "l": 0.8
-            },
-            {
-              "op": "tint",
-              "rgb": "#335c33",
-              "amount": 0.15
-            }
-          ],
-          "note": "dome tree over the section join 3-3 | 3-4 (the far layer changes behind it)"
+          "flip": true
         }
       ],
-      "s3": "auto",
+      "s3": [
+        {
+          "x": [
+            0,
+            2048
+          ],
+          "src": "E6a0",
+          "x3": [
+            0,
+            576
+          ],
+          "note": "the sky and the old lattice masts through the dome glass"
+        }
+      ],
       "sections": [
         {
           "id": "3-3",
@@ -452,6 +405,13 @@
             ]
           }
         }
+      ],
+      "ops": [
+        {
+          "op": "tint",
+          "rgb": "#3a6a3a",
+          "amount": 0.12
+        }
       ]
     },
     {
@@ -462,14 +422,14 @@
       "s2": [
         {
           "slice": {
-            "src": "E2a1",
+            "src": "E6a1",
             "x": [
-              1504,
-              1856
+              512,
+              1024
             ],
             "h": [
-              80,
-              304
+              272,
+              496
             ]
           },
           "at": [
@@ -479,35 +439,18 @@
         },
         {
           "slice": {
-            "src": "E2a1",
+            "src": "E6a1",
             "x": [
-              2880,
-              3328
+              768,
+              1024
             ],
             "h": [
-              64,
-              288
+              272,
+              496
             ]
           },
           "at": [
-            352,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E2a1",
-            "x": [
-              1504,
-              1728
-            ],
-            "h": [
-              80,
-              304
-            ]
-          },
-          "at": [
-            800,
+            512,
             0
           ],
           "flip": true
@@ -516,8 +459,25 @@
           "slice": {
             "src": "E6a1",
             "x": [
-              0,
-              512
+              768,
+              1024
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            768,
+            0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E6a1",
+            "x": [
+              1024,
+              1536
             ],
             "h": [
               272,
@@ -533,8 +493,8 @@
           "slice": {
             "src": "E6a1",
             "x": [
-              256,
-              768
+              1536,
+              1792
             ],
             "h": [
               272,
@@ -544,6 +504,23 @@
           "at": [
             1536,
             0
+          ]
+        },
+        {
+          "slice": {
+            "src": "E6a1",
+            "x": [
+              1536,
+              1792
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            1792,
+            0
           ],
           "flip": true
         },
@@ -551,12 +528,12 @@
           "slice": {
             "src": "E6a1",
             "x": [
-              2848,
-              3168
+              1536,
+              1792
             ],
             "h": [
-              240,
-              464
+              272,
+              496
             ]
           },
           "at": [
@@ -568,256 +545,532 @@
           "slice": {
             "src": "E6a1",
             "x": [
-              2848,
-              3040
+              1536,
+              1792
             ],
             "h": [
-              240,
-              464
+              272,
+              496
             ]
           },
           "at": [
-            2368,
+            2304,
             0
           ],
           "flip": true
         },
         {
           "patch": {
-            "src": "E2a0",
+            "src": "E5a0",
             "x": [
-              400,
-              448
+              0,
+              64
             ],
             "h": [
-              80,
-              304
-            ],
-            "rows": [
-              5,
-              6,
-              7
+              624,
+              672
             ]
           },
-          "at": [
-            320,
-            0
+          "rows": [
+            3
           ],
-          "flip": false,
-          "join": true,
+          "at": [
+            1600,
+            112
+          ],
+          "prio": "none",
           "preset": false,
           "ops": [
             {
+              "op": "tint",
+              "rgb": "#f4e8c8",
+              "amount": 0.55,
+              "pens": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ]
+            },
+            {
               "op": "hsl",
-              "h": 28,
-              "s": 0.7,
-              "l": 0.8
+              "h": 0,
+              "s": 0.6,
+              "l": 1.12,
+              "pens": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -45,
+              "s": 0.55,
+              "l": 0.85,
+              "pens": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ]
             },
             {
               "op": "tint",
-              "rgb": "#335c33",
-              "amount": 0.15
+              "rgb": "#8a6a3a",
+              "amount": 0.35,
+              "pens": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ]
             }
           ],
-          "note": "dome tree over the E2a1 1856 | 2880 join"
+          "note": "egg clutch in a straw nest (E5a0 field boulders lifted: stone pens tinted eggshell, the grass dried to straw)"
         },
         {
           "patch": {
-            "src": "E2a0",
+            "src": "E5a0",
             "x": [
-              400,
-              448
+              432,
+              608
             ],
             "h": [
-              80,
-              304
-            ],
-            "rows": [
-              5,
-              6,
-              7
+              624,
+              672
             ]
           },
-          "at": [
-            784,
-            0
+          "rows": [
+            8
           ],
-          "flip": true,
-          "join": true,
+          "pens": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            12,
+            13,
+            14
+          ],
+          "at": [
+            1680,
+            112
+          ],
+          "prio": "none",
           "preset": false,
           "ops": [
             {
               "op": "hsl",
-              "h": 28,
+              "h": 0,
               "s": 0.7,
-              "l": 0.8
-            },
-            {
-              "op": "tint",
-              "rgb": "#335c33",
-              "amount": 0.15
+              "l": 1
             }
           ],
-          "note": "dome tree over the E2a1 | E2a1 flip join"
+          "note": "bones near the nest (the E5a0 triceratops skull, lifted off its grass)"
         },
         {
           "patch": {
-            "src": "E2a0",
+            "src": "E5a0",
             "x": [
-              400,
-              448
+              224,
+              320
             ],
             "h": [
-              80,
-              304
-            ],
-            "rows": [
-              5,
-              6,
-              7
+              624,
+              672
             ]
           },
-          "at": [
-            992,
-            0
+          "rows": [
+            3
           ],
-          "flip": false,
-          "join": true,
+          "at": [
+            1856,
+            112
+          ],
+          "prio": "none",
           "preset": false,
           "ops": [
             {
+              "op": "tint",
+              "rgb": "#f4e8c8",
+              "amount": 0.55,
+              "pens": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ]
+            },
+            {
               "op": "hsl",
-              "h": 28,
-              "s": 0.7,
-              "l": 0.8
+              "h": 0,
+              "s": 0.6,
+              "l": 1.12,
+              "pens": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -45,
+              "s": 0.55,
+              "l": 0.85,
+              "pens": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ]
             },
             {
               "op": "tint",
-              "rgb": "#335c33",
-              "amount": 0.15
+              "rgb": "#8a6a3a",
+              "amount": 0.35,
+              "pens": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ]
             }
           ],
-          "note": "dome tree over the section join 3-5 | 3-6 (the far layer changes behind it)"
+          "note": "egg clutch in a straw nest (E5a0 field boulders lifted: stone pens tinted eggshell, the grass dried to straw)"
         },
         {
           "patch": {
-            "src": "E2a0",
+            "src": "E5a0",
             "x": [
-              400,
-              448
+              0,
+              64
             ],
             "h": [
-              80,
-              304
-            ],
-            "rows": [
-              5,
-              6,
-              7
+              624,
+              672
             ]
           },
-          "at": [
-            1520,
-            0
+          "rows": [
+            3
           ],
-          "flip": true,
-          "join": true,
+          "at": [
+            1984,
+            112
+          ],
+          "prio": "none",
           "preset": false,
           "ops": [
             {
+              "op": "tint",
+              "rgb": "#f4e8c8",
+              "amount": 0.55,
+              "pens": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ]
+            },
+            {
               "op": "hsl",
-              "h": 28,
-              "s": 0.7,
-              "l": 0.8
+              "h": 0,
+              "s": 0.6,
+              "l": 1.12,
+              "pens": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -45,
+              "s": 0.55,
+              "l": 0.85,
+              "pens": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ]
             },
             {
               "op": "tint",
-              "rgb": "#335c33",
-              "amount": 0.15
+              "rgb": "#8a6a3a",
+              "amount": 0.35,
+              "pens": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ]
             }
           ],
-          "note": "dome tree over the E6a1 | E6a1 flip join"
+          "note": "egg clutch in a straw nest (E5a0 field boulders lifted: stone pens tinted eggshell, the grass dried to straw)"
         },
         {
           "patch": {
-            "src": "E2a0",
+            "src": "E5a0",
             "x": [
-              400,
-              448
+              224,
+              320
             ],
             "h": [
-              80,
-              304
-            ],
-            "rows": [
-              5,
-              6,
-              7
+              624,
+              672
             ]
           },
-          "at": [
-            2016,
-            0
+          "rows": [
+            3
           ],
-          "flip": false,
-          "join": true,
+          "at": [
+            2096,
+            112
+          ],
+          "prio": "none",
           "preset": false,
           "ops": [
             {
+              "op": "tint",
+              "rgb": "#f4e8c8",
+              "amount": 0.55,
+              "pens": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ]
+            },
+            {
               "op": "hsl",
-              "h": 28,
-              "s": 0.7,
-              "l": 0.8
+              "h": 0,
+              "s": 0.6,
+              "l": 1.12,
+              "pens": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -45,
+              "s": 0.55,
+              "l": 0.85,
+              "pens": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ]
             },
             {
               "op": "tint",
-              "rgb": "#335c33",
-              "amount": 0.15
+              "rgb": "#8a6a3a",
+              "amount": 0.35,
+              "pens": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ]
             }
           ],
-          "note": "dome tree over the E6a1 768 | 2848 join"
+          "note": "egg clutch in a straw nest (E5a0 field boulders lifted: stone pens tinted eggshell, the grass dried to straw)"
         },
         {
           "patch": {
-            "src": "E2a0",
+            "src": "E5a0",
             "x": [
-              400,
-              448
+              432,
+              608
             ],
             "h": [
-              80,
-              304
-            ],
-            "rows": [
-              5,
-              6,
-              7
+              624,
+              672
             ]
           },
-          "at": [
-            2352,
-            0
+          "rows": [
+            8
           ],
-          "flip": true,
-          "join": true,
+          "pens": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            12,
+            13,
+            14
+          ],
+          "at": [
+            2272,
+            112
+          ],
+          "prio": "none",
           "preset": false,
           "ops": [
             {
               "op": "hsl",
-              "h": 28,
+              "h": 0,
               "s": 0.7,
-              "l": 0.8
+              "l": 1
+            }
+          ],
+          "note": "bones near the nest (the E5a0 triceratops skull, lifted off its grass)"
+        },
+        {
+          "patch": {
+            "src": "E5a0",
+            "x": [
+              224,
+              320
+            ],
+            "h": [
+              624,
+              672
+            ]
+          },
+          "rows": [
+            3
+          ],
+          "at": [
+            2448,
+            112
+          ],
+          "prio": "none",
+          "preset": false,
+          "ops": [
+            {
+              "op": "tint",
+              "rgb": "#f4e8c8",
+              "amount": 0.55,
+              "pens": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 0.6,
+              "l": 1.12,
+              "pens": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -45,
+              "s": 0.55,
+              "l": 0.85,
+              "pens": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ]
             },
             {
               "op": "tint",
-              "rgb": "#335c33",
-              "amount": 0.15
+              "rgb": "#8a6a3a",
+              "amount": 0.35,
+              "pens": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ]
             }
           ],
-          "note": "dome tree over the pool join"
+          "note": "egg clutch in a straw nest (E5a0 field boulders lifted: stone pens tinted eggshell, the grass dried to straw)"
         }
       ],
-      "s3": "auto",
+      "s3": [
+        {
+          "x": [
+            0,
+            2560
+          ],
+          "src": "E6a1",
+          "note": "the jungle canopy inside the dome"
+        }
+      ],
       "anims": [],
       "sections": [
         {
@@ -897,6 +1150,13 @@
               "knife"
             ]
           }
+        }
+      ],
+      "ops": [
+        {
+          "op": "tint",
+          "rgb": "#2a5a3a",
+          "amount": 0.1
         }
       ]
     }

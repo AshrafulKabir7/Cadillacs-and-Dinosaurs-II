@@ -1,0 +1,241 @@
+{
+  "id": "engine",
+  "name": "ECHO ENGINE",
+  "note": "Sources: design/sprites-raw/echo (ChatGPT sheets, magenta, facing left). engine-idle-walk.png chosen over -alt (the alt walk frame 4 lifts a rear foot clear of the ground). Per-sheet scales normalise the walker (dishes to claws ~180 arcade px). The sonic beams are erased from engine-sonic poses 2-3 (rects up to the dish emitters) and the stomp's ground ring from engine-stomp pose 2 (violet pixels only); both are effect bodies (enginefx). The wreck (engine-defeat piece 5) is a prop frame of this body; Echo kneeling (piece 4) is the last defeat frame. Anim numbers are BOSS_DEFS.echo phase2 'main:<n>' references.",
+  "height": 180,
+  "bg": "#FF00FF",
+  "chapterTag": 104,
+  "ship": "sprite-data-boss-engine.js",
+  "anchor": "feet",
+  "inputs": [
+    {
+      "file": "design/sprites-raw/echo/engine-idle-walk.png",
+      "split": "auto",
+      "names": [
+        "idle0",
+        "idle1",
+        "walk0",
+        "walk1",
+        "walk2",
+        "walk3"
+      ],
+      "scale": 0.393
+    },
+    {
+      "file": "design/sprites-raw/echo/engine-sonic.png",
+      "split": "auto",
+      "names": [
+        "aim",
+        "fire",
+        "beam",
+        "heat"
+      ],
+      "scale": 0.363,
+      "erase": [
+        [
+          465,
+          140,
+          122,
+          160
+        ],
+        [
+          980,
+          130,
+          232,
+          180
+        ]
+      ]
+    },
+    {
+      "file": "design/sprites-raw/echo/engine-stomp.png",
+      "split": "auto",
+      "names": [
+        "rear",
+        "slam",
+        "leap",
+        "land"
+      ],
+      "scale": 0.363,
+      "colourErase": [
+        [
+          465,
+          500,
+          560,
+          110
+        ]
+      ]
+    },
+    {
+      "file": "design/sprites-raw/echo/engine-defeat.png",
+      "split": "auto",
+      "names": [
+        "spark",
+        "buckle",
+        "collapse",
+        "kneel",
+        "wreck"
+      ],
+      "scale": 0.38,
+      "hByName": {
+        "kneel": 62
+      }
+    },
+    {
+      "file": "design/sprites-raw/echo/echo-boards-engine.png",
+      "split": "auto",
+      "names": [
+        "board0",
+        "board1",
+        "board2",
+        "board3"
+      ],
+      "scale": 0.3
+    }
+  ],
+  "anims": [
+    {
+      "name": "idle",
+      "frames": [
+        "idle0",
+        "idle1"
+      ],
+      "dur": 30,
+      "loop": 0
+    },
+    {
+      "name": "walk",
+      "frames": [
+        "walk0",
+        "walk1",
+        "walk2",
+        "walk3"
+      ],
+      "dur": 11,
+      "loop": 0,
+      "alignTo": "idle0"
+    },
+    {
+      "name": "beam",
+      "frames": [
+        "aim",
+        "fire",
+        "beam",
+        "beam"
+      ],
+      "dur": [
+        40,
+        6,
+        20,
+        14
+      ],
+      "act": [
+        1
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "heat",
+      "frames": [
+        "heat"
+      ],
+      "dur": 50,
+      "alignTo": "idle0"
+    },
+    {
+      "name": "stomp",
+      "frames": [
+        "rear",
+        "slam"
+      ],
+      "dur": [
+        34,
+        26
+      ],
+      "act": [
+        1
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "crouch",
+      "frames": [
+        "land"
+      ],
+      "dur": 20,
+      "alignTo": "idle0"
+    },
+    {
+      "name": "leap",
+      "frames": [
+        "leap",
+        "land"
+      ],
+      "dur": [
+        26,
+        18
+      ],
+      "act": [
+        1
+      ],
+      "align": "none",
+      "alignTo": "idle0"
+    },
+    {
+      "name": "hurt",
+      "frames": [
+        "spark"
+      ],
+      "dur": 14,
+      "alignTo": "idle0"
+    },
+    {
+      "name": "defeat",
+      "frames": [
+        "spark",
+        "buckle",
+        "collapse",
+        "kneel"
+      ],
+      "dur": [
+        16,
+        26,
+        40,
+        60
+      ],
+      "alignTo": "idle0",
+      "align": "none"
+    },
+    {
+      "name": "board",
+      "frames": [
+        "board0",
+        "board1",
+        "board2",
+        "board3"
+      ],
+      "dur": [
+        26,
+        30,
+        26,
+        40
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "wreck",
+      "frames": [
+        "wreck"
+      ],
+      "dur": 60
+    }
+  ],
+  "palette": {
+    "mode": "ramps",
+    "lock": [
+      "#333333"
+    ]
+  },
+  "clean": {
+    "smooth": 1
+  }
+}

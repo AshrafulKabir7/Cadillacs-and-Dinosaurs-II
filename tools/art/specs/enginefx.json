@@ -1,0 +1,67 @@
+{
+  "id": "enginefx",
+  "name": "ECHO ENGINE EFFECTS",
+  "note": "The Engine's sonic beam (engine-sonic pose 3: rings in a violet beam, from the left edge up to the emitter balls) and its stomp ring (engine-stomp pose 2, violet pixels only), at the engine sheet scale. Beam origin at its right end (the emitters) on the upper dish line; ring origin at its centre on the ground line.",
+  "height": 60,
+  "bg": "#FF00FF",
+  "chapterTag": 105,
+  "ship": "sprite-data-boss-enginefx.js",
+  "inputs": [
+    {
+      "file": "design/sprites-raw/echo/engine-sonic.png",
+      "crop": [
+        980,
+        130,
+        232,
+        180
+      ],
+      "name": "beam0",
+      "scale": 0.363,
+      "keyInner": 24,
+      "keyOuter": 48,
+      "despill": false,
+      "anchor": {
+        "beam0": [
+          85,
+          33
+        ]
+      }
+    },
+    {
+      "file": "design/sprites-raw/echo/engine-stomp.png",
+      "crop": [
+        465,
+        500,
+        560,
+        110
+      ],
+      "name": "ring0",
+      "scale": 0.363,
+      "colourKeep": true,
+      "keyInner": 24,
+      "keyOuter": 48,
+      "despill": false
+    }
+  ],
+  "anims": [
+    {
+      "name": "beam",
+      "frames": [
+        "beam0"
+      ],
+      "dur": 60
+    },
+    {
+      "name": "ring",
+      "frames": [
+        "ring0"
+      ],
+      "dur": 24
+    }
+  ],
+  "anchor": "feet",
+  "outline": "none",
+  "palette": {
+    "mode": "ramps"
+  }
+}

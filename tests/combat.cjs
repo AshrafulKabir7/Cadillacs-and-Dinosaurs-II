@@ -5,7 +5,7 @@ const BASE=process.env.GAME_URL||'http://127.0.0.1:8766';
 (async()=>{const browser=await chromium.launch({headless:true}),page=await browser.newPage({viewport:{width:1280,height:900}}),errors=[];
 page.on('pageerror',e=>errors.push(e.message));
 await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;let seed=77;Math.random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};});
-await page.goto(BASE);await page.waitForFunction(()=>SEQUEL_RENDER.ready&&window.ARCADE_HEROES);await page.click('#sound');
+await page.goto(BASE);await page.waitForFunction(()=>SEQUEL_RENDER.ready&&window.ARCADE_HEROES,null,{polling:100});await page.click('#sound');
 const checks=await page.evaluate(async()=>{
  const g=LAST_EDEN,out=[];const check=(name,value)=>out.push({name,passed:!!value});
  const ticks=n=>{for(let i=0;i<n;i++)g.step(1/60);},key=(code,on)=>window.dispatchEvent(new KeyboardEvent(on?'keydown':'keyup',{code,bubbles:true}));
@@ -43,7 +43,8 @@ const checks=await page.evaluate(async()=>{
  const bhp=bystander.hp;ticks(40);check('A thrown body knocks down an enemy in its path',bystander.hp<bhp);
  setup();const boss=g.test.spawnEnemy(185,M(),'warden',true);boss.state='walk';boss.timer=5;key('KeyD',true);ticks(12);key('KeyD',false);check('Bosses cannot be grabbed',!g.snapshot.player.grab);
  // G5 (ENEMIES §6.1 DECISION, CFG.bossKnockdown): a boss with hit sets is knocked down by a finisher, at most once per 4 s
- // (WARDEN ROOK, its BUTCHER hit set 2 then get-up 4); MACK, the Regent, the Crown Engine and LOT 00 are exempt.
+ // (WARDEN ROOK, his generated body's 'rook-hit' set: 2 the knockdown, 4 the get-up); Breakwater, Glassback, the gate controls
+ // and Crownback are exempt.
  {g.start(0,0,'easy');g.test.spawnBoss();ticks(170);const downs=[];let last='',lost=0;
   for(let k=0;k<1200;k++){const s=g.snapshot,i=s.enemies.findIndex(e=>e.boss&&!e.dead),e=s.enemies[i];if(!e)break;const p=s.player;
    if(Math.abs(p.x-e.x)>36||Math.abs(p.y-e.y)>4)g.test.move(e.x+(p.x<e.x?-32:32),e.y);if(k%5===0)g.controls.attack();if(e.hp<e.maxhp*.3)g.test.damageEnemy(i,-(e.maxhp*.5));

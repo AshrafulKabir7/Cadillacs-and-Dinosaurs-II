@@ -70,6 +70,8 @@ const pngSize = file => { const b = Buffer.alloc(24); const fd = fs.openSync(fil
 
   // ---------------------------------------------------------------- G0 sprite data envelopes and checksums
   const families = fs.readdirSync(ROOT).filter(f => /^sprite-data-[a-z0-9-]+\.js$/.test(f)).sort();
+  // a lazy sheet (the generated boss bodies, sprite-data-boss-*.js) keeps its pixels in its own script, loaded per chapter
+  const lazyPng = p => { if (!p) return undefined; if (!exists(p)) throw new Error(`lazy sheet ${p} missing`); const m = /'(data:image\/png;base64,[^']+)'/.exec(fs.readFileSync(rel(p), 'utf8')); return m ? m[1] : undefined; };
   if (!families.length) C.skip('G0', 'Every SPRITE_DATA sheet decodes at its declared size with a matching FNV sum', 'no sprite-data-*.js shipped yet (WP-B/C/D)');
   else for (const f of families) {
     try {
@@ -78,7 +80,7 @@ const pngSize = file => { const b = Buffer.alloc(24); const fd = fs.openSync(fil
       for (const [name, fam] of fams) {
         const bad = [], ids = Object.keys(fam.sheets || {});
         if (!(fam.v >= 1 && fam.sheets && fam.rect && fam.pal && fam.pal.rows && fam.pal.maps)) bad.push('envelope keys');
-        for (const id of ids) { const sh = fam.sheets[id]; try { const im = A.img.fromDataURL(sh.png); if (im.width !== sh.w || im.height !== sh.h) bad.push(`${id} ${im.width}x${im.height} != ${sh.w}x${sh.h}`); if (fam.mode === 'indexed' && sh.sum != null) { const sum = A.img.png.fnvIndexed(im.rgba).toString(16); if (sum !== String(sh.sum).replace(/^0x/, '').toLowerCase()) bad.push(`${id} sum ${sum} != ${sh.sum}`); } if (im.width > 1024 || im.height > 1024) bad.push(`${id} larger than 1024²`); } catch (e) { bad.push(`${id}: ${e.message}`); } }
+        for (const id of ids) { const sh = fam.sheets[id]; try { const im = A.img.fromDataURL(sh.png || lazyPng(sh.lazy)); if (im.width !== sh.w || im.height !== sh.h) bad.push(`${id} ${im.width}x${im.height} != ${sh.w}x${sh.h}`); if (fam.mode === 'indexed' && sh.sum != null) { const sum = A.img.png.fnvIndexed(im.rgba).toString(16); if (sum !== String(sh.sum).replace(/^0x/, '').toLowerCase()) bad.push(`${id} sum ${sum} != ${sh.sum}`); } if (im.width > 1024 || im.height > 1024) bad.push(`${id} larger than 1024²`); } catch (e) { bad.push(`${id}: ${e.message}`); } }
         for (const id of Object.keys(fam.rect || {})) if (!fam.sheets[id]) bad.push(`rect.${id} has no sheet`);
         C.check('G0', `${f}: family '${name}' (${ids.length} sheets, mode ${fam.mode}) decodes with matching sums`, bad.length === 0, bad.slice(0, 4).join('; '));
       }

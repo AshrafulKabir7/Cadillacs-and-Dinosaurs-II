@@ -69,7 +69,7 @@ async function reseed(page, seed) {
 }
 
 async function waitReady(page, timeout = 60000) {
-  await page.waitForFunction(() => window.SEQUEL_RENDER && SEQUEL_RENDER.ready && window.ARCADE_HEROES && window.LAST_EDEN, null, { timeout });
+  await page.waitForFunction(() => window.SEQUEL_RENDER && SEQUEL_RENDER.ready && window.ARCADE_HEROES && window.LAST_EDEN, null, { timeout, polling: 100 });   // these pages stub requestAnimationFrame, so poll on a timer
 }
 
 async function open(page, { file = false, sound = true, timeout = 60000, url = null } = {}) {

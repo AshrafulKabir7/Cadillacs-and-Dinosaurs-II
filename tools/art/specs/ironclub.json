@@ -1,0 +1,32 @@
+{
+  "id": "ironclub",
+  "name": "IRONCLUB",
+  "note": "Sources: design/sprites-raw/ironclub (ChatGPT sheets, magenta, facing left). Per-sheet scales normalise the body to the idle sheet (~145 arcade px, 1.6 hero). Anim numbers are BOSS_DEFS.truck phase2 'main:<n>' references.",
+  "height": 145,
+  "bg": "#FF00FF",
+  "chapterTag": 96,
+  "ship": "sprite-data-boss-ironclub.js",
+  "anchor": "torso",
+  "inputs": [
+    { "file": "design/sprites-raw/ironclub/iron-idle-walk.png", "split": "auto", "names": ["idle0", "idle1", "walk0", "walk1", "walk2", "walk3"], "scale": 0.38 },
+    { "file": "design/sprites-raw/ironclub/iron-tail-club.png", "split": "auto", "names": ["tail0", "tail1", "tail2", "tail3"], "scale": 0.33 },
+    { "file": "design/sprites-raw/ironclub/iron-smash-roll.png", "split": "auto", "names": ["smash0", "smash1", "ball", "uncurl"], "scale": 0.355 },
+    { "file": "design/sprites-raw/ironclub/iron-hurt-defeat.png", "split": "auto", "names": ["hurt0", "hurt1", "kneel", "lie"], "scale": 0.37 },
+    { "file": "design/sprites-raw/ironclub/krag-transform.png", "crop": [740, 0, 1260, 668], "split": "auto", "names": ["half", "roar"], "scale": 0.248 }
+  ],
+  "anims": [
+    { "name": "idle", "frames": ["idle0", "idle1"], "dur": 30, "loop": 0 },
+    { "name": "walk", "frames": ["walk0", "walk1", "walk2", "walk3"], "dur": 11, "loop": 0, "alignTo": "idle0" },
+    { "name": "tail", "frames": ["tail0", "tail1", "tail2", "tail3"], "dur": [30, 8, 16, 22], "act": [1, 2], "alignTo": "idle0" },
+    { "name": "smash", "frames": ["smash0", "smash1"], "dur": [34, 26], "act": [1], "alignTo": "idle0" },
+    { "name": "curl", "frames": ["uncurl"], "dur": 24, "alignTo": "idle0" },
+    { "name": "ball", "frames": ["ball"], "dur": 30, "act": [0], "alignTo": "idle0" },
+    { "name": "uncurl", "frames": ["uncurl"], "dur": 40, "alignTo": "idle0" },
+    { "name": "hurt", "frames": ["hurt0"], "dur": 14, "alignTo": "idle0" },
+    { "name": "defeat", "frames": ["hurt0", "hurt1", "kneel", "lie"], "dur": [16, 18, 30, 60], "alignTo": "idle0" },
+    { "name": "transform", "frames": ["half", "roar"], "dur": [30, 44], "alignTo": "idle0" },
+    { "name": "lie", "frames": ["lie"], "dur": 60, "alignTo": "idle0" }
+  ],
+  "palette": { "mode": "ramps", "lock": ["#333333"] },
+  "clean": { "smooth": 1 }
+}

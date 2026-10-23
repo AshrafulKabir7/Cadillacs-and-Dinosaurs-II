@@ -5,7 +5,7 @@ const BASE=process.env.GAME_URL||'http://127.0.0.1:8766';
 (async()=>{const browser=await chromium.launch({headless:true}),checks=[],errors=[];const check=(name,ok)=>checks.push({name,passed:!!ok});
 for(const [name,vp] of [['portrait 390x844',{width:390,height:844}],['landscape 844x390',{width:844,height:390}],['small landscape 667x375',{width:667,height:375}]]){
  const ctx=await browser.newContext({...devices['Pixel 7'],viewport:vp,screen:vp});const p=await ctx.newPage();p.on('pageerror',e=>errors.push(e.message));
- await p.goto(BASE);await p.waitForFunction(()=>window.SEQUEL_RENDER&&SEQUEL_RENDER.ready&&window.ARCADE_HEROES);
+ await p.goto(BASE);await p.waitForFunction(()=>window.SEQUEL_RENDER&&SEQUEL_RENDER.ready&&window.ARCADE_HEROES,null,{polling:100});
  const cdp=await ctx.newCDPSession(p),touch=(type,points)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:points.map((pt,i)=>({x:pt.x,y:pt.y,id:pt.id??i}))});
  const box=sel=>p.locator(sel).first().boundingBox();
  // Tap the visible centre of a menu button with a real touch.
@@ -34,7 +34,7 @@ for(const [name,vp] of [['portrait 390x844',{width:390,height:844}],['landscape 
 for(const [name,noApi] of [['fullscreen',false],['iPhone fallback fullscreen',true]]){
  const vp={width:844,height:390},ctx=await browser.newContext({...devices['Pixel 7'],viewport:vp,screen:vp}),p=await ctx.newPage();p.on('pageerror',e=>errors.push(e.message));
  if(noApi)await p.addInitScript(()=>{delete Element.prototype.requestFullscreen;delete Element.prototype.webkitRequestFullscreen;});
- await p.goto(BASE);await p.waitForFunction(()=>window.SEQUEL_RENDER&&SEQUEL_RENDER.ready&&window.ARCADE_HEROES);
+ await p.goto(BASE);await p.waitForFunction(()=>window.SEQUEL_RENDER&&SEQUEL_RENDER.ready&&window.ARCADE_HEROES,null,{polling:100});
  const cdp=await ctx.newCDPSession(p),touch=(type,points)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:points.map((pt,i)=>({x:pt.x,y:pt.y,id:pt.id??i}))});
  const tapSel=async sel=>{const r=await p.locator(sel).first().boundingBox();await touch('touchStart',[{x:r.x+r.width/2,y:r.y+r.height/2}]);await p.waitForTimeout(60);await touch('touchEnd',[]);await p.waitForTimeout(450);};
  await tapSel('#newgame');await tapSel('#begin');await tapSel('#enter-stage');await tapSel('#full');
@@ -54,7 +54,7 @@ for(const [name,noApi] of [['fullscreen',false],['iPhone fallback fullscreen',tr
 // of the cabinet HUD rows (arcade y 0-44 of 224). A real tap on its centre must pause the game.
 for(const vp of [{width:390,height:844},{width:568,height:320},{width:667,height:375},{width:740,height:360},{width:844,height:390},{width:915,height:412}]){
  const ctx=await browser.newContext({...devices['Pixel 7'],viewport:vp,screen:vp}),p=await ctx.newPage();p.on('pageerror',e=>errors.push(e.message));
- await p.goto(BASE);await p.waitForFunction(()=>window.SEQUEL_RENDER&&SEQUEL_RENDER.ready&&window.ARCADE_HEROES);
+ await p.goto(BASE);await p.waitForFunction(()=>window.SEQUEL_RENDER&&SEQUEL_RENDER.ready&&window.ARCADE_HEROES,null,{polling:100});
  const cdp=await ctx.newCDPSession(p),touch=(type,points)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:points.map((pt,i)=>({x:pt.x,y:pt.y,id:pt.id??i}))});
  const tapSel=async sel=>{const r=await p.locator(sel).first().boundingBox();await touch('touchStart',[{x:r.x+r.width/2,y:r.y+r.height/2}]);await p.waitForTimeout(60);await touch('touchEnd',[]);await p.waitForTimeout(450);};
  await tapSel('#newgame');await tapSel('#begin');await tapSel('#enter-stage');
@@ -68,7 +68,7 @@ for(const vp of [{width:390,height:844},{width:568,height:320},{width:667,height
   await tapSel('#pause');check(`${name}: a tap on the pause button pauses the game`,await p.evaluate(()=>LAST_EDEN.state==='paused'));
   if(await p.evaluate(()=>LAST_EDEN.state==='paused'))await tapSel('#resume');}
  await ctx.close();}
-const d=await browser.newPage({viewport:{width:1280,height:900}});d.on('pageerror',e=>errors.push(e.message));await d.goto(BASE);await d.waitForFunction(()=>window.SEQUEL_RENDER&&SEQUEL_RENDER.ready);
+const d=await browser.newPage({viewport:{width:1280,height:900}});d.on('pageerror',e=>errors.push(e.message));await d.goto(BASE);await d.waitForFunction(()=>window.SEQUEL_RENDER&&SEQUEL_RENDER.ready,null,{polling:100});
 check('Desktop keeps its layout: no touch controls, keyboard guide shown',await d.evaluate(()=>!document.documentElement.classList.contains('touch-ui')&&getComputedStyle(document.querySelector('.touch-controls')).display==='none'&&getComputedStyle(document.querySelector('.below')).display!=='none'));
 check('No browser exceptions in mobile checks',errors.length===0);
 fs.writeFileSync('tests/results/mobile-report.json',JSON.stringify({passed:checks.filter(c=>c.passed).length,checks,errors},null,2));await browser.close();

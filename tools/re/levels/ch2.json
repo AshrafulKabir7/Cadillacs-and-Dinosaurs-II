@@ -4,13 +4,12 @@
   "objPage": "S3A0",
   "preset": "coral",
   "notes": [
-    "CAMPAIGN.md §6.1 / §12.2 '2-1'..'2-6'. The drive (a0 = S1-S3, a2 = S6) is the HELL ROAD loop E3a0 15872-19712 (the ROM's own repeat, period 3840 = 0xF00) under the coral palette; a1 (S4-S5) is on foot.",
-    "The causeway: the far edge of the HELL ROAD ground (y 128-160) is sea in every column of the loop: E6a1 open-water cells (E6a1 2688-3008, h 304-336, palette row 20, dimmed to the dusk), every other 320-px copy mirrored so the copies meet on mirror joins; the HELL ROAD mesas (scroll3) now stand in the sea as coral stacks. The road itself (y 160-224, the drive band) keeps the coral-tinted sand.",
-    "2-6 THE RISING TIDE (CAMPAIGN 2-6, PLAN R7): the tide is one row higher and has crossed the far edge of the road (water at y 112-176, four cells; the drive band stays 161-224, the car wades at the top of it): 960 of the 3360 loop cells (28.6 %) are patched, over the non-identity coral palette. The loop's wrap copy (x 3840-4224) repeats x 0-384 exactly, patches included, so nothing pops in when the road wraps.",
+    "COHERENCE (2026-10-22): ch2 is one place, the tidal causeway, from end to end. The drive (a0 = S1-S3, a2 = S6) is the HELL ROAD loop E3a0 15872-19712 (the ROM's own repeat, period 3840 = 0xF00) under the coral palette; a1 (S4-S5, on foot at the old toll post) is the same causeway: E3a0 6144-6656 walked back and forth (every leg <= 512 px, leftward legs mirrored) under the same palette, with the same sea along its far edge and the same far layer, so stopping the car does not change the place.",
+    "The causeway: the far edge of the HELL ROAD ground (y 128-160) is sea in every column: E6a1 open-water cells (E6a1 2688-3008, h 304-336, palette row 20, dimmed to the dusk), every other 320-px copy mirrored so the copies meet on mirror joins; the HELL ROAD mesas now stand in the sea as coral stacks.",
+    "2-6 THE RISING TIDE (boss: BREAKWATER, the harnessed ankylosaur towing freight): the tide is one row higher and has crossed the far edge of the road (water at y 112-176; the drive band stays 161-224). The low-tide flats carry the wreck of an old pier: rope-wound pilings (the E7a2 cable-wound pillar, lifted, behind the sprites) stand in the water every 640 px, where abandoned freight was once moored. The loop's wrap copy (x 3840-4224) repeats x 0-384 exactly, patches included.",
     "Gate 4 takes the loop exemption (user question 5 default) only for the boss window: the loop content repeats into the original HELL ROAD boss window at 32752 (reported as a warning); every loop column is patched, so no verbatim run remains.",
-    "The coral preset's ops are all row-role ops; the drive areas give explicit row ops instead (E3a0 scroll2 row 2 = the sand: hue -12 and 16% toward #d98a8a, coral flats; scroll3 row 4 = the mesas: 30% toward #d98a8a, coral stacks; row 5 = the dusk sky: 18% toward #3a5a9a, sea light), so no piece keeps the original palette.",
-    "2-5: E6a0 864-1120 (CAMPAIGN) has no floor at 848-944 (the propped portal pillar comes down to the bottom of the screen: terrain types 6/7 only), so the gatehouse is E6a0 576-832 (the village wall and hut just before the portal); the portal's timber post (E6a0 864-896, rows 9/8/3/2 lifted off the rock face) is the toll post that covers every join of a1 (CAMPAIGN §4.1 join chunks).",
-    "Far layer: the drive uses E3a0's periodic scroll3 (X3 2304-2560 repeats every 256 px, map3Entry wrap at 0xA00) sampled at mod((cam.x + road) >> 3, 256); a1 has one far layer per section (2-4 E6a0, 2-5 E5a0), changing under the toll post at 1024."
+    "The coral preset's ops are all row-role ops; every area gives explicit row ops instead (E3a0 scroll2 row 2 = the sand: hue -12 and 16% toward #d98a8a, coral flats; scroll3 row 4 = the mesas: 30% toward #d98a8a, coral stacks; row 5 = the dusk sky: 18% toward #3a5a9a, sea light), so no piece keeps the original palette.",
+    "a1 toll post: the portal timber of E6a0 (864-896, rows 9/8/3/2 lifted, dressing) stands as toll posts at the section join and at the barrier."
   ],
   "areas": [
     {
@@ -204,27 +203,62 @@
       "w": 2048,
       "h": 224,
       "bg": "auto",
-      "preset": "coral-fort",
+      "preset": false,
       "ops": [
         {
           "op": "hsl",
-          "h": -30,
-          "s": 0.9,
-          "l": 1.05
+          "h": -12,
+          "s": 1,
+          "l": 1.04,
+          "rows": [
+            2
+          ],
+          "layer": "s2"
         },
         {
           "op": "tint",
           "rgb": "#d98a8a",
-          "amount": 0.1
+          "amount": 0.16,
+          "rows": [
+            2
+          ],
+          "layer": "s2"
+        },
+        {
+          "op": "tint",
+          "rgb": "#7a5a6a",
+          "amount": 0.12,
+          "rows": [
+            0
+          ],
+          "layer": "s2"
+        },
+        {
+          "op": "tint",
+          "rgb": "#d98a8a",
+          "amount": 0.3,
+          "rows": [
+            4
+          ],
+          "layer": "s3"
+        },
+        {
+          "op": "tint",
+          "rgb": "#3a5a9a",
+          "amount": 0.18,
+          "rows": [
+            5
+          ],
+          "layer": "s3"
         }
       ],
       "s2": [
         {
           "slice": {
-            "src": "E6a0",
+            "src": "E3a0",
             "x": [
-              0,
-              512
+              6144,
+              6656
             ],
             "h": [
               16,
@@ -238,10 +272,10 @@
         },
         {
           "slice": {
-            "src": "E6a0",
+            "src": "E3a0",
             "x": [
-              0,
-              512
+              6144,
+              6656
             ],
             "h": [
               16,
@@ -256,14 +290,14 @@
         },
         {
           "slice": {
-            "src": "E5a0",
+            "src": "E3a0",
             "x": [
-              1696,
-              2208
+              6144,
+              6656
             ],
             "h": [
-              528,
-              752
+              16,
+              240
             ]
           },
           "at": [
@@ -273,10 +307,10 @@
         },
         {
           "slice": {
-            "src": "E6a0",
+            "src": "E3a0",
             "x": [
-              576,
-              832
+              6400,
+              6656
             ],
             "h": [
               16,
@@ -286,25 +320,60 @@
           "at": [
             1536,
             0
-          ]
+          ],
+          "flip": true
         },
         {
           "slice": {
-            "src": "E5a0",
+            "src": "E3a0",
             "x": [
-              1696,
-              1952
+              6400,
+              6656
             ],
             "h": [
-              528,
-              752
+              16,
+              240
             ]
           },
           "at": [
             1792,
             0
+          ]
+        },
+        {
+          "patch": {
+            "src": "E6a1",
+            "x": [
+              2688,
+              3008
+            ],
+            "h": [
+              304,
+              336
+            ]
+          },
+          "at": [
+            0,
+            128
           ],
-          "flip": true
+          "every": 320,
+          "alternate": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 10,
+              "s": 0.85,
+              "l": 0.85
+            },
+            {
+              "op": "tint",
+              "rgb": "#3a5a9a",
+              "amount": 0.15
+            }
+          ],
+          "note": "the same sea along the far edge of the causeway as on the drive",
+          "repeat": 7
         },
         {
           "patch": {
@@ -316,20 +385,21 @@
             "h": [
               16,
               240
-            ],
-            "rows": [
-              9,
-              8,
-              3,
-              2
             ]
           },
+          "rows": [
+            9,
+            8,
+            3,
+            2
+          ],
           "at": [
             1008,
             0
           ],
           "join": true,
-          "note": "toll post over the section join 2-4 | 2-5 (the far layer changes under it)"
+          "prio": "none",
+          "note": "toll post (the E6a0 portal timber, lifted)"
         },
         {
           "patch": {
@@ -341,48 +411,39 @@
             "h": [
               16,
               240
-            ],
-            "rows": [
-              9,
-              8,
-              3,
-              2
             ]
           },
+          "rows": [
+            9,
+            8,
+            3,
+            2
+          ],
           "at": [
-            1520,
+            1680,
             0
           ],
           "join": true,
-          "note": "toll post over the E5a0 | E6a0 join"
-        },
-        {
-          "patch": {
-            "src": "E6a0",
-            "x": [
-              864,
-              896
-            ],
-            "h": [
-              16,
-              240
-            ],
-            "rows": [
-              9,
-              8,
-              3,
-              2
-            ]
-          },
-          "at": [
-            1776,
-            0
-          ],
-          "join": true,
-          "note": "toll post over the E6a0 | E5a0 join"
+          "prio": "none",
+          "note": "toll post (the E6a0 portal timber, lifted)"
         }
       ],
-      "s3": "auto",
+      "s3": [
+        {
+          "x": [
+            0,
+            2048
+          ],
+          "src": "E3a0",
+          "shift": 3,
+          "x3": [
+            2304,
+            2944
+          ],
+          "fill": "repeat",
+          "note": "the drive's far layer (sea light, coral stacks), not periodic on foot"
+        }
+      ],
       "sections": [
         {
           "id": "2-4",
@@ -568,6 +629,43 @@
             }
           ],
           "note": "the rising tide: E6a1 open water over y 112-176, one row higher than 2-1..2-3 and over the top 16 px of the road"
+        },
+        {
+          "patch": {
+            "src": "E7a2",
+            "x": [
+              400,
+              432
+            ],
+            "h": [
+              112,
+              192
+            ]
+          },
+          "rows": [
+            21
+          ],
+          "at": [
+            272,
+            48
+          ],
+          "every": 640,
+          "prio": "none",
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -20,
+              "s": 0.6,
+              "l": 0.8
+            },
+            {
+              "op": "tint",
+              "rgb": "#3a5a9a",
+              "amount": 0.2
+            }
+          ],
+          "note": "an old pier's rope-wound piling standing in the tide (the E7a2 cable-wound pillar, lifted), every 640 px of the loop"
         }
       ],
       "sections": [

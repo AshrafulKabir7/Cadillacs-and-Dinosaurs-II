@@ -12,6 +12,12 @@
 //
 // Load order: anywhere before game.js. Families added before or after this file are picked up (SPRITE_DATA.add is
 // wrapped). Nothing here calls Math.random.
+//
+// Lazy sheets (the generated boss bodies, sprite-data-boss-*.js): a sheet def with `lazy` (a script path) and no `png`
+// ships its frames, anims and palettes at start-up but its pixels per chapter. It stays out of ready / verified /
+// familyReady (state 'lazy') until loadSheets(family, ids) injects its script, which hands the data URL over with
+// SPRITE_DATA.sheetPng(family, id, png); then it decodes and is checked like any other sheet. A script tag, not a
+// fetch, so file:// keeps working.
 (function (root) {
   'use strict';
   if (root.SPRITES && root.SPRITES.__colouriser) return;
@@ -49,9 +55,11 @@
     if (GLOBALS[f]) root[GLOBALS[f]] = cur;
     for (const [id, def] of Object.entries(fam.sheets || {})) {
       const key = `${f}/${id}`; if (sheets[key] && sheets[key].def === def) continue;
-      sheets[key] = { key, family: f, id, fam: cur, def, state: 'pending', w: def.w, h: def.h, idx: null, ok: null, canvas: null };
+      const lazy = !!def.lazy && typeof def.png !== 'string';
+      sheets[key] = { key, family: f, id, fam: cur, def, state: lazy ? 'lazy' : 'pending', w: def.w, h: def.h, idx: null, ok: null, canvas: null };
       if (bare[id] == null) bare[id] = key;
-      decode(sheets[key]);
+      if (lazy && pendingPng[key]) { def.png = pendingPng[key]; delete pendingPng[key]; sheets[key].state = 'pending'; }
+      if (sheets[key].state === 'pending') decode(sheets[key]);
     }
     const idx = recs[f] = recs[f] || {};
     for (const [sid, m] of Object.entries(fam.rect || {})) for (const [rec, r] of Object.entries(m)) (idx[rec] = idx[rec] || []).push({ key: `${f}/${sid}`, sheet: sid, r });
@@ -60,6 +68,14 @@
     if (f === 'heroes' && cur.compat) root.ARCADE_HEROES = compatView(cur);
     settle();
   }
+  // the pixels of a lazy sheet (its script calls this; before its family registered, the data URL waits)
+  const pendingPng = {};
+  SD.sheetPng = function (family, id, png) {
+    const key = `${famName(family)}/${id}`, e = sheets[key];
+    if (!e) { pendingPng[key] = png; return; }
+    if (e.state !== 'lazy' && e.state !== 'loading') return;
+    e.def.png = png; e.state = 'pending'; decode(e);
+  };
   const add0 = SD.add;
   SD.add = function (name, fam) { const r = add0.call(this, name, fam); register(name, this.families[name] || fam); return r; };
   for (const [n, fam] of Object.entries(SD.families || {})) register(n, fam);
@@ -97,14 +113,32 @@
         if (e.fam.mode === 'rgba') e.canvas = c;                     // identity colouriser
         e.state = 'ok'; e.ms = now() - t0; stats.decoded++;
       } catch (err) { e.state = 'bad'; e.ok = false; e.error = String(err && err.message || err); stats.failed++; }
-      settle();
+      settle(); fireSheet(e);
     };
-    img.onerror = () => { e.state = 'bad'; e.ok = false; stats.failed++; settle(); };
+    img.onerror = () => { e.state = 'bad'; e.ok = false; stats.failed++; settle(); fireSheet(e); };
     img.src = src;
   }
   const now = () => (typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now());
   const done = e => e.state === 'ok' || e.state === 'bad';
-  const famSheets = f => Object.values(sheets).filter(e => !f || e.family === famName(f));
+  // lazy sheets not loaded yet do not hold up ready / verified / familyReady
+  const famSheets = f => Object.values(sheets).filter(e => (!f || e.family === famName(f)) && e.state !== 'lazy' && e.state !== 'loading');
+  // callbacks of one sheet's load (loadSheets)
+  const sheetCbs = new Map();
+  function fireSheet(e) { const l = sheetCbs.get(e.key); if (!l) return; sheetCbs.delete(e.key); for (const cb of l) { try { cb(); } catch (err) { setTimeout(() => { throw err; }, 0); } } }
+  function loadSheets(family, ids) {
+    const f = famName(family), list = (ids || []).map(id => sheets[`${f}/${id}`]).filter(Boolean);
+    return Promise.all(list.map(e => {
+      if (done(e)) return true;
+      const p = new Promise(res => { const l = sheetCbs.get(e.key) || []; l.push(() => res(e.state === 'ok')); sheetCbs.set(e.key, l); });
+      if (e.state === 'lazy') {
+        if (!hasDOM) { fireSheet(e); return false; }
+        e.state = 'loading'; const sc = document.createElement('script'); sc.src = e.def.lazy; sc.async = true;
+        sc.onerror = () => { e.state = 'lazy'; fireSheet(e); };
+        (document.head || document.documentElement).appendChild(sc);
+      }
+      return p;
+    })).then(r => r.filter(Boolean).length);
+  }
   function familyReady(f) { const l = famSheets(f); return l.length > 0 && l.every(done) && l.every(e => e.state === 'ok'); }
   function settle() {
     for (let i = waiters.length - 1; i >= 0; i--) {
@@ -276,7 +310,9 @@
     get families() { return fams; },
     get ready() { const l = famSheets(null); return l.length > 0 && l.every(e => e.state === 'ok'); },
     get verified() { const l = famSheets(null); return l.length > 0 && l.every(e => e.state === 'ok' && e.ok === true); },
-    familyReady,
+    familyReady, loadSheets,
+    // lazy sheets: {key: state}
+    lazyStatus() { const o = {}; for (const e of Object.values(sheets)) if (e.def && e.def.lazy) o[e.key] = e.state; return o; },
     whenReady(family, cb) { if (typeof family === 'function') { cb = family; family = null; } waiters.push({ family: family ? famName(family) : null, cb }); settle(); },
     status() { return Object.values(sheets).map(e => ({ key: e.key, state: e.state, ok: e.ok, w: e.w, h: e.h, ms: e.ms || null })); },
     sheet(key, family) { const e = resolve(key, family); return e ? { key: e.key, family: e.family, id: e.id, w: e.w, h: e.h, state: e.state, ok: e.ok } : null; },

@@ -1,7 +1,7 @@
 {
   "notes": [
     "Intermission pictures (CAMPAIGN.md §4.7), 224x96 for panel layout A, composed at 1x from ROM scroll2/scroll3 cells only (tools/re/build/levels-compose.cjs composePic). Layers paint in order; pen 15 shows the layer below, then the backdrop.",
-    "The sprite parts the CAMPAIGN lists (FERRIS rolling a crate, the cold-pod object, the hatchling in gel, SHIVAT asleep, the four hero idle frames, VICE T. raising the pistol) need OBJ records and are listed under `sprites` for the WP-C/WP-D sprite families to overlay at G6; the pictures here are their ROM-cell backgrounds."
+    "The sprite parts the CAMPAIGN lists (FERRIS rolling a crate, the prison pod, the hatchling in its egg, Glassback asleep on SHIVAT's body, the four hero idle frames, VICE T. raising the pistol) need OBJ records and are listed under `sprites` for the WP-C/WP-D sprite families to overlay at G6; the pictures here are their ROM-cell backgrounds."
   ],
   "pics": {
     "p-sink-night": {
@@ -71,7 +71,7 @@
         }
       ],
       "sprites": [
-        "frosted crate (cold-pod object) on a rope"
+        "frosted salvage crate (prison-pod object) on a rope"
       ]
     },
     "p-barge-fire": {
@@ -179,7 +179,7 @@
         }
       ],
       "sprites": [
-        "cold-pod object close-up, FERRIS lying (gel palette) behind the glass, x2"
+        "prison-pod object close-up, a sedated FERRIS lying (gel palette: the sedative) behind the glass, x2"
       ]
     },
     "p-manifest": {
@@ -204,7 +204,7 @@
         }
       ],
       "sprites": [
-        "'LOT 07 / 09 / 12 / 31' in the scroll1 font (ARCADE_UI text)"
+        "Rook's manifest, 'PODS 07 / 09 / 12 / 31' signed over as labor for the Crown, in the scroll1 font (ARCADE_UI text)"
       ]
     },
     "p-convoy": {
@@ -261,7 +261,7 @@
         }
       ],
       "sprites": [
-        "three bikers and a pod wagon (convoy crate prop)"
+        "three bikers and a cargo wagon (convoy crate prop)"
       ]
     },
     "p-hatchling": {
@@ -299,7 +299,7 @@
         }
       ],
       "sprites": [
-        "small raptor (0x4DBA0) curled in gel with one VICE chain link as the collar"
+        "small raptor (0x4DBA0) curled in its egg with one VICE chain link as the collar"
       ]
     },
     "p-dome": {
@@ -372,7 +372,7 @@
         }
       ],
       "sprites": [
-        "SHIVAT main 0 (asleep), chain links to a driver prop"
+        "Headkeeper Thorne (her own body, idle) at her nest beside the sonic driver prop"
       ]
     },
     "p-ledger": {
@@ -397,7 +397,7 @@
         }
       ],
       "sprites": [
-        "'STOCK: THE SINK' and tank numbers in the scroll1 font"
+        "the handlers' ledger: 'SAMPLES: THE SINK', the ADAPTIVE TRIAL numbers and the marshal's priority order, in the scroll1 font"
       ]
     },
     "p-observatory": {
@@ -506,7 +506,7 @@
       "why": "black, as the CAMPAIGN asks",
       "layers": [],
       "sprites": [
-        "four hero idle frames (clone palette)"
+        "Echo's four unfinished copies of the gang: four hero idle frames (clone palette)"
       ]
     },
     "p-sable": {
@@ -531,7 +531,7 @@
         }
       ],
       "sprites": [
-        "VICE T. (sable palette) main 13 'raise the pistol' x2"
+        "MARSHAL SABLE: VICE T. (sable palette) main 13 'raise the pistol', with one Crown Guard (POACHER J idle)"
       ]
     },
     "p-dam-dawn": {

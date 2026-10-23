@@ -14,8 +14,13 @@
 // 4 originality  no verbatim run (consecutive source columns, unpatched, < 50 % of the pixels recoloured) > 512 px;
 //                the HELL ROAD loop needs >= 25 % of its cells patched (PLAN R7); no boss lock
 //                on an original boss window (states 0x06/0x10/0x13); D8 exclusions; return-visit rules (§3.8);
-//                the cross-chapter rules (<= 60 % of an original area's columns, no shared columns between
-//                consecutive chapters) are in originalityAll
+//                coherence (the sequel rule since 2026-10-22, replacing "<= 60 % of an original area's columns"):
+//                every area is ONE place: all its slices (and its loop) come from one original area (one source
+//                family; patches, tiles and anims are dressing and may come from anywhere); a chapter travels in
+//                one direction: an original area used by an area is never used again by a later area unless every
+//                area between uses it too (no A -> B -> A); every slice is recoloured (an identity palette is an
+//                error); the cross-chapter rule (no shared slice columns between consecutive chapters) and the
+//                column-use report are in originalityAll
 // 5 budget       pages <= 1024^2, <= 1.0 MB per chapter, <= 5 MB in all, stage-data.js <= 150 KB, files <= 1.5 MB
 // 6 determinism  a fresh compose of the chapter reproduces the same pixels, walk mask and bands
 // The HELL ROAD loop (CAMPAIGN R7, PLAN R7, user question 5) takes the default: the `loop` gate-4 exemption; its
@@ -27,7 +32,7 @@ const C = require('./levels-compose.cjs');
 const ROOT = path.resolve(__dirname, '..', '..', '..');
 const EXPECT = { ch1: { len: 6592, locks: 12 }, ch2: { len: 6592, locks: 12 }, ch3: { len: 6976, locks: 13 }, ch4: { len: 6592, locks: 12 }, ch5: { len: 6592, locks: 12 }, ch6: { len: 7104, locks: 13 } };
 const EXCLUDED = [['E1a0', 0, 896], ['E4a1', 0, 1e9], ['E4a0', 0, 352], ['E2a2', 0, 1e9], ['E5a1', 0, 1e9], ['E6a2', 0, 1e9], ['E7a1', 0, 1e9]];
-const LIMITS = { seamOverlap: 48, seamTop: 16, seamRGB: 48, joinCut: 16, s3Cut: 8, voidRows: 16, recolour: 0.5, loopPatch: 0.25, lockBand: 64, lockShare: 0.75, verbatim: 512, useFail: 0.60, useWarn: 0.35, returnPatch: 0.25,
+const LIMITS = { seamOverlap: 48, seamTop: 16, seamRGB: 48, joinCut: 16, s3Cut: 8, voidRows: 16, recolour: 0.5, loopPatch: 0.25, lockBand: 64, lockShare: 0.75, verbatim: 512, returnPatch: 0.25,
   pagesPerChapter: 1048576, pagesTotal: 5242880, stageData: 153600, anyFile: 1572864, page: 1024 };
 
 const bandH = b => (b ? b[1] - b[0] + 1 : 0);
@@ -151,7 +156,10 @@ function validate(chap, recipe, { out = ROOT, data = null } = {}) {
     for (const p of base) if (p.kind === 'slice' && p.srcX[1] - p.srcX[0] > LIMITS.verbatim) E(4, `${a.id}: slice ${p.src} ${p.srcX.join('-')} is ${p.srcX[1] - p.srcX[0]} px (CAMPAIGN D8: every slice <= 512 px)`);
     for (const p of base) { for (const [src, x0, x1] of EXCLUDED) if (p.src === src && p.kind !== 'patch' && p.srcX[0] < x1 && p.srcX[1] > x0) E(4, `${a.id}: ${p.src} ${p.srcX.join('-')} uses the excluded range ${src} ${x0}-${x1 === 1e9 ? 'end' : x1} (CAMPAIGN D8)`);
       if (!chap.ctxs.list[p.ctx].identity) { if (p.kind === 'slice') { let n = 0, ch = 0; for (let c = p.x0 / C.CELL; c < p.x1 / C.CELL; c++) if (prov[c] && prov[c].piece === p.index) { n++; ch += prov[c].changed; } if (n && ch / n < LIMITS.recolour) W(4, `${a.id}: ${p.src} ${p.srcX.join('-')} recolours only ${(100 * ch / n).toFixed(0)}% of its pixels`); } continue; }
-      W(4, `${a.id}: ${p.src} ${p.srcX.join('-')} has an identity palette (CAMPAIGN D8 wants a preset on every slice)`); }
+      E(4, `${a.id}: ${p.src} ${p.srcX.join('-')} has an identity palette (coherence rule: every slice is recoloured into the chapter's place)`); }
+    // coherence: one source family per area
+    const fam = [...new Set(base.map(p => p.src))].sort();
+    if (fam.length > 1) E(4, `${a.id}: slices come from ${fam.length} original areas (${fam.join(', ')}); an area is one place (one source family; dress it with patches)`);
     if (A.loop) {   // PLAN R7 / CAMPAIGN 2-6: the drive boss section patches >= 25 % of the loop cells
       const pc = A.loop.period / C.CELL; let n = 0; for (const q of a.s2.patchSet) if (q % a.s2.cols < pc) n++;
       const share = n / (pc * a.walk.rows), boss = (A.sections || []).some(s => s.bossLock != null);
@@ -166,6 +174,15 @@ function validate(chap, recipe, { out = ROOT, data = null } = {}) {
       for (const l of a.locks) { const p = prov[Math.floor(l.x / C.CELL)]; if (!p || p.flip) continue; const src = C.source(p.src);
         for (const g of src.segments) { const st = typeof g.state === 'string' ? parseInt(g.state, 16) : g.state; if (st === 0x04 && Math.abs(g.trigger - p.X) < 64) E(4, `${a.id} (return visit): lock ${l.id} starts on the original lock of ${p.src} at ${g.trigger}`); } }
       W(4, `${a.id} is a return visit to ${JSON.stringify(A.returnVisit.source)} (${(share * 100).toFixed(1)}% cells patched): ${A.returnVisit.why}`);
+    }
+  }
+  // ---- gate 4 (per chapter): the journey goes one way: no original area comes back after another place
+  {
+    const seq = chap.areas.map(a => [...new Set(a.s2.pieces.filter(p => (p.kind === 'slice' && !p.blend) || p.kind === 'loop').map(p => p.src))]);
+    for (let j = 2; j < seq.length; j++) for (const src of seq[j]) for (let i = 0; i < j - 1; i++) {
+      if (!seq[i].includes(src)) continue;
+      const gap = seq.slice(i + 1, j).findIndex(s => !s.includes(src));
+      if (gap >= 0) E(4, `${chap.areas[j].id} returns to ${src} (used by ${chap.areas[i].id}) after ${chap.areas[i + 1 + gap].id} (${seq[i + 1 + gap].join(', ')}): the scenery must not go back and forth`);
     }
   }
   // ---- gate 3: the test-safe start (ch1 a0)
@@ -245,8 +262,8 @@ function originalityAll(composed) {
     const S = C.source(src), cols = Math.ceil((S.world.x[1] - S.world.x[0]) / C.CELL), share = m.size / cols;
     areas[src] = { columns: m.size, of: cols, share: +share.toFixed(4), chapters: [...new Set([...m.values()].flatMap(s => [...s]))].sort() };
     if (share > maxUse.share) maxUse = { id: src, share };
-    if (share > LIMITS.useFail) errors.push(`gate 4: ${src} has ${(share * 100).toFixed(1)}% of its columns used (> 60%)`);
-    else if (share > LIMITS.useWarn) warnings.push(`gate 4: ${src} has ${(share * 100).toFixed(1)}% of its columns used (> 35%, the expected reuse of a small pool)`);
+    // reported only: the 60 % cap was replaced by the per-chapter coherence rule (validate gate 4), which wants a
+    // chapter area to stay inside one original area and therefore reuses its columns (recomposed and recoloured)
   }
   const chs = Object.keys(composed).sort();
   for (let i = 1; i < chs.length; i++) {

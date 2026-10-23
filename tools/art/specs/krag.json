@@ -1,0 +1,25 @@
+{
+  "id": "krag",
+  "name": "HAULMASTER KRAG",
+  "note": "Sources: design/sprites-raw/ironclub (ChatGPT sheets, magenta, facing left). Each input carries its own scale so Krag stands ~92 arcade px (1.1 hero). Anim numbers are BOSS_DEFS.truck 'main:<n>' references (phase 1).",
+  "height": 92,
+  "bg": "#FF00FF",
+  "chapterTag": 95,
+  "ship": "sprite-data-boss-krag.js",
+  "anchor": "feet",
+  "inputs": [
+    { "file": "design/sprites-raw/ironclub/ref-sheet.png", "crop": [10, 230, 450, 660], "name": "idle0", "scale": 0.1447 },
+    { "file": "design/sprites-raw/ironclub/krag-human.png", "split": "auto", "names": ["walk0", "whip0", "whip1", "recoil"], "scale": 0.2035 },
+    { "file": "design/sprites-raw/ironclub/krag-transform.png", "crop": [0, 150, 740, 518], "split": "auto", "names": ["inject", "burst"], "scale": 0.2 }
+  ],
+  "anims": [
+    { "name": "idle", "frames": ["idle0"], "dur": 30 },
+    { "name": "walk", "frames": ["walk0", "idle0"], "dur": 12, "loop": 0, "alignTo": "idle0" },
+    { "name": "whip", "frames": ["whip0", "whip1", "walk0"], "dur": [22, 16, 10], "act": [1], "alignTo": "idle0" },
+    { "name": "charge", "frames": ["walk0"], "dur": 30, "act": [0], "alignTo": "idle0" },
+    { "name": "hurt", "frames": ["recoil"], "dur": 14, "alignTo": "idle0" },
+    { "name": "transform", "frames": ["inject", "burst"], "dur": [40, 36], "alignTo": "idle0" }
+  ],
+  "palette": { "mode": "ramps", "lock": ["#333333"] },
+  "clean": { "smooth": 1 }
+}

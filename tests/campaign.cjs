@@ -119,13 +119,26 @@ check('354 regular wave slots (346 + the 8 ch2 bikers of CAMPAIGN O12)',CAMPAIGN
 check('Kind substitutions: ch3 raptors 22, ch4 brutes 9 and knifers 10, ch5/ch6 TYROGs 4',countKind(CAMPAIGN[2],'raptor')===22&&countKind(CAMPAIGN[3],'brute')===9&&countKind(CAMPAIGN[3],'knifer')===10&&countKind(CAMPAIGN[4],'regent')===4&&countKind(CAMPAIGN[5],'regent')===4);
 check('Ch2 S1 e1 wave 1 is biker, biker',fmt(CAMPAIGN[1].sections[0].enc[0].w[0])==='["biker","biker"]');
 check('Ch1 brief mentions Fessenden and the lab',/Fessenden/.test(CAMPAIGN[0].brief)&&/lab/.test(CAMPAIGN[0].brief));
-check('Ch6 area MIRROR WAR, end "Fessenden himself", brief LOT 00',/MIRROR WAR/.test(CAMPAIGN[5].area)&&/Fessenden himself/.test(CAMPAIGN[5].end)&&/LOT 00/.test(CAMPAIGN[5].brief));
+// Story 2 (STORY.md, design/boss-concepts-2026-10-22): the finale is Marshal Sable, who takes the unfinished Crown treatment
+// and becomes CROWNBACK at the Crown dam. These anchors replace "MIRROR WAR / Fessenden himself / LOT 00" (the resurrected
+// Fessenden finale was dropped): the ch6 brief carries the Crown treatment and Echo's warning, the end names Crownback and
+// the controlled release, the lastCopy slot (the engine's name for the final form) is CROWNBACK, and no campaign text
+// brings back LOT 00, the clone war or Fessenden in person (he stays dead; his research is the historical cause).
+check('Ch6 is the Crown dam: brief names Sable and the unfinished Crown treatment, end names Crownback, the final form is CROWNBACK',/CROWN/.test(CAMPAIGN[5].area)&&/Sable/.test(CAMPAIGN[5].brief)&&/Crown treatment/.test(CAMPAIGN[5].brief)&&/Crownback/.test(CAMPAIGN[5].end)&&/CROWNBACK/.test(CAMPAIGN[5].lastCopy.card));
+{const all=JSON.stringify([CAMPAIGN,INTRO,ENDING,MISSIONS]);
+ check('No campaign text resurrects Fessenden (no LOT 00, no Mirror War or clone war, no FESSENDEN speaker or portrait)',!/LOT 00|MIRROR WAR|CLONE WAR|FESSENDEN:/i.test(all)&&!ENDING.some(b=>b.who==='fessenden'||(b.boxes||[]).some(x=>x.who==='fessenden')),(all.match(/LOT 00|MIRROR WAR|CLONE WAR|FESSENDEN:/i)||[''])[0]);
+ check('Every chapter foreshadows Crownback: the brass gate seal (1), Crown cargo (2), graft specimens (3), the shoulder-brace rig (4), Echo’s warning (5)',/brass gate seal/.test(CAMPAIGN[0].brief+CAMPAIGN[0].end)&&/TO THE CROWN/.test(CAMPAIGN[1].end)&&/graft/.test(CAMPAIGN[2].end)&&/shoulder brace/.test(CAMPAIGN[3].end)&&/outlast the flood/.test(CAMPAIGN[4].end));
+ check('The ending keeps the 1993 balance line ("nature always balances itself")',/NATURE ALWAYS\s*BALANCES ITSELF/.test(ENDING.flatMap(b=>(b.boxes||[]).flatMap(x=>x.lines)).join(' ')));}
+// STORY.md rule 4 (one mirror): the `mirror` kind is Echo's single finished test body, met once, as chapter 5's elite;
+// every other fight is people and animals (chapter 6's regulars and officers are Sable's human Crown Guard).
+{const uses=[];CAMPAIGN.forEach((c,i)=>c.sections.forEach(s=>s.enc.forEach(e=>{(e.w||[]).flat().forEach(k=>{if(String(k).split(':')[0]==='mirror')uses.push(`${s.stage} wave`);});if(e.elite&&e.elite.type==='mirror')uses.push(`${s.stage} elite ${e.elite.name}`);})));
+ check('One mirror: the Mirror Test is the only hero copy in the campaign (chapter 5 elite)',uses.length===1&&/^5-/.test(uses[0])&&/MIRROR TEST/.test(uses[0]),uses.join(', '));}
 check('Chapter endings 1–5 set up the next chapter (> 120 characters)',CAMPAIGN.slice(0,5).every(c=>c.end.length>120));
-check('Clones freed 2+1+1',fmt(MISSIONS[5].tasks.map(t=>t[4]))==='[2,1,1]');
+check('Conscripts freed at the collar pylons 2+1+1',fmt(MISSIONS[5].tasks.map(t=>t[4]))==='[2,1,1]');
 check('Ch1 music: 06 first, intro 09, boss 10',CAMPAIGN[0].music.stage[0]==='06'&&CAMPAIGN[0].music.intro==='09'&&CAMPAIGN[0].music.boss==='10');
 check('Every chapter has one elite and ends with the boss',CAMPAIGN.every(c=>{const encs=c.sections.flatMap(s=>s.enc);return encs.filter(e=>e.elite).length>=1&&encs[encs.length-1].boss===true&&encs.slice(0,-1).every(e=>!e.boss);}));
 check('Tasks 0, 1 and 2 appear once per chapter and the missions have three tasks each',CAMPAIGN.every((c,i)=>{const t=c.sections.flatMap(s=>s.enc).map(e=>e.task).filter(x=>x!==undefined).sort();return t.join()==='0,1,2'&&MISSIONS[i].tasks.length===3;}));
-check('Ch1 task 0 is a pod, ch2 is cargo, the final chapter frees clones at gates',MISSIONS[0].tasks[0][0]==='pod'&&MISSIONS[1].tasks[0][0]==='cargo'&&MISSIONS[5].tasks.every(t=>t[0]==='gate'));
+check('Ch1 task 0 is a pod, ch2 is cargo, the final chapter breaks collar pylons (gates)',MISSIONS[0].tasks[0][0]==='pod'&&MISSIONS[1].tasks[0][0]==='cargo'&&MISSIONS[5].tasks.every(t=>t[0]==='gate'));
 check('Every section names its stage recipe and chapter 2 drives S1–S3 and S6 only',CAMPAIGN.every(c=>c.sections.every(s=>typeof s.stage==='string'))&&fmt(CAMPAIGN[1].sections.map(s=>!!s.drive))==='[true,true,true,false,false,true]'&&CAMPAIGN.every((c,i)=>i===1||c.sections.every(s=>!s.drive)));
 check('The after line is on the encounter and inside the elite (D13)',CAMPAIGN.every(c=>c.sections.every(s=>s.enc.every(e=>!e.elite||!e.elite.after||e.after===e.elite.after))));
 check('Boss text is data on every chapter (bossCard, bossToast, bossSay, bossLines, and bossDefeat, driverDeadSay or phase2)',CAMPAIGN.every(c=>c.bossCard&&c.bossToast&&Array.isArray(c.bossSay)&&c.bossSay.length&&c.bossLines&&(c.bossDefeat||c.driverDeadSay||c.phase2)));
@@ -196,12 +209,14 @@ else{let bad=[],straddle=[],framing=[],n=0;const seen=new Set();
  const over=radio.filter(([,l])=>l.length>72||render(l).length>72);
  check(`(4) Every radio, task and dialog line is ≤ 72 characters (${radio.length} lines, raw and rendered)`,over.length===0,over.map(([w,l])=>`${w}: ${l.length}`).join(', '));
  const badPanels=[];for(const [w,p] of panels){const lines=[...(p.lines||[]),...(p.lines2||[])];if(!lines.length)badPanels.push(w+': empty');if((p.lines||[]).length>4||(p.lines2||[]).length>4)badPanels.push(w+': over 4 lines');for(const l of lines)if(l.length>30)badPanels.push(`${w}: ${l.length} chars`);
-  if(p.layout&&!['A','B','C'].includes(p.layout))badPanels.push(w+': layout '+p.layout);if(p.layout==='B'&&!p.who)badPanels.push(w+': layout B needs who');if(p.who&&!['jack','hannah','mustapha','mess','fessenden','clone'].includes(p.who))badPanels.push(w+': who '+p.who);}
+  if(p.layout&&!['A','B','C'].includes(p.layout))badPanels.push(w+': layout '+p.layout);if(p.layout==='B'&&!p.who)badPanels.push(w+': layout B needs who');/* 'sable' and 'echo' are name tags (ARCADE_UI.drawPortrait: any other who is a name tag); story 2's fall beat is Sable's and its choice beat is 'self' (the selected hero) */if(p.who&&!['jack','hannah','mustapha','mess','self','sable','echo'].includes(p.who))badPanels.push(w+': who '+p.who);}
  check(`(4) Every panel line is ≤ 30 characters with ≤ 4 lines per panel (${panels.length} panels)`,badPanels.length===0,badPanels.join(', '));
  const glyphs=new Map();for(const [w,l] of [...radio,...panels.flatMap(([w,p])=>[...(p.lines||[]),...(p.lines2||[])].map(l=>[w,l]))])for(const ch of render(l))if(!FONT_GLYPHS.has(ch))glyphs.set(ch,w);
  check('(4) Every rendered character is in the ROM font set (… → ..., — → -)',glyphs.size===0,[...glyphs].map(([g,w])=>`${fmt(g)} in ${w}`).join(', '));
  const tags=new Set();for(const [,l] of radio){const m=/^([A-Z?][A-Z ?.'’]*):/.exec(l);if(m)tags.add(m[1]);}
- const known=['JACK','HANNAH','MUSTAPHA','MESS','FESSENDEN','ECHO','ROOK','CINDER','SLICE','SABLE','HANDLER','???','YOUR CLONE','FREED CLONE'];
+ // Story 2 adds CONSCRIPT (a freed collared dam worker at the Crown), KRAG and THORNE (the chapter 2 and 3 bosses since the boss rebuild,
+ // a name tag like ROOK and CINDER); the old tags stay allowed.
+ const known=['JACK','HANNAH','MUSTAPHA','MESS','FESSENDEN','ECHO','ROOK','KRAG','THORNE','CINDER','SLICE','SABLE','HANDLER','???','YOUR CLONE','FREED CLONE','CONSCRIPT'];
  check('(4) Every speaker tag is a portrait name or a known name tag',[...tags].every(t=>known.includes(t)),[...tags].filter(t=>!known.includes(t)).join(', '));}
 
 // ================================================================ 5. music cues

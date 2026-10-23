@@ -1,0 +1,26 @@
+{
+  "id": "cinder",
+  "name": "FOREMAN CINDER",
+  "note": "Sources: design/sprites-raw/cinder (ChatGPT sheets, magenta, facing left); cinder-human.png chosen over -alt (its recoil, the open hand thrown back, reads better at 1x). Cinder stands ~90 arcade px. Anim numbers are BOSS_DEFS.cinder 'main:<n>' references (phase 1).",
+  "height": 90,
+  "bg": "#FF00FF",
+  "chapterTag": 99,
+  "ship": "sprite-data-boss-cinder.js",
+  "anchor": "feet",
+  "inputs": [
+    { "file": "design/sprites-raw/cinder/ref-sheet.png", "crop": [10, 280, 700, 590], "name": "idle0", "scale": 0.163 },
+    { "file": "design/sprites-raw/cinder/cinder-human.png", "split": "auto", "names": ["walk0", "raise", "slam", "recoil"], "scale": 0.212 },
+    { "file": "design/sprites-raw/cinder/cinder-overload.png", "crop": [0, 180, 920, 487], "split": "auto", "names": ["helmet", "plates"], "scale": 0.228 }
+  ],
+  "anims": [
+    { "name": "idle", "frames": ["idle0"], "dur": 30 },
+    { "name": "walk", "frames": ["walk0", "idle0"], "dur": 12, "loop": 0, "alignTo": "idle0" },
+    { "name": "slam", "frames": ["raise", "slam"], "dur": [34, 28], "act": [1], "alignTo": "idle0" },
+    { "name": "punch", "frames": ["idle0", "walk0", "idle0"], "dur": [18, 14, 10], "act": [1], "alignTo": "idle0" },
+    { "name": "charge", "frames": ["walk0"], "dur": 30, "act": [0], "alignTo": "idle0" },
+    { "name": "hurt", "frames": ["recoil"], "dur": 14, "alignTo": "idle0" },
+    { "name": "overload", "frames": ["helmet", "plates"], "dur": [36, 30], "alignTo": "idle0" }
+  ],
+  "palette": { "mode": "ramps", "lock": ["#333333"] },
+  "clean": { "smooth": 1 }
+}

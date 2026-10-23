@@ -137,9 +137,9 @@ check('Every authored glyph fits its cell: at most 7 rows, one or two 8 px cells
     const d = loadData(file);
     for (const key of ['EDEN_CAMPAIGN', 'EDEN_MISSIONS', 'EDEN_INTRO', 'EDEN_ENDING']) if (d[key]) walk(d[key], [key]);
   }
-  const hud = ['INSERT COIN', 'JOIN-IN', 'CREDIT 0', 'JACK.T', 'HANNAH.D', 'MUSTAPHA', 'MESS.O', '1ST', 'CROWN ENGINE', 'LOT 00 · FESSENDEN', 'SHOTS', 'HITS', 'CONTINUE?', 'CHAPTER 1 CLEAR', 'VITALITY', 'FINAL BLOW', 'FREED CLONES ×2', 'THE LAST COPY', 'FESSENDEN’S LEGACY', 'EASTCOAST 2513 · SIX MONTHS LATER',
+  const hud = ['INSERT COIN', 'JOIN-IN', 'CREDIT 0', 'JACK.T', 'HANNAH.D', 'MUSTAPHA', 'MESS.O', '1ST', 'GATE CONTROLS', 'CROWNBACK', 'SHOTS', 'HITS', 'CONTINUE?', 'CHAPTER 1 CLEAR', 'VITALITY', 'FINAL BLOW', 'FREED CLONES ×2', 'THE LAST COPY', 'FESSENDEN’S LEGACY', 'EASTCOAST 2513 · SIX MONTHS LATER',
     // G6 screens drawn by game.js: the title, the tally, the ending
-    'II · FESSENDEN’S LEGACY', 'CHAPTER 6 CLEAR', 'TOTAL', 'THANK YOU FOR PLAYING', 'A FAN SEQUEL MADE FOR MOSTAFA',
+    'II · THE CROWN TIDE', 'CHAPTER 6 CLEAR', 'TOTAL', 'THANK YOU FOR PLAYING', 'A FAN SEQUEL MADE FOR MOSTAFA',
     // G6 verify fix: the picture screens (p-manifest, p-ledger) and the vat hall's tank plates
     'COLD CARGO · WASSOON', 'LOT 07 / 09 / 12 / 31', 'TO: THE CORAL CAUSEWAY', 'STOCK: THE SINK', 'TANK 01 02 03 04 05 06', 'TANK 07 08 09 10 11 --', 'TENREC', 'DUNDEE', 'CAIRO', 'O’BRADOVICH'];
   const bad = [];
@@ -438,7 +438,7 @@ if (process.argv.includes('--png')) {
   UI.text(g, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 8, 8); UI.text(g, '0123456789 .,:;!?\'"-—·/()&+=×%*…', 8, 24);
   UI.text(g, 'THE BUTCHER IS HUNTING IN THE', 8, 48, { font: 16 }); UI.text(g, 'NORTHERN WOODS. DON’T MESS…', 8, 72, { font: 16 });
   UI.text(g, 'PLANNING', 8, 104, { outline: true, pen: 'red' }); UI.text(g, 'HATTARI JRA', 8, 120, { outline: true }); UI.text(g, '0:09', 8, 144, { scale: 2, outline: true, pen: 'red' }); UI.text(g, 'INSERT COIN', 100, 144, { outline: true, pen: 'orange' });
-  UI.text(g, 'JACK.T =1 100 CREDIT 0', 8, 184); UI.text(g, 'FESSENDEN’S LEGACY · THE END', 8, 200, { font: 16, pen: 'yellow' });
+  UI.text(g, 'JACK.T =1 100 CREDIT 0', 8, 184); UI.text(g, 'THE CROWN TIDE · THE END', 8, 200, { font: 16, pen: 'yellow' });
   writePNG(path.join(dir, 'font.png'), 384, 224, g.pixels);
   console.log('review PNGs written to ' + dir);
 }

@@ -1,0 +1,42 @@
+{
+  "id": "cinderfx",
+  "name": "OVERDRIVE MUZZLE BURST",
+  "note": "The steam cannon's muzzle burst, cut from over-driver.png pose 3 at the overdrive scale (with the muzzle cap it surrounds). Origin at the cap's left edge on the barrel line; the game draws it at the fire frame's muzzle.",
+  "height": 40,
+  "bg": "#FF00FF",
+  "chapterTag": 101,
+  "ship": "sprite-data-boss-cinderfx.js",
+  "inputs": [
+    {
+      "file": "design/sprites-raw/cinder/over-driver.png",
+      "crop": [
+        835,
+        240,
+        135,
+        290
+      ],
+      "name": "burst0",
+      "scale": 0.39,
+      "keepFrac": 0.002,
+      "anchor": {
+        "burst0": [
+          18,
+          58
+        ]
+      }
+    }
+  ],
+  "anims": [
+    {
+      "name": "burst",
+      "frames": [
+        "burst0"
+      ],
+      "dur": 16
+    }
+  ],
+  "outline": "none",
+  "palette": {
+    "mode": "ramps"
+  }
+}

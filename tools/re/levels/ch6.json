@@ -16,13 +16,12 @@
     }
   },
   "notes": [
-    "CAMPAIGN.md §10.1 / §12.2 '6-1'..'6-6'. 6-1 reuses ch1's towers (E1a2 176-464, E1a0 928-1312) five chapters later in storm (user question 4 default); their 48-px lanes get the same floor-art walk patches as in ch1. 6-1 is re-ordered as E1a2, E1a2 flip, E1a0, E1a0 flip so the two sources meet once (under a pier) and every other join is a mirror join.",
-    "E8a1 past 2992 (CAMPAIGN 6-4, 6-6) is not used: the original camera falls there during a fade (segment 0x09 at 3008), its terrain is type 0 in every row and its scroll2 is empty from X 3100, so a lane there stands on nothing. 6-4's dam halls are E6a0 1216-1728 (mirror pair) and the dam control hall E7a3 880-1264 with its mirror (the E7a3 riser and consoles; ch5 uses E7a3 0-512 only, and the Slisaur monitor wall 1264+ is left out); 6-6's spillway is the E8a1 sluice basin 1504-1664 and its mirror (lane probed live, work/re/runs/wpe-depth-e8a1: top h 879 = y 129).",
-    "Seams (CAMPAIGN §4.1 join chunks, §12.2 6-3 'pillar chunk at the seam'): every join of two sources is covered by a spire pier (the brick jamb of the E7a0 arch, E7a0 1760-1792, palette row 27 lifted; a full-height foreground pillar) in the storm palette; every other join is a mirror join.",
-    "Far layer: one per section; 6-1 the E1a2 skyline, 6-2 none (the E1a1 hall is opaque and has no scroll3), 6-3/6-4 one E6a0 span, 6-5 E8a2, 6-6 E8a1; changes sit under a pier.",
-    "The Crown Engine is a boss sprite (WP-C bake from E8a3), never stage art. The spillway gate and wheels are code-created props at the listed section x.",
+    "COHERENCE (2026-10-22): ch6 is the Crown dam, crossed once from the road to the floodgate: a0 THE DAM TERRACES is the dam road, a stone causeway over the reservoir with the drowned city beyond (E7a0 0-1216 only), a1 THE DAM GALLERY is the torch-lit gallery inside the dam face, its gates and chains above the turquoise sluice water (E8a1 608-1376 only), a2 THE CROWN FLOODGATE goes on along that gallery into the sluice basin (E8a1 1024-1792: the same stone and water, the basin opening between its piped walls). Each area walks back and forth through its source strip (legs <= 512 px, leftward legs mirrored), so every join is a mirror join or a continuation; the place changes only at the fades and never goes back.",
+    "Palette (the dam): every slice is recoloured into quiet grey masonry (saturation 0.45-0.5, 25% toward #7a8090), the gallery's iron doors become brass sluice gates (row 6: hue +30, 35% toward #c8a040) and the water turquoise (E8a1 row 4: 30% toward #30c8b8; the reservoir in E7a0's far layer, row 23, 45% toward #2ab0a0); the far layer keeps the storm dusk (s3ops) with the runtime lightning and rain.",
+    "Lanes: the E7a0 causeway deck (y 113-160) is walk-patched one row onto its front coping (floor art), lane 64; the E8a1 gallery ledge (rows y 128-192, floor art) is walk-patched onto the wading strip below it, lane 96, in a1 and a2.",
+    "Boss arena (6-6, MARSHAL SABLE / CROWNBACK): the floodgate basin itself: turquoise water between the dam's piped walls, brass sluice gates set into the basin walls (the E8a1 door, lifted, in brass), the gallery's chains; the runtime adds the spill wheels and the Crown set pieces.",
     "Section casts (CAMPAIGN §4.4 'cast', merged over the chapter pool): lighter A/BOMB/KNIFE variants where the ROM-affine HP budget of the chapter's waves exceeded ENEMIES §2.6 by more than 15% (tests/campaign.cjs (8)); ratio now 1.139.",
-    "Palette: storm-crown on every slice; the role ops (sky borrow from E4a0, water tint) are skipped without roles, so the skies take s3ops (darkened, 30% toward #6a4a9a) to read as storm."
+    "Priority: the E7a0 causeway is drawn with prio \"none\" (its front coping is a foreground row in 1993, and the widened lane runs over it). Far layer: E7a0's reservoir and drowned city under the storm in all three areas (past the road, through the gallery openings, beyond the basin)."
   ],
   "areas": [
     {
@@ -33,80 +32,139 @@
       "s2": [
         {
           "slice": {
-            "src": "E1a2",
+            "src": "E7a0",
             "x": [
-              176,
-              464
+              0,
+              512
             ],
             "h": [
-              272,
-              496
+              16,
+              240
             ]
           },
           "at": [
             0,
             0
-          ]
+          ],
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.45,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25
+            }
+          ],
+          "prio": "none"
         },
         {
           "slice": {
-            "src": "E1a2",
+            "src": "E7a0",
             "x": [
-              176,
-              464
+              512,
+              864
             ],
             "h": [
-              272,
-              496
+              16,
+              240
             ]
           },
           "at": [
-            288,
+            512,
             0
           ],
-          "flip": true
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.45,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25
+            }
+          ],
+          "prio": "none"
         },
         {
           "slice": {
-            "src": "E1a0",
+            "src": "E7a0",
             "x": [
-              928,
-              1312
+              544,
+              864
             ],
             "h": [
-              272,
-              496
+              16,
+              240
             ]
           },
           "at": [
-            576,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E1a0",
-            "x": [
-              928,
-              1312
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            960,
+            864,
             0
           ],
-          "flip": true
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.45,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25
+            }
+          ],
+          "prio": "none"
         },
         {
           "slice": {
-            "src": "E1a1",
+            "src": "E7a0",
             "x": [
-              112,
-              592
+              544,
+              704
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "at": [
+            1184,
+            0
+          ],
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.45,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25
+            }
+          ],
+          "prio": "none"
+        },
+        {
+          "slice": {
+            "src": "E7a0",
+            "x": [
+              704,
+              1216
             ],
             "h": [
               16,
@@ -116,110 +174,101 @@
           "at": [
             1344,
             0
-          ]
+          ],
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.45,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25
+            }
+          ],
+          "prio": "none"
         },
         {
           "slice": {
-            "src": "E1a1",
-            "x": [
-              112,
-              592
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1824,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E1a1",
-            "x": [
-              112,
-              176
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            2304,
-            0
-          ]
-        },
-        {
-          "patch": {
             "src": "E7a0",
             "x": [
-              1760,
-              1792
+              704,
+              1216
             ],
             "h": [
               16,
               240
-            ],
-            "rows": [
-              27
             ]
           },
           "at": [
-            560,
+            1856,
             0
           ],
-          "join": true,
-          "note": "spire pier over the E1a2 | E1a0 join"
-        },
-        {
-          "patch": {
-            "src": "E7a0",
-            "x": [
-              1760,
-              1792
-            ],
-            "h": [
-              16,
-              240
-            ],
-            "rows": [
-              27
-            ]
-          },
-          "at": [
-            1328,
-            0
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.45,
+              "l": 0.92
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25
+            }
           ],
-          "join": true,
-          "note": "spire pier over the section join 6-1 | 6-2"
+          "prio": "none"
         }
       ],
-      "s3": "auto",
+      "s3": [
+        {
+          "x": [
+            0,
+            2368
+          ],
+          "src": "E7a0",
+          "ops": [
+            {
+              "op": "tint",
+              "rgb": "#2ab0a0",
+              "amount": 0.45,
+              "rows": [
+                23
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 1.3,
+              "l": 1.25,
+              "rows": [
+                23
+              ]
+            }
+          ],
+          "note": "the reservoir and the drowned city beyond the dam road, storm dusk",
+          "x3": [
+            0,
+            768
+          ]
+        }
+      ],
       "walk": {
         "patch": [
           {
             "rect": [
-              0,
+              352,
               160,
-              576,
+              2016,
               16
             ],
             "walk": true,
-            "why": "E1a2 sidewalk top row (floor art)"
-          },
-          {
-            "rect": [
-              576,
-              144,
-              768,
-              16
-            ],
-            "walk": true,
-            "why": "E1a0 roof surface row (floor art)"
+            "why": "E7a0 causeway front coping (floor art): lane 64 px"
           }
         ]
       },
@@ -301,197 +350,803 @@
       "s2": [
         {
           "slice": {
-            "src": "E1a1",
+            "src": "E8a1",
             "x": [
-              112,
-              592
+              608,
+              1120
             ],
             "h": [
-              16,
-              240
+              784,
+              1008
             ]
           },
           "at": [
             0,
             0
           ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E1a1",
-            "x": [
-              112,
-              144
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            480,
-            0
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.5,
+              "l": 0.95,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 30,
+              "s": 1.3,
+              "l": 1.3,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#c8a040",
+              "amount": 0.35,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 1.3,
+              "l": 1.15,
+              "rows": [
+                4
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#30c8b8",
+              "amount": 0.3,
+              "rows": [
+                4
+              ]
+            }
           ]
         },
         {
           "slice": {
-            "src": "E6a0",
+            "src": "E8a1",
             "x": [
-              1216,
-              1728
+              608,
+              1120
             ],
             "h": [
-              16,
-              240
+              784,
+              1008
             ]
           },
           "at": [
             512,
             0
+          ],
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.5,
+              "l": 0.95,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 30,
+              "s": 1.3,
+              "l": 1.3,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#c8a040",
+              "amount": 0.35,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 1.3,
+              "l": 1.15,
+              "rows": [
+                4
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#30c8b8",
+              "amount": 0.3,
+              "rows": [
+                4
+              ]
+            }
           ]
         },
         {
           "slice": {
-            "src": "E6a0",
+            "src": "E8a1",
             "x": [
-              1216,
-              1728
+              608,
+              1120
             ],
             "h": [
-              16,
-              240
+              784,
+              1008
             ]
           },
           "at": [
             1024,
             0
           ],
-          "flip": true
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.5,
+              "l": 0.95,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 30,
+              "s": 1.3,
+              "l": 1.3,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#c8a040",
+              "amount": 0.35,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 1.3,
+              "l": 1.15,
+              "rows": [
+                4
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#30c8b8",
+              "amount": 0.3,
+              "rows": [
+                4
+              ]
+            }
+          ]
         },
         {
           "slice": {
-            "src": "E7a3",
+            "src": "E8a1",
             "x": [
-              880,
-              1264
+              864,
+              1120
             ],
             "h": [
-              16,
-              240
+              784,
+              1008
             ]
           },
           "at": [
             1536,
             0
           ],
-          "step": true,
-          "note": "the dam control hall: the E7a3 riser and consoles (the Slisaur monitor wall 1264+ is not used)"
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.5,
+              "l": 0.95,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 30,
+              "s": 1.3,
+              "l": 1.3,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#c8a040",
+              "amount": 0.35,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 1.3,
+              "l": 1.15,
+              "rows": [
+                4
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#30c8b8",
+              "amount": 0.3,
+              "rows": [
+                4
+              ]
+            }
+          ]
         },
         {
           "slice": {
-            "src": "E7a3",
+            "src": "E8a1",
             "x": [
-              880,
-              1264
+              864,
+              1376
             ],
             "h": [
-              16,
-              240
+              784,
+              1008
             ]
           },
           "at": [
-            1920,
+            1792,
             0
           ],
-          "flip": true
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.5,
+              "l": 0.95,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 30,
+              "s": 1.3,
+              "l": 1.3,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#c8a040",
+              "amount": 0.35,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 1.3,
+              "l": 1.15,
+              "rows": [
+                4
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#30c8b8",
+              "amount": 0.3,
+              "rows": [
+                4
+              ]
+            }
+          ]
         },
         {
           "slice": {
-            "src": "E6a0",
+            "src": "E8a1",
             "x": [
-              1216,
-              1472
+              1120,
+              1376
             ],
             "h": [
-              16,
-              240
+              784,
+              1008
             ]
           },
           "at": [
             2304,
             0
           ],
-          "step": true
-        },
-        {
-          "patch": {
-            "src": "E7a0",
-            "x": [
-              1760,
-              1792
-            ],
-            "h": [
-              16,
-              240
-            ],
-            "rows": [
-              27
-            ]
-          },
-          "at": [
-            496,
-            0
-          ],
-          "join": true,
-          "note": "spire pier over the E1a1 | E6a0 join"
-        },
-        {
-          "patch": {
-            "src": "E7a0",
-            "x": [
-              1760,
-              1792
-            ],
-            "h": [
-              16,
-              240
-            ],
-            "rows": [
-              27
-            ]
-          },
-          "at": [
-            1520,
-            0
-          ],
-          "join": true,
-          "note": "spire pier over the E6a0 | E7a3 join"
-        },
-        {
-          "patch": {
-            "src": "E7a0",
-            "x": [
-              1760,
-              1792
-            ],
-            "h": [
-              16,
-              240
-            ],
-            "rows": [
-              27
-            ]
-          },
-          "at": [
-            2288,
-            0
-          ],
-          "join": true,
-          "note": "spire pier over the E7a3 | E6a0 join"
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.5,
+              "l": 0.95,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 30,
+              "s": 1.3,
+              "l": 1.3,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#c8a040",
+              "amount": 0.35,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 1.3,
+              "l": 1.15,
+              "rows": [
+                4
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#30c8b8",
+              "amount": 0.3,
+              "rows": [
+                4
+              ]
+            }
+          ]
         }
       ],
-      "s3": "auto",
+      "s3": [
+        {
+          "x": [
+            0,
+            2560
+          ],
+          "src": "E7a0",
+          "ops": [
+            {
+              "op": "tint",
+              "rgb": "#2ab0a0",
+              "amount": 0.45,
+              "rows": [
+                23
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 1.3,
+              "l": 1.25,
+              "rows": [
+                23
+              ]
+            }
+          ],
+          "note": "the reservoir under the storm through the gallery openings",
+          "x3": [
+            0,
+            768
+          ]
+        }
+      ],
       "sections": [
         {
           "id": "6-3",
@@ -575,7 +1230,21 @@
           },
           "s3": "E6a0"
         }
-      ]
+      ],
+      "walk": {
+        "patch": [
+          {
+            "rect": [
+              0,
+              128,
+              2560,
+              64
+            ],
+            "walk": true,
+            "why": "E8a1 gallery ledge (floor art, rows y 128-192) joined to the wading strip: lane 96 px"
+          }
+        ]
+      }
     },
     {
       "id": "a2",
@@ -585,98 +1254,264 @@
       "s2": [
         {
           "slice": {
-            "src": "E8a2",
+            "src": "E8a1",
             "x": [
-              2304,
-              2816
+              1024,
+              1536
             ],
             "h": [
-              272,
-              496
+              784,
+              1008
             ]
           },
           "at": [
             0,
             0
+          ],
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.5,
+              "l": 0.95,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 30,
+              "s": 1.3,
+              "l": 1.3,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#c8a040",
+              "amount": 0.35,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 1.3,
+              "l": 1.15,
+              "rows": [
+                4
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#30c8b8",
+              "amount": 0.3,
+              "rows": [
+                4
+              ]
+            }
           ]
         },
         {
           "slice": {
-            "src": "E8a2",
+            "src": "E8a1",
             "x": [
-              2304,
-              2816
+              1536,
+              1792
             ],
             "h": [
-              272,
-              496
+              784,
+              1008
             ]
           },
           "at": [
             512,
             0
           ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E1a1",
-            "x": [
-              112,
-              432
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1024,
-            0
-          ],
-          "step": true
-        },
-        {
-          "slice": {
-            "src": "E1a1",
-            "x": [
-              112,
-              432
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1344,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E1a1",
-            "x": [
-              112,
-              304
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1664,
-            0
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.5,
+              "l": 0.95,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 30,
+              "s": 1.3,
+              "l": 1.3,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#c8a040",
+              "amount": 0.35,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 1.3,
+              "l": 1.15,
+              "rows": [
+                4
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#30c8b8",
+              "amount": 0.3,
+              "rows": [
+                4
+              ]
+            }
           ]
         },
         {
           "slice": {
             "src": "E8a1",
             "x": [
-              1504,
-              1664
+              1536,
+              1792
             ],
             "h": [
               784,
@@ -684,17 +1519,636 @@
             ]
           },
           "at": [
-            1856,
+            768,
             0
           ],
-          "step": true,
-          "note": "the spillway basin (E8a1 1504-1664, lane probed live: h 784-879)"
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.5,
+              "l": 0.95,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 30,
+              "s": 1.3,
+              "l": 1.3,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#c8a040",
+              "amount": 0.35,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 1.3,
+              "l": 1.15,
+              "rows": [
+                4
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#30c8b8",
+              "amount": 0.3,
+              "rows": [
+                4
+              ]
+            }
+          ]
         },
         {
           "slice": {
             "src": "E8a1",
             "x": [
-              1504,
+              1536,
+              1792
+            ],
+            "h": [
+              784,
+              1008
+            ]
+          },
+          "at": [
+            1024,
+            0
+          ],
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.5,
+              "l": 0.95,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 30,
+              "s": 1.3,
+              "l": 1.3,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#c8a040",
+              "amount": 0.35,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 1.3,
+              "l": 1.15,
+              "rows": [
+                4
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#30c8b8",
+              "amount": 0.3,
+              "rows": [
+                4
+              ]
+            }
+          ]
+        },
+        {
+          "slice": {
+            "src": "E8a1",
+            "x": [
+              1536,
+              1792
+            ],
+            "h": [
+              784,
+              1008
+            ]
+          },
+          "at": [
+            1280,
+            0
+          ],
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.5,
+              "l": 0.95,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 30,
+              "s": 1.3,
+              "l": 1.3,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#c8a040",
+              "amount": 0.35,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 1.3,
+              "l": 1.15,
+              "rows": [
+                4
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#30c8b8",
+              "amount": 0.3,
+              "rows": [
+                4
+              ]
+            }
+          ]
+        },
+        {
+          "slice": {
+            "src": "E8a1",
+            "x": [
+              1536,
+              1792
+            ],
+            "h": [
+              784,
+              1008
+            ]
+          },
+          "at": [
+            1536,
+            0
+          ],
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.5,
+              "l": 0.95,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 30,
+              "s": 1.3,
+              "l": 1.3,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#c8a040",
+              "amount": 0.35,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 1.3,
+              "l": 1.15,
+              "rows": [
+                4
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#30c8b8",
+              "amount": 0.3,
+              "rows": [
+                4
+              ]
+            }
+          ]
+        },
+        {
+          "slice": {
+            "src": "E8a1",
+            "x": [
+              1536,
+              1792
+            ],
+            "h": [
+              784,
+              1008
+            ]
+          },
+          "at": [
+            1792,
+            0
+          ],
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.5,
+              "l": 0.95,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 30,
+              "s": 1.3,
+              "l": 1.3,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#c8a040",
+              "amount": 0.35,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 1.3,
+              "l": 1.15,
+              "rows": [
+                4
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#30c8b8",
+              "amount": 0.3,
+              "rows": [
+                4
+              ]
+            }
+          ]
+        },
+        {
+          "slice": {
+            "src": "E8a1",
+            "x": [
+              1536,
               1664
             ],
             "h": [
@@ -703,57 +2157,418 @@
             ]
           },
           "at": [
-            2016,
+            2048,
             0
           ],
-          "flip": true
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.5,
+              "l": 0.95,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 30,
+              "s": 1.3,
+              "l": 1.3,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#c8a040",
+              "amount": 0.35,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 1.3,
+              "l": 1.15,
+              "rows": [
+                4
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#30c8b8",
+              "amount": 0.3,
+              "rows": [
+                4
+              ]
+            }
+          ]
         },
         {
           "patch": {
-            "src": "E7a0",
+            "src": "E8a1",
             "x": [
-              1760,
-              1792
+              448,
+              512
             ],
             "h": [
-              16,
-              240
-            ],
-            "rows": [
-              27
+              896,
+              976
             ]
           },
-          "at": [
-            1008,
-            0
+          "rows": [
+            6
           ],
-          "join": true,
-          "note": "spire pier over the section join 6-5 | 6-6 (the far layer changes under it)"
+          "at": [
+            1712,
+            32
+          ],
+          "prio": "none",
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.5,
+              "l": 0.95,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 30,
+              "s": 1.3,
+              "l": 1.3,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#c8a040",
+              "amount": 0.35,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 1.3,
+              "l": 1.15,
+              "rows": [
+                4
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#30c8b8",
+              "amount": 0.3,
+              "rows": [
+                4
+              ]
+            }
+          ],
+          "note": "brass sluice gate (the E8a1 cell door, lifted, in brass) set into the basin wall"
         },
         {
           "patch": {
-            "src": "E7a0",
+            "src": "E8a1",
             "x": [
-              1760,
-              1792
+              448,
+              512
             ],
             "h": [
-              16,
-              240
-            ],
-            "rows": [
-              27
+              896,
+              976
             ]
           },
-          "at": [
-            1840,
-            0
+          "rows": [
+            6
           ],
-          "join": true,
-          "note": "spire pier over the E1a1 | E8a1 join (the floodgate)"
+          "at": [
+            1808,
+            32
+          ],
+          "prio": "none",
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.5,
+              "l": 0.95,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#7a8090",
+              "amount": 0.25,
+              "rows": [
+                0,
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 30,
+              "s": 1.3,
+              "l": 1.3,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#c8a040",
+              "amount": 0.35,
+              "rows": [
+                6
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 1.3,
+              "l": 1.15,
+              "rows": [
+                4
+              ]
+            },
+            {
+              "op": "tint",
+              "rgb": "#30c8b8",
+              "amount": 0.3,
+              "rows": [
+                4
+              ]
+            }
+          ],
+          "note": "brass sluice gate (the E8a1 cell door, lifted, in brass) set into the basin wall"
         }
       ],
-      "s3": "auto",
+      "s3": [
+        {
+          "x": [
+            0,
+            2176
+          ],
+          "src": "E7a0",
+          "ops": [
+            {
+              "op": "tint",
+              "rgb": "#2ab0a0",
+              "amount": 0.45,
+              "rows": [
+                23
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 0,
+              "s": 1.3,
+              "l": 1.25,
+              "rows": [
+                23
+              ]
+            }
+          ],
+          "note": "the reservoir under the storm beyond the floodgate basin",
+          "x3": [
+            0,
+            768
+          ]
+        }
+      ],
       "sections": [
         {
           "id": "6-5",
@@ -834,7 +2649,21 @@
             ]
           }
         }
-      ]
+      ],
+      "walk": {
+        "patch": [
+          {
+            "rect": [
+              0,
+              128,
+              2176,
+              64
+            ],
+            "walk": true,
+            "why": "E8a1 gallery ledge and basin rim (floor art) joined to the wading strip: lane 96 px"
+          }
+        ]
+      }
     }
   ],
   "s3ops": [

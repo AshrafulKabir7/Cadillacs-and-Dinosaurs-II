@@ -29,3 +29,6 @@ tools/re/mame/rompath/
 
 # wrangler dev state (relay/)
 .wrangler/
+
+# Raw generated boss images (source art, ~90 MB); the game ships the converted sprites in assets/boss-art/
+assets/bosses/

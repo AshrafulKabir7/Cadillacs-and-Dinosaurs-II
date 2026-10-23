@@ -21,11 +21,12 @@ function sandbox(files) {
   for (const f of files) if (exists(f)) vm.runInContext(fs.readFileSync(rel(f), 'utf8'), ctx, { filename: f, timeout: 60000 });
   return win;
 }
-const bossFiles = ['sprite-data-bosses.js', ...[1, 2, 3, 4, 5, 6].map(n => `sprite-data-bosses-ch${n}.js`)];
+// the generated boss bodies (tools/art/import-sprite.cjs: Sable, Crownback and his jet) load after the ROM family, as in index.html
+const bossFiles = ['sprite-data-bosses.js', ...[1, 2, 3, 4, 5, 6].map(n => `sprite-data-bosses-ch${n}.js`), 'sprite-data-boss-sable.js', 'sprite-data-boss-crownback.js', 'sprite-data-boss-crownjet.js', 'sprite-data-boss-rook.js', 'sprite-data-boss-krag.js', 'sprite-data-boss-ironclub.js', 'sprite-data-boss-thorne.js', 'sprite-data-boss-glassback.js', 'sprite-data-boss-cinder.js', 'sprite-data-boss-overdrive.js', 'sprite-data-boss-cinderfx.js', 'sprite-data-boss-echo.js', 'sprite-data-boss-echoring.js', 'sprite-data-boss-engine.js', 'sprite-data-boss-enginefx.js'];
 const W = sandbox(['combat-config.js', 'sprite-data-enemies.js', ...bossFiles, 'enemy-kinds.js', 'campaign.js']);
 const FAM = (W.SPRITE_DATA && W.SPRITE_DATA.families) || {};
 const EN = FAM.enemies || null;
-const BO = (() => { const parts = Object.entries(FAM).filter(([k]) => k === 'bosses' || /^bosses-ch\d$/.test(k)).map(([, f]) => f); if (!parts.length) return null; const v = { anims: {}, bodies: {}, frames: null, sheets: {}, rect: {}, pal: { rows: {}, maps: {} } }; for (const p of parts) { Object.assign(v.anims, p.anims); Object.assign(v.bodies, p.bodies); Object.assign(v.sheets, p.sheets); Object.assign(v.rect, p.rect); Object.assign(v.pal.rows, p.pal.rows); Object.assign(v.pal.maps, p.pal.maps); v.frames = p.frames; v.crownEngine = p.crownEngine || v.crownEngine; } return v; })();
+const BO = (() => { const parts = Object.entries(FAM).filter(([k]) => k === 'bosses' || /^bosses-ch\d+$/.test(k)).map(([, f]) => f); if (!parts.length) return null; const v = { anims: {}, bodies: {}, frames: null, sheets: {}, rect: {}, pal: { rows: {}, maps: {} } }; for (const p of parts) { Object.assign(v.anims, p.anims); Object.assign(v.bodies, p.bodies); Object.assign(v.sheets, p.sheets); Object.assign(v.rect, p.rect); Object.assign(v.pal.rows, p.pal.rows); Object.assign(v.pal.maps, p.pal.maps); v.frames = v.frames && p !== FAM.bosses ? v.frames : p.frames;   /* the ROM family's frame list (a generated body's frames are local to its file) */ v.crownEngine = p.crownEngine || v.crownEngine; } return v; })();
 const KINDS = W.ENEMY_KINDS, DEFS = W.BOSS_DEFS, CAMPAIGN = W.EDEN_CAMPAIGN;
 const fmt = v => JSON.stringify(v);
 
@@ -97,7 +98,10 @@ if (!DEFS || !BO) C.fail('G0', '(7) Every boss move anim exists in ROM_BOSSES', 
 else {
   const r = G.checkAnimKeys({ kinds: {}, bosses: DEFS, enemies: EN ? { anims: EN.anims, types: EN.types } : null, bossFam: { anims: BO.anims, bodies: BO.bodies } });
   C.check('G0', `(7) Every BOSS_DEFS anim reference exists in ROM_BOSSES.anims (${r.info})`, r.ok, r.errors.slice(0, 6).join(' | '));
-  const roster = Object.values(DEFS).map(b => b.body).concat(['fessenden', 'crownEngine']);
+  // The boss rebuild: the ROM stand-in bodies of the rebuilt bosses (BUTCHER for Rook, MACK for Breakwater, SHIVAT for
+  // Glassback, MORGAN for Cinder, VICE T. for Sable, the six-part FESSENDEN for Crownback) no longer ship
+  // (tools/re/build/pack-config.json bosses.droppedBodies): each boss draws its generated body (sprite-data-boss-*.js).
+  const roster = Object.values(DEFS).flatMap(b => [b.body, b.phase2 && b.phase2.body].filter(Boolean)).concat(['crownEngine']);
   const missing = roster.filter(id => !BO.bodies[id]);
   C.check('G0', `(7b) RC11: every BOSS_DEFS body and the Crown Engine ship (bossRoster ${roster.length} >= 7)`, !missing.length && roster.length >= 7, missing.join(', '));
   const banned = Object.keys(BO.bodies).filter(b => /hogg|morgue|slisaur|tyrog|fessenden-1/i.test(b));
@@ -106,12 +110,8 @@ else {
   for (const [kid, d] of Object.entries(DEFS)) { const b = BO.bodies[d.body]; if (!b) continue; for (const name of [d.pal, d.ctx, d.palFallback].filter(Boolean)) if (!(b.pal && b.pal[name])) palBad.push(`${kid}: ${d.body} has no palette '${name}'`); if (!BO.pal.maps[b.pal[b.use]]) palBad.push(`${d.body}.use '${b.use}' has no map`); }
   C.check('G0', '(7d) Every BOSS_DEFS pal / ctx / palFallback names a shipped palette map of its body', !palBad.length, palBad.join(' | '));
   // Fessenden: six parts, every logged body frame has an attach row, order lists the six parts
-  const fz = BO.bodies.fessenden || {}, parts = (fz.parts || []).map(p => p.id);
-  const bodyFrames = Object.entries(BO.anims).filter(([k]) => k.startsWith('0x64452:')).length;
-  C.check('G0', `(7e) LOT 00: six parts, ${Object.keys(fz.attach || {}).length} measured + ${Object.keys(fz.attachInferred || {}).length} inferred body-frame attach rows covering every body frame, draw order of the six parts`,
-    parts.join() === 'body,line,arm,arm2,neckA,neckB' && Object.keys(fz.attach || {}).length >= 13 && bodyFrames > 0 && Object.entries(BO.anims).filter(([k]) => k.startsWith('0x64452:')).every(([k, a]) => a.f.every((f, i) => (fz.attach || {})[k + ':' + i] || (fz.attachInferred || {})[k + ':' + i])) && (fz.order || []).length === 6, fmt({ parts, attach: Object.keys(fz.attach || {}).length, inferred: Object.keys(fz.attachInferred || {}).length, order: fz.order }));
-  const mt = (BO.bodies.morgan || {}).throwFrame;
-  C.check('G0', "(7f) Morgan's throw frame recorded (the anim that creates object 0x110, or the ENEMIES §6.2 fallback)", !!(mt && BO.anims[mt.anim] && Number.isInteger(mt.frame)), fmt(mt));
+  const stand = ['butcher', 'torikeratopss', 'arosaurus', 'morgan', 'richmond', 'fessenden', 'slice'].filter(b => BO.bodies[b]);
+  C.check('G0', '(7e/7f) The rebuilt bosses\' ROM stand-in bodies (BUTCHER, MACK, SHIVAT, MORGAN, VICE T., SLICE, the six-part FESSENDEN) no longer ship', !stand.length, stand.join(', '));
   const ce = BO.crownEngine || BO.bodies.crownEngine;
   C.check('G0', '(7g) Crown Engine baked from the E8a3 cells: idle and cracked frames, crown palette, ~200x150', !!(ce && BO.frames[ce.frames.idle] && BO.frames[ce.frames.cracked] && BO.pal.maps[ce.pal.crown] && ce.w >= 150 && ce.w <= 320 && ce.h >= 90 && ce.h <= 170), ce ? `${ce.w}x${ce.h}` : 'none');
 }
@@ -140,19 +140,15 @@ if (exists('work/re/pack/bosses-report.json')) {
   const rp = JSON.parse(fs.readFileSync(rel('work/re/pack/bosses-report.json'), 'utf8'));
   let er = null; try { er = JSON.parse(fs.readFileSync(rel('work/re/pack/enemies-report.json'), 'utf8')); } catch (e) { /* enemies not built */ }
   const HE = (() => { try { const w = sandbox(['sprite-data-heroes.js']); return w.SPRITE_DATA && w.SPRITE_DATA.families && w.SPRITE_DATA.families.heroes; } catch (e) { return null; } })();
-  const nine = { rook: rp.palettes.rook, cinder: rp.palettes.cinder, sable: rp.palettes.sable, slicevat: rp.palettes.slicevat, ironhide: rp.palettes.ironhide, verdant: rp.palettes.verdant, crown: rp.palettes.crown, drowned: er && er.palettes && er.palettes.drowned,
+  // the hand palettes of the dropped stand-ins (rook, cinder, sable, ironhide, verdant, slicevat) went with their bodies
+  const nine = { crown: rp.palettes.crown, drowned: er && er.palettes && er.palettes.drowned,
     half: HE ? { ok: ['jack', 'hannah', 'mustapha', 'mess'].every(h => HE.pal.maps['half-' + h] && HE.pal.maps['hero-' + h]), note: 'WP-B row effect' } : null };
   const bad = Object.entries(nine).filter(([n, p]) => !(p && p.ok)).map(([n, p]) => `${n}${p ? '' : ' (missing)'}`);
-  C.check('G0', `ENEMIES §6.1 palette acceptance for all nine sequel palettes (every colour a ROM colour, >= 6 pens changed vs every original, outline/eyes and the pixel-grown skin ramp kept, no ramp split): ${Object.keys(nine).join(', ')}`, !bad.length, bad.join(', '));
-  // the reviewer's regression: the skin highlight / shadow pens of Rook and Sable are the home colours in the shipped rows
-  const skinPens = { butcher: { rook: { 30: [10, 11, 12, 13, 14] } }, richmond: { sable: { 25: [10, 11, 12, 13, 14], 30: [10, 11, 12, 13, 14], 31: [10, 11, 12, 13, 14] } } }, skinBad = [];
-  for (const [body, pals] of Object.entries(skinPens)) for (const [pal, slots] of Object.entries(pals)) { const b = BO.bodies[body]; const home = BO.pal.maps[b.home], seq = BO.pal.maps[b.pal[pal]]; for (const [slot, pens] of Object.entries(slots)) { const h = BO.pal.rows[String(home[slot])], q = BO.pal.rows[String(seq[slot])]; for (const p of pens) if (h[p] !== q[p]) skinBad.push(`${pal} slot ${slot} pen ${p} #${h[p].toString(16)} -> #${q[p].toString(16)}`); } }
-  C.check('G0', 'Rook (BUTCHER slot 30) and Sable (VICE T. slots 25/30/31) keep the whole skin ramp 10-14, the cream highlight #ffffdd and the dark shadow included', !skinBad.length, skinBad.join(' | '));
+  C.check('G0', `ENEMIES §6.1 palette acceptance for the sequel palettes still shipped (every colour a ROM colour, >= 6 pens changed vs every original, outline/eyes and the pixel-grown skin ramp kept, no ramp split): ${Object.keys(nine).join(', ')}`, !bad.length, bad.join(', '));
+  // (the skin-ramp regression of Rook's and Sable's ROM stand-in palettes went with those bodies)
   const cfgP = JSON.parse(fs.readFileSync(rel('tools/re/build/pack-config.json'), 'utf8')).bosses.palettes, noWhy = [];
   for (const [n, p] of Object.entries(cfgP)) for (const [slot, sl] of Object.entries(p.slots || {})) for (const pen of sl.recolour || []) if (!(sl.why && sl.why[pen])) noWhy.push(`${n} ${slot}:${pen}`);
   C.check('G0', 'Every deliberate recolour of a kept pen in pack-config bosses.palettes carries its why (shown on boss-palettes.png)', !noWhy.length, noWhy.join(', '));
-  const fc = rp.fessenden && rp.fessenden.check;
-  C.check('G0', `Fessenden attach offsets match the logged part positions ±1 px (${fc ? `${fc.within1px}/${fc.frames}` : '?'}; the misses are the spawn frame and one facing flip)`, !!fc && fc.outside <= 3, fc ? fmt(fc.misses.map(m => [m.file, m.n])) : 'no report');
   const rb = rp.summary && rp.summary.readBack;
   C.check('G0', `Boss frames re-render identically to the extract atlases (${rb ? `${rb.identical}/${rb.checked}` : '?'})`, !!rb && rb.different === 0 && rb.checked > 0, fmt(rb));
 } else C.skip('G0', 'Boss palette acceptance and read-back', 'run node tools/re/build-game-assets.cjs sprites bosses (writes work/re/pack/bosses-report.json)');
@@ -190,23 +186,24 @@ if (KINDS && EN) {
 
 // ================================================================ boss contracts: Cinder's throw, LOT 00 part moves, units, Crown Engine
 if (DEFS && BO) {
-  const mt = (BO.bodies.morgan || {}).throwFrame, slag = DEFS.cinder && DEFS.cinder.moves.slag, mainM = (BO.bodies.morgan || {}).main;
-  C.check('G0', "(7h) BOSS_DEFS.cinder.slag plays the anim on which Morgan's rock is created (bodies.morgan.throwFrame), released on its frame", !!(mt && slag && `${mainM}:${slag.a.split(':')[1]}` === mt.anim && slag.release === mt.frame), fmt({ slag: slag && slag.a, release: slag && slag.release, throwFrame: mt && [mt.anim, mt.frame] }));
-  const fz = DEFS.fessenden, unresolved = [];
-  for (const [pi, ph] of (fz.phases || []).entries()) for (const list of ['body', 'necks']) for (const name of ph[list] || []) { const m = KINDS.bossPartMove('fessenden', list, name); if (!m) unresolved.push(`phase ${pi} ${list} '${name}'`); else if (list === 'necks' && m.part !== 'neck') unresolved.push(`phase ${pi} necks '${name}' -> part ${m.part}`); }
-  C.check('G0', '(7i) LOT 00: every phase move name resolves to its part move (phases[].body -> partMoves.body, phases[].necks -> partMoves.necks)', !unresolved.length, unresolved.join(' | '));
+  const cd = DEFS.cinder, cdb = BO.bodies[cd.body] || {}, ob = BO.bodies[(cd.phase2 || {}).body] || {}, cmiss = [];
+  for (const [n, m] of Object.entries(cd.moves || {})) if (m.a && !BO.anims[`${cdb.main}:${m.a.split(':')[1]}`]) cmiss.push(n);
+  for (const [n, m] of Object.entries((cd.phase2 || {}).moves || {})) if (m.a && !BO.anims[`${ob.main}:${m.a.split(':')[1]}`]) cmiss.push('phase2 ' + n);
+  C.check('G0', '(7h) Cinder (cinder) and Overdrive Cinder (overdrive) play their moves on their own bodies; the overload anims and the broken rig ship', cd.body === 'cinder' && (cd.phase2 || {}).body === 'overdrive' && !cmiss.length && !!BO.anims[`${cdb.main}:6`] && !!BO.anims[`${ob.main}:9`] && !!BO.anims[`${ob.main}:10`], cmiss.join(', '));
+  // (7i) CROWNBACK left the six-part LOT 00 stand-in for his own generated body: every name in his phase patterns is one of
+  // his moves, and each move's anim exists on the 'crownback' body (the Sable treatment frames on 'sable' main 9)
+  const fz = DEFS.fessenden, unresolved = [], cb = BO.bodies[fz.body] || {}, sb = BO.bodies.sable || {};
+  for (const [pi, ph] of (fz.phases || []).entries()) for (const name of ph.pattern || []) { const m = fz.moves && fz.moves[name]; if (!m) unresolved.push(`phase ${pi} '${name}'`); else for (const n of String(m.a || '').match(/d+/g) || []) if (!BO.anims[`${cb.main}:${n}`]) unresolved.push(`${name} main:${n}`); }
+  if (!BO.anims[`${sb.main}:9`] || !BO.anims[`${cb.main}:10`] || !BO.anims[`${cb.main}:11`]) unresolved.push('treatment / lying anims');
+  C.check('G0', `(7i) CROWNBACK (${fz.body}): every phase pattern name is one of his moves and every move anim ships, with the treatment (sable main 9 + main 10) and the lying frame`, fz.body === 'crownback' && !unresolved.length, unresolved.join(' | '));
   const vx = [];
   for (const [id, d] of Object.entries(DEFS)) { const walk = (o, where) => { if (!o || typeof o !== 'object') return; if (o.vx != null) { const v = KINDS.bossVx(o, 4.37); if (!(v > 0.5 && v < 12)) vx.push(`${where} vx ${o.vx} -> ${v} px/f`); } for (const [k, x] of Object.entries(o)) if (x && typeof x === 'object') walk(x, `${where}.${k}`); }; walk(d, id); }
   C.check('G0', `(7j) Units: every BOSS_DEFS vx is px/s (K.UNITS.bossVx) and converts to a plausible 0.5-12 px/frame through ENEMY_KINDS.bossVx`, !vx.length && /px\/s/.test(KINDS.K.UNITS.bossVx), vx.join(' | '));
   const ce = BO.crownEngine || {};
   C.check('G0', "(7k) PLAN §4.1: crownEngine {sheet:'crown', rec:'ce-idle'} with both bakes in rect.crown", ce.sheet === 'crown' && ce.rec === 'ce-idle' && !!(BO.sheets.crown && BO.rect.crown && BO.rect.crown['ce-idle'] && BO.rect.crown['ce-cracked']), fmt({ sheet: ce.sheet, rec: ce.rec }));
-  const line = (BO.bodies.fessenden || {}).line, rowsWithLine = Object.values((BO.bodies.fessenden || {}).attach || {}).filter(r => r.line).length;
-  // (7m) CAMPAIGN §8.4 / D7: Cinder's defeat is the scripted serum melt on Morgan's main 8, cut before its MORGUE frames: no MORGUE
-  // body or sheet ships, and main 8's first five frames (the cowering, 50 f) are Morgan-sized (the morph frames are wider and taller).
-  { const cd = DEFS.cinder && DEFS.cinder.defeat, m8 = BO.anims[`${(BO.bodies.morgan || {}).main}:8`], morgue = Object.keys(BO.sheets).concat(Object.keys(BO.bodies)).filter(k => /morgue/i.test(k));
-    const first5 = m8 ? m8.f.slice(0, 5).map(f => BO.frames[f[0]]) : [], small = first5.length === 5 && first5.every(fr => fr[4] <= 64 && fr[3] <= 60), dur5 = m8 ? m8.f.slice(0, 5).reduce((n, f) => n + f[1], 0) : 0;
-    C.check('G0', `(7m) Cinder's melt plays main 8 frames 0-4 only (${dur5} f, Morgan-sized) and no MORGUE body or sheet ships`, !!cd && /no MORGUE/i.test(cd.note || '') && cd.script && cd.script[0] === 'main:8' && small && dur5 === 50 && !morgue.length, fmt({ note: cd && cd.note, dur5, small, morgue })); }
-  C.check('G0', `(7l) LOT 00 line: no [0,0,0] attach rows (it only mirrors the body in the logs: ${line ? `${line.mirrorsBody}/${line.logged}` : '?'})`, !rowsWithLine && !!line && line.attach === null, `${rowsWithLine} rows with a line offset`);
+  // (7m) STORY.md: Cinder surrenders beside his broken rig (the arrest script on Overdrive's defeat anim, no melt, no MORGUE)
+  { const cd = DEFS.cinder && DEFS.cinder.phase2 && DEFS.cinder.phase2.defeat, morgue = Object.keys(BO.sheets).concat(Object.keys(BO.bodies)).filter(k => /morgue/i.test(k));
+    C.check('G0', '(7m) Cinder\'s defeat is a surrender beside the broken rig (arrest script, main 8) and no MORGUE body or sheet ships', !!cd && cd.arrest === true && cd.anim === 'main:8' && !morgue.length, fmt({ cd, morgue })); }
 }
 
 // ================================================================ envelope contract and sheet locality (PLAN §4.1, R4)
@@ -233,7 +230,7 @@ if (EN) {
 function reachable(url) { return new Promise(res => { if (/^file:/i.test(url)) return res(true); const req = http.get(url, r => { r.resume(); res(r.statusCode < 500); }); req.on('error', () => res(false)); req.setTimeout(2500, () => { req.destroy(); res(false); }); }); }
 (async () => {
   const G4rows = ['(2) A walking FERRIS advances its walk frames with distance, not time', '(3) A jab hits only on its active frame (main 3 frame 1, after 5 ROM frames)', '(4) A knifer drops its knife on a knockdown and picks it back up (main 21)', '(6) spawnEnemy keeps today\'s Math.random order: id, timer, anim, clone roll (not for mutant/regent/mirror/boss), hero', '(8) Spacing for the next attack (G4 verify): in natural duels TYROG lashes, leaps and spits, RAZOR slashes, a poacher rolls in once', '(9) The poacher aimed shot: the windup is the aim (POACHER J 48 f, SKINNER/GUTTER 40 f) and the round leaves on the 1-f fire frame 3 f later'];
-  const G5rows = ['(10) G5 Cinder: the scripted serum melt sets dissolve within 2.6 s and never shows a MORGUE frame (main 8 past frame 4)'];
+  const G5rows = ['(10) G5 Cinder: beaten as Overdrive Cinder, he climbs out of the broken rig and surrenders within 2.6 s (his line on the radio) and never melts into gel'];
   const skipAll = why => { for (const r of G4rows) C.skip('G4', r, why); for (const r of G5rows) C.skip('G5c', r, why); };
   if (NODE_ONLY) { skipAll('--node: browser checks not run'); return A.finish(C); }
   if (!(await reachable(A.BASE))) { skipAll(`GAME_URL ${A.BASE} not reachable (start node tools/serve.cjs 8766)`); return A.finish(C); }
@@ -330,13 +327,14 @@ function reachable(url) { return new Promise(res => { if (/^file:/i.test(url)) r
     return bad.length ? `wrong for ${bad.join(',')}: ${seen.join('; ')}` : true;
   }));
 
-  // (10) G5 (PLAN §7 5c): beaten, FOREMAN CINDER cowers (Morgan main 8, frames 0-4 only), flashes from the cinder rows to the gel
-  // rows three times and dissolves: dissolve is set within the 2.6-s script and the anim never passes frame 4 (no MORGUE).
+  // (10) G5 (PLAN §7 5c, STORY.md; the boss rebuild): beaten, OVERDRIVE CINDER climbs out of his broken rig (overdrive
+  // main 8, the arrest script) and surrenders: his
+  // bossDefeat line is said within the 2.6-s script and he never flashes to the gel rows or dissolves.
   await C.gated('G5c', G5rows[0], !!S.G5, 'every BOSS_DEFS body on ROM_BOSSES (G5)', () => ev(() => {
-    const g = LAST_EDEN; g.start(3, 0, 'normal'); g.test.spawnBoss(); AT.ticks(170); const i = g.snapshot.enemies.findIndex(e => e.boss); g.test.damageEnemy(i, 99999);
-    const key = `${ROM_BOSSES.bodies.morgan.main}:8`; let t = 0, dis = null, maxF = -1, flash = false;
-    for (; t < 200; t++) { const b = g.snapshot.enemies.find(e => e.boss && e.type === 'cinder'); if (!b) break; if (b.ba && b.ba.key === key) maxF = Math.max(maxF, b.ba.t); if (b.flashMap === 'gel') flash = true; if (b.dissolve && dis == null) dis = t; AT.ticks(1); g.render(); }
-    return dis != null && dis / 60 <= 2.6 && maxF >= 0 && maxF < 50 && flash ? true : `dissolve at ${dis == null ? '-' : (dis / 60).toFixed(2) + ' s'}, main 8 up to ${maxF.toFixed(1)} f (frames 0-4 = 50 f), gel flash ${flash}`;
+    const g = LAST_EDEN; g.start(3, 0, 'normal'); g.test.spawnBoss(); AT.ticks(170); const i = g.snapshot.enemies.findIndex(e => e.boss); g.test.damageEnemy(i, 99999); AT.ticks(200); g.test.damageEnemy(i, 99999);
+    const key = `${ROM_BOSSES.bodies.overdrive.main}:8`; let t = 0, said = null, maxF = -1, gel = false;
+    for (; t < 200; t++) { const b = g.snapshot.enemies.find(e => e.boss && e.type === 'cinder'); if (!b) break; if (b.ba && b.ba.key === key) maxF = Math.max(maxF, b.ba.t); if (b.flashMap === 'gel' || b.dissolve) gel = true; if (b.defeat && b.defeat.done && said == null) said = t; AT.ticks(1); g.render(); }
+    return said != null && said / 60 <= 2.6 && maxF >= 0 && !gel && g.snapshot.radio === EDEN_CAMPAIGN[3].bossDefeat ? true : `surrender at ${said == null ? '-' : (said / 60).toFixed(2) + ' s'}, defeat anim up to ${maxF.toFixed(1)} f, gel ${gel}, radio ${g.snapshot.radio}`;
   }));
 
   await browser.close();

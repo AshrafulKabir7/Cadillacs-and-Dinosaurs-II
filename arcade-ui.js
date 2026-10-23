@@ -29,12 +29,12 @@
   const PEN = { white: '#f8f8f8', red: '#e8402c', yellow: '#f8d838', blue: '#58a8f8', acid: '#9dff6d', grey: '#a8a8a8',
                 orange: '#f0a030', pink: '#ff8bd0', shadow: '#141414', black: '#000000' };
   const PORTRAIT_INDEX = { jack: 0, hannah: 1, mustapha: 2, mess: 3, fessenden: 4 };               // CAST.md
-  const HERO_NAMES = { jack: 'JACK', hannah: 'HANNAH', mustapha: 'MUSTAPHA', mess: 'MESS', fessenden: 'FESSENDEN', clone: 'YOUR CLONE' };
+  const HERO_NAMES = { jack: 'JACK', hannah: 'HANNAH', mustapha: 'MUSTAPHA', mess: 'MESS', fessenden: 'FESSENDEN', clone: 'YOUR CLONE', sable: 'SABLE', echo: 'ECHO' };
   // Marker spots on the 224x96 card map, keyed by the shipped campaign.js card.marker ids (CAMPAIGN §12.1: wassoon,
   // causeway, frontier, city-in-the-sea, cliffs, river-head). Authored guesses; a card's `markerAt` overrides them.
   const CARD_MARKERS = { wassoon: [166, 66], causeway: [124, 80], frontier: [40, 34], 'city-in-the-sea': [176, 46], cliffs: [60, 72], 'river-head': [196, 20] };
   const STAFF_ROLL = [                                                                             // CAMPAIGN §11.4
-    ['CADILLACS & DINOSAURS II', ['FESSENDEN’S LEGACY']],
+    ['CADILLACS & DINOSAURS II', ['THE CROWN TIDE']],
     ['AN UNOFFICIAL FAN SEQUEL', ['MADE FOR MOSTAFA']],
     ['ORIGINAL GAME', ['CAPCOM 1993']],
     ['BASED ON', ['XENOZOIC TALES', 'BY MARK SCHULTZ']],

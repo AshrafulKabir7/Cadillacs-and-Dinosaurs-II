@@ -4,18 +4,10 @@
   "objPage": "S8A1",
   "preset": "drowned",
   "notes": [
-    "CAMPAIGN.md §8.1 / §12.2 '4-1'..'4-6'. The one deliberate return (D4): every area is a returnVisit (ARCHITECTURE §3.8) with the drowned palette on every slice and >= 25% of its cells patched (broken-tank dynamic cells of E8a0, rock collapses, standing water, scaffolds, pump pipes, the capsule removed, the cut floor).",
-    "E8a1 past 2992 (CAMPAIGN 4-1, 4-3) is not used: the original camera falls there during a fade (segment 0x09 at 3008), its terrain is type 0 in every row (no lane was authored) and its scroll2 is empty from X 3100, so a lane there would stand on nothing. E8a1 elsewhere has a 32-px wading lane (live h 784-815), except the sluice basin 1504-1664 (live top h 879-880, probed by work/re/runs/wpe-depth-e8a1): the basin is what ch4 uses of E8a1 (4-3 and 4-6).",
-    "4-1: the tunnel is E7a0 only (1792-2304, 2560-2800, 1792-2304 flip) and ends on the tunnel's own brick pier and arch (E7a0 1712-1792 flip continues the mirrored piece seamlessly) where the Bio Lab begins. The pump pipes of 4-3..4-6 are the E7a3 riser and elbows (E7a3 816-912, palette row 4 lifted); the first build's E4a2 'pipe' patches were empty cells that erased the cave art (gate 1 now warns on such patches).",
-    "4-3: the sluice basin (E8a1 1504-1664) between two scaffold posts is the Brood Mother pool (the pit rect sits at its back); E8a2 1792-2304 before it and 1952-2304 after it, which continues straight into 4-4's E8a2 2304-2816; 4-4 ends on a mirror join (E8a2 2304-2816 flip).",
-    "4-5: E8a3 3824-3968 has a 32-px lane (the throne-room entry narrows between rocks), so the chamber is E8a3 3968-4304, its mirror, then the throne E8a3 4400-4752 (capsule cells replaced, the floor in front of the steps cut open). 4-6: the basin, the cave arches E8a2 1920-2432 and their mirror (E8a2 1952-2432 flip), so the boss lock 1792-2176 is E8a2 columns only (E8a2 has no boss window).",
-    "Seams (CAMPAIGN §4.1 join chunks): joins in the tunnel and the lab are covered by the tunnel's brick pier (E7a0 1760-1792, palette row 27 lifted), joins in the caves by a scaffold post (the propped timber of the E6a0 mine portal, E6a0 864-896, rows 9/8/3/2 lifted); every other join is a mirror join or continues the source.",
-    "KI1 framing: E8a2 1792-3328 is framed at camY 256 (h 272-496), where the original camera stands there; at the §4.1 camY 512 the frame is the empty rock above the cave. Lanes checked live: E8a2 and E8a3 by work/re/runs/wpe-depth-e8a2 (it walked on into E8a3), E8a0 by stg-depth-e8a0; E7a0 1792-2832 is ROM terrain only (the probe stopped at the 1408 lock).",
-    "Return-visit lock layout (§3.8): no lock window may start within 64 px of an original lock trigger of its source (E7a0 432/1408/1936/2352, E8a0 288/720/1152, E8a1 416/880/1392/2112/2560, E8a2 0/1840/2304, E8a3 4384), checked by gate 4.",
-    "Far layer: one per section (4-1 E7a0, 4-2 E8a0, 4-3/4-4 E8a2, 4-5 E8a3, 4-6 E8a2); the open floor under the E8a3 bridge shows E8a3's own machinery far layer, as in the original (gate 2 warning).",
-    "Section casts (CAMPAIGN §4.4 'cast', merged over the chapter pool): lighter A/BOMB/KNIFE variants where the ROM-affine HP budget of the chapter's waves exceeded ENEMIES §2.6 by more than 15% (tests/campaign.cjs (8)); ratio now 1.138.",
-    "The drowned preset (flood + ruin + night 0.8) leaves the tunnel and the Bio Lab nearly black on the review sheet, so the chapter adds a lift (lightness x1.45, saturation x1.1) after it.",
-    "4-1: the collapse where Hannah fell is the E8a2 rock fall over the tunnel ribs (an E4a0 rubble patch was tried: its cells carry the sea wall, not the heap)."
+    "COHERENCE (2026-10-22): ch4 goes down into the Sink, Fessenden's drowned underworld, in one direction: a0 THE SINK is the flooded street at the rim (E1a2 176-848 only: the broken brick wall over the drowned city, floodwater over the pavement), a1 THE PUMP STATION is the pump hall below it (E4a2 0-1024 only: the grated floor under the hall's own far layer of pipes, pressure globes and vats, the vats' red liquid turned to floodwater), a2 THE DIG is the excavation in Fessenden's flooded caves (E8a2 1792-2816 only: the cave arches, raised water, scaffold timbers and pump risers). Each area walks back and forth through its one source strip (legs <= 512 px, leftward legs mirrored), so every join is a mirror join or a continuation; the place changes only at the fades.",
+    "Palette: the drowned preset (flood + ruin + night 0.8, lifted 1.45 in lightness) in the pump hall; the street and the caves take a damp teal tint (hue -12..-15, saturation 0.7-0.8, 22% toward #2a5a5a / #1a3a3a) that keeps their brick and rock readable; the standing water is E8a1's harbor water (palette row 4) darkened to murky teal.",
+    "a2 is the chapter's return visit (ARCHITECTURE §3.8): Fessenden's caves six months on, flooded and dug out by Cinder's crews; >= 25% of its cells are patched (the floodwater over the cave floor, scaffold timbers, pump risers).",
+    "Boss arena (4-6, FOREMAN CINDER, the salvage diver with the pile driver): the dig's pump house: pump risers with their elbows (E7a3 816-912, palette row 4 lifted) between scaffold timbers (the E6a0 portal timber, rows 9/8/3/2 lifted) over the flooded floor; the runtime adds the pump columns (props) and the vent cycles."
   ],
   "areas": [
     {
@@ -23,242 +15,257 @@
       "w": 2368,
       "h": 224,
       "bg": "auto",
-      "returnVisit": {
-        "source": [
-          7,
-          0
-        ],
-        "why": "the 1993 escape tunnel six months later: half-flooded, its mouth a crater rim over black water; the collapse at x 560 is where Hannah fell; then the Bio Lab, every tank broken"
-      },
       "s2": [
         {
           "slice": {
-            "src": "E7a0",
+            "src": "E1a2",
             "x": [
-              1792,
-              2304
+              176,
+              688
             ],
             "h": [
-              16,
-              240
+              272,
+              496
             ]
           },
           "at": [
             0,
             0
+          ],
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -15,
+              "s": 0.7,
+              "l": 0.95
+            },
+            {
+              "op": "tint",
+              "rgb": "#2a5a5a",
+              "amount": 0.22
+            }
           ]
         },
         {
           "slice": {
-            "src": "E7a0",
+            "src": "E1a2",
             "x": [
-              2560,
-              2800
+              176,
+              688
             ],
             "h": [
-              16,
-              240
+              272,
+              496
             ]
           },
           "at": [
             512,
             0
+          ],
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -15,
+              "s": 0.7,
+              "l": 0.95
+            },
+            {
+              "op": "tint",
+              "rgb": "#2a5a5a",
+              "amount": 0.22
+            }
           ]
         },
         {
           "slice": {
-            "src": "E7a0",
+            "src": "E1a2",
             "x": [
-              1792,
-              2304
+              176,
+              496
             ],
             "h": [
-              16,
-              240
+              272,
+              496
             ]
           },
           "at": [
-            752,
+            1024,
             0
           ],
-          "flip": true
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -15,
+              "s": 0.7,
+              "l": 0.95
+            },
+            {
+              "op": "tint",
+              "rgb": "#2a5a5a",
+              "amount": 0.22
+            }
+          ]
         },
         {
           "slice": {
-            "src": "E7a0",
+            "src": "E1a2",
             "x": [
-              1712,
-              1792
+              496,
+              848
             ],
             "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1264,
-            0
-          ],
-          "flip": true,
-          "note": "the mirrored tunnel continues into its own brick pier and arch (E7a0 1712-1792) where the Bio Lab begins"
-        },
-        {
-          "slice": {
-            "src": "E8a0",
-            "x": [
-              0,
-              512
-            ],
-            "h": [
-              16,
-              240
+              272,
+              496
             ]
           },
           "at": [
             1344,
             0
           ],
-          "step": true,
-          "dynamic": "live"
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -15,
+              "s": 0.7,
+              "l": 0.95
+            },
+            {
+              "op": "tint",
+              "rgb": "#2a5a5a",
+              "amount": 0.22
+            }
+          ]
         },
         {
           "slice": {
-            "src": "E8a0",
+            "src": "E1a2",
             "x": [
-              32,
-              544
+              496,
+              848
             ],
             "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1856,
-            0
-          ],
-          "dynamic": "live"
-        },
-        {
-          "patch": {
-            "src": "E8a2",
-            "x": [
-              1792,
-              2048
-            ],
-            "h": [
-              400,
+              272,
               496
             ]
           },
           "at": [
-            64,
+            1696,
             0
           ],
-          "every": 384,
-          "repeat": 3,
-          "note": "rock collapse over the tunnel ribs (E8a2 cave rock)"
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -15,
+              "s": 0.7,
+              "l": 0.95
+            },
+            {
+              "op": "tint",
+              "rgb": "#2a5a5a",
+              "amount": 0.22
+            }
+          ]
+        },
+        {
+          "slice": {
+            "src": "E1a2",
+            "x": [
+              496,
+              816
+            ],
+            "h": [
+              272,
+              496
+            ]
+          },
+          "at": [
+            2048,
+            0
+          ],
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -15,
+              "s": 0.7,
+              "l": 0.95
+            },
+            {
+              "op": "tint",
+              "rgb": "#2a5a5a",
+              "amount": 0.22
+            }
+          ]
         },
         {
           "patch": {
-            "src": "E6a1",
+            "src": "E8a1",
             "x": [
-              2848,
-              3168
+              96,
+              416
             ],
             "h": [
-              240,
-              256
+              784,
+              832
             ]
           },
           "at": [
             0,
-            208
+            192
           ],
           "every": 320,
-          "repeat": 4,
-          "terrain": "keep",
-          "note": "standing water along the tunnel floor"
-        },
-        {
-          "patch": {
-            "src": "E7a0",
-            "x": [
-              1760,
-              1792
-            ],
-            "h": [
-              16,
-              240
-            ],
-            "rows": [
-              27
-            ]
-          },
-          "at": [
-            736,
-            0
+          "alternate": true,
+          "repeat": 8,
+          "prio": "none",
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.55,
+              "l": 0.62
+            },
+            {
+              "op": "tint",
+              "rgb": "#1a3a3a",
+              "amount": 0.3
+            }
           ],
-          "join": true,
-          "note": "brick pier over the E7a0 2800 | 2288 join"
-        },
-        {
-          "patch": {
-            "src": "E7a0",
-            "x": [
-              1760,
-              1792
-            ],
-            "h": [
-              16,
-              240
-            ],
-            "rows": [
-              27
-            ]
-          },
-          "at": [
-            1328,
-            0
-          ],
-          "join": true,
-          "note": "brick pier over the section join 4-1 | 4-2 (the far layer changes under it)"
-        },
-        {
-          "patch": {
-            "src": "E7a0",
-            "x": [
-              1760,
-              1792
-            ],
-            "h": [
-              16,
-              240
-            ],
-            "rows": [
-              27
-            ]
-          },
-          "at": [
-            1840,
-            0
-          ],
-          "join": true,
-          "note": "brick pier between the two tank rows (E8a0 512 | 32)"
+          "note": "floodwater over the near half of the pavement (E8a1 water, every other copy mirrored)"
         }
       ],
-      "s3": "auto",
-      "hazards": [
+      "s3": [
         {
-          "kind": "water-edge",
-          "rect": [
-            1200,
-            200,
-            96,
-            24
+          "x": [
+            0,
+            2368
+          ],
+          "src": "E1a2",
+          "note": "the drowned city beyond the broken wall",
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -15,
+              "s": 0.7,
+              "l": 0.95
+            },
+            {
+              "op": "tint",
+              "rgb": "#2a5a5a",
+              "amount": 0.22
+            }
           ]
         }
       ],
+      "hazards": [],
       "sections": [
         {
           "id": "4-1",
@@ -325,31 +332,39 @@
             ]
           }
         }
-      ]
+      ],
+      "walk": {
+        "patch": [
+          {
+            "rect": [
+              0,
+              160,
+              2368,
+              16
+            ],
+            "walk": true,
+            "why": "E1a2 sidewalk top row (floor art): lane 64 px"
+          }
+        ]
+      },
+      "anims": []
     },
     {
       "id": "a1",
       "w": 2048,
       "h": 224,
       "bg": "auto",
-      "returnVisit": {
-        "source": [
-          8,
-          1
-        ],
-        "why": "the old sluice and the caves, now Echo's salvage dig: scaffolds, pumps, raised water"
-      },
       "s2": [
         {
           "slice": {
-            "src": "E8a2",
+            "src": "E4a2",
             "x": [
-              1792,
-              2304
+              0,
+              512
             ],
             "h": [
-              272,
-              496
+              16,
+              240
             ]
           },
           "at": [
@@ -359,229 +374,119 @@
         },
         {
           "slice": {
-            "src": "E8a1",
+            "src": "E4a2",
             "x": [
-              1504,
-              1664
+              512,
+              1024
             ],
             "h": [
-              784,
-              1008
+              16,
+              240
             ]
           },
           "at": [
             512,
             0
-          ],
-          "note": "the sluice basin of the 1993 UNDERGROUND, now the Brood Mother pool"
-        },
-        {
-          "slice": {
-            "src": "E8a2",
-            "x": [
-              1952,
-              2304
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            672,
-            0
-          ],
-          "step": true
-        },
-        {
-          "slice": {
-            "src": "E8a2",
-            "x": [
-              2304,
-              2816
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            1024,
-            0
           ]
         },
         {
           "slice": {
-            "src": "E8a2",
+            "src": "E4a2",
             "x": [
-              2304,
-              2816
+              512,
+              1024
             ],
             "h": [
-              272,
-              496
+              16,
+              240
             ]
           },
           "at": [
-            1536,
+            1024,
             0
           ],
           "flip": true
         },
         {
-          "patch": {
-            "src": "E6a0",
-            "x": [
-              864,
-              928
-            ],
-            "h": [
-              80,
-              240
-            ],
-            "rows": [
-              9,
-              8,
-              3,
-              2
-            ]
-          },
-          "at": [
-            304,
-            0
-          ],
-          "every": 768,
-          "repeat": 3,
-          "note": "scaffold timbers (the E6a0 portal timber, lifted)"
-        },
-        {
-          "patch": {
-            "src": "E7a3",
-            "x": [
-              816,
-              912
-            ],
-            "h": [
-              112,
-              240
-            ],
-            "rows": [
-              4
-            ]
-          },
-          "at": [
-            1120,
-            16
-          ],
-          "every": 640,
-          "repeat": 2,
-          "note": "Echo's pump pipes: the E7a3 riser and its elbows (palette row 4 lifted), standing on the cave floor"
-        },
-        {
-          "patch": {
-            "src": "E6a1",
-            "x": [
-              2688,
-              3008
-            ],
-            "h": [
-              272,
-              304
-            ]
-          },
-          "at": [
-            0,
-            192
-          ],
-          "every": 320,
-          "alternate": true,
-          "note": "raised water: two rows of E6a1 open water along the near edge of the dig (every other copy mirrored)"
-        },
-        {
-          "patch": {
+          "slice": {
             "src": "E4a2",
             "x": [
-              0,
-              256
-            ],
-            "h": [
-              96,
-              144
-            ]
-          },
-          "at": [
-            1024,
-            96
-          ],
-          "every": 256,
-          "repeat": 4,
-          "alternate": true,
-          "blend": "over",
-          "note": "the scaffold guard rail at the back of the dig (E4a2 railing rows, every other copy mirrored)"
-        },
-        {
-          "patch": {
-            "src": "E6a0",
-            "x": [
-              864,
-              896
+              512,
+              768
             ],
             "h": [
               16,
               240
-            ],
-            "rows": [
-              9,
-              8,
-              3,
-              2
             ]
           },
           "at": [
-            496,
+            1536,
             0
-          ],
-          "join": true,
-          "note": "scaffold post over the E8a2 | E8a1 join (the sluice gate, left)"
+          ]
         },
         {
-          "patch": {
-            "src": "E6a0",
+          "slice": {
+            "src": "E4a2",
             "x": [
-              864,
-              896
+              768,
+              1024
             ],
             "h": [
               16,
               240
-            ],
-            "rows": [
-              9,
-              8,
-              3,
-              2
             ]
           },
           "at": [
-            656,
+            1792,
             0
-          ],
-          "join": true,
-          "note": "scaffold post over the E8a1 | E8a2 join (the sluice gate, right)"
-        }
-      ],
-      "s3": "auto",
-      "hazards": [
-        {
-          "kind": "pit",
-          "rect": [
-            528,
-            136,
-            128,
-            40
           ]
         }
       ],
+      "s3": [
+        {
+          "x": [
+            0,
+            2048
+          ],
+          "src": "E4a2",
+          "ops": [
+            {
+              "op": "hsl",
+              "h": 170,
+              "s": 0.9,
+              "l": 0.9,
+              "rows": [
+                7
+              ],
+              "pens": [
+                1,
+                2,
+                3,
+                4,
+                5
+              ]
+            },
+            {
+              "op": "hsl",
+              "h": 170,
+              "s": 0.9,
+              "l": 0.9,
+              "rows": [
+                1
+              ],
+              "pens": [
+                10,
+                11,
+                12,
+                13,
+                14
+              ]
+            }
+          ],
+          "note": "the pump hall: pipes, pressure globes and the vats, their red liquid turned to floodwater"
+        }
+      ],
+      "hazards": [],
       "sections": [
         {
           "id": "4-3",
@@ -638,6 +543,15 @@
             ]
           }
         }
+      ],
+      "anims": [],
+      "ops": [
+        {
+          "op": "hsl",
+          "h": 0,
+          "s": 1.1,
+          "l": 1.45
+        }
       ]
     },
     {
@@ -648,17 +562,17 @@
       "returnVisit": {
         "source": [
           8,
-          3
+          2
         ],
-        "why": "the throne room drained and stripped, the capsule gone, the floor cut open; then the dig's pump house under the cave arches"
+        "why": "Fessenden's caves six months on: flooded to the knee and dug out by Cinder's salvage crews, scaffolds and pump risers in the arches"
       },
       "s2": [
         {
           "slice": {
-            "src": "E8a3",
+            "src": "E8a2",
             "x": [
-              3968,
-              4304
+              1792,
+              2304
             ],
             "h": [
               272,
@@ -668,14 +582,28 @@
           "at": [
             0,
             0
+          ],
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -12,
+              "s": 0.8,
+              "l": 0.85
+            },
+            {
+              "op": "tint",
+              "rgb": "#1a3a3a",
+              "amount": 0.22
+            }
           ]
         },
         {
           "slice": {
-            "src": "E8a3",
+            "src": "E8a2",
             "x": [
-              3968,
-              4304
+              1792,
+              2304
             ],
             "h": [
               272,
@@ -683,52 +611,62 @@
             ]
           },
           "at": [
-            336,
+            512,
             0
           ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E8a3",
-            "x": [
-              4400,
-              4752
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            672,
-            0
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -12,
+              "s": 0.8,
+              "l": 0.85
+            },
+            {
+              "op": "tint",
+              "rgb": "#1a3a3a",
+              "amount": 0.22
+            }
           ]
         },
         {
           "slice": {
-            "src": "E8a1",
+            "src": "E8a2",
             "x": [
-              1504,
-              1664
+              1792,
+              2304
             ],
             "h": [
-              784,
-              1008
+              272,
+              496
             ]
           },
           "at": [
             1024,
             0
           ],
-          "step": true
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -12,
+              "s": 0.8,
+              "l": 0.85
+            },
+            {
+              "op": "tint",
+              "rgb": "#1a3a3a",
+              "amount": 0.22
+            }
+          ]
         },
         {
           "slice": {
             "src": "E8a2",
             "x": [
-              1920,
-              2432
+              2304,
+              2816
             ],
             "h": [
               272,
@@ -736,17 +674,30 @@
             ]
           },
           "at": [
-            1184,
+            1536,
             0
           ],
-          "step": true
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -12,
+              "s": 0.8,
+              "l": 0.85
+            },
+            {
+              "op": "tint",
+              "rgb": "#1a3a3a",
+              "amount": 0.22
+            }
+          ]
         },
         {
           "slice": {
             "src": "E8a2",
             "x": [
-              1952,
-              2432
+              2688,
+              2816
             ],
             "h": [
               272,
@@ -754,66 +705,135 @@
             ]
           },
           "at": [
-            1696,
+            2048,
             0
           ],
-          "flip": true
+          "flip": true,
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -12,
+              "s": 0.8,
+              "l": 0.85
+            },
+            {
+              "op": "tint",
+              "rgb": "#1a3a3a",
+              "amount": 0.22
+            }
+          ]
         },
         {
           "patch": {
-            "src": "E8a3",
+            "src": "E8a1",
             "x": [
-              4512,
-              4640
+              96,
+              416
             ],
             "h": [
-              416,
-              496
-            ]
-          },
-          "at": [
-            784,
-            0
-          ],
-          "note": "the capsule is gone: machinery cells over the capsule on the throne"
-        },
-        {
-          "patch": {
-            "src": "E6a1",
-            "x": [
-              2848,
-              2944
-            ],
-            "h": [
-              240,
-              272
-            ]
-          },
-          "at": [
-            784,
-            192
-          ],
-          "note": "the floor cut open in front of the throne steps (flooded)"
-        },
-        {
-          "patch": {
-            "src": "E6a1",
-            "x": [
-              2848,
-              3168
-            ],
-            "h": [
-              240,
-              256
+              784,
+              832
             ]
           },
           "at": [
             0,
-            208
+            176
           ],
           "every": 320,
+          "alternate": true,
           "repeat": 7,
-          "note": "standing water"
+          "prio": "none",
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -10,
+              "s": 0.55,
+              "l": 0.62
+            },
+            {
+              "op": "tint",
+              "rgb": "#1a3a3a",
+              "amount": 0.3
+            }
+          ],
+          "note": "the raised floodwater over the cave floor (E8a1 water, every other copy mirrored)"
+        },
+        {
+          "patch": {
+            "src": "E6a0",
+            "x": [
+              864,
+              896
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "rows": [
+            9,
+            8,
+            3,
+            2
+          ],
+          "at": [
+            240,
+            0
+          ],
+          "prio": "none",
+          "note": "scaffold timber (the E6a0 portal timber, lifted)"
+        },
+        {
+          "patch": {
+            "src": "E6a0",
+            "x": [
+              864,
+              896
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "rows": [
+            9,
+            8,
+            3,
+            2
+          ],
+          "at": [
+            880,
+            0
+          ],
+          "prio": "none",
+          "note": "scaffold timber (the E6a0 portal timber, lifted)"
+        },
+        {
+          "patch": {
+            "src": "E6a0",
+            "x": [
+              864,
+              896
+            ],
+            "h": [
+              16,
+              240
+            ]
+          },
+          "rows": [
+            9,
+            8,
+            3,
+            2
+          ],
+          "at": [
+            1520,
+            0
+          ],
+          "prio": "none",
+          "note": "scaffold timber (the E6a0 portal timber, lifted)"
         },
         {
           "patch": {
@@ -825,76 +845,86 @@
             "h": [
               112,
               240
-            ],
-            "rows": [
-              4
             ]
           },
+          "rows": [
+            4
+          ],
           "at": [
-            1296,
+            1200,
             16
           ],
-          "every": 448,
-          "repeat": 2,
-          "note": "the dig's pump-house pipes: the E7a3 riser and its elbows (palette row 4 lifted)"
+          "prio": "none",
+          "note": "pump riser with its elbows (E7a3 816-912, palette row 4 lifted)"
         },
         {
           "patch": {
-            "src": "E8a2",
+            "src": "E6a0",
             "x": [
-              1792,
-              2048
+              864,
+              896
             ],
             "h": [
-              400,
-              496
+              16,
+              240
             ]
           },
+          "rows": [
+            9,
+            8,
+            3,
+            2
+          ],
           "at": [
-            96,
+            1776,
             0
           ],
-          "note": "rock fall over the throne-room entry"
+          "prio": "none",
+          "note": "scaffold timber (the E6a0 portal timber, lifted)"
         },
         {
           "patch": {
-            "src": "E8a2",
+            "src": "E7a3",
             "x": [
-              1792,
-              1920
+              816,
+              912
             ],
             "h": [
-              400,
-              496
+              112,
+              240
             ]
           },
+          "rows": [
+            4
+          ],
           "at": [
             1856,
-            0
+            16
           ],
-          "note": "rock fall over the dig"
+          "prio": "none",
+          "note": "pump riser with its elbows (E7a3 816-912, palette row 4 lifted)"
         },
         {
           "patch": {
-            "src": "E4a2",
+            "src": "E7a3",
             "x": [
-              0,
-              256
+              816,
+              912
             ],
             "h": [
-              96,
-              144
+              112,
+              240
             ]
           },
-          "at": [
-            1184,
-            96
+          "rows": [
+            4
           ],
-          "every": 256,
-          "repeat": 2,
-          "alternate": true,
-          "blend": "over",
-          "note": "the pump house guard rail (E4a2 railing rows)"
+          "at": [
+            2032,
+            16
+          ],
+          "prio": "none",
+          "note": "pump riser with its elbows (E7a3 816-912, palette row 4 lifted)"
         },
         {
           "patch": {
@@ -906,84 +936,51 @@
             "h": [
               16,
               240
-            ],
-            "rows": [
-              9,
-              8,
-              3,
-              2
             ]
           },
+          "rows": [
+            9,
+            8,
+            3,
+            2
+          ],
           "at": [
-            656,
+            2144,
             0
           ],
-          "join": true,
-          "note": "scaffold post over the E8a3 3968 | 4400 join"
-        },
-        {
-          "patch": {
-            "src": "E6a0",
-            "x": [
-              864,
-              896
-            ],
-            "h": [
-              16,
-              240
-            ],
-            "rows": [
-              9,
-              8,
-              3,
-              2
-            ]
-          },
-          "at": [
-            1008,
-            0
-          ],
-          "join": true,
-          "note": "scaffold post over the section join 4-5 | 4-6 (the far layer changes under it)"
-        },
-        {
-          "patch": {
-            "src": "E6a0",
-            "x": [
-              864,
-              896
-            ],
-            "h": [
-              16,
-              240
-            ],
-            "rows": [
-              9,
-              8,
-              3,
-              2
-            ]
-          },
-          "at": [
-            1168,
-            0
-          ],
-          "join": true,
-          "note": "scaffold post over the E8a1 | E8a2 join"
+          "prio": "none",
+          "note": "scaffold timber (the E6a0 portal timber, lifted)"
         }
       ],
-      "s3": "auto",
-      "hazards": [
+      "s3": [
         {
-          "kind": "pit",
-          "rect": [
-            784,
-            196,
-            96,
-            24
-          ]
+          "x": [
+            0,
+            2176
+          ],
+          "src": "E8a2",
+          "x3": [
+            960,
+            1920
+          ],
+          "preset": false,
+          "ops": [
+            {
+              "op": "hsl",
+              "h": -12,
+              "s": 0.8,
+              "l": 0.85
+            },
+            {
+              "op": "tint",
+              "rgb": "#1a3a3a",
+              "amount": 0.22
+            }
+          ],
+          "note": "the flooded cave lake and its crystals beyond the arches"
         }
       ],
+      "hazards": [],
       "sections": [
         {
           "id": "4-5",
@@ -1052,15 +1049,8 @@
           ],
           "note": "boss lock 1792-2176 = E8a2 columns; E8a2 has no boss window"
         }
-      ]
-    }
-  ],
-  "ops": [
-    {
-      "op": "hsl",
-      "h": 0,
-      "s": 1.1,
-      "l": 1.45
+      ],
+      "anims": []
     }
   ]
 }

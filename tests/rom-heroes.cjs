@@ -272,6 +272,10 @@ async function browser() {
   const p2 = await b.newPage(); p2.on('pageerror', e => errors.push(String(e)));
   await p2.setContent('<!doctype html><html><body></body></html>');
   await p2.addScriptTag({ path: rel('sprites.js') }); for (const f of famFiles) await p2.addScriptTag({ path: rel(f) });
+  // the generated boss bodies keep their pixels in lazy scripts (assets/boss-art/*.js, loaded per chapter in the game):
+  // this blank page has no base URL, so add them by path too
+  for (const lz of await p2.evaluate(() => Object.values(SPRITES.families).flatMap(f => Object.values(f.sheets || {}).map(s => s.lazy).filter(Boolean))))
+    if (fs.existsSync(rel(lz))) await p2.addScriptTag({ path: rel(lz) });
   await p2.waitForFunction(() => SPRITES.status().every(s => s.state === 'ok' || s.state === 'bad'), null, { timeout: 60000 }).catch(() => {});
   const all = await p2.evaluate(() => {
     const st = SPRITES.status(), out = { ready: SPRITES.ready, verified: SPRITES.verified, sheets: st.length, bad: st.filter(s => s.state !== 'ok' || !s.ok).map(s => s.key), coloured: 0, failed: [] };

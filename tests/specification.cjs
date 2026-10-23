@@ -4,7 +4,7 @@ fs.mkdirSync('tests/results',{recursive:true});
 (async()=>{
  const browser=await chromium.launch({headless:true}),page=await browser.newPage({viewport:{width:1280,height:900}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;let n=764;Math.random=()=>{n=(n*1664525+1013904223)>>>0;return n/4294967296;};});
- await page.goto(BASE);await page.waitForFunction(()=>SEQUEL_RENDER.ready);await page.click('#sound');await page.click('#newgame');
+ await page.goto(BASE);await page.waitForFunction(()=>SEQUEL_RENDER.ready,null,{polling:100});await page.click('#sound');await page.click('#newgame');
  const checks=[];const check=(name,ok)=>checks.push({name,passed:!!ok});
  check('Portraits use the original Jack, Hannah, Mustapha, Mess order',await page.locator('[data-hero]').evaluateAll(bs=>bs.map(b=>b.dataset.hero).join()==='1,2,0,3'));
  check('All three difficulty choices are selectable',await page.locator('[data-mode]').count()===3);
@@ -56,16 +56,18 @@ fs.mkdirSync('tests/results',{recursive:true});
   g.start(0);g.test.move(74,M());dummy(111);g.controls.attack();let punchSpark=false;for(let i=0;i<9;i++){g.step(1/60);if(g.snapshot.effects.includes('spark'))punchSpark=true;}test('A bare-handed punch uses impact sparks',punchSpark&&!g.snapshot.particles.some(p=>p.kind==='blood'));
   // ENEMIES §8 (PLAN §7 G4): the 'truck' dummy is gone from the regulars; a round into a crate (machinery, sequel.cjs L27) sparks.
   g.start(0);{const o=g.snapshot.objects[0];g.test.move(o.x-90,o.y);g.test.equip('gun');g.controls.attack();ticks(16);const c=g.snapshot.objects.find(b=>b.x===o.x&&b.y===o.y);test('Bullets hitting machinery (a crate) make sparks rather than blood',!!c&&c.hp<o.hp&&!g.snapshot.particles.some(p=>p.kind==='blood'));}
-  // G5 (PLAN §7 5f, CAMPAIGN §6.4): LOT 44 · MACK keeps the kind id 'truck'; rounds land on its collar: sparks, never blood.
-  g.start(0);{g.test.move(74,M());const m=g.test.spawnEnemy(170,M(),'truck',true);m.state='recover';m.timer=999;m.inv=0;g.test.equip('gun');g.controls.attack();ticks(20);test('Rounds hitting the convoy triceratops (truck, LOT 44 · MACK) spark on its collar rather than bleed',m.hp<m.maxhp&&!g.snapshot.particles.some(p=>p.kind==='blood'));}
+  // Chapter 2's boss keeps the kind id 'truck' (HAULMASTER KRAG -> IRONCLUB since the boss rebuild): rounds hitting
+  // Ironclub's armour plates (phase 2) spark, never bleed.
+  g.start(0);{g.test.move(74,M());const m=g.test.spawnEnemy(170,M(),'truck',true);m.phase=2;m.state='recover';m.timer=999;m.inv=0;g.test.equip('gun');g.controls.attack();ticks(20);test('Rounds hitting Ironclub (truck, phase 2) spark on his armour plates rather than bleed',m.hp<m.maxhp&&!g.snapshot.particles.some(p=>p.kind==='blood'));}
   g.start(0);g.test.move(74,M());dummy(152);g.test.equip('bazooka');g.controls.attack();ticks(16);test('A rocket impact creates fire, smoke and fragments',g.snapshot.effects.includes('explosion')&&g.snapshot.particles.some(p=>p.kind==='smoke')&&g.snapshot.particles.some(p=>p.kind==='debris'));ticks(150);test('Transient explosion particles expire',!g.snapshot.particles.some(p=>['smoke','debris'].includes(p.kind)));
   g.start(0);g.test.move(g.snapshot.view.x+18,M());g.test.equip('bazooka');g.controls.attack();test('Recoil cannot leave the playable left boundary',g.snapshot.player.x>=g.snapshot.view.x+16);
   return out;
  });checks.push(...rows);
  // Stage pages (ARCHITECTURE §7 L54, PLAN §7 G2): every page STAGE_DATA names, in all six chapters, decodes at its declared
  // size. The chapters load one after another because at most two stay decoded (ARCHITECTURE §5.5): a load of all six at
- // once would release the first four before they could be measured.
- check('Every stage page of the six chapters decodes at its declared size',await page.evaluate(async()=>{const bad=[];let n=0;for(let i=0;i<6;i++){await SEQUEL_RENDER.loadChapter(i);for(const p of STAGE_RENDER.pages(i)){n++;if(!p.loaded||(p.layer==='anim'?!(p.nw>0&&p.nh>0):p.nw!==p.w||p.nh!==p.h))bad.push(i+':'+p.src+' '+p.nw+'x'+p.nh+' vs '+p.w+'x'+p.h);}}if(bad.length)console.error('stage pages: '+bad.slice(0,5).join('; '));return n>=120&&bad.length===0;}));
+ // once would release the first four before they could be measured. Floor 72 pages (was 120): since the 2026-10-22 one-place
+ // recipes every area has one far-layer span instead of one per section, so the six chapters ship 84 pages.
+ check('Every stage page of the six chapters decodes at its declared size',await page.evaluate(async()=>{const bad=[];let n=0;for(let i=0;i<6;i++){await SEQUEL_RENDER.loadChapter(i);for(const p of STAGE_RENDER.pages(i)){n++;if(!p.loaded||(p.layer==='anim'?!(p.nw>0&&p.nh>0):p.nw!==p.w||p.nh!==p.h))bad.push(i+':'+p.src+' '+p.nw+'x'+p.nh+' vs '+p.w+'x'+p.h);}}if(bad.length)console.error('stage pages: '+bad.slice(0,5).join('; '));return n>=72&&bad.length===0;}));
  check('No browser exceptions',errors.length===0);
  fs.writeFileSync('tests/results/specification-report.json',JSON.stringify({passed:checks.filter(c=>c.passed).length,checks,errors},null,2));await browser.close();
  for(const c of checks)if(!c.passed)console.error('FAIL '+c.name);assert.ok(checks.every(c=>c.passed));console.log(JSON.stringify({passed:checks.length,errors}));

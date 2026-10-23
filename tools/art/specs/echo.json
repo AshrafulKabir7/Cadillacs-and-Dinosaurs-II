@@ -1,0 +1,24 @@
+{
+  "id": "echo",
+  "name": "DR. ECHO",
+  "note": "Sources: design/sprites-raw/echo (ChatGPT sheets, magenta, facing left). Echo stands ~95 arcade px. The violet ring left of echo-human pose 3 is erased here and imported as the echoring body. Anim numbers are BOSS_DEFS.echo 'main:<n>' references (phase 1).",
+  "height": 95,
+  "bg": "#FF00FF",
+  "chapterTag": 102,
+  "ship": "sprite-data-boss-echo.js",
+  "anchor": "feet",
+  "inputs": [
+    { "file": "design/sprites-raw/echo/ref-sheet.png", "crop": [60, 350, 300, 620], "name": "idle0", "scale": 0.1616 },
+    { "file": "design/sprites-raw/echo/echo-human.png", "split": "auto", "names": ["walk0", "raise", "fire", "recoil"], "scale": 0.2088, "erase": [[962, 80, 110, 143]] }
+  ],
+  "anims": [
+    { "name": "idle", "frames": ["idle0"], "dur": 30 },
+    { "name": "walk", "frames": ["walk0", "idle0"], "dur": 12, "loop": 0, "alignTo": "idle0" },
+    { "name": "ring", "frames": ["raise", "fire", "raise"], "dur": [36, 16, 10], "act": [1], "alignTo": "idle0" },
+    { "name": "jab", "frames": ["idle0", "fire", "idle0"], "dur": [14, 12, 8], "act": [1], "alignTo": "idle0" },
+    { "name": "hurt", "frames": ["recoil"], "dur": 14, "alignTo": "idle0" },
+    { "name": "call", "frames": ["raise"], "dur": 36, "act": [0], "alignTo": "idle0" }
+  ],
+  "palette": { "mode": "ramps", "lock": ["#333333"] },
+  "clean": { "smooth": 1 }
+}

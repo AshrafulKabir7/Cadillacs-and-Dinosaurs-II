@@ -1,0 +1,250 @@
+{
+  "id": "overdrive",
+  "name": "OVERDRIVE CINDER",
+  "note": "Sources: design/sprites-raw/cinder (ChatGPT sheets, magenta, facing left). Per-sheet scales normalise the armoured body (helmet to boots ~135 arcade px; the stack smoke rides above). The cannon's muzzle burst is cut out of over-driver.png pose 3 into the cinderfx body; the broken rig (over-hurt-defeat piece 4) is a prop frame of this body. Anim numbers are BOSS_DEFS.cinder phase2 'main:<n>' references.",
+  "height": 135,
+  "bg": "#FF00FF",
+  "chapterTag": 100,
+  "ship": "sprite-data-boss-overdrive.js",
+  "anchor": "feet",
+  "inputs": [
+    {
+      "file": "design/sprites-raw/cinder/over-idle-walk.png",
+      "split": "auto",
+      "names": [
+        "idle0",
+        "idle1",
+        "walk0",
+        "walk1",
+        "walk2",
+        "walk3"
+      ],
+      "scale": 0.39
+    },
+    {
+      "file": "design/sprites-raw/cinder/over-driver.png",
+      "split": "auto",
+      "names": [
+        "tell",
+        "punch",
+        "fire",
+        "smoke"
+      ],
+      "scale": 0.39,
+      "erase": [
+        [
+          835,
+          240,
+          45,
+          290
+        ],
+        [
+          880,
+          240,
+          90,
+          110
+        ],
+        [
+          880,
+          432,
+          90,
+          100
+        ]
+      ]
+    },
+    {
+      "file": "design/sprites-raw/cinder/over-steam-charge.png",
+      "split": "auto",
+      "names": [
+        "vent",
+        "cloud",
+        "charge",
+        "skid"
+      ],
+      "scale": 0.39
+    },
+    {
+      "file": "design/sprites-raw/cinder/over-hurt-defeat.png",
+      "split": "auto",
+      "names": [
+        "hit",
+        "plates",
+        "kneel",
+        "rig",
+        "sit",
+        "rig2"
+      ],
+      "scale": 0.335,
+      "hByName": {
+        "kneel": 74,
+        "sit": 70,
+        "rig": 52,
+        "rig2": 52
+      }
+    },
+    {
+      "file": "design/sprites-raw/cinder/cinder-overload.png",
+      "crop": [
+        900,
+        0,
+        1100,
+        669
+      ],
+      "split": "auto",
+      "names": [
+        "stacks",
+        "full"
+      ],
+      "scale": 0.29
+    }
+  ],
+  "anims": [
+    {
+      "name": "idle",
+      "frames": [
+        "idle0",
+        "idle1"
+      ],
+      "dur": 30,
+      "loop": 0
+    },
+    {
+      "name": "walk",
+      "frames": [
+        "walk0",
+        "walk1",
+        "walk2",
+        "walk3"
+      ],
+      "dur": 11,
+      "loop": 0,
+      "alignTo": "idle0"
+    },
+    {
+      "name": "cannon",
+      "frames": [
+        "tell",
+        "punch",
+        "fire"
+      ],
+      "dur": [
+        40,
+        6,
+        18
+      ],
+      "act": [
+        2
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "stuck",
+      "frames": [
+        "smoke"
+      ],
+      "dur": 50,
+      "alignTo": "idle0"
+    },
+    {
+      "name": "vent",
+      "frames": [
+        "vent",
+        "cloud"
+      ],
+      "dur": [
+        36,
+        40
+      ],
+      "act": [
+        1
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "charge",
+      "frames": [
+        "charge"
+      ],
+      "dur": 30,
+      "act": [
+        0
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "skid",
+      "frames": [
+        "skid"
+      ],
+      "dur": 30,
+      "alignTo": "idle0"
+    },
+    {
+      "name": "hurt",
+      "frames": [
+        "hit"
+      ],
+      "dur": 14,
+      "alignTo": "idle0"
+    },
+    {
+      "name": "defeat",
+      "frames": [
+        "hit",
+        "plates",
+        "kneel",
+        "sit"
+      ],
+      "dur": [
+        16,
+        30,
+        40,
+        60
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "overload",
+      "frames": [
+        "stacks",
+        "full"
+      ],
+      "dur": [
+        30,
+        44
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "rig",
+      "frames": [
+        "rig"
+      ],
+      "dur": 60
+    },
+    {
+      "name": "punchfast",
+      "frames": [
+        "punch",
+        "fire"
+      ],
+      "dur": [
+        10,
+        16
+      ],
+      "act": [
+        1
+      ],
+      "alignTo": "idle0"
+    }
+  ],
+  "palette": {
+    "mode": "ramps",
+    "lock": [
+      "#333333"
+    ]
+  },
+  "clean": {
+    "smooth": 1
+  }
+}

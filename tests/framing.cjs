@@ -233,16 +233,18 @@ const A = require('./lib/arcade.cjs');
 
   // G3b also moves the copies onto their hero's ROM clips (HEROES §8.2) and the Cadillac onto the ROM car (WP-J, §9.1).
   // Both rows wait for 3b's own traces - the snapshot's per-clone `rig` and LAST_EDEN.test.art - so they are SKIPs on a
-  // 3a tree and failures from ARCADE_STEP=G3b on.
+  // 3a tree and failures from ARCADE_STEP=G3b on. The Crown Tide (STORY.md): the only copy is the Mirror Test; the allies
+  // freed at the collar pylons are conscripts on their own ROM records (snapshot `rom`), not hero copies.
   const clones = !S.G3 ? null : await ev(() => {
     const g = LAST_EDEN, R = window.HeroRig, ids = R && R.data && R.data.gameOrder; if (!ids) return null;
     g.start(5, 0, 'easy', 4); AT.move(AT.view().x + 120, AT.M());
     for (const [t, dx, f] of [['mirror', 90, .3], ['mirror', 160, .7]]) AT.spawn(t, AT.view().x + dx, AT.lane(f));
     try { g.test.freeClones(2); } catch (e) { /* optional */ }
-    const roles = new Set(), bad = []; let n = 0;
+    const roles = new Set(), keys = new Set(), bad = [], EN = window.ROM_ENEMIES || SPRITE_DATA.families.enemies; let n = 0, nc = 0;
     for (let i = 0; i < 300; i++) {
       g.step(1 / 60); if (i % 6) continue; g.render(); const s = g.snapshot;
-      for (const f of [...s.enemies.filter(e => e.type === 'mirror'), ...(s.allies || [])]) {
+      for (const a of (s.allies || [])) { if (a.rig || !a.rom || a.rom.fid == null || !EN.frames[a.rom.fid] || !EN.anims[a.rom.key]) bad.push(`conscript ${a.id}: ${a.rig ? 'drawn as a hero copy' : 'no ROM frame'}`); else { nc++; keys.add(a.rom.key); } }
+      for (const f of s.enemies.filter(e => e.type === 'mirror')) {
         if (!('rig' in f)) return null;                                  // no per-clone clip: G3b has not landed
         const id = ids[f.hero], r = f.rig; if (!r) { bad.push(`${f.ally ? 'ally' : 'mirror'} ${id}: no clip`); continue; }
         n++; roles.add(r.role);
@@ -253,12 +255,13 @@ const A = require('./lib/arcade.cjs');
       }
       if (bad.length > 8) break;
     }
-    return { n, roles: [...roles], bad };
+    return { n, nc, roles: [...roles], keys: [...keys], bad };
   });
-  await C.gated('G3b', 'Mirror clones and freed clones play their hero\'s ROM clips (HEROES §8.2) in the mirror-<id> / freed-<id> maps', !!clones,
+  await C.gated('G3b', 'The Mirror Test plays its hero\'s ROM clips (HEROES §8.2) in the mirror-<id> map; the freed conscripts play their own ROM records', !!clones,
     S.G3 ? 'the snapshot has no per-clone `rig` (clones are not on HeroRig clips yet: G3b)' : 'hero-rig.js (G3)', () => {
       if (clones.bad.length) return clones.bad.slice(0, 5).join(' | ');
       if (clones.n < 20 || clones.roles.length < 3 || !clones.roles.includes('walk')) return `too little was seen: ${clones.n} clone frames, roles ${clones.roles.join(',')}`;
+      if (clones.nc < 20 || clones.keys.length < 2) return `too little was seen of the conscripts: ${clones.nc} frames, anims ${clones.keys.join(',')}`;
       return true;
     });
   const cadillac = !S.G3 ? null : await ev(() => {

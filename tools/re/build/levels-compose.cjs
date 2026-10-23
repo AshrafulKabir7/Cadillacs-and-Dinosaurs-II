@@ -76,7 +76,8 @@ class Contexts {
     let identity = true; for (let i = 0; i < 512; i++) if ((i & 15) !== 15 && (words[i] & 0xFFF) !== (base[i] & 0xFFF)) { identity = false; break; }
     const rgb = new Uint8Array(512 * 3), same = new Uint8Array(512);   // same[k] = 1 when pen k keeps its 1993 colour
     for (let i = 0; i < 512; i++) { const w = words[i]; rgb[i * 3] = ((w >> 8) & 15) * 17; rgb[i * 3 + 1] = ((w >> 4) & 15) * 17; rgb[i * 3 + 2] = (w & 15) * 17; same[i] = (w & 0xFFF) === (base[i] & 0xFFF) ? 1 : 0; }
-    const prio = prioFrom ? source(prioFrom).prio : src.prio;
+    // prio: the priority masks of another source, or 'none' (dressing that always stays behind the sprites)
+    const prio = prioFrom === 'none' ? [0, 0, 0, 0] : prioFrom ? source(prioFrom).prio : src.prio;
     const c = { id: this.list.length, key, src: src.id, layer, identity, rgb, same, prio, log };
     this.list.push(c); this.index.set(key, c.id);
     return c.id;
