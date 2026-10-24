@@ -32,3 +32,6 @@ tools/re/mame/rompath/
 
 # Raw generated boss images (source art, ~90 MB); the game ships the converted sprites in assets/boss-art/
 assets/bosses/
+
+# Raw voice rips (source); the game ships assets/sfx/voice/*.mp3
+assets/audio/*.wav

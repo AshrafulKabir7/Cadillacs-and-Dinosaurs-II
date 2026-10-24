@@ -15,4 +15,4 @@ new_sqlite_classes = ["Room"]
 
 [vars]
 # Pages allowed to open a relay socket (checked against the browser's Origin header). "*" matches any port.
-ALLOWED_ORIGINS = "https://cadillacsanddinosaurs2.vercel.app,http://localhost:*,http://127.0.0.1:*"
+ALLOWED_ORIGINS = "https://cadillacsanddinosaurs2.vercel.app,https://playcadillacsdinosaurs2.online,https://www.playcadillacsdinosaurs2.online,http://localhost:*,http://127.0.0.1:*"

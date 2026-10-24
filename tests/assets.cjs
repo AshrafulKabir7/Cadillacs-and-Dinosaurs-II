@@ -67,6 +67,10 @@ const pngSize = file => { const b = Buffer.alloc(24); const fd = fs.openSync(fil
   const homeMissing = homeFiles.filter(f => !exists(f)), homeGame = homeFiles.filter(f => scripts.includes(f));
   C.check('G0', 'Every local script, stylesheet, icon and image the home page (index.html) names exists, and it loads none of the game scripts', !!home && homeMissing.length === 0 && homeGame.length === 0, [...homeMissing.map(f => 'missing ' + f), ...homeGame.map(f => 'game script ' + f)].join(', '));
   gate('G8', `Eager non-audio download <= 3.5 MB (now ${MB(eager)}: ${eagerFiles.length} files${legacyLoaded.length ? ', legacy still loaded: ' + legacyLoaded.join(' ') : ''})`, eager <= BUDGET.eager, MB(eager));
+  // the original arcade voices load on demand (game.js voicePrefetch at a stage start), never with the page
+  const voiceDir = 'assets/sfx/voice', voices = exists(voiceDir) ? fs.readdirSync(rel(voiceDir)).filter(f => f.endsWith('.mp3')) : [];
+  const voiceBytes = voices.reduce((n, f) => n + size(voiceDir + '/' + f), 0), voiceEager = /assets\/sfx\/voice/.test(html);
+  C.check('G0', `Voice clips are lazy (not named by play.html) and small (${voices.length} files, ${MB(voiceBytes)} <= 0.4 MB)`, voices.length > 0 && !voiceEager && voiceBytes <= 0.4 * MiB, `${voices.length} files${voiceEager ? ', named by play.html' : ''}`);
   for (const [f, limit] of Object.entries(BUDGET.files)) { if (!exists(f)) continue; C.check('G0', `${f} <= ${MB(limit)}`, size(f) <= limit, MB(size(f))); }
   const bossSplit = fs.readdirSync(ROOT).filter(f => /^sprite-data-bosses-ch\d\.js$/.test(f)); for (const f of bossSplit) C.check('G0', `${f} <= 1.5 MB (per-chapter boss split)`, size(f) <= 1.5 * MiB, MB(size(f)));
   const shipped = [...eagerFiles, ...(exists('assets/stages') ? walk('assets/stages') : [])].filter(f => !f.startsWith('assets/audio/'));

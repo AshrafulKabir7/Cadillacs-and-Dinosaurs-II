@@ -1,0 +1,44 @@
+{
+  "about": "Output name (assets/sfx/voice/<name>.mp3) -> original clip id. The identification behind every row is in work/audio/VOICES.md. Entries may be {src, semitones} to lower the pitch (Mustapha's shouts are pitched down 3-4 semitones because the user heard them as female).",
+  "files": {
+    "hannah-jump": "V21",
+    "hannah-jumpkick": "V13",
+    "hannah-attack": "V20",
+    "hannah-win": "V06",
+    "hannah-death": "V10",
+    "hannah-food": "V32",
+    "mustapha-jumpkick": {
+      "src": "V12",
+      "semitones": -3
+    },
+    "mustapha-jumpkick2": {
+      "src": "V23",
+      "semitones": -3
+    },
+    "mustapha-attack": {
+      "src": "V12",
+      "semitones": -4
+    },
+    "mustapha-win": "V07",
+    "mustapha-death": "V09",
+    "mustapha-food": "V31",
+    "jack-attack": "V18",
+    "jack-attack2": "V19",
+    "jack-jump": "V11",
+    "jack-win": "V05",
+    "jack-death": "V04",
+    "jack-food": "V01",
+    "mess-attack": "V24",
+    "mess-attack2": "V25",
+    "mess-win": "V08",
+    "mess-death": "V30",
+    "mess-food": "V03",
+    "enemy-scream": "V27",
+    "enemy-scream2": "V02",
+    "enemy-grunt": "V26",
+    "boss-laugh": "V28",
+    "boss-laugh2": "V29",
+    "monster-roar": "M01",
+    "go": "V33"
+  }
+}

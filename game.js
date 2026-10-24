@@ -110,13 +110,54 @@ function tone(freq,dur=.12,type='square',vol=.04,end){if(!audio)return;const o=a
 // Synthesized tones remain for everything else and as a fallback.
 const SAMPLE_FOR={hit:'punch',heavy:'kick',slam:'slam',gun:'pistol',enemygun:'pistol',rifle:'rifle',shotgun:'rifle',uzi:'uzi',explosion:'explosion'};
 const samplePool={};
-function sample(name){
+function sample(name,vol=.85,max=5){
   const pool=samplePool[name]||(samplePool[name]=[]);let a=pool.find(v=>v.paused||v.ended);
-  if(!a){if(pool.length>=5)a=pool[0];else{a=new Audio('assets/sfx/'+name+'.mp3');pool.push(a);}}
-  try{a.currentTime=0;a.volume=name==='enemygun'?.45:.85;const p=a.play();if(p)p.catch(()=>{});}catch{return false;}
-  return true;
+  if(!a){if(pool.length>=max)a=pool[0];else{a=new Audio('assets/sfx/'+name+'.mp3');pool.push(a);}}
+  try{a.currentTime=0;a.volume=vol;const p=a.play();if(p)p.catch(()=>{});}catch{return null;}
+  return a;
 }
-function sfx(name){if(!settings.sfx)return;unlockAudio();if(SAMPLE_FOR[name]&&sample(SAMPLE_FOR[name]==='pistol'&&name==='enemygun'?'pistol':SAMPLE_FOR[name]))return;if(['gun','shotgun','rocket','explosion','swing'].includes(name)&&audio){const dur=name==='explosion'?.55:name==='rocket'?.25:name==='shotgun'?.2:name==='swing'?.07:.09;const b=audio.createBuffer(1,Math.ceil(audio.sampleRate*dur),audio.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);const n=audio.createBufferSource(),g=audio.createGain(),f=audio.createBiquadFilter();n.buffer=b;f.type='lowpass';f.frequency.value=name==='explosion'?750:name==='swing'?1600:3500;g.gain.value=name==='swing'?.05:.13;n.connect(f).connect(g).connect(audio.destination);n.start();}if(name==='hit'){tone(130,.09,'sawtooth',.09,35);tone(630,.045,'square',.025,60);}if(name==='jump')tone(190,.15,'triangle',.06,550);if(name==='gun')tone(900,.09,'sawtooth',.065,50);if(name==='pickup'){tone(440,.1,'square',.04);setTimeout(()=>tone(660,.1,'square',.04),70);}if(name==='special'){tone(90,.35,'sawtooth',.07,600);tone(440,.25,'triangle',.04,100);}if(name==='hurt')tone(180,.2,'sawtooth',.06,40);if(name==='clear'){[392,494,587,784].forEach((f,i)=>setTimeout(()=>tone(f,.3,'triangle',.05),i*100));}}
+function sfx(name){if(!settings.sfx)return;unlockAudio();if(name.startsWith('vo:')){playVoice(name.slice(3));return;}if(SAMPLE_FOR[name]&&sample(SAMPLE_FOR[name]==='pistol'&&name==='enemygun'?'pistol':SAMPLE_FOR[name]))return;if(['gun','shotgun','rocket','explosion','swing'].includes(name)&&audio){const dur=name==='explosion'?.55:name==='rocket'?.25:name==='shotgun'?.2:name==='swing'?.07:.09;const b=audio.createBuffer(1,Math.ceil(audio.sampleRate*dur),audio.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);const n=audio.createBufferSource(),g=audio.createGain(),f=audio.createBiquadFilter();n.buffer=b;f.type='lowpass';f.frequency.value=name==='explosion'?750:name==='swing'?1600:3500;g.gain.value=name==='swing'?.05:.13;n.connect(f).connect(g).connect(audio.destination);n.start();}if(name==='hit'){tone(130,.09,'sawtooth',.09,35);tone(630,.045,'square',.025,60);}if(name==='jump')tone(190,.15,'triangle',.06,550);if(name==='gun')tone(900,.09,'sawtooth',.065,50);if(name==='pickup'){tone(440,.1,'square',.04);setTimeout(()=>tone(660,.1,'square',.04),70);}if(name==='special'){tone(90,.35,'sawtooth',.07,600);tone(440,.25,'triangle',.04,100);}if(name==='hurt')tone(180,.2,'sawtooth',.06,40);if(name==='clear'){[392,494,587,784].forEach((f,i)=>setTimeout(()=>tone(f,.3,'triangle',.05),i*100));}}
+// Original arcade voices (assets/sfx/voice, built by tools/audio/build-voices.cjs; work/audio/VOICES.md says which clip
+// is which and how it was identified). voice(kind) speaks for the current hero (`selected`) or, for the shared kinds, for
+// the enemies and bosses. Each kind has a cooldown (per hero for the hero kinds) so a brawl stays readable, its variants
+// rotate without the same clip twice running, and the pick uses its own counter, never Math.random (the seeded suites
+// keep their random sequence). The chosen clip travels as sfx('vo:<file>'), so a joiner hears the host's voices; each
+// page plays at most VOICE_MAX at once, and a high-priority voice (a death, a boss, a cheer) cuts the oldest one.
+// Nothing is downloaded at startup: a stage start warms the files up once (voicePrefetch), and a voice that has not
+// loaded yet simply starts late.
+const VOICE={
+  jump:{hannah:['hannah-jumpkick'],mustapha:['mustapha-jumpkick','mustapha-jumpkick2'],jack:['jack-jump'],mess:['mess-attack']},
+  hop:{hannah:['hannah-jump']},
+  attack:{hannah:['hannah-attack'],mustapha:['mustapha-attack'],jack:['jack-attack'],mess:['mess-attack']},
+  throw:{hannah:['hannah-attack'],mustapha:['mustapha-attack'],jack:['jack-attack2'],mess:['mess-attack2']},
+  special:{hannah:['hannah-jumpkick'],mustapha:['mustapha-jumpkick2'],jack:['jack-attack2'],mess:['mess-attack2']},
+  death:{hannah:['hannah-death'],mustapha:['mustapha-death'],jack:['jack-death'],mess:['mess-death']},
+  food:{hannah:['hannah-food'],mustapha:['mustapha-food'],jack:['jack-food'],mess:['mess-food']},
+  win:{hannah:['hannah-win'],mustapha:['mustapha-win'],jack:['jack-win'],mess:['mess-win']},
+  enemyDeath:['enemy-scream2','enemy-grunt'],enemyHurt:['enemy-grunt','enemy-scream2'],
+  bossTaunt:['boss-laugh','boss-laugh2'],bossHurt:['enemy-scream'],bossTransform:['monster-roar','boss-laugh2'],bossDeath:['enemy-scream'],
+  roar:['monster-roar'],go:['go']};
+const VOICE_CD={jump:.7,hop:1.2,attack:1.1,throw:.8,special:.6,death:2.5,food:1.5,win:3,enemyDeath:.45,enemyHurt:1.6,bossTaunt:5,bossHurt:2.5,bossTransform:2.5,bossDeath:3,roar:2.5,go:4};
+const VOICE_HIGH=new Set(['death','win','bossTaunt','bossTransform','bossDeath','roar','go']),VOICE_MAX=2;
+const voiceFiles=()=>[...new Set(Object.values(VOICE).flatMap(v=>Array.isArray(v)?v:Object.values(v).flat()))];
+let voiceNext={},voiceLast={},voiceTurn=0;const voiceLive=[],voiceLog=[];
+// -> the clip for this event, or null (no clip for this hero, or the kind is cooling down); `now` in seconds
+function voicePick(kind,who=HEROES[selected]?.id,now=performance.now()/1000){
+  const V=VOICE[kind];if(!V)return null;const list=Array.isArray(V)?V:V[who];if(!list||!list.length)return null;
+  const key=Array.isArray(V)?kind:kind+'.'+who;if(now<(voiceNext[key]||0))return null;voiceNext[key]=now+(VOICE_CD[kind]??1);
+  let i=0;if(list.length>1){voiceTurn=(voiceTurn*1103515245+12345)>>>0;i=(voiceTurn>>>16)%list.length;if(list[i]===voiceLast[key])i=(i+1)%list.length;}
+  voiceLast[key]=list[i];return list[i];
+}
+function voice(kind,who){if(!settings.sfx||NETROLE==='client')return null;const f=voicePick(kind,who);if(f)sfx('vo:'+(VOICE_HIGH.has(kind)?'!':'')+f);return f;}
+// local playback of one clip (`!name` = high priority); returns true when it started
+function playVoice(name){
+  const high=name[0]==='!',file=high?name.slice(1):name;if(!voiceFiles().includes(file))return false;
+  for(let i=voiceLive.length-1;i>=0;i--)if(voiceLive[i].paused||voiceLive[i].ended)voiceLive.splice(i,1);
+  if(voiceLive.length>=VOICE_MAX){if(!high)return false;const old=voiceLive.shift();try{old.pause();}catch{}}
+  const a=sample('voice/'+file,.8,2);if(!a)return false;if(!voiceLive.includes(a))voiceLive.push(a);voiceLog.push(file);if(voiceLog.length>40)voiceLog.shift();return true;
+}
+let voiceWarm=false;
+function voicePrefetch(){if(voiceWarm||!settings.sfx)return;voiceWarm=true;for(const f of voiceFiles()){const k='voice/'+f,pool=samplePool[k]||(samplePool[k]=[]);if(!pool.length){const a=new Audio();a.preload='auto';a.src='assets/sfx/'+k+'.mp3';pool.push(a);}}}
 
 const soundtrack = new ArcadeSoundtrack();
 // Weapon gameplay stays the sequel's (ammo, damage, pierce, single-shot cooldowns; HEROES §7.1, O2 off). The ROM decides
@@ -731,7 +772,7 @@ function nextCard(){
 // a button finishes the typing first, then moves on
 function cardAdvance(){if(!card||state!=='brief')return;const full=card.phase==='card'?cardFrames():card.phase==='panel'?panelFrames(cardPanels()[card.k]):0;if(card.t<full)card.t=full;else nextCard();}
 // Play begins: the chapter's `dialog` goes on the radio first (CAMPAIGN §14 startStage), ahead of the section's line.
-function enterPlay(){if(state!=='brief')return;const fresh=!card||card.start===0;card=null;state='play';panel('');resetInput();canvas.focus();if(fresh)queueDialog();}
+function enterPlay(){if(state!=='brief')return;const fresh=!card||card.start===0;card=null;state='play';panel('');resetInput();canvas.focus();if(fresh)queueDialog();voice('go');}
 function queueDialog(){const lines=String(level.dialog||'').split('\n').map(s=>s.trim()).filter(l=>l&&radio?.text!==l&&!radioQueue.includes(l));radioQueue=lines.concat(radioQueue);}
 // The intermission pictures (CAMPAIGN §4.7 picture table). Each shipped PNG (STAGE_DATA.pics, WP-E) is its picture's
 // ROM-cell background (tools/re/levels/pics.json); the subject the table puts in it (pics.json `sprites`: FERRIS
@@ -902,7 +943,7 @@ function startStage(i,opts={}){
   card=null;caption=null;clearSeq=null;endSeq=null;endLot=null;lastLot00=null;finalBlow=false;blowKind=null;stageKills=kills;
   // The chapter's stage pages load lazily (area 0 first); the simulation never waits for them (ARCHITECTURE §5.5).
   // STAGE.use makes an area index or id (STAGE.bandAt(0, x)) refer to this chapter.
-  SR.require(i);bossArt(i);STG.use(chapterKey(i));heroRigChapter(i);heroAnimReset();
+  SR.require(i);bossArt(i);STG.use(chapterKey(i));heroRigChapter(i);heroAnimReset();voicePrefetch();
   const start=clamp(opts.section|0,0,plan.sections.length-1),sec=plan.sections[start];
   encIndex=sec.first;
   // Objectives finished before this checkpoint stay finished, including conscripts already freed.
@@ -946,12 +987,12 @@ function setDriving(on){
 function pause(by='host'){if(NETROLE==='client'){window.EDEN_LOBBY?.confirmLeave?.();return;}if(state==='play'){state='paused';netPause(true,by);resetInput();panel(`<section class="panel small-panel"><p class="eyebrow">TAKE A BREATHER</p><h2>PAUSED.</h2><p>Chapter 0${levelIndex+1} · ${level.name}<br>Section ${sectionIndex+1} of ${plan.sections.length} · ${plan.sections[sectionIndex].name}<br>Your checkpoint is saved at the start of this section.</p><div class="menu-buttons"><button id="resume" class="primary">RESUME →</button><button id="controls" class="secondary">CONTROLS</button><button id="pause-sound" class="secondary">AUDIO SETTINGS</button>${TOUCH&&!root.classList.contains('standalone')?`<button id="pause-full" class="secondary">${isFull()?'EXIT FULLSCREEN':'FULLSCREEN'}</button>`:''}<button id="restart" class="secondary">RESTART SECTION</button>${mpHosting()?'<button id="mp-end" class="secondary">END GAME FOR EVERYONE</button>':'<button id="quit" class="secondary">MAIN MENU</button>'}</div></section>`);bindButton('resume',resume);bindButton('mp-end',mpToRoom);bindButton('pause-sound',()=>soundRoom(()=>{state='play';pause();}));bindButton('pause-full',()=>{toggleFull();setTimeout(()=>{if(state==='paused'){state='play';pause();}},450);});bindButton('controls',()=>guide(()=>{state='play';pause();}));bindButton('restart',()=>startStage(levelIndex,{section:sectionIndex}));bindButton('quit',()=>{checkpoint();menu();});}else if(state==='paused')resume();}
 function resume(){state='play';netPause(false);panel('');resetInput();canvas.focus();}
 function gameover(){state='gameover';save.best=Math.max(save.best,score);persist();const at=Math.max(0,sectionIndex);panel(`<section class="panel small-panel"><p class="eyebrow">THE COUNT RAN OUT</p><h2>GAME OVER.</h2><p>No coin dropped in time. The gang can regroup at the start of section ${at+1}: ${plan.sections[at].name}.<br>Score ${score.toString().padStart(6,'0')} · Best combo ${bestCombo}</p><div class="menu-buttons"><button id="retry" class="primary">TRY AGAIN →</button><button id="quit" class="secondary">MAIN MENU</button></div></section>`);bindButton('retry',()=>{lives=3;startStage(levelIndex,{section:at});});bindButton('quit',()=>mpHosting()?mpToRoom():menu());}
-function stageClear(){if(cleared)return;cleared=true;state='clear';player.victoryT=0;player.runLatch=0;if(!driving){player.z=0;player.vz=0;player.dropIn=false;}
+function stageClear(){if(cleared)return;cleared=true;state='clear';player.victoryT=0;player.runLatch=0;voice('win');if(!driving){player.z=0;player.vz=0;player.dropIn=false;}
   const vitality=Math.max(0,Math.round(player.hp))*100,beaten=Math.max(0,kills-stageKills)*100,blow=finalBlow?20000:0,total=vitality+beaten+blow;
   score+=total;caption=null;clearSeq={t:0,story:false,typed:0,tally:{chapter:levelIndex+1,vitality,enemies:beaten,finalBlow:blow,total}};
   // 2-3 players: everyone strikes the pose; each gets the clear bonus with their own vitality (the tally shows this
   // machine's numbers); joiners save the unlock too
-  if(multi())for(const p of present())if(p!==player)withPlayer(p,()=>{player.victoryT=0;player.runLatch=0;if(!driving){player.z=0;player.vz=0;player.dropIn=false;}score+=Math.max(0,Math.round(player.hp))*100+beaten+blow;});
+  if(multi())for(const p of present())if(p!==player)withPlayer(p,()=>{player.victoryT=0;player.runLatch=0;voice('win');if(!driving){player.z=0;player.vz=0;player.dropIn=false;}score+=Math.max(0,Math.round(player.hp))*100+beaten+blow;});
   if(NETROLE==='host')hostEv('unlock',Math.min(5,levelIndex+1));
   save.unlocked=Math.max(save.unlocked,Math.min(5,levelIndex+1));save.best=Math.max(save.best,score);sfx('clear');save.checkpoint=levelIndex<5?{level:levelIndex+1,section:0,hero:selected,difficulty,score,lives}:null;persist();
   panel(`<section class="panel dock-panel clear-dock"><p class="eyebrow">CHAPTER 0${levelIndex+1} COMPLETE</p><div class="menu-buttons"><button id="next" class="primary">${levelIndex===5?'SEE THE ENDING':'NEXT CHAPTER'} →</button></div></section>`);bindButton('next',clearNext);}
@@ -1293,7 +1334,7 @@ function spawnElite(spec){
   setVariant(e,V||e.v,e.type==='regent'&&pal?'brood':e.type==='raptor'&&/pal31/.test(pal)?'alpha':null);
   if(e.type==='regent'&&pal)e.brood=true;
   e.hp=e.maxhp=spec.hp*rules().enemyHealth*bossScale();if(spec.type==='mirror')e.hero=mirrorHero(spec.hero||0);
-  toast=spec.name+' · INCOMING';toastTime=3;sfx('special');return e;
+  toast=spec.name+' · INCOMING';toastTime=3;sfx('special');voice(spec.type==='raptor'||spec.type==='regent'?'roar':'bossTaunt');return e;
 }
 // KI15 (enemies VERIFY #3): a wrecked bike respawns its rider as a GNEISS (Chinpira B) thrown from 32 px up at the bike's
 // x; he fights on in the wave. The Tide Outrider himself is thrown clear and stays down (CAMPAIGN §6.3).
@@ -1455,7 +1496,7 @@ function spawnBoss() {
   if(driving&&D?.onFoot){parkedCar={x:lock.left+58,y:laneY(.2,lock.left+58)};setDriving(false);toast='THE CONVOY HALTS · EVERYBODY OUT';toastTime=3;}
   if(type==='truck'&&driving){b.y=player.y;bossIntroSetup(b,{t,enterX:Math.min(lock.right-90,player.x+150)});}else bossIntroSetup(b,{t});
   bossIntro=t;setBossCard(b.name,level.bossCard||'',t);
-  toast=level.bossToast||b.name;toastTime=4;for(const line of level.bossSay||[])say(line);
+  toast=level.bossToast||b.name;toastTime=4;for(const line of level.bossSay||[])say(line);voice('bossTaunt');
   if(levelIndex===2){mission.total=4;const x=lock.right-64;createObjective('beacon',D?.driver?.name||'NEST SONIC DRIVER',x,laneY(.83,x),0,true);}
   sfx('special');
 }
@@ -1548,7 +1589,7 @@ function damageEnemy(e,amount,knock=0,forceDown=false,byAlly=false,opts=null) {
   // ROM's 10 f (down 0 / down 1); a body already lying stays down (a heavy blow plays the body slam, down 6); a bike is
   // never knocked over without being wrecked (its rider has no hurt pose of his own).
   if(R&&e.state==='down'){if(heavy){e.slamT=0;e.slam=true;e.timer=Math.max(e.timer,.5);}}
-  else if(!e.boss&&e.state!=='held'&&e.state!=='fly'){if(e.type!=='biker'&&((forceDown&&(!e.elite||e.hitChain>=2))||e.hitChain>=(e.elite?5:byAlly?4:melee?5:3)))launch(e,kdir,heavy?1.2:.8,opts?.fling);else if(!byAlly){e.state='hurt';e.timer=R?10/60:e.elite?.16:.25;}}
+  else if(!e.boss&&e.state!=='held'&&e.state!=='fly'){if(e.type!=='biker'&&((forceDown&&(!e.elite||e.hitChain>=2))||e.hitChain>=(e.elite?5:byAlly?4:melee?5:3))){launch(e,kdir,heavy?1.2:.8,opts?.fling);if(e.hp>0)voice(e.type==='raptor'?'roar':'enemyHurt');}else if(!byAlly){e.state='hurt';e.timer=R?10/60:e.elite?.16:.25;}}
   else if(e.state==='held'&&forceDown){launch(e,kdir,1.2,opts?.fling);e.flyHeld=true;}
   // Hitstop: attacker and victim both hold the impact frame; the victim shakes. Heavier blows hold longer.
   if(!byAlly){lastHitEnemy=e;combo++;comboTimer=2;bestCombo=Math.max(bestCombo,combo);score+=Math.floor(amount*3);
@@ -1561,12 +1602,12 @@ function damageEnemy(e,amount,knock=0,forceDown=false,byAlly=false,opts=null) {
     // the tally's FINAL BLOW (CAMPAIGN §4.7): a special or a thrown weapon finished this boss (the last boss down counts)
     if(e.boss)finalBlow=!byAlly&&(blowKind==='special'||blowKind==='throw');
     if(e.boss){if(!bossDown(e,kdir)&&e.after)say(e.after);return true;}
-    if(e.type==='raptor'){e.state='flee';e.timer=1.2;e.hp=1;e.inv=2;e.dir=1;score+=e.elite?1200:300;kills++;if(e.after)say(e.after);return true;}
+    if(e.type==='raptor'){e.state='flee';e.timer=1.2;e.hp=1;e.inv=2;e.dir=1;score+=e.elite?1200:300;kills++;voice('roar');if(e.after)say(e.after);return true;}
     // The beaten Mirror Test staggers away; a Crown Guard officer with `flee` drops his keys and runs.
-    if(e.elite&&(e.type==='mirror'||e.fleeOnDefeat)){e.state='flee';e.timer=1.6;e.hp=1;e.inv=3;e.dir=1;score+=1500;kills++;clearEnemyHazards(e.id);if(e.after)say(e.after);return true;}
+    if(e.elite&&(e.type==='mirror'||e.fleeOnDefeat)){voice('enemyDeath');e.state='flee';e.timer=1.6;e.hp=1;e.inv=3;e.dir=1;score+=1500;kills++;clearEnemyHazards(e.id);if(e.after)say(e.after);return true;}
     // BROOD MOTHER: beaten, she dives back into the flood and does not resurface (CAMPAIGN §8.3; treated as flee).
-    if(e.brood){e.state='flee';e.sink=true;e.timer=1;e.hp=1;e.inv=9;score+=1200;kills++;clearEnemyHazards(e.id);if(e.after)say(e.after);return true;}
-    {e.dying=true;e.inv=99;if(e.type==='biker'){e.state='dead';e.z=0;e.dead=1;e.wreck=true;}else if(e.state!=='fly')launch(e,kdir,1.4,opts?.fling);}
+    if(e.brood){voice('roar');e.state='flee';e.sink=true;e.timer=1;e.hp=1;e.inv=9;score+=1200;kills++;clearEnemyHazards(e.id);if(e.after)say(e.after);return true;}
+    {e.dying=true;e.inv=99;voice('enemyDeath');if(e.type==='biker'){e.state='dead';e.z=0;e.dead=1;e.wreck=true;}else if(e.state!=='fly')launch(e,kdir,1.4,opts?.fling);}
     // A beaten rider's bike goes up in a fireball, as in the arcade's highway stage, and its rider tumbles off the wreck
     // (KI15: the ROM respawns him as a GNEISS falling from 32 px; he is a fighter of this wave, so the lock waits for
     // him). The Tide Outrider is thrown clear and stays down (CAMPAIGN §6.3).
@@ -1611,7 +1652,7 @@ function damagePlayer(amount,fromX,ignoreAir=false,hit=null) {
   else{player.hurtRole=back?'hurtBack':'hurt';player.hurt=heroClipLen(player.hurtRole,.3);}
   player.hurtTotal=player.hurt;player.inv=player.knocked?player.hurt+20/60:.65;
   player.x+=fromX<player.x?17:-17;player.attack=0;player.pendingStrike=null;player.moveState=null;player.swing=null;player.freeze=0;releaseGrab();player.z=0;player.vz=0;combo=0;comboTimer=0;player.pickup=0;player.pickTarget=null;
-  player.burst=null;player.runLatch=0;player.dashPhase=null;player.dropIn=false;if(player.knocked)dropWeapon();shake=6;flash=.06;sfx('hurt');burst(player.x,player.y-33,'#eea575',8);
+  player.burst=null;player.runLatch=0;player.dashPhase=null;player.dropIn=false;if(player.knocked)dropWeapon();shake=6;flash=.06;sfx('hurt');if(player.hp<=0||player.knocked&&player.knockRole==='knockHard')voice('death');burst(player.x,player.y-33,'#eea575',8);
   // A lost life: the death fall (knockHard, the ROM's death fall) and a moment lying, then the next life drops in from
   // the top of the screen (startDropIn; HEROES §6.6). The last life goes to the continue count.
   if(player.hp<=0){lives--;if(lives>0){player.hp=player.maxhp;dropWeapon();player.knocked=!driving;player.dying=!driving;if(!driving){player.knockRole='knockHard';player.hurt=player.hurtTotal=heroClipLen('knockHard',.65)+1;}else player.hurt=0;player.inv=player.hurt+3;toast=multi()?`${player.mp.slot+1}P · ${lives} LIVES REMAINING`:`${lives} LIVES REMAINING`;toastTime=3;checkpoint();}else if(multi())mpStartContinue();else startContinue();}
@@ -1641,7 +1682,7 @@ function updateContinue(dt){
 function respawn(){
   coins=Math.max(0,coins-1);lives=3;player.hp=player.maxhp;player.inv=3;player.hurt=0;player.knocked=false;player.down=false;player.z=0;player.vz=0;dropWeapon();if(!driving)startDropIn();
   for(const e of enemies)if(!e.dead&&!e.dying&&['windup','charge','leap'].includes(e.state)){e.state='walk';e.timer=1.2;clearEnemyHazards(e.id);}
-  state='play';panel('');resetInput();toast='PLAYER 1 · CONTINUE';toastTime=2.5;sfx('special');flash=.3;checkpoint();
+  state='play';panel('');resetInput();toast='PLAYER 1 · CONTINUE';toastTime=2.5;sfx('special');voice('go');flash=.3;checkpoint();
 }
 // 2-3 players (§3.10): a last life does not stop the game. The hero lies on the death fall's lying frame while that
 // player's own 10-s count runs on its HUD block; a coin (Enter or attack) spends a shared credit and drops the hero back
@@ -1669,7 +1710,7 @@ function mpRespawn(){
   if(m.out){player.x=clamp(camera+64+40*m.slot,camera+32,camera+W-32);player.y=clamp(b.mid+[0,-12,12][m.slot],b.top,b.bottom);}
   else player.x=clamp(player.x,camera+32,camera+W-32);
   m.cont=null;m.out=false;player.hp=player.maxhp;player.inv=3;player.hurt=0;player.knocked=false;player.down=false;player.z=0;player.vz=0;dropWeapon();
-  if(!driving)startDropIn();m.tag=2;toast=`${m.slot+1}P · CONTINUE`;toastTime=2;sfx('special');
+  if(!driving)startDropIn();m.tag=2;toast=`${m.slot+1}P · CONTINUE`;toastTime=2;sfx('special');voice('go');
 }
 // A passenger in the Cadillac (§3.11): rides with the driver; its attack is a side bash out of the back seat.
 function passengerStep(dt){
@@ -1724,7 +1765,7 @@ function startMove(name,extra={}){
   if(!frames.some(f=>f.hit))frames[Math.min(1,frames.length-1)].hit=true;
   player.moveState={name,role,contact:grab?null:RIG()?.clip(HEROES[selected].id,role)?.contact||null,frames,k:0,t:0,struck:[],landed:false,...extra};player.attackKind='combo';
   player.attackTotal=frames.reduce((a,f)=>a+f.d,0);player.attack=player.attackTotal;player.pendingStrike=null;player.swing=null;player.runLatch=0;
-  if(frames[0].hit){moveHit(player.moveState);contactClip(player.moveState);}if(name!=='throw')sfx('swing');
+  if(frames[0].hit){moveHit(player.moveState);contactClip(player.moveState);}if(name!=='throw')sfx('swing');if(name==='fin'||name==='knee')voice('attack');else if(name==='throw')voice('throw');
 }
 // a landed combo blow goes on in its contact clip (frame 0 = the same active record); true when it switched
 function contactClip(m){
@@ -1789,7 +1830,7 @@ function attack() {
   // when a forward jump is past its apex, else airKick; the attack lasts until the landing, which is then a hard one.
   player.attackKind=player.z>6?'air':'dash';player.comboStep=-1;heroAct();player.runLatch=0;
   const dash=player.attackKind==='dash',role=dash?'dash':player.jumpRole==='jumpRun'?'airRun':player.jumpRole==='jumpFwd'&&player.vz<0?'airLate':'airKick';
-  if(!dash){player.airRole=role;player.airAttacked=true;}else{player.dashPhase='dash';player.dashT=0;}
+  if(!dash){player.airRole=role;player.airAttacked=true;voice('jump');}else{player.dashPhase='dash';player.dashT=0;voice('attack');}
   player.attackTotal=heroClipLen(role,dash?.52:.45);player.attack=player.attackTotal;
   player.pendingStrike={role,t:0,range:dash?93:80,power:h.power*1.5,down:true,struck:[]};
   if(dash){player.dashVelocity=player.dir*[326,281,244,259][selected];if(selected!==1){player.z=12;player.vz=selected===3?126:104;}}
@@ -1803,7 +1844,7 @@ function endDash(){player.dashPhase='end';player.dashT=0;player.pendingStrike=nu
 // last 3 frames (ROM +0xAB), jumpFwd while moving, else jumpUp; it plays by time and holds its last frame until landing.
 function jump(){if(player.z>0||player.hurt>0||player.pickup>0||player.dropIn)return;if(driving){if(player.boostCd<=0){player.boost=1.15;player.boostCd=3;player.inv=1.2;sfx('jump');}return;}
   player.jumpRole=player.run?'jumpRun':time-player.turnAt<3/60+1e-9?'jumpBack':player.move?'jumpFwd':'jumpUp';player.airAttacked=false;
-  player.vz=263;player.z=.1;sfx('jump');}
+  player.vz=263;player.z=.1;sfx('jump');voice('hop');}
 // The mega crash's ROM clip is punch:8 (Jack 39 f, Mustapha 118 f, Hannah 36 f, Mess 54 f; HEROES §6.3); its damage stays
 // on the call (regression L29-L31 read it at once). MEGA_ROM_LOCK: G4 took PLAN §8.2's R1 lever 'mega lock' (HEROES R1
 // fallback): with the G4 enemies (ROM HP, chapter 6 at 313 s on average over six seeds against the 300-s gate, and no
@@ -1823,7 +1864,7 @@ function special() {
   if(hits&&!driving)player.hp=Math.max(1,player.hp-8);
   for(const o of objects)if(o.hp>0&&Math.abs(o.x-player.x)<85&&Math.abs(o.y-player.y)<48)breakObject(o,99);
   damageObjective(HEROES[selected].power*2.2,player.x,player.y,104,player.dir);blowKind=null;
-  sfx('special');shake=6;burst(player.x,player.y-30,HEROES[selected].color,22);
+  sfx('special');voice('special');shake=6;burst(player.x,player.y-30,HEROES[selected].color,22);
 }
 
 function pickup() {
@@ -2150,7 +2191,7 @@ function bossCall(e,k){
   const D=defOf(e);e.calls=k+1;
   if(e.type==='fessenden'){if(k===1){bossSummon(e,BDEF.fessenden?.phases?.[2]?.summon||{type:'raider',n:2});}return;}
   if(e.type==='truck'&&!BDEF.truck?.onFoot){bPlay(e,bSpec(e,'main:1')?.alts[0][0]);for(let j=0;j<2;j++)arrive('biker','L',j);toast='BELLOW · RIDERS FROM BEHIND';toastTime=2.5;return;}
-  if(e.type==='raptor'&&k===0){e.roarT=.5;const ck=bSpec(e,defOf(e)?.callA||'main:10')?.alts[0][0];if(ck&&['walk','recover'].includes(e.state))bPlay(e,ck);sfx('special');arrive('raptor','R',0);arrive('raptor','L',1);toast='THE PACK ANSWERS!';toastTime=2;return;}
+  if(e.type==='raptor'&&k===0){e.roarT=.5;const ck=bSpec(e,defOf(e)?.callA||'main:10')?.alts[0][0];if(ck&&['walk','recover'].includes(e.state))bPlay(e,ck);sfx('special');voice('roar');arrive('raptor','R',0);arrive('raptor','L',1);toast='THE PACK ANSWERS!';toastTime=2;return;}
   if(e.type==='echo'&&k===1){const u=D.moves?.grafts;if(u){say(level.bossLines?.p33);bossSummon(e,u);return;}}
   bossReinforce(e);e.calls=k+1;   // bossReinforce counts its own call
 }
@@ -2190,7 +2231,7 @@ function bossKnock(e,kdir){
   // damageEnemy has already set this hit's e.inv (.055) and refuses a blow while an older one runs (the rise's), so the
   // guard here is the state, the 4-s spacing and the armour of an active frame on show (ENEMIES §6.1)
   const f=bFrame(e);if(!['walk','recover','windup'].includes(e.state)||(f&&f.a.f[f.i][2])||stageTimer-(e.kdAt??-99)<4)return false;
-  const key=b.hit+':2',len=bLen(key)||48;e.kdAt=stageTimer;Object.assign(e,{state:'down',timer:len/60,vx:kdir*90,mvI:null,rec:null,next:null,gaff:null,crane:null,z:0});bPlay(e,key);sfx('slam');shake=Math.max(shake,6);return true;
+  const key=b.hit+':2',len=bLen(key)||48;e.kdAt=stageTimer;Object.assign(e,{state:'down',timer:len/60,vx:kdir*90,mvI:null,rec:null,next:null,gaff:null,crane:null,z:0});bPlay(e,key);sfx('slam');voice('bossHurt');shake=Math.max(shake,6);return true;
 }
 function bossDownTick(e,dt){const L=lock||{left:camera,right:camera+W};e.x=clamp(e.x+e.vx*dt,L.left+21,L.right-31);e.vx=approach(e.vx,0,240*dt);
   if(e.state==='down'&&e.timer<=0){const k=bodyOf(e)?.hit+':4';e.state='rise';e.timer=Math.max(.2,bLen(k)/60);e.inv=Math.max(e.inv,e.timer);bPlay(e,k);}
@@ -2199,20 +2240,21 @@ function bossDownTick(e,dt){const L=lock||{left:camera,right:camera+W};e.x=clamp
 function bossDown(e,kdir){
   const L=lock||{left:camera,right:camera+W};
   if(e.type==='sable'&&e.phase===1){clearEnemyHazards(e.id);Object.assign(e,{z:0,phase:2,calls:0,state:'transform',timer:2.7,inv:2.7,attackNo:0,pi:0,phIdx:-1,useN:{},said:{},mvI:null,rec:null,next:null,tempoMul:1});e.hp=e.maxhp=bossHpOf('sable',2)*rules().enemyHealth*bossScale();
-    flash=.65;shake=12;toast=level.phase2?.toast||'SABLE TAKES THE GATE CONTROLS';toastTime=4;effects.push({x:e.x,y:e.y,age:0,life:.8,type:'explosion'});say(level.phase2?.say);e.name=BDEF.sable?.phase2?.name||'SABLE · GATE CONTROLS';bPlay(e,bWalkKey(e),{hold:false});return true;}
+    flash=.65;shake=12;voice('bossTaunt');toast=level.phase2?.toast||'SABLE TAKES THE GATE CONTROLS';toastTime=4;effects.push({x:e.x,y:e.y,age:0,life:.8,type:'explosion'});say(level.phase2?.say);e.name=BDEF.sable?.phase2?.name||'SABLE · GATE CONTROLS';bPlay(e,bWalkKey(e),{hold:false});return true;}
   const D0=BDEF[e.type];
   if(D0?.phase2?.body&&D0.transform&&e.phase!==2){const T=D0.transform,t=T.t||2.4,P=D0.phase2,kb=ROMB()?.bodies?.[D0.body],ib=ROMB()?.bodies?.[P.body];clearEnemyHazards(e.id);
     Object.assign(e,{z:0,vx:0,phase:2,calls:0,state:'mutate',timer:t,inv:t,attackNo:0,pi:0,phIdx:-1,useN:{},said:{},mvI:null,rec:null,next:null,tempoMul:1,flinch:0});e.hp=e.maxhp=bossHpOf(e.type,2)*rules().enemyHealth*bossScale();e.name=P.name||e.name;
     const [fa,ta]=T.anims||[5,9];bPlay(e,kb&&ib?comboAnim(P.body+':serum',kb.main+':'+fa,ib.main+':'+ta):null,{hold:true});
-    flash=.5;shake=10;toast=level.phase2?.toast||(e.name+'!');toastTime=3.5;say(level.phase2?.say);setBossCard(e.name,level.phase2?.card||'',t,true);sfx('special');return true;}
+    flash=.5;shake=10;toast=level.phase2?.toast||(e.name+'!');toastTime=3.5;say(level.phase2?.say);setBossCard(e.name,level.phase2?.card||'',t,true);sfx('special');voice('bossTransform');return true;}
   // while the driver hums Glassback cannot be beaten (phase2.driver.hpFloor)
   if(e.type==='raptor'&&defOf(e)?.driver?.hpFloor&&bossDriver()){e.hp=1;e.state='recover';e.timer=1.4;e.inv=1.4;e.rec=null;toast='THE DRIVER KEEPS HER STANDING · SMASH IT';toastTime=2;return true;}
-  if(e.type==='truck'&&!BDEF.truck?.onFoot){clearEnemyHazards(e.id);Object.assign(e,{hp:1,state:'flee',timer:2.4,inv:9,dir:1,z:0,collar:false});score+=2000;kills++;say(level.bossDefeat);sparkBurst(e.x+e.dir*60,e.y-48,18);toast='THE HARNESS BREAKS';toastTime=2.5;
+  if(e.type==='truck'&&!BDEF.truck?.onFoot){clearEnemyHazards(e.id);Object.assign(e,{hp:1,state:'flee',timer:2.4,inv:9,dir:1,z:0,collar:false});score+=2000;kills++;say(level.bossDefeat);voice('bossHurt');sparkBurst(e.x+e.dir*60,e.y-48,18);toast='THE HARNESS BREAKS';toastTime=2.5;
     effects.push({type:'chain',x:e.x-30,y:e.y,age:0,life:2,vx:-(roadRate||CAR.road)});bPlay(e,bodyOf(e)?.main+':0');return true;}
   clearEnemyHazards(e.id);e.z=0;e.state='dead';e.mvI=null;e.rec=null;e.gaff=null;score+=2000;kills++;
   // defeats (STORY.md): Rook is knocked down and arrested, Cinder cowers and surrenders, Echo kneels and is arrested, the
   // gate controls are smashed ('engine', the engine's name), Crownback falls in the spillway ('lot00', the engine's name)
   const D=defOf(e),kind=e.type==='sable'?'engine':e.type==='fessenden'?'lot00':D?.defeat?.arrest&&bSpec(e,D.defeat.anim)?'arrest':e.type==='cinder'?'surrender':e.type==='echo'?'kneel':'knock';
+  if(kind!=='engine')voice(kind==='lot00'?'roar':'bossDeath');
   e.defeat={kind,t:0,said:false};e.dead=kind==='surrender'?(D.defeat?.t||2.6)+.3:kind==='kneel'?2.4:kind==='lot00'?(BDEF.fessenden?.defeat?.crossfade||1.5)+.4:kind==='engine'?.5:kind==='arrest'?6:1.9;
   if(kind==='engine'){say(level.phase2?.defeat);if(crown){crown.occupied=false;crown.stalled=true;}mission.total=4;createObjective('gate','FINAL SPILLWAY RELEASE',L.right-125,laneY(.64,L.right-125),0,true);say(level.gateSay);}
   else if(kind==='lot00'){sayNow(level.lastCopy?.lines?.defeat);
@@ -2350,7 +2392,7 @@ function crownSpawn(x,y){
 }
 function crownMutate(e,dt){
   if(e.mutWalk){e.x=approach(e.x,e.enterX,110*dt);e.y=approach(e.y,e.enterY,60*dt);e.dir=-1;e.moving=true;
-    if(Math.abs(e.x-e.enterX)<1&&Math.abs(e.y-e.enterY)<1){e.mutWalk=false;e.x=e.enterX;e.y=e.enterY;bPlay(e,crownTfKey(),{hold:true});sfx('special');}}
+    if(Math.abs(e.x-e.enterX)<1&&Math.abs(e.y-e.enterY)<1){e.mutWalk=false;e.x=e.enterX;e.y=e.enterY;bPlay(e,crownTfKey(),{hold:true});sfx('special');voice('bossTransform');}}
   if(e.timer<=0){e.state='walk';e.timer=.45;e.inv=0;e.mutWalk=false;e.x=e.enterX;e.y=e.enterY;bIdle(e);}
 }
 function crownPhaseK(e){const f=e.hp/e.maxhp;let k=0;(BDEF.fessenden?.phases||[]).forEach((p,i)=>{if(f<=p.at+1e-9)k=i;});return k;}
@@ -2364,7 +2406,7 @@ function crownUpdate(e,dt,ox,oy){
   else if(k>e.modeK){e.modeK=k;const ph=phs[k]||{};
     if(ph.mode==='collapse'){e.vulnMul=ph.bodyHurt||1.5;e.vulnT=999;toast='HIS GUARD BREAKS · HIT HIM!';toastTime=2;}
     else if(ph.mode==='wading'){toast='CROWNBACK WADES OUT OF THE CHANNEL';toastTime=2;}
-    if(ph.roar&&!['stagger','charge','leap'].includes(e.state)){crownStop(e);e.state='roar';e.timer=.75;bPlay(e,crownKey(8));shake=Math.max(shake,6);sfx('special');}}
+    if(ph.roar&&!['stagger','charge','leap'].includes(e.state)){crownStop(e);e.state='roar';e.timer=.75;bPlay(e,crownKey(8));shake=Math.max(shake,6);sfx('special');voice('roar');}}
   e.walkMul=phs[e.modeK]?.speed||1;e.planted=crownModeOf(e)==='planted';   // planted behind the shield arm: he turns and lines up his lane, never walks out
   if(e.state==='stagger'){e.stagger=Math.max(0,(e.stagger||0)-dt);if(e.stagger<=0){e.state='walk';e.timer=.3;bIdle(e);}return;}
   if(e.state==='roar'){if(e.timer<=0){e.state='walk';e.timer=.2;bIdle(e);}return;}
@@ -3129,7 +3171,7 @@ function update(dt) {
   // none of them holds the lock; set pieces (ZEKE, a Naguri group not yet provoked) never count (CAMPAIGN §4.5). A beaten
   // boss's defeat script plays out first, up to its dissolve or its last line (bossDeadTick: Rook 1.0 s, Slice 1.4 s, Cinder
   // 1.65 s, Crownback's lines.after 1.2 s; CAMPAIGN §10.4 'lines.after; then clear'), so the clear panel never hides it.
-  if(lock&&encounterSpawned()&&enemies.every(e=>e.dead||e.dying||e.setPiece||e.state==='flee')&&!mission.active&&!enemies.some(e=>e.boss&&e.defeat&&e.defeat.kind!=='engine'&&!e.defeat.done&&!e.remove)){const boss=encounter.spec.boss;lock=null;encounter=null;if(boss){stageClear();return;}toast='GO →';toastTime=2.5;score+=500;}
+  if(lock&&encounterSpawned()&&enemies.every(e=>e.dead||e.dying||e.setPiece||e.state==='flee')&&!mission.active&&!enemies.some(e=>e.boss&&e.defeat&&e.defeat.kind!=='engine'&&!e.defeat.done&&!e.remove)){const boss=encounter.spec.boss;lock=null;encounter=null;if(boss){stageClear();return;}toast='GO →';toastTime=2.5;score+=500;voice('go');}
   {const nx=plan.sections[sectionIndex+1];if(nx&&nx.area===areaIndex&&leadPlayer().x>=nx.x)enterSection(sectionIndex+1);}
   updateCamera(dt);
   // A fight starts when the camera reaches its lock trigger, as the ROM's camera segments do (ARCHITECTURE §2.4).
@@ -3659,7 +3701,7 @@ function foodDrop(x,y,life=999,rich=false){return {x,y,type:'food',food:pickWeig
 function bonusDrop(x,y,life=999){return {x,y,type:'bonus',food:pickWeighted(BONUS_WEIGHTS),life};}
 function consumeItem(d){
   const f=ITEMS.frames[d.food]||ITEMS.frames.hamburger||{heal:48,score:1000};const i=drops.indexOf(d);if(i>=0)drops.splice(i,1);d.claimed=true;sfx('pickup');
-  if(d.type==='food'){const heal=Math.round(player.maxhp*(f.heal||48)/100);
+  if(d.type==='food'){voice('food');const heal=Math.round(player.maxhp*(f.heal||48)/100);
     // Eaten at full health, a meal is worth its points instead, as on the cabinet.
     if(player.hp>=player.maxhp-.5){score+=f.score||1000;popup(player.x,player.y-71,'+'+(f.score||1000),'#ffe08a');}else{player.hp=Math.min(player.maxhp,player.hp+heal);popup(player.x,player.y-71,d.food.toUpperCase()+' +'+heal,'#d5ec69');}}
   else if(d.type==='bonus'){score+=f.score||1000;popup(player.x,player.y-71,'+'+(f.score||1000),'#ffe08a');}
@@ -4276,7 +4318,8 @@ function pview(p){if(!p)return null;const m=p.mp,me=p===ctxPlayer;return {...p,p
 // Arcade units (ARCHITECTURE §8, PLAN §4.6): positions, view, band and lock are arcade px in the area's own space; layout is
 // canvas px. `rules` carries the reaches and lanes the tests read instead of literals.
 const RULES={units:'arcade',reach:Object.fromEntries(['p1','p2','kick','fin'].map(k=>[k,MOVE[k].reach])),dashReach:93,airReach:80,meleeLane:27,bulletLane:19,shotgunSpread:41,grab:[27,8],pickup:[33,18],attackPickup:[22,13],autoCollect:20,special:104,clamp:[16,367],carEdge:CAR_EDGE,carReach:CAR_REACH,lockLead:LOCK_LEAD,camLead:CAM_LEAD,camStep:6};
-window.LAST_EDEN={render, get state(){return state;},get units(){return {world:'arcade',px:PX,aspect:settings.aspect};},get layout(){return {hud:[...LAYOUT.hud],radio:[...LAYOUT.radio],weapon:[...LAYOUT.weapon],font:UI()?.romFonts?'rom':'authored'};},get snapshot(){const b=bandOf(player?player.x:0),ar=plan?.areas?.[areaIndex];return {units:'arcade',view:{x:camera,y:cameraY,w:W,h:H},cameraY,area:ar?{index:ar.index,id:ar.id,w:ar.w,h:ar.h}:null,band:{top:b.top,bottom:b.bottom,mid:b.mid},areaLength:ar?ar.w:0,fade:fade?{to:fade.to,out:fade.out,t:fade.t}:null,roadStream,rules:JSON.parse(JSON.stringify(RULES)),difficulty:normalizeDifficulty(difficulty),road,coins,continueTimer,held:lastHeld?{...lastHeld}:null,difficultyRules:{...rules()},particles:particles.map(p=>({...p})),gunSocket:player?.weapon&&weaponClass(player.weapon)?gunMount():null,mission:mission?{completed:mission.completed,total:mission.total,active:mission.active?{...mission.active}:null}:null,artReady:SEQUEL_RENDER.ready,posesReady:!!RIG()?.ready,state,level:levelIndex,wave,score,lives,section:sectionIndex,encounter:encIndex,driving,camera,length:level.length,plan:plan?{areas:plan.areas.map(a=>({index:a.index,id:a.id,w:a.w,h:a.h,x0:a.x0})),sections:plan.sections.map(s=>({index:s.index,name:s.name,say:s.say,drive:s.drive,x:s.x,len:s.len,area:s.area,first:s.first,stage:s.stage,cap:s.cap,props:s.props.map(p=>({...p}))})),encounters:plan.encounters.map(e=>({x:e.x,cam:e.cam,lockId:e.lockId,area:e.area,section:e.section,task:e.task,boss:!!e.boss,elite:e.elite?.name||null}))}:null,lock:lock?{...lock}:null,bullets:bullets.map(b=>({...b})),discards:discards.map(d=>({...d})),zones:zones.map(z=>({...z})),effects:effects.map(f=>f.type),audio:soundtrack.status,player:player?{...player,pickTarget:null,grab:player.grab?{t:player.grab.t,hits:player.grab.hits,type:player.grab.e.type}:null,moveState:player.moveState?{name:player.moveState.name,k:player.moveState.k}:null}:null,enemies:enemies.map(e=>({...e,nid:e.nid,target:null,tp:null,byP:null,hitList:null,...(e.type==='mirror'?{rig:cloneInfo(e)}:{}),...(e.type==='fessenden'?{lot:{mode:crownModeOf(e),stagger:e.stagger||0}}:{})})),allies:allies.map(a=>({...a,target:null,rig:cloneInfo(a),rom:a.conscript?{key:a.ak||null,frame:a.af|0,fid:a.fid??null}:null})),objects:objects.map(o=>({...o})),drops:drops.map(d=>({...d})),scenery:scenery.map(c=>({...c})),crown:crown?{...crown}:null,wheels:spillWheels.map(w=>({...w})),bossObjects:bossObjs.map(o=>({...o})),bossCard:bossCard?{...bossCard}:null,radio:radio?radio.text:null,radioQueue:[...radioQueue],unlocked:save.unlocked,
+window.LAST_EDEN={render, get state(){return state;},
+ voice:{map:VOICE,cooldown:VOICE_CD,max:VOICE_MAX,files:voiceFiles,pick:voicePick,say:voice,play:playVoice,reset:()=>{voiceNext={};voiceLast={};voiceTurn=0;voiceLog.length=0;for(const a of voiceLive.splice(0))try{a.pause();}catch{}},get live(){return voiceLive.filter(a=>!a.paused&&!a.ended).length;},get log(){return [...voiceLog];}},get units(){return {world:'arcade',px:PX,aspect:settings.aspect};},get layout(){return {hud:[...LAYOUT.hud],radio:[...LAYOUT.radio],weapon:[...LAYOUT.weapon],font:UI()?.romFonts?'rom':'authored'};},get snapshot(){const b=bandOf(player?player.x:0),ar=plan?.areas?.[areaIndex];return {units:'arcade',view:{x:camera,y:cameraY,w:W,h:H},cameraY,area:ar?{index:ar.index,id:ar.id,w:ar.w,h:ar.h}:null,band:{top:b.top,bottom:b.bottom,mid:b.mid},areaLength:ar?ar.w:0,fade:fade?{to:fade.to,out:fade.out,t:fade.t}:null,roadStream,rules:JSON.parse(JSON.stringify(RULES)),difficulty:normalizeDifficulty(difficulty),road,coins,continueTimer,held:lastHeld?{...lastHeld}:null,difficultyRules:{...rules()},particles:particles.map(p=>({...p})),gunSocket:player?.weapon&&weaponClass(player.weapon)?gunMount():null,mission:mission?{completed:mission.completed,total:mission.total,active:mission.active?{...mission.active}:null}:null,artReady:SEQUEL_RENDER.ready,posesReady:!!RIG()?.ready,state,level:levelIndex,wave,score,lives,section:sectionIndex,encounter:encIndex,driving,camera,length:level.length,plan:plan?{areas:plan.areas.map(a=>({index:a.index,id:a.id,w:a.w,h:a.h,x0:a.x0})),sections:plan.sections.map(s=>({index:s.index,name:s.name,say:s.say,drive:s.drive,x:s.x,len:s.len,area:s.area,first:s.first,stage:s.stage,cap:s.cap,props:s.props.map(p=>({...p}))})),encounters:plan.encounters.map(e=>({x:e.x,cam:e.cam,lockId:e.lockId,area:e.area,section:e.section,task:e.task,boss:!!e.boss,elite:e.elite?.name||null}))}:null,lock:lock?{...lock}:null,bullets:bullets.map(b=>({...b})),discards:discards.map(d=>({...d})),zones:zones.map(z=>({...z})),effects:effects.map(f=>f.type),audio:soundtrack.status,player:player?{...player,pickTarget:null,grab:player.grab?{t:player.grab.t,hits:player.grab.hits,type:player.grab.e.type}:null,moveState:player.moveState?{name:player.moveState.name,k:player.moveState.k}:null}:null,enemies:enemies.map(e=>({...e,nid:e.nid,target:null,tp:null,byP:null,hitList:null,...(e.type==='mirror'?{rig:cloneInfo(e)}:{}),...(e.type==='fessenden'?{lot:{mode:crownModeOf(e),stagger:e.stagger||0}}:{})})),allies:allies.map(a=>({...a,target:null,rig:cloneInfo(a),rom:a.conscript?{key:a.ak||null,frame:a.af|0,fid:a.fid??null}:null})),objects:objects.map(o=>({...o})),drops:drops.map(d=>({...d})),scenery:scenery.map(c=>({...c})),crown:crown?{...crown}:null,wheels:spillWheels.map(w=>({...w})),bossObjects:bossObjs.map(o=>({...o})),bossCard:bossCard?{...bossCard}:null,radio:radio?radio.text:null,radioQueue:[...radioQueue],unlocked:save.unlocked,
   // G6 presentation: the card state, the area caption, the clear tally, the ending beat, the attract story
   card:card?{i:card.i,start:card.start,phase:card.phase,k:card.k,t:card.t,pre:card.pre}:null,caption:caption?{...caption}:null,tally:clearSeq?{...clearSeq.tally,t:clearSeq.t,story:clearSeq.story}:null,
   ending:endSeq?{k:endSeq.k,beat:endBeat()?.beat||null,t:endSeq.t,done:!!endSeq.done,actors:endActors.map(a=>({hero:a.hero,x:a.x,y:a.y,state:a.state,own:!!a.own,freed:!!a.freed,conscript:!!a.conscript})),car:endCar?{...endCar}:null,area:areaIndex,lot:endLot?{x:endLot.x,y:endLot.y,dir:endLot.dir,key:endLot.ba?.key||null,map:bossMap(endLot),gelMap:bossMap(endLot,true),parts:bFrame(endLot)?1:0,drawn:!!endLot.drawn,remnant:!!endLot.remnant}:null}:null,attract:attractSeq?{...attractSeq}:null,menuIdle,checkpoint:save.checkpoint?{...save.checkpoint}:null,

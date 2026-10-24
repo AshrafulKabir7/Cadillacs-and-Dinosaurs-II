@@ -38,3 +38,5 @@ assets/arcade-heroes.png
 relay/
 
 assets/bosses/
+
+assets/audio/*.wav
