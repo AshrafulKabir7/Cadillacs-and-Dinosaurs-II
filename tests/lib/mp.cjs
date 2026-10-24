@@ -306,19 +306,19 @@ function bus(opts = {}) {
 // ---------------------------------------------------------------- server
 let serverChild = null;
 const ping = (u, ms = 1500) => new Promise(res => { const r = http.get(u, x => { x.resume(); res(x.statusCode); }); r.on('error', () => res(0)); r.setTimeout(ms, () => { r.destroy(); res(0); }); });
-const baseDir = () => A.BASE.replace(/\/(index\.html)?(\?.*)?$/, '').replace(/\/$/, '');
+const baseDir = () => A.SITE;   // the site root; the game page is A.GAME_PAGE (play.html)
 const urlOf = rel => baseDir() + '/' + rel.replace(/^\//, '');
 // Make sure GAME_URL answers; when it is the default local address and nothing listens, start tools/serve.cjs there.
 async function ensureServer() {
   if (A.isFileURL()) return { ok: false, why: 'GAME_URL is a file:// URL: multiplayer needs http' };
-  const first = await ping(urlOf('index.html'));
+  const first = await ping(urlOf(A.GAME_PAGE));
   if (first === 200) return { ok: true, started: false };
-  if (first) return { ok: false, why: `${urlOf('index.html')} answers HTTP ${first}: another server is on that address (expected 200 from tools/serve.cjs)` };
+  if (first) return { ok: false, why: `${urlOf(A.GAME_PAGE)} answers HTTP ${first}: another server is on that address (expected 200 from tools/serve.cjs)` };
   const m = /^http:\/\/(127\.0\.0\.1|localhost):(\d+)/.exec(baseDir());
   if (!m) return { ok: false, why: `${A.BASE} does not answer` };
   serverChild = spawn(process.execPath, [path.join(A.ROOT, 'tools', 'serve.cjs'), m[2]], { stdio: 'ignore', windowsHide: true });
   process.on('exit', () => { try { serverChild.kill(); } catch (e) { /* gone */ } });
-  for (let i = 0; i < 40; i++) { await sleep(150); if ((await ping(urlOf('index.html'))) === 200) return { ok: true, started: true }; }
+  for (let i = 0; i < 40; i++) { await sleep(150); if ((await ping(urlOf(A.GAME_PAGE))) === 200) return { ok: true, started: true }; }
   return { ok: false, why: `could not start tools/serve.cjs on port ${m[2]}` };
 }
 const exists = async rel => (await ping(urlOf(rel))) === 200;
@@ -430,7 +430,7 @@ async function browserFor(opts = {}) {
 async function closeShared() { if (sharedBrowser) { await sharedBrowser.close().catch(() => {}); sharedBrowser = null; } }
 
 const pageUrl = (kind, query = {}) => {
-  const rel = kind === 'game' ? 'index.html' : kind === 'harness' ? 'tests/fixtures/mp-harness.html' : kind;
+  const rel = kind === 'game' ? A.GAME_PAGE : kind === 'harness' ? 'tests/fixtures/mp-harness.html' : kind;
   const q = new URLSearchParams({ net: 'loopback', ...query }); for (const [k, v] of [...q]) if (v === null || v === 'null') q.delete(k);
   const s = q.toString(); return urlOf(rel) + (s ? '?' + s : '');
 };

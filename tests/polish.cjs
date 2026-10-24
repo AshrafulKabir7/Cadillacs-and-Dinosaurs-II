@@ -1,6 +1,7 @@
 const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs');
 fs.mkdirSync('tests/results',{recursive:true});
-const BASE=process.env.GAME_URL||'http://127.0.0.1:8766';
+const BASE=require('./lib/arcade.cjs').BASE;   // the game page, play.html on GAME_URL (index.html is the home page)
+
 // Checks for the handling polish: frame pacing independent of the display rate, Cadillac momentum and lean,
 // the streaming road, rider behaviour, the radio strip position and the last copy (Fessenden) after the Crown Engine.
 (async()=>{const browser=await chromium.launch({headless:true}),page=await browser.newPage({viewport:{width:1280,height:900}}),errors=[];

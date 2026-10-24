@@ -19,7 +19,7 @@ In the last chapter Hannah breaks the collar pylons with Echo's key and the free
 
 ## Play or deploy
 
-Open **index.html** (or **PLAY GAME.bat**). Keep the whole folder, including `assets/stages`, `assets/audio` and `assets/sfx`. Offline play from `file://` needs no installation, server or emulator.
+Open **play.html** (or **PLAY GAME.bat**) to play. **index.html** is the home page (`home.css`, `home.js`, the art in `assets/home/` rendered from the game's own sprites by `node tools/home/build-home-art.cjs`); its PLAY NOW button opens play.html, PLAY WITH FRIENDS opens `play.html?online` (the lobby), and a `?join=` share link opened on the home page is forwarded to play.html. Keep the whole folder, including `assets/stages`, `assets/audio` and `assets/sfx`. Offline play from `file://` needs no installation, server or emulator.
 
 For **Vercel**, import this repository, choose **Other**, leave the build and install commands empty and use the output directory **`.`** (`vercel.json` supplies these). There is no build step on Vercel: the generated files are committed. [DEPLOYMENT.md](DEPLOYMENT.md) also covers GitHub Pages.
 

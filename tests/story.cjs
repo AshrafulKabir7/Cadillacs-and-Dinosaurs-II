@@ -1,6 +1,7 @@
 const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs');
 fs.mkdirSync('tests/results',{recursive:true});
-const BASE=process.env.GAME_URL||'http://127.0.0.1:8766';
+const BASE=require('./lib/arcade.cjs').BASE;   // the game page, play.html on GAME_URL (index.html is the home page)
+
 // Checks for The Crown Tide (STORY.md): story structure, off-screen entrances, movement poses, the Cadillac, the freed
 // conscripts of the Crown dam and section checkpoints.
 (async()=>{const browser=await chromium.launch({headless:true}),page=await browser.newPage({viewport:{width:1280,height:900}}),errors=[];

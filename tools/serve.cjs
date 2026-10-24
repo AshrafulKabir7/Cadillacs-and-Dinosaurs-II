@@ -6,6 +6,8 @@ const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'applic
 http.createServer((req, res) => {
   let p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
   if (p.endsWith('/')) p += 'index.html';
+  // /play serves play.html, as the rewrite in vercel.json does on the deployment
+  if (!path.extname(p) && fs.existsSync(path.join(ROOT, p + '.html'))) p += '.html';
   const file = path.join(ROOT, p);
   if (!file.startsWith(ROOT) || /[\\/](work|dino|roms|node_modules)[\\/]/.test(file)) { res.writeHead(403); return res.end(); }
   fs.readFile(file, (err, data) => {

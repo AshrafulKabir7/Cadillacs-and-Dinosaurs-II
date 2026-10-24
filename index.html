@@ -1,7 +1,409 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Cadillacs & Dinosaurs II — The Crown Tide</title><meta name="description" content="An unofficial fan sequel to the 1993 arcade game. Fessenden is dead, the sea took the coast, and Marshal Sable holds the water. Four heroes, six chapters, one dam."><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230d1719'/%3E%3Cpath d='M5 24V8h5v16m7 0V8h5v16' stroke='%23d5ec60' stroke-width='4'/%3E%3C/svg%3E"><script>if(matchMedia("(pointer:coarse)").matches||(navigator.maxTouchPoints>0&&matchMedia("(hover:none)").matches)||/[?&]touch=1/.test(location.search))document.documentElement.classList.add("touch-ui");</script><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#0b1316"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="C&amp;D II"><link rel="apple-touch-icon" href="assets/icon-180.png"><link rel="stylesheet" href="style.css"></head>
-<body><main class="cabinet"><header class="masthead"><a href="#" id="home" aria-label="Main menu"><span class="logo-mark">II</span><span>CADILLACS & DINOSAURS <b>THE CROWN TIDE</b></span></a><div class="header-right"><span class="status"><i></i> LOCAL ARCADE</span><button id="sound" aria-label="Toggle audio">SOUND ON</button><button id="full" aria-label="Fullscreen">⛶</button></div></header>
-<div class="game-shell"><canvas id="game" width="768" height="448" tabindex="0" aria-label="Cadillacs and Dinosaurs II game. Use arrow keys to move, J to attack, K to jump, L for special and E to interact or pick up. Press Enter to begin."></canvas><div class="scanlines" aria-hidden="true"></div><div id="overlay"></div><button id="pause" class="pause-button" aria-label="Pause game">Ⅱ</button></div>
-<div class="below"><span class="chapter-label">SIX MONTHS AFTER THE SEA TOOK FESSENDEN’S LAB</span><div class="key-guide"><span><kbd>WASD</kbd> MOVE</span><span><kbd>J</kbd> HIT / FIRE</span><span><kbd>K</kbd> JUMP</span><span><kbd>L</kbd> SPECIAL</span><span><kbd>E</kbd> INTERACT / PICK</span><span><kbd>SHIFT</kbd> RUN</span></div></div>
-<button id="full-exit" class="full-exit" aria-label="Exit fullscreen">✕</button><div class="rotate-hint" aria-hidden="true">↻ TURN YOUR PHONE SIDEWAYS FOR A BIGGER SCREEN</div><div class="touch-controls" aria-label="Touch controls"><div class="stick" id="stick" role="application" aria-label="Movement stick: slide to move, push to the edge to run"><div class="stick-ring"><span>RUN</span></div><div class="stick-knob" id="stick-knob"></div></div><div class="touch-actions"><button data-key="KeyE" class="t-pick" aria-label="Interact or pick up">PICK<br>USE</button><button data-key="KeyL" class="t-special" aria-label="Special">SPECIAL</button><button data-key="KeyK" class="t-jump" aria-label="Jump">JUMP</button><button data-key="KeyJ" class="t-attack" aria-label="Hit or fire">HIT<br>FIRE</button></div></div>
-<footer><span>UNOFFICIAL FAN SEQUEL · ORIGINAL ARCADE CHARACTER ART</span><span>BUILT FOR MOSTAFA'S NEXT ADVENTURE</span></footer></main><script src="soundtrack-data.js"></script><script src="audio.js"></script><script src="campaign.js"></script><script src="combat-config.js"></script><script src="stage-data.js"></script><script src="stage-render.js"></script><script src="sequel-render.js"></script><script src="sprites.js"></script><script src="sprite-data-heroes.js"></script><script src="sprite-data-fx.js"></script><script src="sprite-data-enemies.js"></script><script src="sprite-data-bosses.js"></script><script src="sprite-data-boss-sable.js"></script><script src="sprite-data-boss-crownback.js"></script><script src="sprite-data-boss-crownjet.js"></script><script src="sprite-data-boss-rook.js"></script><script src="sprite-data-boss-krag.js"></script><script src="sprite-data-boss-ironclub.js"></script><script src="sprite-data-boss-thorne.js"></script><script src="sprite-data-boss-glassback.js"></script><script src="sprite-data-boss-cinder.js"></script><script src="sprite-data-boss-overdrive.js"></script><script src="sprite-data-boss-cinderfx.js"></script><script src="sprite-data-boss-echo.js"></script><script src="sprite-data-boss-echoring.js"></script><script src="sprite-data-boss-engine.js"></script><script src="sprite-data-boss-enginefx.js"></script><script src="sprite-data-ui.js"></script><script src="hero-rig.js"></script><script src="enemy-kinds.js"></script><script src="mission-data.js"></script><script src="arcade-ui.js"></script><script src="game.js"></script></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>
+// A co-op share link opened on the home page (old links pointed at /?join=CODE) goes straight to the game's join screen.
+(function(){var q=location.search;if(/[?&](join|net)=/i.test(q))location.replace('play.html'+q+location.hash);document.documentElement.className+=' js';})();
+</script>
+<title>Cadillacs &amp; Dinosaurs II · The Crown Tide — play free in your browser</title>
+<meta name="description" content="The unofficial fan sequel to Capcom's 1993 arcade beat-'em-up. Six chapters, four heroes, bosses with second forms and online co-op for three. Free, in your browser, on desktop and phone.">
+<link rel="canonical" href="https://cadillacsanddinosaurs2.vercel.app/">
+<meta name="theme-color" content="#070b12">
+<meta name="color-scheme" content="dark">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Cadillacs &amp; Dinosaurs II">
+<meta property="og:title" content="Cadillacs &amp; Dinosaurs II · The Crown Tide">
+<meta property="og:description" content="The 1993 arcade legend continues. Six chapters, four heroes, online co-op for three. Free in your browser, no install.">
+<meta property="og:url" content="https://cadillacsanddinosaurs2.vercel.app/">
+<meta property="og:image" content="https://cadillacsanddinosaurs2.vercel.app/assets/home/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Cadillac driving the Coral Causeway under the Cadillacs &amp; Dinosaurs II logo">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cadillacs &amp; Dinosaurs II · The Crown Tide">
+<meta name="twitter:description" content="The 1993 arcade legend continues. Free in your browser, online co-op for three.">
+<meta name="twitter:image" content="https://cadillacsanddinosaurs2.vercel.app/assets/home/og.png">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230d1719'/%3E%3Cpath d='M5 24V8h5v16m7 0V8h5v16' stroke='%23d5ec60' stroke-width='4'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="assets/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Jersey+10&amp;display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Jersey+10&amp;display=swap"></noscript>
+<link rel="preload" as="image" href="assets/home/logo.png">
+<link rel="stylesheet" href="home.css">
+<script src="assets/home/art.js" defer></script>
+<script src="home.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="nav">
+  <div class="nav-in">
+    <a class="brand" href="#top" aria-label="Cadillacs &amp; Dinosaurs II home"><span class="brand-mark" aria-hidden="true">II</span><span class="brand-name">Cadillacs &amp; Dinosaurs <em>II</em></span></a>
+    <nav aria-label="Sections">
+      <ul class="nav-links">
+        <li><a href="#story">Story</a></li>
+        <li><a href="#chapters">Chapters</a></li>
+        <li><a href="#heroes">Heroes</a></li>
+        <li><a href="#coop">Co-op</a></li>
+        <li><a href="#controls">Controls</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <a class="btn btn-gold btn-sm" href="play.html" data-play>Play now</a>
+  </div>
+</header>
+
+<main id="main">
+  <!-- ============================================================ hero -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="hero-sky" aria-hidden="true"></div>
+    <div class="scene" aria-hidden="true"><canvas id="drive"></canvas></div>
+    <div class="hero-in wrap">
+      <p class="eyebrow"><span class="dot" aria-hidden="true"></span>The 1993 arcade legend continues</p>
+      <h1 id="hero-title" class="logo"><img src="assets/home/logo.png" width="288" height="116" alt="Cadillacs &amp; Dinosaurs II: The Crown Tide"></h1>
+      <p class="lead">Fessenden is dead. The sea took the coast. Now Marshal Sable sells the water by permit, and the Cadillac is back on the road.</p>
+      <div class="cta">
+        <a class="btn btn-gold btn-lg" href="play.html" data-play><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></svg>Play now</a>
+        <a class="btn btn-ghost btn-lg" href="play.html?online" data-friends><svg aria-hidden="true" viewBox="0 0 20 16"><circle cx="6" cy="5" r="2.6"/><circle cx="14" cy="5" r="2.6"/><path d="M1 14c.4-3 2.4-4.6 5-4.6s4.6 1.6 5 4.6zM9.6 14c.3-2.1 1-3.3 2.2-4 .7-.4 1.4-.6 2.2-.6 2.6 0 4.6 1.6 5 4.6z"/></svg>Play with friends</a>
+      </div>
+      <ul class="facts" aria-label="At a glance">
+        <li>Free</li><li>No install</li><li>Keyboard, touch &amp; gamepad</li><li>Online co-op for 3</li>
+      </ul>
+      <p class="resume" id="resume" hidden></p>
+    </div>
+  </section>
+
+  <!-- ============================================================ story -->
+  <section class="section story" id="story" aria-labelledby="story-title">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="kicker">Six months after the lab blew</p>
+        <h2 id="story-title">Nobody owns the water.<br><span class="hl-gold">Sable wants to.</span></h2>
+        <p class="sub">The flood that swallowed Dr. Fessenden's lab drowned half the east coast. Marshal Sable seized the Crown dam, the only thing holding back the sea, and now every tap runs on his permit.</p>
+      </div>
+      <ol class="beats">
+        <li class="beat reveal">
+          <figure><img src="assets/home/p-pod-face.png" width="224" height="96" loading="lazy" alt="Wassoon fishermen sedated inside sealed prison pods"></figure>
+          <span class="beat-no">01</span>
+          <h3>Labour for the Crown</h3>
+          <p>Ration breakers are sedated, sealed in pods and shipped to the dam. Their crime: drawing water without a permit.</p>
+        </li>
+        <li class="beat reveal">
+          <figure><img src="assets/home/p-sable.png" width="224" height="96" loading="lazy" alt="Marshal Sable in his green greatcoat beside one of his gunmen"></figure>
+          <span class="beat-no">02</span>
+          <h3>“Order keeps the water flowing.”</h3>
+          <p>Every ration notice carries Sable's brass gate seal. His supply chain runs the length of the coast, and a boss guards every link.</p>
+        </li>
+        <li class="beat reveal">
+          <figure><img src="assets/home/p-convoy.png" width="224" height="96" loading="lazy" alt="Convoy outriders on motorbikes flanking a cargo wagon"></figure>
+          <span class="beat-no">03</span>
+          <h3>Break the chain</h3>
+          <p>Barge, convoy, hatchery, salvage pit, signal dish, dam. At the top, Sable would rather become the gate than open it. Meet <strong>Crownback</strong>.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============================================================ chapters -->
+  <section class="section chapters" id="chapters" aria-labelledby="chapters-title">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="kicker">Six chapters · six bosses · five second forms</p>
+        <h2 id="chapters-title">Up the coast to the <span class="hl-teal">Crown dam</span></h2>
+        <p class="sub">Every chapter is three areas, a mission and a boss fight, built from the original arcade's tiles. Each one plays in four to five minutes.</p>
+      </div>
+      <ol class="ch-grid" aria-label="Chapters">
+        <li class="ch reveal" style="--accent:#8fb3e6">
+          <div class="ch-art"><img src="assets/home/ch1.png" width="384" height="224" loading="lazy" alt="The warden's dock at Wassoon harbor"><span class="spr" data-spr="boss-rook-idle" data-x="66" data-y="92"></span></div>
+          <div class="ch-body">
+            <p class="ch-no"><b>01</b> Wassoon</p>
+            <h3>The Prison Barge</h3>
+            <p class="ch-goal">Free the prisoners</p>
+            <p class="ch-boss"><span>Warden Rook</span></p>
+            <p class="ch-tip">The jailer of the barge lowers his hook before he pulls. Change lanes when it drops.</p>
+          </div>
+        </li>
+        <li class="ch reveal" style="--accent:#e8a35a">
+          <div class="ch-art"><img src="assets/home/ch2.png" width="384" height="224" loading="lazy" alt="The Coral Causeway at low tide"><span class="spr" data-spr="boss-krag-idle" data-x="34" data-y="92"></span><span class="spr" data-spr="boss-ironclub-idle" data-x="74" data-y="95"></span></div>
+          <div class="ch-body">
+            <p class="ch-no"><b>02</b> The Coral Causeway</p>
+            <h3>The Tide Convoy</h3>
+            <p class="ch-goal">Seize the Crown cargo</p>
+            <p class="ch-boss"><span>Haulmaster Krag</span><i aria-label="becomes">→</i><span>Ironclub</span></p>
+            <p class="ch-tip">One trial dose and the convoy boss is an armoured club-tail that curls into a rolling ball.</p>
+          </div>
+        </li>
+        <li class="ch reveal" style="--accent:#accb6d">
+          <div class="ch-art"><img src="assets/home/ch3.png" width="384" height="224" loading="lazy" alt="The nest inside the Verdant Biodome"><span class="spr" data-spr="boss-thorne-idle" data-x="34" data-y="92"></span><span class="spr" data-spr="boss-glassback-idle" data-x="72" data-y="95"></span></div>
+          <div class="ch-body">
+            <p class="ch-no"><b>03</b> The Verdant Biodome</p>
+            <h3>The Nest</h3>
+            <p class="ch-goal">Silence the nursery</p>
+            <p class="ch-boss"><span>Headkeeper Thorne</span><i aria-label="becomes">→</i><span>Glassback</span></p>
+            <p class="ch-tip">While her sonic driver hums she can't be brought down. Smash it, and free the pack.</p>
+          </div>
+        </li>
+        <li class="ch reveal" style="--accent:#5fc4b0">
+          <div class="ch-art"><img src="assets/home/ch4.png" width="384" height="224" loading="lazy" alt="Cinder's dig deep in the Sink"><span class="spr" data-spr="boss-cinder-idle" data-x="34" data-y="92"></span><span class="spr" data-spr="boss-overdrive-idle" data-x="74" data-y="95"></span></div>
+          <div class="ch-body">
+            <p class="ch-no"><b>04</b> The Sink</p>
+            <h3>The Pump Station</h3>
+            <p class="ch-goal">Flood the dig</p>
+            <p class="ch-boss"><span>Foreman Cinder</span><i aria-label="becomes">→</i><span>Overdrive Cinder</span></p>
+            <p class="ch-tip">Back where the first game ended. Watch his gauge: red means a steam shot down your lane.</p>
+          </div>
+        </li>
+        <li class="ch reveal" style="--accent:#7bd6c9">
+          <div class="ch-art"><img src="assets/home/ch5.png" width="384" height="224" loading="lazy" alt="The dish gallery of the cliff-top observatory"><span class="spr" data-spr="boss-echo-idle" data-x="30" data-y="92"></span><span class="spr" data-spr="boss-engine-idle" data-x="70" data-y="96"></span></div>
+          <div class="ch-body">
+            <p class="ch-no"><b>05</b> The Observatory</p>
+            <h3>Dr. Echo</h3>
+            <p class="ch-goal">Jam the command signal</p>
+            <p class="ch-boss"><span>Dr. Echo</span><i aria-label="becomes">→</i><span>Echo Engine</span></p>
+            <p class="ch-tip">Fessenden's old tank keeper climbs into a four-legged brass sound-walker. Change lanes when the dishes glow.</p>
+          </div>
+        </li>
+        <li class="ch reveal" style="--accent:#c9a0ff">
+          <div class="ch-art"><img src="assets/home/ch6.png" width="384" height="224" loading="lazy" alt="The floodgate gallery on the Crown dam"><span class="spr" data-spr="boss-sable-idle" data-x="30" data-y="92"></span><span class="spr" data-spr="boss-crownback-idle" data-x="70" data-y="95"></span></div>
+          <div class="ch-body">
+            <p class="ch-no"><b>06</b> The Crown Dam</p>
+            <h3>The Crown Tide</h3>
+            <p class="ch-goal">Break the collars, open the spillway</p>
+            <p class="ch-boss"><span>Marshal Sable</span><i aria-label="becomes">→</i><span>Crownback</span></p>
+            <p class="ch-tip">“No gate will hold for me? Then I will be the gate.”</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============================================================ heroes -->
+  <section class="section heroes" id="heroes" aria-labelledby="heroes-title">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="kicker">The original gang, the original moves</p>
+        <h2 id="heroes-title">Pick your <span class="hl-sun">hero</span></h2>
+        <p class="sub">The four heroes are the 1993 arcade sprites with their original frames and timings. Tap or hover a card to see the special.</p>
+      </div>
+      <ul class="hero-grid">
+        <li class="hcard reveal" style="--c:#7dc4de">
+          <button class="hstage" type="button" data-hero="jack" aria-label="Play Jack Tenrec's special move, the Dino uppercut"><span class="spr" data-spr="hero-jack-idle" data-flip></span></button>
+          <div class="hbody">
+            <p class="htag">The all-rounder</p>
+            <h3>Jack Tenrec</h3>
+            <p>Leader and mechanic. Drives the Cadillac. “We break the remote, not the dinosaur.”</p>
+            <dl class="stats">
+              <div><dt>Health</dt><dd><meter min="0" max="170" value="140">140</meter></dd></div>
+              <div><dt>Speed</dt><dd><meter min="0" max="133" value="107">107</meter></dd></div>
+              <div><dt>Power</dt><dd><meter min="0" max="29" value="23">23</meter></dd></div>
+            </dl>
+            <p class="special"><span>Special</span> Dino uppercut</p>
+          </div>
+        </li>
+        <li class="hcard reveal" style="--c:#efaa77">
+          <button class="hstage" type="button" data-hero="hannah" aria-label="Play Hannah Dundee's special move, the Spiral flash"><span class="spr" data-spr="hero-hannah-idle" data-flip></span></button>
+          <div class="hbody">
+            <p class="htag">The swift striker</p>
+            <h3>Hannah Dundee</h3>
+            <p>Wassoon's envoy. Sable is starving her city, so this one is personal.</p>
+            <dl class="stats">
+              <div><dt>Health</dt><dd><meter min="0" max="170" value="110">110</meter></dd></div>
+              <div><dt>Speed</dt><dd><meter min="0" max="133" value="123">123</meter></dd></div>
+              <div><dt>Power</dt><dd><meter min="0" max="29" value="19">19</meter></dd></div>
+            </dl>
+            <p class="special"><span>Special</span> Spiral flash</p>
+          </div>
+        </li>
+        <li class="hcard reveal" style="--c:#d5ec69">
+          <button class="hstage" type="button" data-hero="mustapha" aria-label="Play Mustapha Cairo's special move, the Tornado kick"><span class="spr" data-spr="hero-mustapha-idle" data-flip></span></button>
+          <div class="hbody">
+            <p class="htag">The flying kick</p>
+            <h3>Mustapha Cairo</h3>
+            <p>Engineer. Reads gauges, regulators and tells. Mostafa to his friends; nobody spells it right anyway.</p>
+            <dl class="stats">
+              <div><dt>Health</dt><dd><meter min="0" max="170" value="120">120</meter></dd></div>
+              <div><dt>Speed</dt><dd><meter min="0" max="133" value="133">133</meter></dd></div>
+              <div><dt>Power</dt><dd><meter min="0" max="29" value="21">21</meter></dd></div>
+            </dl>
+            <p class="special"><span>Special</span> Tornado kick</p>
+          </div>
+        </li>
+        <li class="hcard reveal" style="--c:#b5cc85">
+          <button class="hstage" type="button" data-hero="mess" aria-label="Play Mess O'Bradovich's special move, the Knuckle bomb"><span class="spr" data-spr="hero-mess-idle" data-flip></span></button>
+          <div class="hbody">
+            <p class="htag">The heavy hitter</p>
+            <h3>Mess O'Bradovich</h3>
+            <p>The muscle. Cranks the winch, hates the Sink, gets the last gag.</p>
+            <dl class="stats">
+              <div><dt>Health</dt><dd><meter min="0" max="170" value="170">170</meter></dd></div>
+              <div><dt>Speed</dt><dd><meter min="0" max="133" value="90">90</meter></dd></div>
+              <div><dt>Power</dt><dd><meter min="0" max="29" value="29">29</meter></dd></div>
+            </dl>
+            <p class="special"><span>Special</span> Knuckle bomb</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================ co-op -->
+  <section class="section coop" id="coop" aria-labelledby="coop-title">
+    <div class="wrap coop-in">
+      <div class="coop-copy reveal">
+        <p class="kicker">Online co-op · up to 3 players</p>
+        <h2 id="coop-title">Bring two friends.<br><span class="hl-teal">Share one code.</span></h2>
+        <ol class="steps">
+          <li><b>1</b><div><h3>Host a game</h3><p>Choose <span class="ui">Play with friends</span>, then <span class="ui">Host a game</span>. You get a room code like <code>DINO-4KQ7</code>.</p></div></li>
+          <li><b>2</b><div><h3>Share the code</h3><p>Send the code, or the link from <span class="ui">Copy link</span>. The link opens the join screen straight away.</p></div></li>
+          <li><b>3</b><div><h3>Pick heroes and go</h3><p>Friends join, choose a free hero and press <span class="ui">Ready</span>. The host presses <span class="ui">Start</span>. Late arrivals drop in at the next break.</p></div></li>
+        </ol>
+        <div class="cta"><a class="btn btn-teal btn-lg" href="play.html?online" data-friends>Open the lobby</a></div>
+        <p class="note">Players connect browser to browser, so your friends can see your IP address, as in any peer-to-peer game. If a direct link fails, the game's own relay carries it.</p>
+      </div>
+      <div class="room reveal" aria-hidden="true">
+        <div class="room-bar"><span>Play with friends · up to 3 players</span></div>
+        <p class="room-label">Game code</p>
+        <p class="room-code">DINO-4KQ7</p>
+        <div class="room-floor">
+          <div class="seat"><span class="spr" data-spr="hero-jack-idle" data-flip data-scale="2"></span><p><b>1P</b> Host · ready</p></div>
+          <div class="seat"><span class="spr" data-spr="hero-hannah-idle" data-flip data-scale="2"></span><p><b>2P</b> Ready</p></div>
+          <div class="seat joining"><span class="spr" data-spr="hero-mess-idle" data-flip data-scale="2"></span><p><b>3P</b> Joining…</p></div>
+        </div>
+        <div class="room-btns"><span>Copy code</span><span>Copy link</span><span class="go">Start →</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ features -->
+  <section class="section features" id="features" aria-labelledby="features-title">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="kicker">Made like a cabinet</p>
+        <h2 id="features-title">Arcade feel, <span class="hl-gold">browser convenience</span></h2>
+      </div>
+      <ul class="feat-grid">
+        <li class="feat feat-wide reveal">
+          <div class="feat-art"><span class="spr" data-spr="hero-jack-gun" data-flip data-scale="3"></span><span class="spr" data-spr="hero-hannah-gun" data-flip data-scale="3"></span></div>
+          <div><h3>Decoded from the original</h3><p>Sprites, moves, frame timings and even how each hero holds every gun were read out of the 1993 arcade data and measured against the cabinet, frame by frame.</p></div>
+        </li>
+        <li class="feat reveal"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.5"/><path d="M12 9.5v5"/></svg></span><h3>Coin-op continues</h3><p>Out of lives? Insert a coin and get back in right where you fell, before the ten-second countdown runs out.</p></li>
+        <li class="feat reveal"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9.5 2.5h5"/></svg></span><h3>Four-to-five-minute chapters</h3><p>Six chapters, each with a mission and a boss with a second form. A full chapter fits in a coffee break.</p></li>
+        <li class="feat reveal"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="3"/><path d="M6.5 12h3M8 10.5v3"/><circle cx="16" cy="11" r=".6"/><circle cx="17.5" cy="13.5" r=".6"/></svg></span><h3>Plays on your phone</h3><p>A thumb stick that runs when you push to the edge, big action buttons and landscape fullscreen.</p></li>
+        <li class="feat reveal"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><h3>No install, no account</h3><p>Open the page and play. Checkpoints save in your browser, and the game even runs from a downloaded folder.</p></li>
+        <li class="feat reveal"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg></span><h3>A sound room</h3><p>The soundtrack and effects have their own jukebox on the title screen.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================ controls -->
+  <section class="section controls" id="controls" aria-labelledby="controls-title">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="kicker">Keyboard · touch · gamepad</p>
+        <h2 id="controls-title">Controls</h2>
+      </div>
+      <div class="ctl-grid">
+        <section class="ctl reveal" aria-labelledby="ctl-kb">
+          <h3 id="ctl-kb">Keyboard</h3>
+          <dl>
+            <div><dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> <small>or arrows</small></dt><dd>Move</dd></div>
+            <div><dt><kbd>Shift</kbd></dt><dd>Run</dd></div>
+            <div><dt><kbd>J</kbd> <small>or</small> <kbd>Z</kbd></dt><dd>Hit / fire</dd></div>
+            <div><dt><kbd>K</kbd> <small>or</small> <kbd>X</kbd></dt><dd>Jump</dd></div>
+            <div><dt><kbd>L</kbd> <small>or</small> <kbd>C</kbd></dt><dd>Special <small>(or hit + jump)</small></dd></div>
+            <div><dt><kbd>E</kbd> <small>or</small> <kbd>V</kbd></dt><dd>Pick up / use</dd></div>
+            <div><dt><kbd>Enter</kbd></dt><dd>Start / insert coin</dd></div>
+            <div><dt><kbd>Esc</kbd> <small>or</small> <kbd>P</kbd></dt><dd>Pause</dd></div>
+          </dl>
+        </section>
+        <section class="ctl reveal" aria-labelledby="ctl-touch">
+          <h3 id="ctl-touch">Touch</h3>
+          <dl>
+            <div><dt><span class="pad">Stick</span></dt><dd>Move; push to the edge to run</dd></div>
+            <div><dt><span class="pad pad-r">Hit</span></dt><dd>Hit / fire</dd></div>
+            <div><dt><span class="pad pad-r">Jump</span></dt><dd>Jump</dd></div>
+            <div><dt><span class="pad pad-r">Special</span></dt><dd>Special</dd></div>
+            <div><dt><span class="pad pad-r">Pick</span></dt><dd>Pick up / use</dd></div>
+          </dl>
+          <p class="ctl-note">Turn your phone sideways for a bigger screen. Add the game to your home screen to play fullscreen.</p>
+        </section>
+        <section class="ctl reveal" aria-labelledby="ctl-pad">
+          <h3 id="ctl-pad">Gamepad</h3>
+          <dl>
+            <div><dt><span class="pad">Stick</span> <small>or D-pad</small></dt><dd>Move</dd></div>
+            <div><dt><span class="btn-face">X</span></dt><dd>Hit / fire</dd></div>
+            <div><dt><span class="btn-face">A</span></dt><dd>Jump</dd></div>
+            <div><dt><span class="btn-face">Y</span></dt><dd>Special</dd></div>
+            <div><dt><span class="btn-face">B</span></dt><dd>Pick up / use</dd></div>
+            <div><dt><span class="pad">Start</span></dt><dd>Pause</dd></div>
+          </dl>
+          <p class="ctl-note">Any standard controller works: plug it in and press a button.</p>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ faq -->
+  <section class="section faq" id="faq" aria-labelledby="faq-title">
+    <div class="wrap faq-in">
+      <div class="head reveal">
+        <p class="kicker">Questions</p>
+        <h2 id="faq-title">Before you insert a coin</h2>
+      </div>
+      <div class="qa">
+        <details class="reveal"><summary>Is it really free?</summary><p>Yes. No ads, no account and nothing to buy. It's a fan project.</p></details>
+        <details class="reveal"><summary>Is this an official Capcom game?</summary><p>No. It's an unofficial, non-commercial fan sequel, not affiliated with or endorsed by Capcom. The original game, its characters and its art belong to their owners.</p></details>
+        <details class="reveal"><summary>Do I need to have played the 1993 game?</summary><p>No. The story starts six months after the original ending, and the title screen's attract story and the chapter cards catch you up.</p></details>
+        <details class="reveal"><summary>Does it work on my phone?</summary><p>Yes. On a touch screen the game shows a thumb stick and action buttons. Landscape gives you the biggest screen.</p></details>
+        <details class="reveal"><summary>How does online co-op work?</summary><p>One player hosts and gets a code like DINO-4KQ7; up to two friends join with the code or the link. The host's game runs the action and the others stream their inputs to it. Everyone needs a current Chrome, Edge, Firefox or Safari.</p></details>
+        <details class="reveal"><summary>Will my progress save?</summary><p>Your last checkpoint and your settings are saved in this browser. Choose Continue on the title screen to pick up where you left off.</p></details>
+        <details class="reveal"><summary>Can I use a controller?</summary><p>Yes. Any standard gamepad works in single player and online.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ final call -->
+  <section class="final" aria-labelledby="final-title">
+    <div class="final-road" aria-hidden="true">
+      <span class="spr" data-spr="hero-jack-run" data-flip data-scale="2"></span>
+      <span class="spr" data-spr="hero-hannah-run" data-flip data-scale="2"></span>
+      <span class="spr" data-spr="hero-mustapha-run" data-flip data-scale="2"></span>
+      <span class="spr" data-spr="hero-mess-run" data-flip data-scale="2"></span>
+    </div>
+    <div class="wrap final-in reveal">
+      <h2 id="final-title">The tide's coming in.<br><span class="hl-gold">Get in the car.</span></h2>
+      <div class="cta">
+        <a class="btn btn-gold btn-lg" href="play.html" data-play><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></svg>Play now</a>
+        <a class="btn btn-ghost btn-lg" href="play.html?online" data-friends>Play with friends</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div class="foot-brand">
+      <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true">II</span><span class="brand-name">Cadillacs &amp; Dinosaurs <em>II</em></span></a>
+      <p>The Crown Tide. Unofficial fan sequel · original arcade character art.</p>
+    </div>
+    <nav aria-label="Footer">
+      <ul class="foot-links">
+        <li><a href="play.html" data-play>Play</a></li>
+        <li><a href="play.html?online" data-friends>Play with friends</a></li>
+        <li><a href="#chapters">Chapters</a></li>
+        <li><a href="#controls">Controls</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="wrap foot-legal">
+    <p>Not affiliated with or endorsed by Capcom. Cadillacs and Dinosaurs and its characters belong to their respective owners. Made by fans, for free.</p>
+    <p class="mostafa">Built for Mostafa's next adventure</p>
+  </div>
+</footer>
+</body>
+</html>

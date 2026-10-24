@@ -145,3 +145,17 @@ html.touch-ui #mp-lobby .mp-kick{min-height:34px}
 html.touch-ui #mp-lobby .mp-input{font-size:16px} /* 16px keeps iOS from zooming into the field */
 html.touch-ui #mp-lobby .mp-code-input{font-size:20px}
 @media (prefers-reduced-motion:reduce){#mp-lobby *,#mp-layer *{animation:none!important;transition:none!important}}
+
+/* Site shell (2026-10): the lobby in the home page's look (style.css "Site shell"): ink cards, Inter text, Jersey 10
+   titles, crown-gold primary pills. Colours and type only; the layout above is unchanged. */
+#mp-lobby{font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:radial-gradient(ellipse at 50% 40%,rgba(7,11,18,.86),rgba(4,6,10,.96));color:#eef2f6}
+#mp-lobby .mp-panel{background:linear-gradient(180deg,rgba(17,28,42,.97),rgba(9,15,24,.98));border:1px solid rgba(170,205,230,.26);border-radius:18px;box-shadow:0 30px 80px -30px #000c;padding:clamp(18px,3vh,28px) clamp(20px,3vw,32px)}
+#mp-lobby .mp-eyebrow{color:#c9a35b;font-weight:700;font-size:11px;letter-spacing:.18em}
+#mp-lobby .mp-title{font-family:"Jersey 10","Arial Narrow",Impact,sans-serif;font-weight:400;font-size:clamp(32px,4.6vw,50px);line-height:.95;letter-spacing:.01em;color:#eef2f6;text-shadow:none}
+#mp-lobby .mp-tip{color:#a3b2c2;font-size:13px}
+#mp-lobby .mp-fine{color:#7a8a9c;font-size:11px;letter-spacing:0}
+#mp-lobby .mp-label{color:#a3b2c2;font-weight:700;font-size:10px;letter-spacing:.16em}
+#mp-lobby .mp-input,#mp-lobby .mp-select{font-family:inherit;font-weight:600;background:#070b12;border:1px solid rgba(170,205,230,.26);border-radius:12px;color:#eef2f6}
+#mp-lobby .mp-input:focus,#mp-lobby .mp-select:focus{border-color:#ffcf4a;box-shadow:0 0 0 3px rgba(255,207,74,.22)}
+#mp-lobby .mp-cabinet{border-radius:12px;border-color:rgba(170,205,230,.18)}
+#mp-lobby .mp-error{color:#ff9a7a}

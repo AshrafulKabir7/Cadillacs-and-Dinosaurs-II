@@ -410,7 +410,7 @@ const GATES = [
     total += listFiles(path.join(stages, 'pics'), p => p.endsWith('.png')).reduce((n, p) => n + size(p), 0);
     if (total > B.stagePagesTotal) errors.push(`assets/stages total ${MB(total)} > ${MB(B.stagePagesTotal)}`);
     for (const p of shippedOutputs(ctx.root)) if (size(p) > B.anyShippedFile) errors.push(`${rel(ctx.root, p)} is ${MB(size(p))} > ${MB(B.anyShippedFile)}`);
-    const index = path.join(ctx.root, 'index.html');
+    const index = path.join(ctx.root, 'play.html');   // the game page (index.html is the home page)
     if (exists(index)) {
       const html = fs.readFileSync(index, 'utf8'), srcs = [...html.matchAll(/<script[^>]*\ssrc="([^"]+)"/g)].map(m => m[1]);
       const css = [...html.matchAll(/<link[^>]*href="([^"]+\.css)"/g)].map(m => m[1]);

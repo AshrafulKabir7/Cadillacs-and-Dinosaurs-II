@@ -1,6 +1,7 @@
 const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs');
 fs.mkdirSync('tests/results',{recursive:true});
-const BASE=process.env.GAME_URL||'http://127.0.0.1:8766';
+const BASE=require('./lib/arcade.cjs').BASE;   // the game page, play.html on GAME_URL (index.html is the home page)
+
 (async()=>{const browser=await chromium.launch({headless:true}),page=await browser.newPage({viewport:{width:1280,height:900}}),errors=[];
 page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
 await page.goto(BASE);await page.waitForFunction(()=>SEQUEL_RENDER.ready&&window.ARCADE_HEROES,null,{polling:100});await page.click('#sound');
@@ -47,7 +48,7 @@ checks.push({name:'Holding the on-screen interact button opens a cold pod',passe
 // Headless Chromium may refuse fullscreen when several pages are open, so record the element the game asks for.
 await mobile.evaluate(()=>{const request=Element.prototype.requestFullscreen;Element.prototype.requestFullscreen=function(){window.fullscreenTarget=this===document.documentElement?'page':this.className;return request?request.call(this).catch(()=>{}):Promise.resolve();};});
 await mobile.click('#full');await mobile.waitForFunction(()=>window.fullscreenTarget!==undefined&&document.documentElement.classList.contains('is-full'),null,{timeout:5000}).catch(()=>{});checks.push({name:'Touch fullscreen covers the whole page, controls included',passed:await mobile.evaluate(()=>window.fullscreenTarget==='page'&&document.documentElement.classList.contains('is-full'))});await mobile.evaluate(()=>document.fullscreenElement&&document.exitFullscreen());
-const offline=await browser.newPage();offline.on('pageerror',e=>errors.push(e.message));await offline.goto(require('node:url').pathToFileURL(require('node:path').resolve('index.html')).href);await offline.waitForFunction(()=>SEQUEL_RENDER.ready,null,{polling:100});await offline.waitForFunction(()=>window.ROM_BOSSES&&ROM_BOSSES.ready,null,{timeout:60000}).catch(()=>{});checks.push({name:'Every ROM boss body loads from a local file',passed:await offline.evaluate(()=>ROM_BOSSES.ready&&Object.values(BOSS_DEFS).every(b=>ROM_BOSSES.bodies[b.body])&&SEQUEL_RENDER.bossCount===SEQUEL_RENDER.bossRoster.length&&SEQUEL_RENDER.bossRoster.length>=7)});
+const offline=await browser.newPage();offline.on('pageerror',e=>errors.push(e.message));await offline.goto(require('node:url').pathToFileURL(require('node:path').resolve('play.html')).href);await offline.waitForFunction(()=>SEQUEL_RENDER.ready,null,{polling:100});await offline.waitForFunction(()=>window.ROM_BOSSES&&ROM_BOSSES.ready,null,{timeout:60000}).catch(()=>{});checks.push({name:'Every ROM boss body loads from a local file',passed:await offline.evaluate(()=>ROM_BOSSES.ready&&Object.values(BOSS_DEFS).every(b=>ROM_BOSSES.bodies[b.body])&&SEQUEL_RENDER.bossCount===SEQUEL_RENDER.bossRoster.length&&SEQUEL_RENDER.bossRoster.length>=7)});
 // From G2 the stages are PNG pages: they load from file:// too (PLAN §8.1).
 checks.push({name:'Stage pages load from a local file',passed:await offline.evaluate(()=>SEQUEL_RENDER.pagesLoaded(0)>0)});
 checks.push({name:'No browser exceptions in sequel and mobile checks',passed:errors.length===0});

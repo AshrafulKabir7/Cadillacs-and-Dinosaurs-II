@@ -9,7 +9,7 @@
 const fs = require('node:fs'), path = require('node:path'), url = require('node:url');
 const A = require('./lib/arcade.cjs');
 const STEP = 'G9a';
-const HARNESS = A.BASE.replace(/\/$/, '') + '/tests/fixtures/lobby-harness.html';
+const HARNESS = A.SITE + '/tests/fixtures/lobby-harness.html';
 const C = A.checks('lobby');
 const errors = [];
 
@@ -42,8 +42,8 @@ async function main() {
 
   C.check(STEP, 'EDEN_LOBBY exposes the §5.2 API', await page.evaluate(() => ['open', 'close', 'autoJoinFromUrl', 'showBanner', 'hideBanner', 'confirmLeave', 'status'].every(k => typeof EDEN_LOBBY[k] === 'function')
     && JSON.stringify(EDEN_LOBBY.SCREENS) === JSON.stringify(['mp-menu', 'mp-connecting', 'mp-join-screen', 'mp-room', 'mp-error-screen', 'mp-leave-confirm'])), 'missing members');
-  C.check(STEP, 'Loading the lobby makes no network request and adds no DOM', page.requests.every(u => u.startsWith(A.BASE) || u.startsWith('data:')) && !(await page.$('#mp-lobby')) && !(await page.evaluate(() => !!window.Peer)),
-    page.requests.filter(u => !u.startsWith(A.BASE)).join(', '));
+  C.check(STEP, 'Loading the lobby makes no network request and adds no DOM', page.requests.every(u => u.startsWith(A.SITE) || u.startsWith('data:')) && !(await page.$('#mp-lobby')) && !(await page.evaluate(() => !!window.Peer)),
+    page.requests.filter(u => !u.startsWith(A.SITE)).join(', '));
 
   // ---------------------------------------------------------------- online menu
   await page.click('#mp-open');

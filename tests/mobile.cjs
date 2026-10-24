@@ -1,6 +1,7 @@
 const {chromium,devices}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs');
 fs.mkdirSync('tests/results',{recursive:true});
-const BASE=process.env.GAME_URL||'http://127.0.0.1:8766';
+const BASE=require('./lib/arcade.cjs').BASE;   // the game page, play.html on GAME_URL (index.html is the home page)
+
 // Mobile controls with real touch input (DevTools touch events): menus, thumb stick, buttons and layouts.
 (async()=>{const browser=await chromium.launch({headless:true}),checks=[],errors=[];const check=(name,ok)=>checks.push({name,passed:!!ok});
 for(const [name,vp] of [['portrait 390x844',{width:390,height:844}],['landscape 844x390',{width:844,height:390}],['small landscape 667x375',{width:667,height:375}]]){

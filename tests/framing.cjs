@@ -4,7 +4,7 @@
 // Every check names the integration step that enables it. Until that step lands the check is reported as SKIP and the
 // suite exits 0 ("run green on a stub", PLAN §6 WP-H). ARCADE_STEP=G2 turns the SKIPs of steps <= G2 into failures
 // (ARCADE_STEP=G3a only those up to G3's first sub-step; a bare G3 all of G3a..G3d).
-//   G0  SPRITES.verified (sprites.js in index.html), SPRITE_DATA envelopes
+//   G0  SPRITES.verified (sprites.js in play.html), SPRITE_DATA envelopes
 //   G1  canvas 768x448, LAST_EDEN.units/layout, snapshot view/band/area/length, the band and screen clamps,
 //       side spawns fully off screen (±32; ±48 from G4), drops above the HUD, hero height ≈ 35% of the screen
 //   G2  a foreground pixel covers a sprite (http only: the canvas is not tainted)

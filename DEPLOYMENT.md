@@ -1,6 +1,6 @@
 # Hosting Fessenden's Legacy
 
-This is a static HTML/CSS/JavaScript game. Its entry point is `index.html` at the repository root. It needs no backend, database, environment variables, dependency installation or build step.
+This is a static HTML/CSS/JavaScript game. `index.html` at the repository root is the home page; the game itself is `play.html` (also served at `/play` by the rewrite in `vercel.json`). It needs no backend, database, environment variables, dependency installation or build step.
 
 ## Before pushing
 
@@ -55,7 +55,7 @@ Official references: [GitHub Pages overview](https://docs.github.com/en/pages/ge
 
 ## Local preview
 
-Open `index.html`, or run `node tools/serve.cjs 8766` from the repository and visit `http://127.0.0.1:8766`. The Windows `PLAY GAME.bat` launcher opens the local HTML file.
+Open `play.html` (the game) or `index.html` (the home page), or run `node tools/serve.cjs 8766` from the repository and visit `http://127.0.0.1:8766` (home) or `http://127.0.0.1:8766/play` (game). The Windows `PLAY GAME.bat` launcher opens the local HTML file.
 
 Progress is saved on the player's browser and site origin. Your local-file save, Vercel save and GitHub Pages save are separate. Clearing browser storage resets progress. Audio starts after a click or keypress; fullscreen and controllers depend on browser support.
 

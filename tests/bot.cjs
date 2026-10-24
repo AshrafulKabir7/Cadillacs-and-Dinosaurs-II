@@ -1,7 +1,8 @@
 const {chromium}=require('playwright');
 const fs=require('node:fs');
 fs.mkdirSync('tests/results',{recursive:true});
-const BASE=process.env.GAME_URL||'http://127.0.0.1:8766';
+const BASE=require('./lib/arcade.cjs').BASE;   // the game page, play.html on GAME_URL (index.html is the home page)
+
 const only=process.argv[2]===undefined?null:Number(process.argv[2]);
 (async()=>{const browser=await chromium.launch({headless:true}),page=await browser.newPage(),results=[];
 await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;let seed=15454;Math.random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};});

@@ -14,7 +14,7 @@
 //   MP_RTC=1 / MP_PEERJS=1                          enable the G9c tiers (T5 needs the internet)
 //
 // Tiers: T0 net.js units in a blank page (no game, no bus) · T1 net.js + lobby.js on tests/fixtures/mp-harness.html with
-// the mock game over the Node loopback bus (tests/lib/mp.cjs) · T2 LAST_EDEN.mp on one page, no network · T3 index.html
+// the mock game over the Node loopback bus (tests/lib/mp.cjs) · T2 LAST_EDEN.mp on one page, no network · T3 play.html
 // on 2-4 pages over the bus · T4/T5 real WebRTC.
 'use strict';
 const fs = require('node:fs'), path = require('node:path');
@@ -653,32 +653,32 @@ async function tierT1() {
 
 // ================================================================ T2/T3: the integrated game (G9b)
 async function tierGame(browser) {
-  const why = 'game.js integration (G9b) has not landed: LAST_EDEN.mp is missing on index.html';
+  const why = 'game.js integration (G9b) has not landed: LAST_EDEN.mp is missing on play.html';
   const t2 = {
     off: 'single-player: role off, localSlot 0, snapshot.players lists only 1P', keys: 'single-player LAST_EDEN.snapshot keys unchanged (fixture)', trace: 'single-player trace identical to tests/fixtures/sp-trace.json',
     add: 'addPlayer: up to 3 players, each a different hero; a 4th is refused', input: 'scripted input moves only that slot\'s hero', camera: 'camera never scrolls a trailing player off the left edge',
     spread: 'enemies spread their targets over the players', boss: 'boss HP scales with the player count (2P ~x1.20, 3P ~x1.46)', remove: 'removePlayer frees the slot and enemies re-target',
   };
   const t3 = {
-    start: 'index.html over loopback: host + 2 joiners start chapter 1 with three heroes', own: 'game: each joiner controls only its own hero', dup: 'game: no duplicate heroes on any page',
+    start: 'play.html over loopback: host + 2 joiners start chapter 1 with three heroes', own: 'game: each joiner controls only its own hero', dup: 'game: no duplicate heroes on any page',
     match: 'game: joiners\' players and enemies match the host at equal sim time', dropIn: 'game: drop-in admitted only between encounters (canAdmit, no lock, no boss, not driving)',
     full: 'game: a 4th player is rejected with full', hostLeft: 'game: host leaving ends the session cleanly for the joiners (back to single-player)',
     decoded: 'game: joiners\' decoded snapshots equal the host\'s quantised snapshots (same n)',
     events: 'game: host hits produce particles on every joiner (events replayed)', bw: 'game: bandwidth within §1.11 on the real game, 3 players (input <= 6, down <= 32 / 64 peak, events <= 4, host up <= 100 KB/s)',
     clear: 'game: chapter clear puts every page in clear', card: 'game: 2P\'s attack advances the chapter card on the host', noErr: 'game: no pageerror on any page of the 3-player session',
   };
-  const lazy = 'game: plain index.html never requests PeerJS';
+  const lazy = 'game: plain play.html never requests PeerJS';
   const skipAll = (reason, withLazy = false) => { if (withLazy && (tier('T2') || tier('T3'))) C.skip('G9b', lazy, reason); if (tier('T2')) for (const t of Object.values(t2)) C.skip('G9b', t, reason); if (tier('T3')) for (const t of Object.values(t3)) C.skip('G9b', t, reason); };
-  // probe index.html once
+  // probe play.html once
   const ctx = await browser.newContext(); const page = await ctx.newPage(); const errors = [], requests = [];
   page.on('pageerror', e => errors.push('game: ' + e.message)); page.on('request', r => requests.push({ page: 'game', url: r.url() }));
   let p;
   try {
     await A.prepare(page, { seed: 9090, raf: true });
-    await page.goto(MP.urlOf('index.html')); await A.waitReady(page, 60000); await MP.installMPT(page);
+    await page.goto(MP.urlOf(A.GAME_PAGE)); await A.waitReady(page, 60000); await MP.installMPT(page);
     p = await MP.probe(page);
-  } catch (e) { await ctx.close(); skipAll('index.html did not load: ' + e.message, true); return; }
-  // plain index.html (no ?net=, no lobby use) after load and a little play: runs before and after the integration
+  } catch (e) { await ctx.close(); skipAll('play.html did not load: ' + e.message, true); return; }
+  // plain play.html (no ?net=, no lobby use) after load and a little play: runs before and after the integration
   if (tier('T2') || tier('T3')) {
     await page.evaluate(() => { LAST_EDEN.start(0, 0, 'normal'); for (let i = 0; i < 30; i++) LAST_EDEN.step(1 / 60); }).catch(() => {});
     await sleep(300);
@@ -753,7 +753,7 @@ async function tierGame(browser) {
   await ctx.close();
 
   if (!tier('T3')) return;
-  // T3: 3 pages of index.html over the bus
+  // T3: 3 pages of play.html over the bus
   await withSession({ page: 'game', players: 3 }, async s => {
     const [host, j1, j2] = [s.host, ...s.joiners];
     const later = rows => { for (const t of rows) C.fail('G9b', t, 'not reached: the session did not start'); };
@@ -930,7 +930,7 @@ async function tierRTC() {
 }
 
 // ================================================================ T6: the game through the WebSocket relay (relay/)
-// index.html on 3-4 pages with ?net=relay&relay=ws://127.0.0.1:<port> (the real Worker under `wrangler dev` when
+// play.html on 3-4 pages with ?net=relay&relay=ws://127.0.0.1:<port> (the real Worker under `wrangler dev` when
 // relay/ has wrangler installed, else tests/fixtures/relay-node.cjs: tests/lib/relay.cjs), driven through the lobby:
 // join, inputs reach the host, snapshots reach the joiners, a 4th player gets "full", the host leaving ends the session;
 // then ?net=auto&direct=loopback with the direct path blocked: CONNECTING DIRECTLY… → USING RELAY… → playing.
@@ -1051,7 +1051,7 @@ async function recordTrace(browser, seed = 9090, steps = 3600, every = 60, chapt
   page.on('pageerror', e => errors.push(e.message));
   try {
     await A.prepare(page, { seed, raf: true });
-    await page.goto(MP.urlOf('index.html')); await A.waitReady(page, 60000);
+    await page.goto(MP.urlOf(A.GAME_PAGE)); await A.waitReady(page, 60000);
     const r = await page.evaluate(`(${TRACE_PAGE})(${JSON.stringify({ chapters, steps, every })})`);
     if (errors.length) throw new Error('page errors while tracing: ' + errors.join(' | '));
     return { seed, steps, every, chapters, ...r };

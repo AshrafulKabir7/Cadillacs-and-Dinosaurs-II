@@ -4,7 +4,7 @@
 //   G2  every page named in STAGE_DATA exists, pages <= 1024x1024, <= 1.0 MB per chapter, <= 5 MB in all;
 //       STAGE.bandAt/walkable/resolveMove data checks (WP-E asked for them here)
 //   G8  budgets: eager non-audio <= 3.5 MB, per-module budgets, any shipped file <= 1.5 MB, tracked files <= 2 MB
-//       outside assets/audio; no retired legacy file (ARCHITECTURE §5.6) left in the tree or in index.html. Since G8
+//       outside assets/audio; no retired legacy file (ARCHITECTURE §5.6) left in the tree or in play.html. Since G8
 //       this suite is the asset gate: every row is enforced (no legacy script is loaded, so G8 below is true). The
 //       WARN path is kept only for an old checkout that still loads the legacy art (ASSETS_GATE=1 forces the gate).
 // Flags: ASSETS_SKIP_CHECK=1 skips the build check (no ROM on this machine); ARCADE_STEP=G2 fails the SKIPs of steps <= G2.
@@ -21,7 +21,10 @@ const LEGACY_LARGE = ['assets/original/', 'assets/scenery/', 'sequel-art.js', 'w
 const BUDGET = { eager: 3.5 * MiB, anyShipped: 1.5 * MiB, tracked: 2 * MiB, stagePerChapter: 1.0 * MiB, stagesTotal: 5 * MiB, stageData: 0.15 * MiB, page: 1024,
   files: { 'sprite-data-heroes.js': 0.9 * MiB, 'sprite-data-fx.js': 0.35 * MiB, 'sprite-data-enemies.js': 1.1 * MiB, 'sprite-data-bosses.js': 1.5 * MiB, 'sprite-data-ui.js': 0.15 * MiB, 'stage-data.js': 0.15 * MiB } };
 
-const html = fs.readFileSync(rel('index.html'), 'utf8');
+// the game page is play.html; index.html is the home page (checked on its own below: local files only, no game script)
+const html = fs.readFileSync(rel('play.html'), 'utf8');
+const home = exists('index.html') ? fs.readFileSync(rel('index.html'), 'utf8') : '';
+const homeFiles = [...home.matchAll(/<(?:script[^>]+src|link[^>]+href|img[^>]+src)="([^"]+)"/g)].map(m => m[1]).filter(u => !/^(https?:|data:|#|mailto:)/i.test(u)).map(u => u.replace(/[?#].*$/, ''));
 const scripts = [...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map(m => m[1]), css = [...html.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"/g)].map(m => m[1]);
 const legacyLoaded = LEGACY_SCRIPTS.filter(f => scripts.includes(f));
 const G8 = process.env.ASSETS_GATE === '1' || legacyLoaded.length === 0;
@@ -59,8 +62,10 @@ const pngSize = file => { const b = Buffer.alloc(24); const fd = fs.openSync(fil
   // ---------------------------------------------------------------- budgets (ARCHITECTURE §5.3)
   const eagerFiles = [...scripts, ...css].filter(f => exists(f)), eager = eagerFiles.reduce((n, f) => n + size(f), 0);
   const missingScripts = scripts.filter(f => !exists(f)), legacyLeft = LEGACY_FILES.filter(f => exists(f));
-  gate('G8', 'No retired legacy art is loaded by index.html or left in the tree (ARCHITECTURE §5.6)', legacyLoaded.length === 0 && legacyLeft.length === 0, [...legacyLoaded.map(f => 'loaded ' + f), ...legacyLeft].join(', '));
-  C.check('G0', 'Every <script src> and stylesheet in index.html exists', missingScripts.length === 0, missingScripts.join(', '));
+  gate('G8', 'No retired legacy art is loaded by play.html or left in the tree (ARCHITECTURE §5.6)', legacyLoaded.length === 0 && legacyLeft.length === 0, [...legacyLoaded.map(f => 'loaded ' + f), ...legacyLeft].join(', '));
+  C.check('G0', 'Every <script src> and stylesheet in play.html exists', missingScripts.length === 0, missingScripts.join(', '));
+  const homeMissing = homeFiles.filter(f => !exists(f)), homeGame = homeFiles.filter(f => scripts.includes(f));
+  C.check('G0', 'Every local script, stylesheet, icon and image the home page (index.html) names exists, and it loads none of the game scripts', !!home && homeMissing.length === 0 && homeGame.length === 0, [...homeMissing.map(f => 'missing ' + f), ...homeGame.map(f => 'game script ' + f)].join(', '));
   gate('G8', `Eager non-audio download <= 3.5 MB (now ${MB(eager)}: ${eagerFiles.length} files${legacyLoaded.length ? ', legacy still loaded: ' + legacyLoaded.join(' ') : ''})`, eager <= BUDGET.eager, MB(eager));
   for (const [f, limit] of Object.entries(BUDGET.files)) { if (!exists(f)) continue; C.check('G0', `${f} <= ${MB(limit)}`, size(f) <= limit, MB(size(f))); }
   const bossSplit = fs.readdirSync(ROOT).filter(f => /^sprite-data-bosses-ch\d\.js$/.test(f)); for (const f of bossSplit) C.check('G0', `${f} <= 1.5 MB (per-chapter boss split)`, size(f) <= 1.5 * MiB, MB(size(f)));

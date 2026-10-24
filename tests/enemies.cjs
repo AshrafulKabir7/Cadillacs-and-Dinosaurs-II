@@ -21,7 +21,7 @@ function sandbox(files) {
   for (const f of files) if (exists(f)) vm.runInContext(fs.readFileSync(rel(f), 'utf8'), ctx, { filename: f, timeout: 60000 });
   return win;
 }
-// the generated boss bodies (tools/art/import-sprite.cjs: Sable, Crownback and his jet) load after the ROM family, as in index.html
+// the generated boss bodies (tools/art/import-sprite.cjs: Sable, Crownback and his jet) load after the ROM family, as in play.html
 const bossFiles = ['sprite-data-bosses.js', ...[1, 2, 3, 4, 5, 6].map(n => `sprite-data-bosses-ch${n}.js`), 'sprite-data-boss-sable.js', 'sprite-data-boss-crownback.js', 'sprite-data-boss-crownjet.js', 'sprite-data-boss-rook.js', 'sprite-data-boss-krag.js', 'sprite-data-boss-ironclub.js', 'sprite-data-boss-thorne.js', 'sprite-data-boss-glassback.js', 'sprite-data-boss-cinder.js', 'sprite-data-boss-overdrive.js', 'sprite-data-boss-cinderfx.js', 'sprite-data-boss-echo.js', 'sprite-data-boss-echoring.js', 'sprite-data-boss-engine.js', 'sprite-data-boss-enginefx.js'];
 const W = sandbox(['combat-config.js', 'sprite-data-enemies.js', ...bossFiles, 'enemy-kinds.js', 'campaign.js']);
 const FAM = (W.SPRITE_DATA && W.SPRITE_DATA.families) || {};
@@ -240,7 +240,7 @@ function reachable(url) { return new Promise(res => { if (/^file:/i.test(url)) r
   await A.open(page);
   await A.install(page);
   const P = await A.probe(page), S = A.stepsOf(P);
-  const g4 = S.G4 && P.test.includes('romAnimOf'), why = 'ENEMY_KINDS in index.html and LAST_EDEN.test.romAnimOf (G4)';
+  const g4 = S.G4 && P.test.includes('romAnimOf'), why = 'ENEMY_KINDS in play.html and LAST_EDEN.test.romAnimOf (G4)';
   const ev = (fn, arg) => page.evaluate(fn, arg);
 
   // (6) RNG order: valid today and after G4 (no new Math.random in spawnEnemy)

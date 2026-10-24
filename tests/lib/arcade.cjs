@@ -1,7 +1,8 @@
 // Shared helpers for the browser suites and the visual harness (PLAN §3.3, §4.6, ARCHITECTURE §8).
 //
 // Node side (this module):
-//   ROOT, BASE, fileURL()            repo root, GAME_URL (default http://127.0.0.1:8766), file:// launch of index.html
+//   ROOT, SITE, BASE, fileURL()      repo root; SITE = GAME_URL (default http://127.0.0.1:8766), the site root; BASE = the
+//                                    game page on it (SITE/play.html; index.html is the home page); file:// launch of play.html
 //   launch(opts) -> {browser, page, errors}      Playwright Chromium with pageerror collection
 //   prepare(page, {seed, raf})       seeded Math.random (LCG, same as the suites) and a requestAnimationFrame stub
 //   open(page, {file, sound})        goto + waitReady + the #sound click the suites do
@@ -32,9 +33,13 @@
 const fs = require('node:fs'), path = require('node:path'), url = require('node:url');
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const BASE = process.env.GAME_URL || 'http://127.0.0.1:8766';
+// GAME_URL names the site (http://127.0.0.1:8766) or a page on it (…/play.html, …/index.html, a file:///…/play.html
+// address): the game is always play.html beside it. index.html is the home page, which only links to the game.
+const GAME_PAGE = 'play.html';
+const SITE = (process.env.GAME_URL || 'http://127.0.0.1:8766').replace(/[?#].*$/, '').replace(/\/[^/]*\.html$/i, '').replace(/\/$/, '');
+const BASE = SITE + '/' + GAME_PAGE;
 const RESULTS = path.join(ROOT, 'tests', 'results');
-const fileURL = () => url.pathToFileURL(path.join(ROOT, 'index.html')).href;
+const fileURL = () => url.pathToFileURL(path.join(ROOT, GAME_PAGE)).href;
 const isFileURL = u => /^file:/i.test(u || BASE);
 
 function playwright() {
@@ -325,4 +330,4 @@ function hudMask(im) {
   return { mask, W, H };
 }
 
-module.exports = { ROOT, BASE, RESULTS, fileURL, isFileURL, playwright, launch, prepare, reseed, open, waitReady, probe, stepsOf, stepNo, stepRequired, install, AT_SOURCE, grab, toArcade, img, checks, finish, HUD_ELEMENTS, hudBoxes, hudCompare, hudMask };
+module.exports = { ROOT, SITE, GAME_PAGE, BASE, RESULTS, fileURL, isFileURL, playwright, launch, prepare, reseed, open, waitReady, probe, stepsOf, stepNo, stepRequired, install, AT_SOURCE, grab, toArcade, img, checks, finish, HUD_ELEMENTS, hudBoxes, hudCompare, hudMask };
