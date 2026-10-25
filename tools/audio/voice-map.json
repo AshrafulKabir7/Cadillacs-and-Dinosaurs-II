@@ -1,5 +1,5 @@
 {
-  "about": "Output name (assets/sfx/voice/<name>.mp3) -> original clip id. The identification behind every row is in work/audio/VOICES.md. Entries may be {src, semitones} to lower the pitch (Mustapha's shouts are pitched down 3-4 semitones because the user heard them as female).",
+  "about": "Output name (assets/sfx/voice/<name>.mp3) -> original clip id. The identification behind every row is in work/audio/VOICES.md. Entries may be {src, semitones} to lower the pitch (Mustapha's shouts are pitched down 6 semitones, to his eating voice V31, because the user heard them as female). Mess's main shout (-3) and Jack's jump shout (-2) are brought to within a semitone or two of their own eating voices too.",
   "files": {
     "hannah-jump": "V21",
     "hannah-jumpkick": "V13",
@@ -9,26 +9,32 @@
     "hannah-food": "V32",
     "mustapha-jumpkick": {
       "src": "V12",
-      "semitones": -3
+      "semitones": -6
     },
     "mustapha-jumpkick2": {
       "src": "V23",
-      "semitones": -3
+      "semitones": -6
     },
     "mustapha-attack": {
       "src": "V12",
-      "semitones": -4
+      "semitones": -6
     },
     "mustapha-win": "V07",
     "mustapha-death": "V09",
     "mustapha-food": "V31",
     "jack-attack": "V18",
     "jack-attack2": "V19",
-    "jack-jump": "V11",
+    "jack-jump": {
+      "src": "V11",
+      "semitones": -2
+    },
     "jack-win": "V05",
     "jack-death": "V04",
     "jack-food": "V01",
-    "mess-attack": "V24",
+    "mess-attack": {
+      "src": "V24",
+      "semitones": -3
+    },
     "mess-attack2": "V25",
     "mess-win": "V08",
     "mess-death": "V30",

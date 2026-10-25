@@ -14,11 +14,11 @@ const SR = 22050;
 // output name -> source clip. Kept in step with VOICE in game.js (tests/regression.cjs checks every file it names).
 const MAP = require('./voice-map.json').files;
 
-// A map entry is a clip id ("V12") or {src, semitones}: semitones < 0 lowers the pitch without changing the length
-// (asetrate + atempo), used to make Mustapha's shouts read clearly male.
+// A map entry is a clip id ("V12") or {src, semitones}: semitones < 0 lowers the pitch (and the formants with it) without
+// changing the length (ffmpeg rubberband), used to make Mustapha's shouts read as the man who eats (V31).
 const entry = v => (typeof v === 'string' ? { src: v, semitones: 0 } : { semitones: 0, ...v });
 function decode(file, semitones = 0) {
-  const r = Math.pow(2, semitones / 12), af = semitones ? ['-af', `asetrate=${Math.round(44100 * r)},aresample=44100,atempo=${(1 / r).toFixed(5)}`] : [];
+  const r = Math.pow(2, semitones / 12), af = semitones ? ['-af', `aresample=44100,rubberband=pitch=${r.toFixed(5)}:pitchq=quality`] : [];
   const buf = cp.execFileSync('ffmpeg', ['-v', 'error', '-i', file, ...af, '-ac', '1', '-ar', String(SR), '-f', 'f32le', '-'], { maxBuffer: 64 << 20 });
   return new Float32Array(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.length));
 }

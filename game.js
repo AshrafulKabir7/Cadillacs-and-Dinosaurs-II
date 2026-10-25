@@ -351,6 +351,8 @@ function aimVy(x0,vx,life){
   for(const e of enemies){if(e.dead||e.dying||e.waiting||e.state==='flee'||e.state==='held')continue;const d=(e.x-player.x)*dir;if(d<-8||d>reach||Math.abs(e.y-player.y)>32)continue;if(d<bd){bd=d;best=e;}}
   if(!best)return 0;const t=Math.max(1/60,Math.abs(best.x-x0)/Math.abs(vx));return clamp((best.y-player.y)/t,-120,120);
 }
+// seconds a round at vx needs from x to leave the view (16 px past its edge)
+const toScreenEdge=(x,vx)=>Math.max(0,(vx>0?camera+W+16-x:x-camera+16)/Math.max(1,Math.abs(vx)));
 // One round (HEROES §7.4-§7.5): the ROM projectile from the ROM muzzle with its speed and the hero's life (range):
 // bullets 8 px/f (gun, rifle) and 12 px/f (Uzi, M-16, aimed), six shotgun pellets (10.5-13 px/f, 16-20 f, fanned across
 // the lanes; they share one hit list and pierce count), the rocket from 1.75 px/f accelerating .174 px/f². Then the muzzle
@@ -366,7 +368,8 @@ function emitGunRound(type,k=0){
   if(!shot)bullets.push({...base,vx:dir*(w.explosive?333:637),life:w.spread?.33:1.15,kind:w.explosive?'rocket':'bullet'});
   else if(shot.kind==='pellet'){const group={pierce:base.pierce};shot.pellets.forEach((p,i)=>bullets.push({...base,vx:dir*p.v*60*S,vy:(p.travel[1]||0)/p.life*60*S,life:p.life/60,kind:'bullet',pellet:i,group,spread:i===0?base.spread:19}));}
   else if(shot.kind==='rocket')bullets.push({...base,vx:dir*(shot.v0||shot.v)*60*S,ax:dir*shot.a*3600*S,life:(shot.life[id]||25)/60,kind:'rocket',puff:0});
-  else{const vx=dir*shot.v*60*S,life=(shot.life[id]||10)/60;bullets.push({...base,vx,vy:shot.aimed?aimVy(base.x,vx,life):0,life,kind:'bullet'});}
+  // a round flies on to the edge of the screen (the user: the ROM life ended them at mid-range); pellets keep their spread
+  else{const vx=dir*shot.v*60*S,life=Math.max((shot.life[id]||10)/60,toScreenEdge(base.x,vx));bullets.push({...base,vx,vy:shot.aimed?aimVy(base.x,vx,life):0,life,kind:'bullet'});}
   player.ammo--;player.shotT=0;
   // Burst weapons play one burst sample per trigger pull.
   if(!(['uzi','m16'].includes(type)&&player.burst))sfx(type==='bazooka'?'rocket':type==='gun'?'gun':type==='uzi'||type==='m16'?'uzi':'rifle');
@@ -4242,6 +4245,7 @@ function onReplicaState(prev){
   panel('');const LB=window.EDEN_LOBBY;if(!LB)return;
   if(state==='clear')LB.showBanner('clear-wait');else if(state==='gameover')LB.showBanner('gameover-wait');else if(prev==='clear'||prev==='gameover')LB.hideBanner();
 }
+const replicaFlames=new Map();   // joiner side: slot -> the held torch's flame clock
 function drawReplicaPlayer(){
   const x=player.x-viewX,y=player.y-player.z,m=player.mp;ctx.save();if(!driving)shadow(ctx,x,player.y,20);
   if(player.inv>0&&Math.floor(time*16)%2===0)ctx.globalAlpha=.65;
@@ -4249,7 +4253,11 @@ function drawReplicaPlayer(){
   else{const R=RIG(),an=m.an,id=HEROES[selected].id;
     if(R&&R.ready&&an){let body=an[2]?{torso:{clip:an[0],k:an[1]},legs:{clip:an[2],k:an[3]}}:{full:{clip:an[0],k:an[1]}};if(m.echoOn&&m.echoA&&m.echoA.clip)body={full:m.echoA};
       let w=player.weapon&&R.hero(id).hold[player.weapon]?player.weapon:null;if(w&&player.ammo<=0&&R.hero(id).hold[w+'-empty'])w+='-empty';
-      R.draw(ctx,R.parts(id,body,w),x,player.y-(an[4]||0),player.z,player.dir,CFG.sockets.scale,'hero');}}
+      // a joiner keeps each held torch's flame on its own clock (the host's flame state is not sent; without this the
+      // torch went out the moment a joiner's hero picked it up)
+      const F=replicaFlames,fk=m.slot??0;let fl=F.get(fk);
+      if(w==='torch'){if(!fl)F.set(fk,fl={f:R.flame(),at:null});const dt=fl.at!=null?clamp(time-fl.at,0,.1):1/60;fl.at=time;if(dt>0)R.flameUpdate(fl.f,id,body,'torch',{dt,running:!!(player.move&&player.run),x:player.x,z:player.z,dir:player.dir});}else if(fl){F.delete(fk);fl=null;}
+      R.draw(ctx,R.parts(id,body,w,w==='torch'&&fl?{flame:fl.f}:null),x,player.y-(an[4]||0),player.z,player.dir,CFG.sockets.scale,'hero');}}
   if(player.special>0){const k=clamp(1-player.special/(player.specialTotal||.65),0,1);ctx.strokeStyle=HEROES[selected].color;ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(x,y-30,63*(.28+.72*k),24,0,0,Math.PI*2);ctx.stroke();}
   ctx.restore();
 }
