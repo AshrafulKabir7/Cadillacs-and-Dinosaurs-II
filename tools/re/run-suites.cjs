@@ -80,7 +80,7 @@ async function fileSmoke() {
     await A.open(page, { file: true, sound: false });
     const r = await page.evaluate(() => {
       const g = LAST_EDEN, out = { sprites: window.SPRITES ? { ready: SPRITES.ready, verified: SPRITES.verified } : null, compat: !!(window.ARCADE_HEROES && ARCADE_HEROES.compat) };
-      for (let level = 0; level < 6; level++) { g.start(level, level % 4); for (let i = 0; i < 90; i++) g.step(1 / 60); g.render(); }
+      for (let level = 0; level < window.EDEN_CAMPAIGN.length; level++) { g.start(level, level % 4); for (let i = 0; i < 90; i++) g.step(1 / 60); g.render(); }
       out.state = g.state; return out;
     });
     const ok = !errors.length && r.state === 'play' && (!r.sprites || (r.sprites.ready && r.sprites.verified));

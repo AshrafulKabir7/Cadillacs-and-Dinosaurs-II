@@ -1,0 +1,38 @@
+{
+ "note": "written by tools/art/import-bg.cjs; floor = the strip y where the back scenery meets the walkable floor (override from tools/art/bg-floors.json, else detected)",
+ "colours": 95,
+ "images": [
+  {
+   "id": "stage1",
+   "src": "work/bg/test/stage1-strips.png",
+   "size": [
+    1536,
+    1024
+   ]
+  }
+ ],
+ "strips": {
+  "test-stage1-A": {
+   "floor": 149,
+   "detected": 149,
+   "score": 0.2328,
+   "override": null,
+   "bandTop": 149,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 90168
+  },
+  "test-stage1-B": {
+   "floor": 147,
+   "detected": 147,
+   "score": 0.3467,
+   "override": null,
+   "bandTop": 147,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 85750
+  }
+ }
+}

@@ -1,177 +1,2565 @@
 {
-  "v": 1,
-  "about": "tools/art/boss-prompts.json - source of every boss sprite generation prompt (tools/art/gen-codex.cjs builds the exact text, writes the import specs and the PRODUCTION.md appendix). Pose names starting with '_' are the idle reference pose that opens every sheet: it fixes the sheet's scale and is not imported as a frame. Durations are 60 Hz frames.",
-  "text": {
-    "style": "Early-1990s Capcom CPS-1 arcade beat-'em-up sprite pixel art (the look of Cadillacs & Dinosaurs, 1993): hard pixel clusters, a clean one-pixel near-black outline around the whole figure, 3-4 tone colour ramps per material, at most 16 colours in total, large readable shapes and a strong silhouette, no anti-aliasing, no blur, no gradients, no dithering noise, no painterly texture.",
-    "view": "Every pose is a strict side view (profile) FACING LEFT: the character's face and chest point toward the LEFT edge of the image.",
-    "background": "Perfectly flat solid #FF00FF magenta background everywhere. No floor, no cast shadow, no text, no labels, no numbers, no borders, no frames, and no sound waves, sparks, water, smoke or other effects detached from the body.",
-    "sheet": "{n} full-body poses in ONE horizontal row, left to right in the order listed, evenly spaced, with wide empty magenta gaps so that no two poses touch or overlap (weapons, tails and claws included). All feet stand on the same invisible horizontal ground line (except poses described as airborne or lying down). Same character, same proportions, same colours and the same pixel size in every pose.",
-    "single": "ONE full-body pose, centred, with a wide empty magenta margin on every side.",
-    "refModel": "The attached image {ref} is the locked model of this character: copy its design, colours and proportions exactly; pose 1 repeats that model's idle stance unchanged.",
-    "refBoard": "The attached concept board {ref}: use {panel} as the design reference (ignore its background, labels and the other characters) and turn it into a clean game sprite.",
-    "finish": "Do not edit, resize, recolour or post-process the generated image. After generating, copy the generated PNG unchanged into the current folder as {file}.",
-    "refPose": "IDLE REFERENCE: the same idle stance as the attached model, unchanged (it keeps the scale)"
-  },
-  "bosses": [
+ "v": 1,
+ "about": "tools/art/boss-prompts.json - source of every boss sprite generation prompt (tools/art/gen-codex.cjs builds the exact text, writes the import specs and the PRODUCTION.md appendix). Pose names starting with '_' are the idle reference pose that opens every sheet: it fixes the sheet's scale and is not imported as a frame. Durations are 60 Hz frames.",
+ "text": {
+  "style": "Early-1990s Capcom CPS-1 arcade beat-'em-up sprite pixel art (the look of Cadillacs & Dinosaurs, 1993): hard pixel clusters, a clean one-pixel near-black outline around the whole figure, 3-4 tone colour ramps per material, at most 16 colours in total, large readable shapes and a strong silhouette, no anti-aliasing, no blur, no gradients, no dithering noise, no painterly texture.",
+  "view": "Every pose is a strict side view (profile) FACING LEFT: the character's face and chest point toward the LEFT edge of the image.",
+  "background": "Perfectly flat solid #FF00FF magenta background everywhere. No floor, no cast shadow, no text, no labels, no numbers, no borders, no frames, and no sound waves, sparks, water, smoke or other effects detached from the body.",
+  "sheet": "{n} full-body poses in ONE horizontal row, left to right in the order listed, evenly spaced, with wide empty magenta gaps so that no two poses touch or overlap (weapons, tails and claws included). All feet stand on the same invisible horizontal ground line (except poses described as airborne or lying down). Same character, same proportions, same colours and the same pixel size in every pose.",
+  "single": "ONE full-body pose, centred, with a wide empty magenta margin on every side.",
+  "refModel": "The attached image {ref} is the locked model of this character: copy its design, colours and proportions exactly; pose 1 repeats that model's idle stance unchanged.",
+  "refBoard": "The attached concept board {ref}: use {panel} as the design reference (ignore its background, labels and the other characters) and turn it into a clean game sprite.",
+  "finish": "Do not edit, resize, recolour or post-process the generated image. After generating, copy the generated PNG unchanged into the current folder as {file}.",
+  "refPose": "IDLE REFERENCE: the same idle stance as the attached model, unchanged (it keeps the scale)"
+ },
+ "bosses": [
+  {
+   "id": "rook",
+   "name": "WARDEN ROOK",
+   "stage": "1 Wassoon harbor",
+   "height": 92,
+   "maxW": 200,
+   "board": "design/boss-concepts-2026-10-22/boss-lineup.png",
+   "panel": "panel 01 / WARDEN ROOK (top left)",
+   "lock": "Warden Rook, a weathered muscular HUMAN dock jailer in his forties: shaved bald head, heavy black horseshoe moustache, crooked nose, stern brow; bare sinewy forearms with black leather wrist cuffs; a sleeveless faded ORANGE flotation vest with grey buckles over a NAVY short-sleeved shirt; dark NAVY rolled waterproof trousers with cream turn-ups; big black-brown sea boots; a coil of tan rope hanging from the belt at the hip; a LONG steel boat hook (gaff) with a fork-and-hook head and brass grips, about 1.3 times his height, held in two hands. Not fat, no cleavers, no mohawk, no hat. Main colours: orange against navy, skin, steel grey, rope tan, dark boot brown.",
+   "sheets": [
     {
-      "id": "rook", "name": "WARDEN ROOK", "stage": "1 Wassoon harbor", "height": 92, "maxW": 200,
-      "board": "design/boss-concepts-2026-10-22/boss-lineup.png", "panel": "panel 01 / WARDEN ROOK (top left)",
-      "lock": "Warden Rook, a weathered muscular HUMAN dock jailer in his forties: shaved bald head, heavy black horseshoe moustache, crooked nose, stern brow; bare sinewy forearms with black leather wrist cuffs; a sleeveless faded ORANGE flotation vest with grey buckles over a NAVY short-sleeved shirt; dark NAVY rolled waterproof trousers with cream turn-ups; big black-brown sea boots; a coil of tan rope hanging from the belt at the hip; a LONG steel boat hook (gaff) with a fork-and-hook head and brass grips, about 1.3 times his height, held in two hands. Not fat, no cleavers, no mohawk, no hat. Main colours: orange against navy, skin, steel grey, rope tan, dark boot brown.",
-      "sheets": [
-        { "id": "00-model", "poses": [["idle0", "IDLE: fighting stance, knees bent, the hook held across the body in both hands with its head pointing forward-left at waist height"]] },
-        { "id": "01-idle-walk", "poses": [["_ref1", "@ref"], ["idle1", "IDLE BREATH: the same stance with the shoulders slightly lower and the hook head dipped a little"], ["walk1", "WALK: left leg stepping forward, heel down, hook carried across the body"], ["walk2", "WALK: legs passing under the body, rear knee lifted"]] },
-        { "id": "02-walk-tell", "poses": [["_ref2", "@ref"], ["walk3", "WALK: right leg stepping forward, heel down, hook carried across the body"], ["walk4", "WALK: legs passing, the other knee lifted"], ["tell", "HOOK TELL: crouched, weight on the back leg, the hook head lowered to ankle height in front of him, eyes on the target"]] },
-        { "id": "03-hook", "poses": [["_ref3", "@ref"], ["thrust", "HOOK THRUST: long lunge forward, both arms fully extended, the hook jabbed straight out far to the left at chest height"], ["pull", "HOOK PULL: leaning far back, the hook yanked back to the hip with both hands, front foot braced"], ["recover", "RECOVERY: over-committed stumble forward, the hook tip dragging on the ground, head low and open"]] },
-        { "id": "04-hurt", "poses": [["_ref4", "@ref"], ["hurt1", "HURT HIGH: head snapped back, body recoiling, the hook held loosely in one hand"], ["hurt2", "HURT LOW: doubled over from a hit to the gut, hook held low"], ["fall", "KNOCKED DOWN: airborne, falling backwards off his feet, legs in the air"]] },
-        { "id": "05-down", "poses": [["_ref5", "@ref"], ["down", "LYING FLAT on his back on the ground, whole body horizontal, the hook beside him"], ["getup", "GETTING UP: on one knee, pushing himself up on the hook"], ["defeat", "DEFEATED: kneeling on both knees, slumped, hands raised in surrender, the hook dropped on the ground in front"]] }
-      ],
-      "anims": [
-        { "name": "idle", "frames": ["idle0", "idle1"], "dur": [24, 24] },
-        { "name": "walk", "frames": ["walk1", "walk2", "walk3", "walk4"], "dur": 8 },
-        { "name": "hook", "frames": ["tell", "thrust", "pull", "recover"], "dur": [24, 10, 14, 28], "align": "none" },
-        { "name": "hurt", "frames": ["hurt1"], "dur": 14 },
-        { "name": "hurt-low", "frames": ["hurt2"], "dur": 14 },
-        { "name": "knockdown", "frames": ["fall", "down", "getup"], "dur": [12, 40, 16], "align": "none", "air": { "fall": 18 } },
-        { "name": "defeat", "frames": ["defeat"], "dur": 60 }
+     "id": "00-model",
+     "poses": [
+      [
+       "idle0",
+       "IDLE: fighting stance, knees bent, the hook held across the body in both hands with its head pointing forward-left at waist height"
       ]
+     ]
     },
     {
-      "id": "breakwater", "name": "BREAKWATER", "stage": "2 Coral Causeway", "height": 72, "maxW": 190,
-      "board": "design/boss-concepts-2026-10-22/boss-lineup.png", "panel": "panel 02 / BREAKWATER (top middle)",
-      "lock": "Breakwater, a squat powerful four-legged ANKYLOSAUR and a living captive animal (not a monster, not evil): blunt beaked head carried low; ochre-yellow broad armoured back of rounded plates with a few short blunt studs (no long spikes); dark blue-grey belly, legs and face; thick stubby legs; a short thick tail ending in a big round grey-brown TAIL CLUB; two orange padded cargo-harness bands around the body with shiny brass release clamps and a short broken tow chain hanging from the harness. No rider, no turret, no horns. Body length including the tail about 2.4 times its height.",
-      "sheets": [
-        { "id": "00-model", "poses": [["idle0", "IDLE: standing square on all four legs, head low, tail club resting behind"]] },
-        { "id": "01-idle-walk", "poses": [["_ref1", "@ref"], ["idle1", "BREATHING: head raised slightly, sides expanded"], ["walk1", "WALK: front-left and back-right legs stepping forward"], ["walk2", "WALK: legs passing under the body"]] },
-        { "id": "02-walk-tell", "poses": [["_ref2", "@ref"], ["walk3", "WALK: front-right and back-left legs stepping forward"], ["walk4", "WALK: legs passing, opposite phase"], ["tell", "TAIL TELL: body twisted, the tail club swung far up and out behind, head turned to look back"]] },
-        { "id": "03-sweep", "poses": [["_ref3", "@ref"], ["sweep1", "TAIL SWEEP mid-swing: body pivoting, the club swinging low past its side"], ["sweep2", "TAIL SWEEP follow-through: the club stretched out low along the ground, body half turned"], ["recover", "RECOVERY: winded, chin on the ground, the harness bands and brass clamps on its flank clearly exposed"]] },
-        { "id": "04-react", "poses": [["_ref4", "@ref"], ["hurt", "HURT: flinching, head jerked up, eyes squeezed shut"], ["charge", "CHARGE: head down, legs driving, lunging forward at a run"], ["free", "FREED: the harness bands snapped and falling away, head raised, calm"]] }
+     "id": "01-idle-walk",
+     "poses": [
+      [
+       "_ref1",
+       "@ref"
       ],
-      "anims": [
-        { "name": "idle", "frames": ["idle0", "idle1"], "dur": [30, 30] },
-        { "name": "walk", "frames": ["walk1", "walk2", "walk3", "walk4"], "dur": 10 },
-        { "name": "tail", "frames": ["tell", "sweep1", "sweep2", "recover"], "dur": [30, 6, 10, 40], "align": "none" },
-        { "name": "hurt", "frames": ["hurt"], "dur": 14 },
-        { "name": "charge", "frames": ["charge", "walk2"], "dur": [8, 8] },
-        { "name": "freed", "frames": ["free"], "dur": 60 }
+      [
+       "idle1",
+       "IDLE BREATH: the same stance with the shoulders slightly lower and the hook head dipped a little"
+      ],
+      [
+       "walk1",
+       "WALK: left leg stepping forward, heel down, hook carried across the body"
+      ],
+      [
+       "walk2",
+       "WALK: legs passing under the body, rear knee lifted"
       ]
+     ]
     },
     {
-      "id": "glassback", "name": "GLASSBACK", "stage": "3 Verdant Biodome", "height": 132, "maxW": 180,
-      "board": "design/boss-concepts-2026-10-22/boss-lineup.png", "panel": "panel 03 / GLASSBACK (top right)",
-      "lock": "Glassback, a tall pear-shaped feathered THERIZINOSAUR mother (a protective animal, not evil): long slender neck, small birdlike beaked head with a bright eye; broad ochre-yellow chest; deep green feathered back and shoulders; cream-white feathered forearms each ending in THREE unmistakable very long curved ivory claws; heavy grey scaled legs with big three-toed feet; a short-to-medium feathered tail; one simple orange sonic collar with a small brass box around the neck. No armour, no glass on the body.",
-      "sheets": [
-        { "id": "00-model", "poses": [["idle0", "IDLE: protective display, upright, claws held half-raised in front of the chest, neck curved"]] },
-        { "id": "01-idle-walk", "poses": [["_ref1", "@ref"], ["idle1", "BREATHING: chest raised, claws slightly opened"], ["walk1", "WALK: left foot stepping forward, body leaning, claws folded"], ["walk2", "WALK: legs passing"]] },
-        { "id": "02-walk-high", "poses": [["_ref2", "@ref"], ["walk3", "WALK: right foot stepping forward"], ["walk4", "WALK: legs passing, opposite phase"], ["highTell", "HIGH TELL: rearing up tall, both clawed arms raised and CROSSED high above the head"]] },
-        { "id": "03-attacks", "poses": [["_ref3", "@ref"], ["highSweep", "HIGH SWEEP: both claws slashing down and forward in a long arc at head height, body leaning forward"], ["lowTell", "LOW TELL: crouched low, neck pulled back, claws drawn back close to the ground"], ["lowRake", "LOW RAKE: claws raking forward along the ground, body low and stretched forward"]] },
-        { "id": "04-react", "poses": [["_ref4", "@ref"], ["recover", "RECOVERY: off balance after the rake, claws stuck down, neck low"], ["hurt", "HURT: recoiling, neck twisted back, feathers ruffled"], ["calm", "CALMED: settled low on the ground, arms spread protectively over the ground as over a nest, head lowered, peaceful"]] }
+     "id": "02-walk-tell",
+     "poses": [
+      [
+       "_ref2",
+       "@ref"
       ],
-      "anims": [
-        { "name": "idle", "frames": ["idle0", "idle1"], "dur": [28, 28] },
-        { "name": "walk", "frames": ["walk1", "walk2", "walk3", "walk4"], "dur": 9 },
-        { "name": "high", "frames": ["highTell", "highSweep"], "dur": [30, 12], "align": "none" },
-        { "name": "low", "frames": ["lowTell", "lowRake", "recover"], "dur": [24, 10, 30], "align": "none" },
-        { "name": "hurt", "frames": ["hurt"], "dur": 14 },
-        { "name": "calm", "frames": ["calm"], "dur": 60 }
+      [
+       "walk3",
+       "WALK: right leg stepping forward, heel down, hook carried across the body"
+      ],
+      [
+       "walk4",
+       "WALK: legs passing, the other knee lifted"
+      ],
+      [
+       "tell",
+       "HOOK TELL: crouched, weight on the back leg, the hook head lowered to ankle height in front of him, eyes on the target"
       ]
+     ]
     },
     {
-      "id": "cinder", "name": "FOREMAN CINDER", "stage": "4 The Sink", "height": 87, "maxW": 150,
-      "board": "design/boss-concepts-2026-10-22/boss-lineup.png", "panel": "panel 04 / FOREMAN CINDER (bottom left)",
-      "lock": "Foreman Cinder, a short squat HUMAN salvage foreman with a deep barrel chest, broad stance and heavy work boots: a battered cream-brass diving helmet tilted OPEN to show a scarred determined stubbled face; a rust-red cut-down pressure suit with brass rivets; ONE huge yellow-and-black striped pneumatic PILE-DRIVER braced along the forearm nearest the viewer (a hammer-shaped block bigger than his torso) with a small round pressure gauge on it; the other hand small in a dark work glove; a brass air tank on his back with one black hose to the driver. Not a robot, not a mech. Shorter and much wider than the other humans.",
-      "sheets": [
-        { "id": "00-model", "poses": [["idle0", "IDLE: braced wide stance, the pile-driver held low and forward, the free fist clenched"]] },
-        { "id": "01-idle-walk", "poses": [["_ref1", "@ref"], ["idle1", "BREATHING: the driver lifted slightly, chest expanded"], ["walk1", "HEAVY WALK: left boot stepping forward, the driver swinging"], ["walk2", "HEAVY WALK: legs passing"]] },
-        { "id": "02-walk-tell", "poses": [["_ref2", "@ref"], ["walk3", "HEAVY WALK: right boot stepping forward"], ["walk4", "HEAVY WALK: legs passing, opposite phase"], ["tell", "SLAM TELL: the pile-driver raised high above his head, the gauge needle in the red, leaning back"]] },
-        { "id": "03-slam", "poses": [["_ref3", "@ref"], ["slam", "SLAM: the pile-driver smashed down into the floor in front of him, crouched low over it"], ["stuck", "STUCK: the driver jammed in the floor, pulling at it with both hands, back exposed"], ["vent", "VENT: hunched, one hand twisting the valve on his back tank"]] },
-        { "id": "04-hurt", "poses": [["_ref4", "@ref"], ["hurt1", "HURT HIGH: head snapped back inside the open helmet"], ["hurt2", "HURT LOW: doubled over"], ["fall", "KNOCKED DOWN: airborne, falling backwards"]] },
-        { "id": "05-down", "poses": [["_ref5", "@ref"], ["down", "LYING FLAT on his back, whole body horizontal, the driver beside him"], ["getup", "GETTING UP: on one knee, pushing up on the driver"], ["defeat", "DEFEATED: sitting slumped against the dead pile-driver, helmet pushed off"]] }
+     "id": "03-hook",
+     "poses": [
+      [
+       "_ref3",
+       "@ref"
       ],
-      "anims": [
-        { "name": "idle", "frames": ["idle0", "idle1"], "dur": [26, 26] },
-        { "name": "walk", "frames": ["walk1", "walk2", "walk3", "walk4"], "dur": 10 },
-        { "name": "slam", "frames": ["tell", "slam", "stuck"], "dur": [36, 10, 60], "align": "none" },
-        { "name": "vent", "frames": ["vent"], "dur": 40 },
-        { "name": "hurt", "frames": ["hurt1"], "dur": 14 },
-        { "name": "hurt-low", "frames": ["hurt2"], "dur": 14 },
-        { "name": "knockdown", "frames": ["fall", "down", "getup"], "dur": [12, 40, 16], "align": "none", "air": { "fall": 16 } },
-        { "name": "defeat", "frames": ["defeat"], "dur": 60 }
+      [
+       "thrust",
+       "HOOK THRUST: long lunge forward, both arms fully extended, the hook jabbed straight out far to the left at chest height"
+      ],
+      [
+       "pull",
+       "HOOK PULL: leaning far back, the hook yanked back to the hip with both hands, front foot braced"
+      ],
+      [
+       "recover",
+       "RECOVERY: over-committed stumble forward, the hook tip dragging on the ground, head low and open"
       ]
+     ]
     },
     {
-      "id": "echo", "name": "DR. ECHO", "stage": "5 Observatory", "height": 83, "maxW": 130,
-      "board": "design/boss-concepts-2026-10-22/boss-lineup.png", "panel": "panel 05 / DR. ECHO (bottom middle)",
-      "lock": "Dr. Echo, a lean tall older HUMAN woman scientist: silver swept-back hair, a sharp face, round tinted safety goggles pushed up on the brow; a bone-white long split lab raincoat over a dark plum fitted top; very dark plum trousers and black boots; a folded crescent-shaped directional acoustic DISH with a brass rim strapped to her back above one shoulder (no wider than her shoulders); a short brass tuning-fork controller in one hand. Scientific salvage gear: no rifle, no magic staff, no glowing effects.",
-      "sheets": [
-        { "id": "00-model", "poses": [["idle0", "IDLE: upright, the tuning-fork controller raised, the other hand on the dish strap"]] },
-        { "id": "01-idle-walk", "poses": [["_ref1", "@ref"], ["idle1", "BREATHING: coat hem shifted, controller lowered slightly"], ["walk1", "WALK: left leg stepping forward, coat swinging"], ["walk2", "WALK: legs passing"]] },
-        { "id": "02-walk-tell", "poses": [["_ref2", "@ref"], ["walk3", "WALK: right leg stepping forward"], ["walk4", "WALK: legs passing, opposite phase"], ["tell", "DISH TELL: the dish swung over her shoulder and pointed forward-left, body braced, controller raised"]] },
-        { "id": "03-burst", "poses": [["_ref3", "@ref"], ["burst", "SONIC BURST: the dish aimed straight forward at chest height, leaning into it, coat blown back (no sound waves drawn)"], ["cooldown", "COOLDOWN: dish lowered, hunched forward catching her breath, her side exposed"], ["jab", "FORK JAB: quick step forward, jabbing the tuning fork at arm's length"]] },
-        { "id": "04-hurt", "poses": [["_ref4", "@ref"], ["hurt1", "HURT HIGH: head snapped back, goggles askew"], ["hurt2", "HURT LOW: doubled over"], ["fall", "KNOCKED DOWN: airborne, falling backwards"]] },
-        { "id": "05-down", "poses": [["_ref5", "@ref"], ["down", "LYING FLAT on her back, whole body horizontal, dish beside her"], ["getup", "GETTING UP: on one knee"], ["captured", "CAPTURED: kneeling, hands raised, the dish dropped behind her"]] }
+     "id": "04-hurt",
+     "poses": [
+      [
+       "_ref4",
+       "@ref"
       ],
-      "anims": [
-        { "name": "idle", "frames": ["idle0", "idle1"], "dur": [24, 24] },
-        { "name": "walk", "frames": ["walk1", "walk2", "walk3", "walk4"], "dur": 8 },
-        { "name": "burst", "frames": ["tell", "burst", "cooldown"], "dur": [30, 24, 50], "align": "none" },
-        { "name": "jab", "frames": ["jab"], "dur": 12 },
-        { "name": "hurt", "frames": ["hurt1"], "dur": 14 },
-        { "name": "hurt-low", "frames": ["hurt2"], "dur": 14 },
-        { "name": "knockdown", "frames": ["fall", "down", "getup"], "dur": [12, 40, 16], "align": "none", "air": { "fall": 18 } },
-        { "name": "captured", "frames": ["captured"], "dur": 60 }
+      [
+       "hurt1",
+       "HURT HIGH: head snapped back, body recoiling, the hook held loosely in one hand"
+      ],
+      [
+       "hurt2",
+       "HURT LOW: doubled over from a hit to the gut, hook held low"
+      ],
+      [
+       "fall",
+       "KNOCKED DOWN: airborne, falling backwards off his feet, legs in the air"
       ]
+     ]
     },
     {
-      "id": "sable", "name": "MARSHAL SABLE", "stage": "6 Crown dam (phase 1)", "height": 92, "maxW": 140,
-      "board": "design/boss-concepts-2026-10-22/sable-crownback.png", "panel": "panel 01 / THE MARSHAL (top left)",
-      "lock": "Marshal Sable, an imposing middle-aged HUMAN water marshal: athletic with a thick neck (not a bodybuilder), close-cropped dark hair with grey temples, a clear diagonal scar across his LEFT cheek, stern square jaw; a long dark PETROL-GREEN military stormcoat with brass buttons; an IVORY sash diagonally across the chest; ONE broad BRASS floodgate-shaped plate on the left shoulder; black gloves; a heavy black pistol in one hand; a square brass pressure regulator on the belt; worn black rubber boots. No crown, no throne.",
-      "sheets": [
-        { "id": "00-model", "poses": [["idle0", "IDLE: upright authoritarian stance, the pistol lowered at his side"]] },
-        { "id": "01-idle-walk", "poses": [["_ref1", "@ref"], ["idle1", "BREATHING: chest raised slightly, coat hem shifted"], ["walk1", "WALK: measured step, left leg forward"], ["walk2", "WALK: legs passing"]] },
-        { "id": "02-walk-aim", "poses": [["_ref2", "@ref"], ["walk3", "WALK: right leg forward"], ["walk4", "WALK: legs passing, opposite phase"], ["aim", "AIM TELL: pistol raised at arm's length pointing forward-left at chest height, the other hand behind his back"]] },
-        { "id": "03-guns", "poses": [["_ref3", "@ref"], ["fire1", "FIRE: arm extended, the pistol kicked up slightly by recoil"], ["fire2", "FIRE AGAIN: stronger recoil, shoulder pushed back"], ["reload", "RELOAD: head down looking at the opened pistol, feeding a magazine, open to attack"]] },
-        { "id": "04-hurt", "poses": [["_ref4", "@ref"], ["hurt1", "HURT HIGH: head snapped back, coat flaring"], ["hurt2", "HURT LOW: doubled over"], ["whip", "PISTOL-WHIP: stepping in and swinging the pistol butt forward"]] },
-        { "id": "05-graft", "poses": [["_ref5", "@ref"], ["graft1", "TRANSFORM 1: clutching the brass shoulder plate, doubled over in pain"], ["graft2", "TRANSFORM 2: shoulder swelling, the brass plate splitting, coat sleeve tearing, green scales spreading up the neck"], ["graft3", "TRANSFORM 3: half transformed and bigger, the forearm swollen huge and scaled, crocodile jaw forming, crouching and bracing the huge hand on the ground"]] }
+     "id": "05-down",
+     "poses": [
+      [
+       "_ref5",
+       "@ref"
       ],
-      "anims": [
-        { "name": "idle", "frames": ["idle0", "idle1"], "dur": [26, 26] },
-        { "name": "walk", "frames": ["walk1", "walk2", "walk3", "walk4"], "dur": 9 },
-        { "name": "volley", "frames": ["aim", "fire1", "aim", "fire2"], "dur": [30, 8, 10, 10], "align": "none" },
-        { "name": "reload", "frames": ["reload"], "dur": 40 },
-        { "name": "whip", "frames": ["whip"], "dur": 12 },
-        { "name": "hurt", "frames": ["hurt1"], "dur": 14 },
-        { "name": "hurt-low", "frames": ["hurt2"], "dur": 14 },
-        { "name": "transform", "frames": ["graft1", "graft2", "graft3"], "dur": [40, 40, 40], "align": "none" }
-      ]
-    },
-    {
-      "id": "crownback", "name": "CROWNBACK", "stage": "6 Crown dam (final form)", "height": 128, "maxW": 192,
-      "board": "design/boss-concepts-2026-10-22/sable-crownback.png", "panel": "panel 02 / CROWNBACK (top right; also the creature in the bottom arena scene)",
-      "lock": "Crownback, Marshal Sable's original mutant final form: a broad, low, hunched amphibious reptile-human brute with TWO arms, TWO heavy digitigrade hind legs, ONE head and a SHORT thick crocodilian tail (the tail no longer than the body; the whole creature including the tail no wider than 1.5 times its crouched height); dark PETROL-GREEN armoured scales simplified into large readable plates; a broad pale OCHRE belly; ONE HUGE shield-like left forearm of fused armour plates (a living floodgate) and one smaller humanlike clawed right hand; a short heavy crocodilian muzzle carrying Sable's square brow and the diagonal scar on the left cheek, an intelligent angry eye, a short thick neck; THREE blunt slab-like bony dorsal plates on the upper back; a cracked brass shoulder plate, the torn ivory sash still diagonal across the chest, scraps of dark green trousers and the square brass belt regulator; warm coral-orange gill slits on the ribs. Flesh, not a robot or mech; no horns, no crown, no wings, no spikes, no extra heads, no pink flesh.",
-      "sheets": [
-        { "id": "00-model", "poses": [["idle0", "IDLE: crouched fighting stance, the huge forearm planted in front like a gate, feet wide"]] },
-        { "id": "01-idle-lumber", "poses": [["_ref1", "@ref"], ["idle1", "BREATHING: back rising, gill slits flexing"], ["lumber1", "LUMBER: heavy step, left foot forward, the huge arm swinging"], ["lumber2", "LUMBER: feet passing, body low"]] },
-        { "id": "02-lumber-raised", "poses": [["_ref2", "@ref"], ["lumber3", "LUMBER: right foot forward"], ["lumber4", "LUMBER: feet passing, opposite phase"], ["raised", "RAISED: rearing up to full height (about 1.3 times the crouched height), the huge forearm lifted, roaring"]] },
-        { "id": "03-sweep", "poses": [["_ref3", "@ref"], ["sweepTell", "GATE-ARM TELL: shoulder raised, the huge hand curled back behind the body"], ["sweep", "GATE-ARM SWEEP: the huge forearm swept forward-left in a broad low horizontal arc, body twisted"], ["sweepEnd", "SWEEP RECOVERY: head lowered after the swing, the arm dragging on the ground"]] },
-        { "id": "04-vent-tail", "poses": [["_ref4", "@ref"], ["ventTell", "PRESSURE TELL: gill slits wide open, belly drawn in, chest swelling"], ["vent", "PRESSURE RELEASE: jaws wide open, leaning forward, flank exposed (no water drawn)"], ["tailTell", "TAIL TELL: the tail lifted high behind, looking back over the shoulder"]] },
-        { "id": "05-tail-brace", "poses": [["_ref5", "@ref"], ["tailSweep", "TAIL SWEEP: body spun half round, the tail sweeping low behind"], ["brace", "BRACE: the huge hand planted flat on the ground in front, dorsal plates flattened, braced against a current"], ["braceCracked", "BRACE, GUARD BROKEN: the same brace with the forearm armour plates cracked by dark gaps"]] },
-        { "id": "06-rush", "poses": [["_ref6", "@ref"], ["rushTell", "RUSH TELL: head lowered, both feet planted, shoulders hunched"], ["rush", "RUSH: charging forward head first, the huge forearm leading"], ["wall", "WALL RECOVERY: stunned, sitting back, the huge arm slack, head lolling"]] },
-        { "id": "07-hurt-defeat", "poses": [["_ref7", "@ref"], ["hurt", "HURT: recoiling, jaws open, eye shut"], ["hurtCracked", "HURT, GUARD BROKEN: staggering back, forearm plates cracked"], ["defeat", "DEFEATED: collapsed forward over the huge forearm, tail limp"]] }
+      [
+       "down",
+       "LYING FLAT on his back on the ground, whole body horizontal, the hook beside him"
       ],
-      "anims": [
-        { "name": "idle", "frames": ["idle0", "idle1"], "dur": [30, 30] },
-        { "name": "lumber", "frames": ["lumber1", "lumber2", "lumber3", "lumber4"], "dur": 12 },
-        { "name": "raised", "frames": ["raised"], "dur": 40 },
-        { "name": "sweep", "frames": ["sweepTell", "sweep", "sweepEnd"], "dur": [30, 10, 30], "align": "none" },
-        { "name": "vent", "frames": ["ventTell", "vent"], "dur": [36, 60], "align": "none" },
-        { "name": "tail", "frames": ["tailTell", "tailSweep"], "dur": [30, 12], "align": "none" },
-        { "name": "brace", "frames": ["brace"], "dur": 90 },
-        { "name": "brace-cracked", "frames": ["braceCracked"], "dur": 90 },
-        { "name": "rush", "frames": ["rushTell", "rush", "wall"], "dur": [30, 8, 90], "align": "none" },
-        { "name": "hurt", "frames": ["hurt"], "dur": 14 },
-        { "name": "hurt-cracked", "frames": ["hurtCracked"], "dur": 14 },
-        { "name": "defeat", "frames": ["defeat"], "dur": 90 }
+      [
+       "getup",
+       "GETTING UP: on one knee, pushing himself up on the hook"
+      ],
+      [
+       "defeat",
+       "DEFEATED: kneeling on both knees, slumped, hands raised in surrender, the hook dropped on the ground in front"
       ]
+     ]
     }
-  ]
+   ],
+   "anims": [
+    {
+     "name": "idle",
+     "frames": [
+      "idle0",
+      "idle1"
+     ],
+     "dur": [
+      24,
+      24
+     ]
+    },
+    {
+     "name": "walk",
+     "frames": [
+      "walk1",
+      "walk2",
+      "walk3",
+      "walk4"
+     ],
+     "dur": 8
+    },
+    {
+     "name": "hook",
+     "frames": [
+      "tell",
+      "thrust",
+      "pull",
+      "recover"
+     ],
+     "dur": [
+      24,
+      10,
+      14,
+      28
+     ],
+     "align": "none"
+    },
+    {
+     "name": "hurt",
+     "frames": [
+      "hurt1"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "hurt-low",
+     "frames": [
+      "hurt2"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "knockdown",
+     "frames": [
+      "fall",
+      "down",
+      "getup"
+     ],
+     "dur": [
+      12,
+      40,
+      16
+     ],
+     "align": "none",
+     "air": {
+      "fall": 18
+     }
+    },
+    {
+     "name": "defeat",
+     "frames": [
+      "defeat"
+     ],
+     "dur": 60
+    }
+   ]
+  },
+  {
+   "id": "breakwater",
+   "name": "BREAKWATER",
+   "stage": "2 Coral Causeway",
+   "height": 72,
+   "maxW": 190,
+   "board": "design/boss-concepts-2026-10-22/boss-lineup.png",
+   "panel": "panel 02 / BREAKWATER (top middle)",
+   "lock": "Breakwater, a squat powerful four-legged ANKYLOSAUR and a living captive animal (not a monster, not evil): blunt beaked head carried low; ochre-yellow broad armoured back of rounded plates with a few short blunt studs (no long spikes); dark blue-grey belly, legs and face; thick stubby legs; a short thick tail ending in a big round grey-brown TAIL CLUB; two orange padded cargo-harness bands around the body with shiny brass release clamps and a short broken tow chain hanging from the harness. No rider, no turret, no horns. Body length including the tail about 2.4 times its height.",
+   "sheets": [
+    {
+     "id": "00-model",
+     "poses": [
+      [
+       "idle0",
+       "IDLE: standing square on all four legs, head low, tail club resting behind"
+      ]
+     ]
+    },
+    {
+     "id": "01-idle-walk",
+     "poses": [
+      [
+       "_ref1",
+       "@ref"
+      ],
+      [
+       "idle1",
+       "BREATHING: head raised slightly, sides expanded"
+      ],
+      [
+       "walk1",
+       "WALK: front-left and back-right legs stepping forward"
+      ],
+      [
+       "walk2",
+       "WALK: legs passing under the body"
+      ]
+     ]
+    },
+    {
+     "id": "02-walk-tell",
+     "poses": [
+      [
+       "_ref2",
+       "@ref"
+      ],
+      [
+       "walk3",
+       "WALK: front-right and back-left legs stepping forward"
+      ],
+      [
+       "walk4",
+       "WALK: legs passing, opposite phase"
+      ],
+      [
+       "tell",
+       "TAIL TELL: body twisted, the tail club swung far up and out behind, head turned to look back"
+      ]
+     ]
+    },
+    {
+     "id": "03-sweep",
+     "poses": [
+      [
+       "_ref3",
+       "@ref"
+      ],
+      [
+       "sweep1",
+       "TAIL SWEEP mid-swing: body pivoting, the club swinging low past its side"
+      ],
+      [
+       "sweep2",
+       "TAIL SWEEP follow-through: the club stretched out low along the ground, body half turned"
+      ],
+      [
+       "recover",
+       "RECOVERY: winded, chin on the ground, the harness bands and brass clamps on its flank clearly exposed"
+      ]
+     ]
+    },
+    {
+     "id": "04-react",
+     "poses": [
+      [
+       "_ref4",
+       "@ref"
+      ],
+      [
+       "hurt",
+       "HURT: flinching, head jerked up, eyes squeezed shut"
+      ],
+      [
+       "charge",
+       "CHARGE: head down, legs driving, lunging forward at a run"
+      ],
+      [
+       "free",
+       "FREED: the harness bands snapped and falling away, head raised, calm"
+      ]
+     ]
+    }
+   ],
+   "anims": [
+    {
+     "name": "idle",
+     "frames": [
+      "idle0",
+      "idle1"
+     ],
+     "dur": [
+      30,
+      30
+     ]
+    },
+    {
+     "name": "walk",
+     "frames": [
+      "walk1",
+      "walk2",
+      "walk3",
+      "walk4"
+     ],
+     "dur": 10
+    },
+    {
+     "name": "tail",
+     "frames": [
+      "tell",
+      "sweep1",
+      "sweep2",
+      "recover"
+     ],
+     "dur": [
+      30,
+      6,
+      10,
+      40
+     ],
+     "align": "none"
+    },
+    {
+     "name": "hurt",
+     "frames": [
+      "hurt"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "charge",
+     "frames": [
+      "charge",
+      "walk2"
+     ],
+     "dur": [
+      8,
+      8
+     ]
+    },
+    {
+     "name": "freed",
+     "frames": [
+      "free"
+     ],
+     "dur": 60
+    }
+   ]
+  },
+  {
+   "id": "glassback",
+   "name": "GLASSBACK",
+   "stage": "3 Verdant Biodome",
+   "height": 132,
+   "maxW": 180,
+   "board": "design/boss-concepts-2026-10-22/boss-lineup.png",
+   "panel": "panel 03 / GLASSBACK (top right)",
+   "lock": "Glassback, a tall pear-shaped feathered THERIZINOSAUR mother (a protective animal, not evil): long slender neck, small birdlike beaked head with a bright eye; broad ochre-yellow chest; deep green feathered back and shoulders; cream-white feathered forearms each ending in THREE unmistakable very long curved ivory claws; heavy grey scaled legs with big three-toed feet; a short-to-medium feathered tail; one simple orange sonic collar with a small brass box around the neck. No armour, no glass on the body.",
+   "sheets": [
+    {
+     "id": "00-model",
+     "poses": [
+      [
+       "idle0",
+       "IDLE: protective display, upright, claws held half-raised in front of the chest, neck curved"
+      ]
+     ]
+    },
+    {
+     "id": "01-idle-walk",
+     "poses": [
+      [
+       "_ref1",
+       "@ref"
+      ],
+      [
+       "idle1",
+       "BREATHING: chest raised, claws slightly opened"
+      ],
+      [
+       "walk1",
+       "WALK: left foot stepping forward, body leaning, claws folded"
+      ],
+      [
+       "walk2",
+       "WALK: legs passing"
+      ]
+     ]
+    },
+    {
+     "id": "02-walk-high",
+     "poses": [
+      [
+       "_ref2",
+       "@ref"
+      ],
+      [
+       "walk3",
+       "WALK: right foot stepping forward"
+      ],
+      [
+       "walk4",
+       "WALK: legs passing, opposite phase"
+      ],
+      [
+       "highTell",
+       "HIGH TELL: rearing up tall, both clawed arms raised and CROSSED high above the head"
+      ]
+     ]
+    },
+    {
+     "id": "03-attacks",
+     "poses": [
+      [
+       "_ref3",
+       "@ref"
+      ],
+      [
+       "highSweep",
+       "HIGH SWEEP: both claws slashing down and forward in a long arc at head height, body leaning forward"
+      ],
+      [
+       "lowTell",
+       "LOW TELL: crouched low, neck pulled back, claws drawn back close to the ground"
+      ],
+      [
+       "lowRake",
+       "LOW RAKE: claws raking forward along the ground, body low and stretched forward"
+      ]
+     ]
+    },
+    {
+     "id": "04-react",
+     "poses": [
+      [
+       "_ref4",
+       "@ref"
+      ],
+      [
+       "recover",
+       "RECOVERY: off balance after the rake, claws stuck down, neck low"
+      ],
+      [
+       "hurt",
+       "HURT: recoiling, neck twisted back, feathers ruffled"
+      ],
+      [
+       "calm",
+       "CALMED: settled low on the ground, arms spread protectively over the ground as over a nest, head lowered, peaceful"
+      ]
+     ]
+    }
+   ],
+   "anims": [
+    {
+     "name": "idle",
+     "frames": [
+      "idle0",
+      "idle1"
+     ],
+     "dur": [
+      28,
+      28
+     ]
+    },
+    {
+     "name": "walk",
+     "frames": [
+      "walk1",
+      "walk2",
+      "walk3",
+      "walk4"
+     ],
+     "dur": 9
+    },
+    {
+     "name": "high",
+     "frames": [
+      "highTell",
+      "highSweep"
+     ],
+     "dur": [
+      30,
+      12
+     ],
+     "align": "none"
+    },
+    {
+     "name": "low",
+     "frames": [
+      "lowTell",
+      "lowRake",
+      "recover"
+     ],
+     "dur": [
+      24,
+      10,
+      30
+     ],
+     "align": "none"
+    },
+    {
+     "name": "hurt",
+     "frames": [
+      "hurt"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "calm",
+     "frames": [
+      "calm"
+     ],
+     "dur": 60
+    }
+   ]
+  },
+  {
+   "id": "cinder",
+   "name": "FOREMAN CINDER",
+   "stage": "4 The Sink",
+   "height": 87,
+   "maxW": 150,
+   "board": "design/boss-concepts-2026-10-22/boss-lineup.png",
+   "panel": "panel 04 / FOREMAN CINDER (bottom left)",
+   "lock": "Foreman Cinder, a short squat HUMAN salvage foreman with a deep barrel chest, broad stance and heavy work boots: a battered cream-brass diving helmet tilted OPEN to show a scarred determined stubbled face; a rust-red cut-down pressure suit with brass rivets; ONE huge yellow-and-black striped pneumatic PILE-DRIVER braced along the forearm nearest the viewer (a hammer-shaped block bigger than his torso) with a small round pressure gauge on it; the other hand small in a dark work glove; a brass air tank on his back with one black hose to the driver. Not a robot, not a mech. Shorter and much wider than the other humans.",
+   "sheets": [
+    {
+     "id": "00-model",
+     "poses": [
+      [
+       "idle0",
+       "IDLE: braced wide stance, the pile-driver held low and forward, the free fist clenched"
+      ]
+     ]
+    },
+    {
+     "id": "01-idle-walk",
+     "poses": [
+      [
+       "_ref1",
+       "@ref"
+      ],
+      [
+       "idle1",
+       "BREATHING: the driver lifted slightly, chest expanded"
+      ],
+      [
+       "walk1",
+       "HEAVY WALK: left boot stepping forward, the driver swinging"
+      ],
+      [
+       "walk2",
+       "HEAVY WALK: legs passing"
+      ]
+     ]
+    },
+    {
+     "id": "02-walk-tell",
+     "poses": [
+      [
+       "_ref2",
+       "@ref"
+      ],
+      [
+       "walk3",
+       "HEAVY WALK: right boot stepping forward"
+      ],
+      [
+       "walk4",
+       "HEAVY WALK: legs passing, opposite phase"
+      ],
+      [
+       "tell",
+       "SLAM TELL: the pile-driver raised high above his head, the gauge needle in the red, leaning back"
+      ]
+     ]
+    },
+    {
+     "id": "03-slam",
+     "poses": [
+      [
+       "_ref3",
+       "@ref"
+      ],
+      [
+       "slam",
+       "SLAM: the pile-driver smashed down into the floor in front of him, crouched low over it"
+      ],
+      [
+       "stuck",
+       "STUCK: the driver jammed in the floor, pulling at it with both hands, back exposed"
+      ],
+      [
+       "vent",
+       "VENT: hunched, one hand twisting the valve on his back tank"
+      ]
+     ]
+    },
+    {
+     "id": "04-hurt",
+     "poses": [
+      [
+       "_ref4",
+       "@ref"
+      ],
+      [
+       "hurt1",
+       "HURT HIGH: head snapped back inside the open helmet"
+      ],
+      [
+       "hurt2",
+       "HURT LOW: doubled over"
+      ],
+      [
+       "fall",
+       "KNOCKED DOWN: airborne, falling backwards"
+      ]
+     ]
+    },
+    {
+     "id": "05-down",
+     "poses": [
+      [
+       "_ref5",
+       "@ref"
+      ],
+      [
+       "down",
+       "LYING FLAT on his back, whole body horizontal, the driver beside him"
+      ],
+      [
+       "getup",
+       "GETTING UP: on one knee, pushing up on the driver"
+      ],
+      [
+       "defeat",
+       "DEFEATED: sitting slumped against the dead pile-driver, helmet pushed off"
+      ]
+     ]
+    }
+   ],
+   "anims": [
+    {
+     "name": "idle",
+     "frames": [
+      "idle0",
+      "idle1"
+     ],
+     "dur": [
+      26,
+      26
+     ]
+    },
+    {
+     "name": "walk",
+     "frames": [
+      "walk1",
+      "walk2",
+      "walk3",
+      "walk4"
+     ],
+     "dur": 10
+    },
+    {
+     "name": "slam",
+     "frames": [
+      "tell",
+      "slam",
+      "stuck"
+     ],
+     "dur": [
+      36,
+      10,
+      60
+     ],
+     "align": "none"
+    },
+    {
+     "name": "vent",
+     "frames": [
+      "vent"
+     ],
+     "dur": 40
+    },
+    {
+     "name": "hurt",
+     "frames": [
+      "hurt1"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "hurt-low",
+     "frames": [
+      "hurt2"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "knockdown",
+     "frames": [
+      "fall",
+      "down",
+      "getup"
+     ],
+     "dur": [
+      12,
+      40,
+      16
+     ],
+     "align": "none",
+     "air": {
+      "fall": 16
+     }
+    },
+    {
+     "name": "defeat",
+     "frames": [
+      "defeat"
+     ],
+     "dur": 60
+    }
+   ]
+  },
+  {
+   "id": "echo",
+   "name": "DR. ECHO",
+   "stage": "5 Observatory",
+   "height": 83,
+   "maxW": 130,
+   "board": "design/boss-concepts-2026-10-22/boss-lineup.png",
+   "panel": "panel 05 / DR. ECHO (bottom middle)",
+   "lock": "Dr. Echo, a lean tall older HUMAN woman scientist: silver swept-back hair, a sharp face, round tinted safety goggles pushed up on the brow; a bone-white long split lab raincoat over a dark plum fitted top; very dark plum trousers and black boots; a folded crescent-shaped directional acoustic DISH with a brass rim strapped to her back above one shoulder (no wider than her shoulders); a short brass tuning-fork controller in one hand. Scientific salvage gear: no rifle, no magic staff, no glowing effects.",
+   "sheets": [
+    {
+     "id": "00-model",
+     "poses": [
+      [
+       "idle0",
+       "IDLE: upright, the tuning-fork controller raised, the other hand on the dish strap"
+      ]
+     ]
+    },
+    {
+     "id": "01-idle-walk",
+     "poses": [
+      [
+       "_ref1",
+       "@ref"
+      ],
+      [
+       "idle1",
+       "BREATHING: coat hem shifted, controller lowered slightly"
+      ],
+      [
+       "walk1",
+       "WALK: left leg stepping forward, coat swinging"
+      ],
+      [
+       "walk2",
+       "WALK: legs passing"
+      ]
+     ]
+    },
+    {
+     "id": "02-walk-tell",
+     "poses": [
+      [
+       "_ref2",
+       "@ref"
+      ],
+      [
+       "walk3",
+       "WALK: right leg stepping forward"
+      ],
+      [
+       "walk4",
+       "WALK: legs passing, opposite phase"
+      ],
+      [
+       "tell",
+       "DISH TELL: the dish swung over her shoulder and pointed forward-left, body braced, controller raised"
+      ]
+     ]
+    },
+    {
+     "id": "03-burst",
+     "poses": [
+      [
+       "_ref3",
+       "@ref"
+      ],
+      [
+       "burst",
+       "SONIC BURST: the dish aimed straight forward at chest height, leaning into it, coat blown back (no sound waves drawn)"
+      ],
+      [
+       "cooldown",
+       "COOLDOWN: dish lowered, hunched forward catching her breath, her side exposed"
+      ],
+      [
+       "jab",
+       "FORK JAB: quick step forward, jabbing the tuning fork at arm's length"
+      ]
+     ]
+    },
+    {
+     "id": "04-hurt",
+     "poses": [
+      [
+       "_ref4",
+       "@ref"
+      ],
+      [
+       "hurt1",
+       "HURT HIGH: head snapped back, goggles askew"
+      ],
+      [
+       "hurt2",
+       "HURT LOW: doubled over"
+      ],
+      [
+       "fall",
+       "KNOCKED DOWN: airborne, falling backwards"
+      ]
+     ]
+    },
+    {
+     "id": "05-down",
+     "poses": [
+      [
+       "_ref5",
+       "@ref"
+      ],
+      [
+       "down",
+       "LYING FLAT on her back, whole body horizontal, dish beside her"
+      ],
+      [
+       "getup",
+       "GETTING UP: on one knee"
+      ],
+      [
+       "captured",
+       "CAPTURED: kneeling, hands raised, the dish dropped behind her"
+      ]
+     ]
+    }
+   ],
+   "anims": [
+    {
+     "name": "idle",
+     "frames": [
+      "idle0",
+      "idle1"
+     ],
+     "dur": [
+      24,
+      24
+     ]
+    },
+    {
+     "name": "walk",
+     "frames": [
+      "walk1",
+      "walk2",
+      "walk3",
+      "walk4"
+     ],
+     "dur": 8
+    },
+    {
+     "name": "burst",
+     "frames": [
+      "tell",
+      "burst",
+      "cooldown"
+     ],
+     "dur": [
+      30,
+      24,
+      50
+     ],
+     "align": "none"
+    },
+    {
+     "name": "jab",
+     "frames": [
+      "jab"
+     ],
+     "dur": 12
+    },
+    {
+     "name": "hurt",
+     "frames": [
+      "hurt1"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "hurt-low",
+     "frames": [
+      "hurt2"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "knockdown",
+     "frames": [
+      "fall",
+      "down",
+      "getup"
+     ],
+     "dur": [
+      12,
+      40,
+      16
+     ],
+     "align": "none",
+     "air": {
+      "fall": 18
+     }
+    },
+    {
+     "name": "captured",
+     "frames": [
+      "captured"
+     ],
+     "dur": 60
+    }
+   ]
+  },
+  {
+   "id": "sable",
+   "name": "MARSHAL SABLE",
+   "stage": "6 Crown dam (phase 1)",
+   "height": 92,
+   "maxW": 140,
+   "board": "design/boss-concepts-2026-10-22/sable-crownback.png",
+   "panel": "panel 01 / THE MARSHAL (top left)",
+   "lock": "Marshal Sable, an imposing middle-aged HUMAN water marshal: athletic with a thick neck (not a bodybuilder), close-cropped dark hair with grey temples, a clear diagonal scar across his LEFT cheek, stern square jaw; a long dark PETROL-GREEN military stormcoat with brass buttons; an IVORY sash diagonally across the chest; ONE broad BRASS floodgate-shaped plate on the left shoulder; black gloves; a heavy black pistol in one hand; a square brass pressure regulator on the belt; worn black rubber boots. No crown, no throne.",
+   "sheets": [
+    {
+     "id": "00-model",
+     "poses": [
+      [
+       "idle0",
+       "IDLE: upright authoritarian stance, the pistol lowered at his side"
+      ]
+     ]
+    },
+    {
+     "id": "01-idle-walk",
+     "poses": [
+      [
+       "_ref1",
+       "@ref"
+      ],
+      [
+       "idle1",
+       "BREATHING: chest raised slightly, coat hem shifted"
+      ],
+      [
+       "walk1",
+       "WALK: measured step, left leg forward"
+      ],
+      [
+       "walk2",
+       "WALK: legs passing"
+      ]
+     ]
+    },
+    {
+     "id": "02-walk-aim",
+     "poses": [
+      [
+       "_ref2",
+       "@ref"
+      ],
+      [
+       "walk3",
+       "WALK: right leg forward"
+      ],
+      [
+       "walk4",
+       "WALK: legs passing, opposite phase"
+      ],
+      [
+       "aim",
+       "AIM TELL: pistol raised at arm's length pointing forward-left at chest height, the other hand behind his back"
+      ]
+     ]
+    },
+    {
+     "id": "03-guns",
+     "poses": [
+      [
+       "_ref3",
+       "@ref"
+      ],
+      [
+       "fire1",
+       "FIRE: arm extended, the pistol kicked up slightly by recoil"
+      ],
+      [
+       "fire2",
+       "FIRE AGAIN: stronger recoil, shoulder pushed back"
+      ],
+      [
+       "reload",
+       "RELOAD: head down looking at the opened pistol, feeding a magazine, open to attack"
+      ]
+     ]
+    },
+    {
+     "id": "04-hurt",
+     "poses": [
+      [
+       "_ref4",
+       "@ref"
+      ],
+      [
+       "hurt1",
+       "HURT HIGH: head snapped back, coat flaring"
+      ],
+      [
+       "hurt2",
+       "HURT LOW: doubled over"
+      ],
+      [
+       "whip",
+       "PISTOL-WHIP: stepping in and swinging the pistol butt forward"
+      ]
+     ]
+    },
+    {
+     "id": "05-graft",
+     "poses": [
+      [
+       "_ref5",
+       "@ref"
+      ],
+      [
+       "graft1",
+       "TRANSFORM 1: clutching the brass shoulder plate, doubled over in pain"
+      ],
+      [
+       "graft2",
+       "TRANSFORM 2: shoulder swelling, the brass plate splitting, coat sleeve tearing, green scales spreading up the neck"
+      ],
+      [
+       "graft3",
+       "TRANSFORM 3: half transformed and bigger, the forearm swollen huge and scaled, crocodile jaw forming, crouching and bracing the huge hand on the ground"
+      ]
+     ]
+    }
+   ],
+   "anims": [
+    {
+     "name": "idle",
+     "frames": [
+      "idle0",
+      "idle1"
+     ],
+     "dur": [
+      26,
+      26
+     ]
+    },
+    {
+     "name": "walk",
+     "frames": [
+      "walk1",
+      "walk2",
+      "walk3",
+      "walk4"
+     ],
+     "dur": 9
+    },
+    {
+     "name": "volley",
+     "frames": [
+      "aim",
+      "fire1",
+      "aim",
+      "fire2"
+     ],
+     "dur": [
+      30,
+      8,
+      10,
+      10
+     ],
+     "align": "none"
+    },
+    {
+     "name": "reload",
+     "frames": [
+      "reload"
+     ],
+     "dur": 40
+    },
+    {
+     "name": "whip",
+     "frames": [
+      "whip"
+     ],
+     "dur": 12
+    },
+    {
+     "name": "hurt",
+     "frames": [
+      "hurt1"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "hurt-low",
+     "frames": [
+      "hurt2"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "transform",
+     "frames": [
+      "graft1",
+      "graft2",
+      "graft3"
+     ],
+     "dur": [
+      40,
+      40,
+      40
+     ],
+     "align": "none"
+    }
+   ]
+  },
+  {
+   "id": "crownback",
+   "name": "CROWNBACK",
+   "stage": "6 Crown dam (final form)",
+   "height": 128,
+   "maxW": 192,
+   "board": "design/boss-concepts-2026-10-22/sable-crownback.png",
+   "panel": "panel 02 / CROWNBACK (top right; also the creature in the bottom arena scene)",
+   "lock": "Crownback, Marshal Sable's original mutant final form: a broad, low, hunched amphibious reptile-human brute with TWO arms, TWO heavy digitigrade hind legs, ONE head and a SHORT thick crocodilian tail (the tail no longer than the body; the whole creature including the tail no wider than 1.5 times its crouched height); dark PETROL-GREEN armoured scales simplified into large readable plates; a broad pale OCHRE belly; ONE HUGE shield-like left forearm of fused armour plates (a living floodgate) and one smaller humanlike clawed right hand; a short heavy crocodilian muzzle carrying Sable's square brow and the diagonal scar on the left cheek, an intelligent angry eye, a short thick neck; THREE blunt slab-like bony dorsal plates on the upper back; a cracked brass shoulder plate, the torn ivory sash still diagonal across the chest, scraps of dark green trousers and the square brass belt regulator; warm coral-orange gill slits on the ribs. Flesh, not a robot or mech; no horns, no crown, no wings, no spikes, no extra heads, no pink flesh.",
+   "sheets": [
+    {
+     "id": "00-model",
+     "poses": [
+      [
+       "idle0",
+       "IDLE: crouched fighting stance, the huge forearm planted in front like a gate, feet wide"
+      ]
+     ]
+    },
+    {
+     "id": "01-idle-lumber",
+     "poses": [
+      [
+       "_ref1",
+       "@ref"
+      ],
+      [
+       "idle1",
+       "BREATHING: back rising, gill slits flexing"
+      ],
+      [
+       "lumber1",
+       "LUMBER: heavy step, left foot forward, the huge arm swinging"
+      ],
+      [
+       "lumber2",
+       "LUMBER: feet passing, body low"
+      ]
+     ]
+    },
+    {
+     "id": "02-lumber-raised",
+     "poses": [
+      [
+       "_ref2",
+       "@ref"
+      ],
+      [
+       "lumber3",
+       "LUMBER: right foot forward"
+      ],
+      [
+       "lumber4",
+       "LUMBER: feet passing, opposite phase"
+      ],
+      [
+       "raised",
+       "RAISED: rearing up to full height (about 1.3 times the crouched height), the huge forearm lifted, roaring"
+      ]
+     ]
+    },
+    {
+     "id": "03-sweep",
+     "poses": [
+      [
+       "_ref3",
+       "@ref"
+      ],
+      [
+       "sweepTell",
+       "GATE-ARM TELL: shoulder raised, the huge hand curled back behind the body"
+      ],
+      [
+       "sweep",
+       "GATE-ARM SWEEP: the huge forearm swept forward-left in a broad low horizontal arc, body twisted"
+      ],
+      [
+       "sweepEnd",
+       "SWEEP RECOVERY: head lowered after the swing, the arm dragging on the ground"
+      ]
+     ]
+    },
+    {
+     "id": "04-vent-tail",
+     "poses": [
+      [
+       "_ref4",
+       "@ref"
+      ],
+      [
+       "ventTell",
+       "PRESSURE TELL: gill slits wide open, belly drawn in, chest swelling"
+      ],
+      [
+       "vent",
+       "PRESSURE RELEASE: jaws wide open, leaning forward, flank exposed (no water drawn)"
+      ],
+      [
+       "tailTell",
+       "TAIL TELL: the tail lifted high behind, looking back over the shoulder"
+      ]
+     ]
+    },
+    {
+     "id": "05-tail-brace",
+     "poses": [
+      [
+       "_ref5",
+       "@ref"
+      ],
+      [
+       "tailSweep",
+       "TAIL SWEEP: body spun half round, the tail sweeping low behind"
+      ],
+      [
+       "brace",
+       "BRACE: the huge hand planted flat on the ground in front, dorsal plates flattened, braced against a current"
+      ],
+      [
+       "braceCracked",
+       "BRACE, GUARD BROKEN: the same brace with the forearm armour plates cracked by dark gaps"
+      ]
+     ]
+    },
+    {
+     "id": "06-rush",
+     "poses": [
+      [
+       "_ref6",
+       "@ref"
+      ],
+      [
+       "rushTell",
+       "RUSH TELL: head lowered, both feet planted, shoulders hunched"
+      ],
+      [
+       "rush",
+       "RUSH: charging forward head first, the huge forearm leading"
+      ],
+      [
+       "wall",
+       "WALL RECOVERY: stunned, sitting back, the huge arm slack, head lolling"
+      ]
+     ]
+    },
+    {
+     "id": "07-hurt-defeat",
+     "poses": [
+      [
+       "_ref7",
+       "@ref"
+      ],
+      [
+       "hurt",
+       "HURT: recoiling, jaws open, eye shut"
+      ],
+      [
+       "hurtCracked",
+       "HURT, GUARD BROKEN: staggering back, forearm plates cracked"
+      ],
+      [
+       "defeat",
+       "DEFEATED: collapsed forward over the huge forearm, tail limp"
+      ]
+     ]
+    }
+   ],
+   "anims": [
+    {
+     "name": "idle",
+     "frames": [
+      "idle0",
+      "idle1"
+     ],
+     "dur": [
+      30,
+      30
+     ]
+    },
+    {
+     "name": "lumber",
+     "frames": [
+      "lumber1",
+      "lumber2",
+      "lumber3",
+      "lumber4"
+     ],
+     "dur": 12
+    },
+    {
+     "name": "raised",
+     "frames": [
+      "raised"
+     ],
+     "dur": 40
+    },
+    {
+     "name": "sweep",
+     "frames": [
+      "sweepTell",
+      "sweep",
+      "sweepEnd"
+     ],
+     "dur": [
+      30,
+      10,
+      30
+     ],
+     "align": "none"
+    },
+    {
+     "name": "vent",
+     "frames": [
+      "ventTell",
+      "vent"
+     ],
+     "dur": [
+      36,
+      60
+     ],
+     "align": "none"
+    },
+    {
+     "name": "tail",
+     "frames": [
+      "tailTell",
+      "tailSweep"
+     ],
+     "dur": [
+      30,
+      12
+     ],
+     "align": "none"
+    },
+    {
+     "name": "brace",
+     "frames": [
+      "brace"
+     ],
+     "dur": 90
+    },
+    {
+     "name": "brace-cracked",
+     "frames": [
+      "braceCracked"
+     ],
+     "dur": 90
+    },
+    {
+     "name": "rush",
+     "frames": [
+      "rushTell",
+      "rush",
+      "wall"
+     ],
+     "dur": [
+      30,
+      8,
+      90
+     ],
+     "align": "none"
+    },
+    {
+     "name": "hurt",
+     "frames": [
+      "hurt"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "hurt-cracked",
+     "frames": [
+      "hurtCracked"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "defeat",
+     "frames": [
+      "defeat"
+     ],
+     "dur": 90
+    }
+   ]
+  },
+  {
+   "id": "militia",
+   "name": "CROWN MILITIAMAN",
+   "stage": "1, 5, 7, 8 (general enemy)",
+   "height": 84,
+   "maxW": 150,
+   "board": "design/sprites-raw/crownback/sable-shoot.png",
+   "panel": "only its pixel-art rendering style, outline and pixel size (the character described below is a NEW design: do not copy anyone on the board)",
+   "lock": "Crown Militiaman, a HUMAN militia trooper of Marshal Sable's force: lean build, stubbled jaw; a dented steel open-face helmet with a small GOLD crown badge on the front; a PETROL-GREEN quilted uniform jacket with brass buttons and an IVORY armband on the upper arm; black gloves; a brown belt with pouches; dark grey trousers tucked into black boots; a rectangular riveted STEEL riot shield on his LEFT arm painted with a simple gold crown, and a short black hardwood BATON in his right hand. Main colours: petrol green, steel grey, gold, ivory, black.",
+   "sheets": [
+    {
+     "id": "00-model",
+     "poses": [
+      [
+       "idle0",
+       "IDLE: guard stance, knees bent, shield held up in front of the chest, baton raised behind it at shoulder height"
+      ]
+     ]
+    },
+    {
+     "id": "01-idle-walk",
+     "poses": [
+      [
+       "_ref1",
+       "@ref"
+      ],
+      [
+       "idle1",
+       "IDLE BREATH: the same stance, shoulders a little lower, baton dipped"
+      ],
+      [
+       "walk1",
+       "WALK: left leg forward, heel down, shield in front"
+      ],
+      [
+       "walk2",
+       "WALK: legs passing under the body, rear knee lifted"
+      ]
+     ]
+    },
+    {
+     "id": "02-walk-guard",
+     "poses": [
+      [
+       "_ref2",
+       "@ref"
+      ],
+      [
+       "walk3",
+       "WALK: right leg forward, heel down, shield in front"
+      ],
+      [
+       "walk4",
+       "WALK: legs passing, the other knee lifted"
+      ],
+      [
+       "guard",
+       "BLOCK: crouched behind the shield, shield planted forward, head tucked down"
+      ]
+     ]
+    },
+    {
+     "id": "03-attack",
+     "poses": [
+      [
+       "_ref3",
+       "@ref"
+      ],
+      [
+       "tell",
+       "BATON TELL: baton raised high overhead behind the head, shield lowered, weight on the back foot"
+      ],
+      [
+       "strike",
+       "BATON STRIKE: baton swung down hard in front at chest height, body leaning forward"
+      ],
+      [
+       "bash",
+       "SHIELD BASH: lunging forward with the shield shoved straight out, baton tucked back"
+      ]
+     ]
+    },
+    {
+     "id": "04-hurt",
+     "poses": [
+      [
+       "_ref4",
+       "@ref"
+      ],
+      [
+       "hurt1",
+       "HURT HIGH: head snapped back, helmet tilted, shield arm flung wide"
+      ],
+      [
+       "hurt2",
+       "HURT LOW: doubled over from a hit to the gut"
+      ],
+      [
+       "fall",
+       "KNOCKED DOWN: airborne, falling backwards off his feet, legs in the air, shield flying wide"
+      ]
+     ]
+    },
+    {
+     "id": "05-down",
+     "poses": [
+      [
+       "_ref5",
+       "@ref"
+      ],
+      [
+       "down",
+       "LYING FLAT on his back on the ground, whole body horizontal, shield beside him"
+      ],
+      [
+       "getup",
+       "GETTING UP: on one knee pushing up from the ground with the shield"
+      ],
+      [
+       "stagger",
+       "GUARD BROKEN: stumbling back, shield knocked aside, chest open"
+      ]
+     ]
+    }
+   ],
+   "anims": [
+    {
+     "name": "idle",
+     "frames": [
+      "idle0",
+      "idle1"
+     ],
+     "dur": [
+      24,
+      24
+     ]
+    },
+    {
+     "name": "walk",
+     "frames": [
+      "walk1",
+      "walk2",
+      "walk3",
+      "walk4"
+     ],
+     "dur": 8
+    },
+    {
+     "name": "guard",
+     "frames": [
+      "guard"
+     ],
+     "dur": 30
+    },
+    {
+     "name": "strike",
+     "frames": [
+      "tell",
+      "strike"
+     ],
+     "dur": [
+      20,
+      16
+     ],
+     "align": "none"
+    },
+    {
+     "name": "bash",
+     "frames": [
+      "bash"
+     ],
+     "dur": 18,
+     "align": "none"
+    },
+    {
+     "name": "hurt",
+     "frames": [
+      "hurt1"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "hurt-low",
+     "frames": [
+      "hurt2"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "stagger",
+     "frames": [
+      "stagger"
+     ],
+     "dur": 24
+    },
+    {
+     "name": "knockdown",
+     "frames": [
+      "fall",
+      "down",
+      "getup"
+     ],
+     "dur": [
+      12,
+      40,
+      16
+     ],
+     "align": "none",
+     "air": {
+      "fall": 18
+     }
+    }
+   ]
+  },
+  {
+   "id": "trapper",
+   "name": "TRAPPER",
+   "stage": "2, 6 (general enemy)",
+   "height": 84,
+   "maxW": 200,
+   "board": "design/sprites-raw/crownback/sable-shoot.png",
+   "panel": "only its pixel-art rendering style, outline and pixel size (the character described below is a NEW design: do not copy anyone on the board)",
+   "lock": "Trapper, a HUMAN poacher animal handler: wiry, sunburnt, a wide-brimmed tan canvas bush hat, a khaki sleeveless field shirt with a brown leather bandolier of red-tufted tranquilizer darts across the chest, thick orange rubber gloves, olive work trousers, mud-caked brown boots, a coil of rope on the hip; he holds a LONG aluminium catch-pole (about 1.5 times his height) in both hands, with a wire noose loop and a black electric prod tip at its far end. Main colours: khaki, olive, tan, orange, aluminium grey.",
+   "sheets": [
+    {
+     "id": "00-model",
+     "poses": [
+      [
+       "idle0",
+       "IDLE: crouched hunter stance, the catch-pole held level in both hands pointing forward-left at waist height"
+      ]
+     ]
+    },
+    {
+     "id": "01-idle-walk",
+     "poses": [
+      [
+       "_ref1",
+       "@ref"
+      ],
+      [
+       "idle1",
+       "IDLE BREATH: the same stance, pole tip dipped a little"
+      ],
+      [
+       "walk1",
+       "WALK: left leg forward, pole held level"
+      ],
+      [
+       "walk2",
+       "WALK: legs passing, rear knee lifted"
+      ]
+     ]
+    },
+    {
+     "id": "02-walk-tell",
+     "poses": [
+      [
+       "_ref2",
+       "@ref"
+      ],
+      [
+       "walk3",
+       "WALK: right leg forward, pole held level"
+      ],
+      [
+       "walk4",
+       "WALK: legs passing, the other knee lifted"
+      ],
+      [
+       "tell",
+       "LUNGE TELL: pulled back on the rear leg, pole drawn back to the hip, a small blue spark attached to the prod tip"
+      ]
+     ]
+    },
+    {
+     "id": "03-lunge",
+     "poses": [
+      [
+       "_ref3",
+       "@ref"
+      ],
+      [
+       "lunge",
+       "LUNGE: long lunge forward, both arms fully extended, the pole jabbed straight out far to the left at chest height"
+      ],
+      [
+       "shock",
+       "SHOCK: the same lunge, the prod tip crackling with a bright blue electric spark touching the tip"
+      ],
+      [
+       "recover",
+       "RECOVERY: over-reached, the pole tip dragging on the ground, off balance"
+      ]
+     ]
+    },
+    {
+     "id": "04-hurt",
+     "poses": [
+      [
+       "_ref4",
+       "@ref"
+      ],
+      [
+       "hurt1",
+       "HURT HIGH: head snapped back, hat tipping, pole held loosely in one hand"
+      ],
+      [
+       "hurt2",
+       "HURT LOW: doubled over from a hit to the gut"
+      ],
+      [
+       "fall",
+       "KNOCKED DOWN: airborne, falling backwards off his feet, legs in the air"
+      ]
+     ]
+    },
+    {
+     "id": "05-down",
+     "poses": [
+      [
+       "_ref5",
+       "@ref"
+      ],
+      [
+       "down",
+       "LYING FLAT on his back on the ground, whole body horizontal, the pole beside him"
+      ],
+      [
+       "getup",
+       "GETTING UP: on one knee pushing up on the pole"
+      ],
+      [
+       "throw",
+       "BAIT THROW: tossing a lump of raw meat bait forward underarm with one hand, pole in the other"
+      ]
+     ]
+    }
+   ],
+   "anims": [
+    {
+     "name": "idle",
+     "frames": [
+      "idle0",
+      "idle1"
+     ],
+     "dur": [
+      24,
+      24
+     ]
+    },
+    {
+     "name": "walk",
+     "frames": [
+      "walk1",
+      "walk2",
+      "walk3",
+      "walk4"
+     ],
+     "dur": 8
+    },
+    {
+     "name": "lunge",
+     "frames": [
+      "tell",
+      "lunge",
+      "shock",
+      "recover"
+     ],
+     "dur": [
+      22,
+      8,
+      12,
+      24
+     ],
+     "align": "none"
+    },
+    {
+     "name": "throw",
+     "frames": [
+      "throw"
+     ],
+     "dur": 24,
+     "align": "none"
+    },
+    {
+     "name": "hurt",
+     "frames": [
+      "hurt1"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "hurt-low",
+     "frames": [
+      "hurt2"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "knockdown",
+     "frames": [
+      "fall",
+      "down",
+      "getup"
+     ],
+     "dur": [
+      12,
+      40,
+      16
+     ],
+     "align": "none",
+     "air": {
+      "fall": 18
+     }
+    }
+   ]
+  },
+  {
+   "id": "hybrid",
+   "name": "HYBRID ENFORCER",
+   "stage": "6, 7, 8 (general enemy)",
+   "height": 88,
+   "maxW": 160,
+   "board": "design/sprites-raw/glassback/ref-sheet.png",
+   "panel": "only its pixel-art rendering style, outline and pixel size (the character described below is a NEW design: do not copy anyone on the board)",
+   "lock": "Hybrid Enforcer, a HUMAN man who volunteered for Dr. Echo's treatment: tall and muscular, hunched forward; patches of GREY-GREEN reptile scales over his forearms, neck and the left half of his face, one yellow reptile eye, a short ridge of small spines along each forearm, hooked BLACK claws grown from his fingers; a torn black sleeveless militia vest with a small gold crown badge; a steel SUPPORT BRACE around the neck and upper spine with two black hoses running to a small backpack canister glowing faint green; grey cargo trousers ripped at the shins; bare clawed reptile feet. Main colours: grey-green scales, skin, black, steel, faint green glow.",
+   "sheets": [
+    {
+     "id": "00-model",
+     "poses": [
+      [
+       "idle0",
+       "IDLE: hunched predator stance, knees deep, clawed hands raised and spread in front of the chest"
+      ]
+     ]
+    },
+    {
+     "id": "01-idle-walk",
+     "poses": [
+      [
+       "_ref1",
+       "@ref"
+      ],
+      [
+       "idle1",
+       "IDLE BREATH: the same stance, head lower, shoulders rising"
+      ],
+      [
+       "walk1",
+       "WALK: prowling, left leg forward, claws low"
+      ],
+      [
+       "walk2",
+       "WALK: legs passing, rear knee lifted"
+      ]
+     ]
+    },
+    {
+     "id": "02-walk-tell",
+     "poses": [
+      [
+       "_ref2",
+       "@ref"
+      ],
+      [
+       "walk3",
+       "WALK: prowling, right leg forward"
+      ],
+      [
+       "walk4",
+       "WALK: legs passing, the other knee lifted"
+      ],
+      [
+       "tell",
+       "POUNCE TELL: crouched very low, coiled to spring, claws drawn back"
+      ]
+     ]
+    },
+    {
+     "id": "03-attack",
+     "poses": [
+      [
+       "_ref3",
+       "@ref"
+      ],
+      [
+       "leap",
+       "LEAP: airborne in a long flying pounce toward the left, claws stretched forward, legs tucked"
+      ],
+      [
+       "slash",
+       "CLAW SLASH: a big downward slash with the right claw in front of him, body twisted"
+      ],
+      [
+       "slash2",
+       "CLAW SLASH 2: the follow-through, the left claw slashing across low"
+      ]
+     ]
+    },
+    {
+     "id": "04-hurt",
+     "poses": [
+      [
+       "_ref4",
+       "@ref"
+      ],
+      [
+       "hurt1",
+       "HURT HIGH: head snapped back snarling, claws flung wide"
+      ],
+      [
+       "hurt2",
+       "HURT LOW: doubled over from a hit to the gut"
+      ],
+      [
+       "fall",
+       "KNOCKED DOWN: airborne, falling backwards off his feet, legs in the air"
+      ]
+     ]
+    },
+    {
+     "id": "05-down",
+     "poses": [
+      [
+       "_ref5",
+       "@ref"
+      ],
+      [
+       "down",
+       "LYING FLAT on his back on the ground, whole body horizontal"
+      ],
+      [
+       "getup",
+       "GETTING UP: springing up from a crouch on all fours"
+      ],
+      [
+       "roar",
+       "ROAR: standing tall, head thrown back roaring, claws spread"
+      ]
+     ]
+    }
+   ],
+   "anims": [
+    {
+     "name": "idle",
+     "frames": [
+      "idle0",
+      "idle1"
+     ],
+     "dur": [
+      20,
+      20
+     ]
+    },
+    {
+     "name": "walk",
+     "frames": [
+      "walk1",
+      "walk2",
+      "walk3",
+      "walk4"
+     ],
+     "dur": 7
+    },
+    {
+     "name": "pounce",
+     "frames": [
+      "tell",
+      "leap"
+     ],
+     "dur": [
+      20,
+      24
+     ],
+     "align": "none",
+     "air": {
+      "leap": 28
+     }
+    },
+    {
+     "name": "slash",
+     "frames": [
+      "slash",
+      "slash2"
+     ],
+     "dur": [
+      12,
+      16
+     ],
+     "align": "none"
+    },
+    {
+     "name": "roar",
+     "frames": [
+      "roar"
+     ],
+     "dur": 40
+    },
+    {
+     "name": "hurt",
+     "frames": [
+      "hurt1"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "hurt-low",
+     "frames": [
+      "hurt2"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "knockdown",
+     "frames": [
+      "fall",
+      "down",
+      "getup"
+     ],
+     "dur": [
+      12,
+      40,
+      16
+     ],
+     "align": "none",
+     "air": {
+      "fall": 18
+     }
+    }
+   ]
+  },
+  {
+   "id": "ironcap",
+   "name": "CAPTAIN IRONCLUB (ARMOURED)",
+   "stage": "5 Crown Valley",
+   "height": 104,
+   "maxW": 200,
+   "board": "design/sprites-raw/ironclub/ref-sheet.png",
+   "panel": "only the style, scale and the armoured ankylosaur body on the RIGHT as a hint of what he will become (the character below is a DIFFERENT man, Captain Ironclub, before his transformation; do not draw the mohawk, beard or denim of the man on the board)",
+   "lock": "Captain Ironclub, Marshal Sable's shock captain, a HUGE broad HUMAN brute in his thirties: shaved head with a small gold crown tattoo above the right ear, heavy square clean-shaven jaw, thick neck; encased in bulky riveted STEEL PLATE ARMOUR painted PETROL GREEN with brass rivets and a big GOLD crown embossed on the breastplate; massive pauldrons; a COOLING HARNESS on his back: two steel canisters of glowing BLUE coolant with blue hoses running into the armour at the shoulders and spine; armoured gauntlets; steel greaves over black boots. He fights barehanded with the huge gauntlets. Main colours: petrol green, steel, brass, gold, coolant blue.",
+   "sheets": [
+    {
+     "id": "00-model",
+     "poses": [
+      [
+       "idle0",
+       "IDLE: heavy wide stance, both gauntleted fists raised in front, shoulders hunched forward"
+      ]
+     ]
+    },
+    {
+     "id": "01-idle-walk",
+     "poses": [
+      [
+       "_ref1",
+       "@ref"
+      ],
+      [
+       "walk1",
+       "WALK: a heavy stomping step, left leg forward"
+      ],
+      [
+       "walk2",
+       "WALK: legs passing, rear knee lifted"
+      ],
+      [
+       "walk3",
+       "WALK: right leg forward, heel down"
+      ]
+     ]
+    },
+    {
+     "id": "02-attack",
+     "poses": [
+      [
+       "_ref2",
+       "@ref"
+      ],
+      [
+       "tell",
+       "PUNCH TELL: the right fist drawn far back at the hip, body twisted, coolant canisters venting"
+      ],
+      [
+       "punch",
+       "HAYMAKER: a huge straight punch thrown far out to the left at chest height"
+      ],
+      [
+       "slam",
+       "DOUBLE SLAM: both fists hammered down onto the ground in front of him"
+      ]
+     ]
+    },
+    {
+     "id": "03-shed",
+     "poses": [
+      [
+       "_ref3",
+       "@ref"
+      ],
+      [
+       "hurt1",
+       "HURT: head rocked back, a dent in the breastplate"
+      ],
+      [
+       "shed1",
+       "SHEDDING ARMOUR: roaring, the armour plates bursting open and flying off his shoulders, blue-grey reptile plates showing beneath"
+      ],
+      [
+       "shed2",
+       "TRANSFORMING: the armour falling away from a swollen body covered in blue-grey reptile plates with gold spikes, a thick plated tail sprouting behind, his human head still visible"
+      ]
+     ]
+    }
+   ],
+   "anims": [
+    {
+     "name": "idle",
+     "frames": [
+      "idle0"
+     ],
+     "dur": 30
+    },
+    {
+     "name": "walk",
+     "frames": [
+      "walk1",
+      "walk2",
+      "walk3"
+     ],
+     "dur": 10
+    },
+    {
+     "name": "punch",
+     "frames": [
+      "tell",
+      "punch"
+     ],
+     "dur": [
+      22,
+      18
+     ],
+     "align": "none"
+    },
+    {
+     "name": "slam",
+     "frames": [
+      "slam"
+     ],
+     "dur": 24,
+     "align": "none"
+    },
+    {
+     "name": "hurt",
+     "frames": [
+      "hurt1"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "shed",
+     "frames": [
+      "shed1",
+      "shed2"
+     ],
+     "dur": [
+      30,
+      40
+     ],
+     "align": "none"
+    }
+   ]
+  },
+  {
+   "id": "ironclub2",
+   "name": "IRONCLUB",
+   "stage": "5 Crown Valley",
+   "height": 120,
+   "maxW": 260,
+   "board": "design/sprites-raw/ironclub/ref-sheet.png",
+   "panel": "the armoured ankylosaur-man on the RIGHT, but with a NEW head and outfit as described below (not the bearded man with the mohawk)",
+   "lock": "Ironclub, the transformed shock captain: a huge hunched ankylosaur-man; body, arms and legs covered in BLUE-GREY bony reptile plates with rows of GOLD-YELLOW blunt spikes, forearms ending in big spiked club-fists; a long plated tail ending in a heavy round bony CLUB; three-toed clawed feet; his HUMAN head is still visible: shaved, heavy clean-shaven square jaw, small gold crown tattoo above the right ear, a ridge of plates growing up the back of the skull; scraps of PETROL-GREEN armour plates with a gold crown still strapped to the chest, and the steel COOLING HARNESS with two glowing BLUE coolant canisters and hoses on his back. No beard, no mohawk, no denim. Main colours: blue-grey plates, gold spikes, skin, petrol green, coolant blue.",
+   "sheets": [
+    {
+     "id": "00-model",
+     "poses": [
+      [
+       "idle0",
+       "IDLE: hunched heavy stance, club-fists low and forward, tail curving behind"
+      ]
+     ]
+    },
+    {
+     "id": "01-idle-walk",
+     "poses": [
+      [
+       "_ref1",
+       "@ref"
+      ],
+      [
+       "walk1",
+       "WALK: heavy stomp, left foot forward, tail swinging"
+      ],
+      [
+       "walk2",
+       "WALK: legs passing"
+      ],
+      [
+       "walk3",
+       "WALK: right foot forward"
+      ]
+     ]
+    },
+    {
+     "id": "02-tail",
+     "poses": [
+      [
+       "_ref2",
+       "@ref"
+      ],
+      [
+       "tailTell",
+       "TAIL TELL: turning his back slightly, the tail club lifted high behind him"
+      ],
+      [
+       "tailSwing",
+       "TAIL SWEEP: spinning, the tail club swept low and far forward across the ground"
+      ],
+      [
+       "tailEnd",
+       "RECOVERY: tail club resting on the ground, panting"
+      ]
+     ]
+    },
+    {
+     "id": "03-smash",
+     "poses": [
+      [
+       "_ref3",
+       "@ref"
+      ],
+      [
+       "smashTell",
+       "OVERHEAD TELL: both club-fists raised high above the head"
+      ],
+      [
+       "smash",
+       "GROUND SMASH: both fists slammed into the ground in front of him"
+      ],
+      [
+       "roar",
+       "ROAR: head thrown back, coolant hoses venting blue mist"
+      ]
+     ]
+    },
+    {
+     "id": "04-roll",
+     "poses": [
+      [
+       "_ref4",
+       "@ref"
+      ],
+      [
+       "curl",
+       "CURLING: tucking into a ball, plates outward"
+      ],
+      [
+       "ball",
+       "ROLLING BALL: fully curled into a spiked armoured ball (a round shape, no limbs visible)"
+      ],
+      [
+       "uncurl",
+       "UNCURLING: rising from the ball, dazed, open"
+      ]
+     ]
+    },
+    {
+     "id": "05-hurt",
+     "poses": [
+      [
+       "_ref5",
+       "@ref"
+      ],
+      [
+       "hurt1",
+       "HURT: recoiling, a cracked plate on the chest"
+      ],
+      [
+       "fall",
+       "KNOCKED DOWN: falling backwards, tail in the air"
+      ],
+      [
+       "defeat",
+       "DEFEATED: collapsed on both knees, plates cracked and falling off, coolant canisters smashed"
+      ]
+     ]
+    }
+   ],
+   "anims": [
+    {
+     "name": "idle",
+     "frames": [
+      "idle0"
+     ],
+     "dur": 30
+    },
+    {
+     "name": "walk",
+     "frames": [
+      "walk1",
+      "walk2",
+      "walk3"
+     ],
+     "dur": 10
+    },
+    {
+     "name": "tail",
+     "frames": [
+      "tailTell",
+      "tailSwing",
+      "tailEnd"
+     ],
+     "dur": [
+      26,
+      14,
+      24
+     ],
+     "align": "none"
+    },
+    {
+     "name": "smash",
+     "frames": [
+      "smashTell",
+      "smash"
+     ],
+     "dur": [
+      24,
+      20
+     ],
+     "align": "none"
+    },
+    {
+     "name": "roar",
+     "frames": [
+      "roar"
+     ],
+     "dur": 36
+    },
+    {
+     "name": "roll",
+     "frames": [
+      "curl",
+      "ball",
+      "uncurl"
+     ],
+     "dur": [
+      14,
+      40,
+      24
+     ],
+     "align": "none"
+    },
+    {
+     "name": "hurt",
+     "frames": [
+      "hurt1"
+     ],
+     "dur": 14
+    },
+    {
+     "name": "knockdown",
+     "frames": [
+      "fall"
+     ],
+     "dur": 30,
+     "align": "none",
+     "air": {
+      "fall": 18
+     }
+    },
+    {
+     "name": "defeat",
+     "frames": [
+      "defeat"
+     ],
+     "dur": 60
+    }
+   ]
+  },
+  {
+   "id": "sableblade",
+   "name": "MARSHAL SABLE (BLADE)",
+   "stage": "8 Crown Dam",
+   "height": 96,
+   "maxW": 200,
+   "board": "design/sprites-raw/crownback/sable-shoot.png",
+   "panel": "the FIRST pose of the row (Marshal Sable): his exact design, colours and scale",
+   "lock": "Marshal Sable, exactly as on the attached board: a middle-aged HUMAN marshal, close-cropped dark hair with grey temples, a diagonal scar across the left cheek, a long dark PETROL-GREEN military stormcoat with brass buttons, an IVORY sash diagonally across the chest, a broad BRASS shoulder plate on the left shoulder (a powered shoulder brace with small pistons over his augmented left arm), black gloves, black boots. He now also carries a HEAVY single-edged steel BLADE (a short broad machete-sabre) in his right hand.",
+   "sheets": [
+    {
+     "id": "00-model",
+     "poses": [
+      [
+       "idle0",
+       "IDLE: fencing stance, blade held forward-low in the right hand, braced left arm raised as a guard"
+      ]
+     ]
+    },
+    {
+     "id": "01-blade",
+     "poses": [
+      [
+       "_ref1",
+       "@ref"
+      ],
+      [
+       "bladeTell",
+       "BLADE TELL: the blade raised high behind his head, coat swinging"
+      ],
+      [
+       "slash",
+       "BLADE SLASH: a big diagonal downward cut in front of him, the blade low and forward"
+      ],
+      [
+       "thrust",
+       "BLADE THRUST: a long lunge, the blade thrust straight forward at chest height"
+      ]
+     ]
+    },
+    {
+     "id": "02-arm",
+     "poses": [
+      [
+       "_ref2",
+       "@ref"
+      ],
+      [
+       "armTell",
+       "BRACE TELL: the braced left arm drawn back, the brass shoulder brace pistons glowing hot orange"
+      ],
+      [
+       "armSmash",
+       "BRACED ARM SMASH: the left forearm swung forward and down like a club, the brass brace slamming the ground"
+      ],
+      [
+       "braceBroken",
+       "BRACE BROKEN: staggering, the brass shoulder brace cracked open, sparks, the scarred grey-green grafted skin of the left arm visible"
+      ]
+     ]
+    }
+   ],
+   "anims": [
+    {
+     "name": "stance",
+     "frames": [
+      "idle0"
+     ],
+     "dur": 30
+    },
+    {
+     "name": "slash",
+     "frames": [
+      "bladeTell",
+      "slash"
+     ],
+     "dur": [
+      20,
+      16
+     ],
+     "align": "none"
+    },
+    {
+     "name": "thrust",
+     "frames": [
+      "thrust"
+     ],
+     "dur": 18,
+     "align": "none"
+    },
+    {
+     "name": "armsmash",
+     "frames": [
+      "armTell",
+      "armSmash"
+     ],
+     "dur": [
+      24,
+      22
+     ],
+     "align": "none"
+    },
+    {
+     "name": "broken",
+     "frames": [
+      "braceBroken"
+     ],
+     "dur": 40
+    }
+   ]
+  }
+ ]
 }

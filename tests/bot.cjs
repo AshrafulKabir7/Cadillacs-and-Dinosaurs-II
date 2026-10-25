@@ -7,7 +7,9 @@ const only=process.argv[2]===undefined?null:Number(process.argv[2]);
 (async()=>{const browser=await chromium.launch({headless:true}),page=await browser.newPage(),results=[];
 await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;let seed=15454;Math.random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};});
 await page.goto(BASE);await page.waitForFunction(()=>SEQUEL_RENDER.ready&&window.ARCADE_HEROES,null,{polling:100});await page.click('#sound');
-for(let level=0;level<6;level++){
+// every stage of the campaign (eight since the revision-3 story)
+const NCH=await page.evaluate(()=>window.EDEN_CAMPAIGN.length);
+for(let level=0;level<NCH;level++){
  if(only!==null&&level!==only)continue;
  const result=await page.evaluate(level=>{const g=LAST_EDEN;g.start(level,0,'story');const held=new Set();
  function key(code,on){if(on!==held.has(code)){window.dispatchEvent(new KeyboardEvent(on?'keydown':'keyup',{code,bubbles:true}));on?held.add(code):held.delete(code);}}
@@ -49,8 +51,8 @@ for(let level=0;level<6;level++){
  },level);results.push(result);console.log(JSON.stringify({level:result.level,state:result.state,seconds:result.seconds,minutes:(result.seconds/60).toFixed(1),deaths:result.deaths,sections:result.sectionStarts}));
 }
 fs.writeFileSync('tests/results/bot-report.json',JSON.stringify(results,null,2));await browser.close();
-if(results.some(r=>r.state!=='clear'))throw new Error('A chapter did not complete: '+JSON.stringify(results.filter(r=>r.state!=='clear')));
-// Chapters are meant to take a player four to five minutes; the bot is quicker than a person, so it must land between
+if(results.some(r=>r.state!=='clear'))throw new Error('A stage did not complete: '+JSON.stringify(results.filter(r=>r.state!=='clear')));
+// Stages are meant to take a player about four minutes; the bot is quicker than a person, so it must land between
 // two and a half and five minutes.
-if(results.some(r=>r.seconds<150||r.seconds>300))throw new Error('A chapter is outside the 2.5–5 minute window: '+results.filter(r=>r.seconds<150||r.seconds>300).map(r=>r.level+':'+r.seconds+'s').join(', '));
+if(results.some(r=>r.seconds<150||r.seconds>300))throw new Error('A stage is outside the 2.5–5 minute window: '+results.filter(r=>r.seconds<150||r.seconds>300).map(r=>r.level+':'+r.seconds+'s').join(', '));
 })().catch(e=>{console.error(e);process.exit(1);});

@@ -1,0 +1,305 @@
+{
+ "id": "trapper",
+ "name": "TRAPPER",
+ "family": "enemies",
+ "chapterTag": 112,
+ "height": 76,
+ "bg": "#FF00FF",
+ "anchor": "feet",
+ "ship": "sprite-data-enemy-trapper.js",
+ "note": "Generated general enemy (revision 3): Thorne's handler with an electric catch-pole; the lunge shocks (a short hold, then a knockback). Stages 2, 6. About 76 arcade px in his crouched stance.",
+ "enemy": {
+  "data": {
+   "hud": "TRAPPER",
+   "face": "SKINNER",
+   "hp": [
+    48,
+    48,
+    48,
+    48,
+    48,
+    48,
+    48,
+    48,
+    48,
+    56,
+    56,
+    56,
+    64,
+    64,
+    64,
+    64,
+    72,
+    72,
+    72,
+    72,
+    72,
+    72,
+    72,
+    72,
+    72,
+    72,
+    72,
+    72,
+    72,
+    72,
+    72,
+    72
+   ],
+   "rankRow": [
+    32,
+    32,
+    32,
+    32,
+    35,
+    35,
+    35,
+    35,
+    38,
+    38,
+    38,
+    38,
+    44,
+    44,
+    44,
+    44,
+    48,
+    48,
+    48,
+    48,
+    52,
+    52,
+    52,
+    52,
+    56,
+    56,
+    56,
+    56,
+    60,
+    60,
+    60,
+    68
+   ],
+   "walk": 1.1
+  }
+ },
+ "inputs": [
+  {
+   "file": "work/art/gen/trapper/trapper-01-idle-walk.png",
+   "split": "auto",
+   "names": [
+    "idle0",
+    "idle1",
+    "walk1",
+    "walk2"
+   ]
+  },
+  {
+   "file": "work/art/gen/trapper/trapper-02-walk-tell.png",
+   "split": "auto",
+   "names": [
+    "_ref2",
+    "walk3",
+    "walk4",
+    "tell"
+   ],
+   "colourErase": [
+    [
+     1480,
+     460,
+     56,
+     100
+    ]
+   ]
+  },
+  {
+   "file": "work/art/gen/trapper/trapper-03-lunge.png",
+   "split": "auto",
+   "names": [
+    "_ref3",
+    "lunge",
+    "shock",
+    "recover"
+   ]
+  },
+  {
+   "file": "work/art/gen/trapper/trapper-04-hurt.png",
+   "split": "auto",
+   "names": [
+    "_ref4",
+    "hurt1",
+    "hurt2",
+    "fall"
+   ]
+  },
+  {
+   "file": "work/art/gen/trapper/trapper-05-down.png",
+   "split": "auto",
+   "names": [
+    "_ref5",
+    "down",
+    "getup",
+    "throw"
+   ],
+   "nudge": {
+    "down": [
+     40,
+     0
+    ]
+   },
+   "erase": [
+    [
+     1078,
+     436,
+     70,
+     52
+    ]
+   ]
+  }
+ ],
+ "anims": [
+  {
+   "name": "idle",
+   "frames": [
+    "idle0",
+    "idle1"
+   ],
+   "dur": 24,
+   "loop": 0
+  },
+  {
+   "name": "walk",
+   "frames": [
+    "walk1",
+    "walk2",
+    "walk3",
+    "walk4"
+   ],
+   "dur": 8,
+   "loop": 0,
+   "alignTo": "idle0"
+  },
+  {
+   "name": "lunge",
+   "frames": [
+    "tell",
+    "lunge",
+    "shock",
+    "recover"
+   ],
+   "dur": [
+    24,
+    8,
+    16,
+    22
+   ],
+   "act": [
+    1
+   ],
+   "align": "none",
+   "atk": {
+    "id": 902,
+    "tbl": 9,
+    "stun": 0,
+    "react": 0,
+    "hitstop": 12,
+    "src": "sequel: catch-pole lunge (the shock hold, then a knockback: game.js trapperShock)"
+   }
+  },
+  {
+   "name": "throw",
+   "frames": [
+    "throw"
+   ],
+   "dur": 24,
+   "align": "none"
+  },
+  {
+   "name": "hurt",
+   "frames": [
+    "hurt1"
+   ],
+   "dur": 10
+  },
+  {
+   "name": "hurt-low",
+   "frames": [
+    "hurt2"
+   ],
+   "dur": 10
+  },
+  {
+   "name": "fly",
+   "frames": [
+    "fall",
+    "fall",
+    "down"
+   ],
+   "dur": [
+    12,
+    12,
+    40
+   ],
+   "align": "none"
+  },
+  {
+   "name": "dead",
+   "frames": [
+    "fall",
+    "down"
+   ],
+   "dur": [
+    10,
+    60
+   ],
+   "align": "none"
+  },
+  {
+   "name": "rise",
+   "frames": [
+    "down",
+    "getup"
+   ],
+   "dur": [
+    6,
+    20
+   ],
+   "align": "none"
+  },
+  {
+   "name": "held",
+   "frames": [
+    "hurt1"
+   ],
+   "dur": 30
+  },
+  {
+   "name": "kneed",
+   "frames": [
+    "hurt2",
+    "hurt2",
+    "hurt2",
+    "hurt2",
+    "hurt2"
+   ],
+   "dur": 8
+  },
+  {
+   "name": "thrown",
+   "frames": [
+    "hurt1",
+    "hurt2",
+    "fall",
+    "fall"
+   ],
+   "dur": 8,
+   "align": "none"
+  }
+ ],
+ "palette": {
+  "mode": "ramps"
+ },
+ "clean": {
+  "smooth": 1
+ }
+}

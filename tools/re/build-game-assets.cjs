@@ -23,7 +23,8 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const BUILD_DIR = path.join(__dirname, 'build');
 const png = require('./build/png.cjs'), atlas = require('./build/atlas-pack.cjs'), emit = require('./build/emit.cjs'), manifest = require('./build/manifest.cjs');
 const FAMILIES = ['heroes', 'fx', 'enemies', 'bosses', 'ui'];
-const CHAPTERS = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6'];
+// every tools/re/levels/ch<N>.json, in stage order (8 stages since the revision-3 story)
+const CHAPTERS = require('fs').readdirSync(require('path').join(__dirname, 'levels')).filter(f => /^ch\d+\.json$/.test(f)).map(f => f.slice(0, -5)).sort((p, q) => +p.slice(2) - +q.slice(2));
 
 // ---------------------------------------------------------------- CLI
 function parseArgs(argv) {
@@ -144,6 +145,8 @@ function familyFiles(root, f) {
   if (f === 'bosses') files.push(...CHAPTERS.map(c => path.join(root, `sprite-data-bosses-${c}.js`)));
   // the generated boss bodies (tools/art/import-sprite.cjs: sprite-data-boss-<id>.js, loaded after the ROM family)
   if (f === 'bosses' && fs.existsSync(root)) files.push(...fs.readdirSync(root).filter(n => /^sprite-data-boss-[a-z0-9-]+\.js$/.test(n)).sort().map(n => path.join(root, n)));
+  // the generated general enemies (revision 3: import-sprite.cjs spec.family 'enemies', sprite-data-enemy-<id>.js)
+  if (f === 'enemies' && fs.existsSync(root)) files.push(...fs.readdirSync(root).filter(n => /^sprite-data-enemy-[a-z0-9-]+\.js$/.test(n)).sort().map(n => path.join(root, n)));
   return files.filter(exists);
 }
 // -> { '<stem>': {fam, file, family} | {error, file, family} } keyed by the file stem ('enemies', 'bosses', 'bosses-ch1', …).
@@ -366,7 +369,7 @@ const GATES = [
     const fams = familiesIn(ctx.root), errors = [], warnings = [], done = [];
     for (const f of FAMILIES) {
       // the generated boss bodies (sprite-data-boss-*.js) come from tools/art/import-sprite.cjs, not from this ROM build
-      const mod = optionalModule(`sprites-${f}.cjs`), shipped = Object.entries(fams).filter(([k, r]) => r.family === f && !r.error && !/^boss-/.test(k));
+      const mod = optionalModule(`sprites-${f}.cjs`), shipped = Object.entries(fams).filter(([k, r]) => r.family === f && !r.error && !/^(boss|enemy)-/.test(k));
       if (!mod || !shipped.length) continue;
       const out = path.join(ctx.work, 'build-check'); fs.mkdirSync(out, { recursive: true });
       let r; try { r = mod.build({ rom: ctx.rom, extract: ctx.extract, config: ctx.config, out, rgba: ctx.rgba, lib: { png, atlas, emit, manifest, palettes: ctx.palettes }, log: () => {} }); } catch (e) { errors.push(`${f}: rebuild threw ${e.message}`); continue; }

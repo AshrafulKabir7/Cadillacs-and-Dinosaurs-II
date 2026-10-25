@@ -2,8 +2,8 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
 fs.mkdirSync('tests/results',{recursive:true});
 const BASE=require('./lib/arcade.cjs').BASE;   // the game page, play.html on GAME_URL (index.html is the home page)
 
-// Checks for The Crown Tide (STORY.md): story structure, off-screen entrances, movement poses, the Cadillac, the freed
-// conscripts of the Crown dam and section checkpoints.
+// Checks for The Crown Tide (STORY.md, revision 3: eight stages): story structure, off-screen entrances, movement poses,
+// the Cadillac, the Crown dam's waves (no allies, no copies) and section checkpoints.
 (async()=>{const browser=await chromium.launch({headless:true}),page=await browser.newPage({viewport:{width:1280,height:900}}),errors=[];
 page.on('pageerror',e=>errors.push(e.message));
 await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;let seed=2024;Math.random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};});
@@ -17,15 +17,16 @@ const checks=await page.evaluate(()=>{
  const offscreen=(e,s)=>e.state==='drop'?e.y-e.z<s.view.y:(e.x<s.lock.left-32||e.x>s.lock.right+32);
 
  // Story continuity and structure.
- check('Chapter 1 continues directly from Fessenden’s death in the first game',/Fessenden/.test(EDEN_CAMPAIGN[0].brief)&&/lab/.test(EDEN_CAMPAIGN[0].brief));
- check('Every chapter ending sets up the next chapter',EDEN_CAMPAIGN.slice(0,5).every((c,i)=>c.end.length>120));
- // Story 2: the finale is the Crown dam, where Sable becomes CROWNBACK (no Mirror War); the collar pylons still free four allies.
- check('The final chapter is the Crown dam: Sable’s last form is CROWNBACK and the collar pylons free four of his crews',/CROWN/.test(EDEN_CAMPAIGN[5].area)&&/CROWNBACK/.test(EDEN_CAMPAIGN[5].lastCopy.card)&&EDEN_MISSIONS[5].tasks.reduce((n,t)=>n+(t[4]||0),0)===4);
- for(let i=0;i<6;i++){g.start(i);const p=g.snapshot.plan;check(`Chapter ${i+1}: six sections, at least eleven fights and a mid-boss`,p.sections.length===6&&p.encounters.length>=11&&p.encounters.some(e=>e.elite)&&p.encounters[p.encounters.length-1].boss&&g.snapshot.length>6000);}
+ const NCH=EDEN_CAMPAIGN.length;
+ check('Stage 1 continues six months after Fessenden’s laboratory was destroyed',/Fessenden/.test(EDEN_CAMPAIGN[0].brief)&&/laborator/.test(EDEN_CAMPAIGN[0].brief));
+ check('Every stage ending sets up the next stage',NCH===8&&EDEN_CAMPAIGN.slice(0,NCH-1).every((c,i)=>c.end.length>120));
+ // revision 3: the finale is the Crown dam, where Sable becomes CROWNBACK; no task frees allies any more.
+ check('The final stage is the Crown dam: Sable’s last form is CROWNBACK and no task frees allies',/CROWN DAM/.test(EDEN_CAMPAIGN[NCH-1].name)&&/CROWNBACK/.test(EDEN_CAMPAIGN[NCH-1].lastCopy.card)&&EDEN_MISSIONS.every(m=>m.tasks.every(t=>!t[4])));
+ for(let i=0;i<NCH;i++){g.start(i);const p=g.snapshot.plan;check(`Stage ${i+1}: six sections, at least eleven fights and a mid-boss`,p.sections.length===6&&p.encounters.length>=11&&p.encounters.some(e=>e.elite)&&p.encounters[p.encounters.length-1].boss&&g.snapshot.length>6000);}
 
  // Enemies enter from beyond the screen edges (or drop in from above), including later waves.
  let fresh=0,bad=0;const badList=[];
- for(let i=0;i<6;i++){g.start(i,0);const n=g.snapshot.plan.encounters.length;
+ for(let i=0;i<NCH;i++){g.start(i,0);const n=g.snapshot.plan.encounters.length;
   for(const k of [0,3,7,11]){if(k>=n-1)continue;g.test.skipTo(k);g.step(1/60);const s=g.snapshot;for(const e of s.enemies){fresh++;if(!offscreen(e,s)){bad++;badList.push([i,k,1,e.type,Math.round(e.x),e.state,Math.round(e.z),s.lock.left]);}}
    // Clear the first wave; the reinforcements must also arrive from off screen.
    g.snapshot.enemies.forEach((e,j)=>{g.test.damageEnemy(j,99999);});ticks(2);const s2=g.snapshot;for(const e of s2.enemies.filter(e=>!e.dead&&e.hp===e.maxhp)){fresh++;if(!offscreen(e,s2)){bad++;badList.push([i,k,2,e.type,Math.round(e.x),e.state,Math.round(e.z),s2.lock.left]);}}
@@ -35,7 +36,7 @@ const checks=await page.evaluate(()=>{
  check('The boss walks in from beyond the right edge',boss&&boss.x>s.lock.right);ticks(150);s=g.snapshot;boss=s.enemies.find(e=>e.boss);check('The boss finishes its entrance on screen',boss.x<s.lock.right-44);
  g.test.damageEnemy(s.enemies.indexOf(s.enemies.find(e=>e.boss)),boss.maxhp*.4);ticks(1);s=g.snapshot;
  check('Boss reinforcements at two thirds health arrive from both edges',s.enemies.filter(e=>!e.boss).length>=3&&s.enemies.filter(e=>!e.boss).every(e=>offscreen(e,s)));
- check('Enemies never wind up an attack while still off screen',(()=>{let early=0;for(const i of [0,2,4]){g.start(i);g.test.skipTo(1);for(let k=0;k<400;k++){g.step(1/60);if(g.snapshot.enemies.some(e=>!e.onstage&&e.state==='windup'))early++;}}return early===0;})());
+ check('Enemies never wind up an attack while still off screen',(()=>{let early=0;for(const i of [0,1,4,7]){g.start(i);g.test.skipTo(1);for(let k=0;k<400;k++){g.step(1/60);if(g.snapshot.enemies.some(e=>!e.onstage&&e.state==='windup'))early++;}}return early===0;})());
 
  // Running: steady anchors, horizontal only, run frames by distance.
  // Running uses the original frame records, anchored at the feet by the arcade's own layout tables.
@@ -71,24 +72,17 @@ const checks=await page.evaluate(()=>{
   for(let i=0;i<240;i++){ticks(1);const a=g.test.romAnimOf(pi);if(a)live.add(a.key.split(':')[0]);}
   check(`Armed poachers draw only poacher records (every gunner state and attack in the Mituryou/Thurow sets; live ${[...live].join(',')})${bad.length?' '+bad.slice(0,4).join(' | '):''}`,!bad.length&&live.size>0&&[...live].every(s=>SETS.has(s)));}
 
- // The Cadillac and the on-foot toll fort.
- g.start(1,1);g.render();check('Chapter 2 starts in the Cadillac with the hero at the wheel',g.snapshot.driving&&g.snapshot.player.pose==='driving');
- const foot=g.snapshot.plan.sections.findIndex(s=>!s.drive);g.test.skipTo(g.snapshot.plan.sections[foot].first);check('The Cadillac parks for the on-foot toll fort',!g.snapshot.driving);
- g.test.skipTo(g.snapshot.plan.sections[5].first);check('The chase resumes in the Cadillac for the convoy boss',g.snapshot.driving);
+ // The Cadillac and the on-foot bridge checkpoint (stage 3, the Coral Causeway).
+ g.start(2,1);g.render();check('Stage 3 starts in the Cadillac with the hero at the wheel',g.snapshot.driving&&g.snapshot.player.pose==='driving');
+ const foot=g.snapshot.plan.sections.findIndex(s=>!s.drive);g.test.skipTo(g.snapshot.plan.sections[foot].first);check('The Cadillac parks for the on-foot bridge checkpoint',!g.snapshot.driving);
+ g.test.skipTo(g.snapshot.plan.sections[5].first);check('The gang stays on foot past the parked hauler to Krag on the bridge',!g.snapshot.driving);
 
- // The Crown dam: the conscripts freed at the collar pylons fight Sable's Crown Guard beside the gang (STORY.md ch6).
- g.start(5,0,'story',3);ticks(5);g.test.freeClones(2);ticks(90);const a0=g.snapshot.allies[0];g.test.move(a0.x+244,g.snapshot.band.top+12);
- const enemy=g.test.spawnEnemy(a0.x+52,a0.y,'gunner');
- const hostile=g.snapshot.enemies.length-1;let allyHit=false,enemyHit=false;const ehp=enemy.hp;
- for(let i=0;i<600&&!(allyHit&&enemyHit);i++){g.step(1/60);const s=g.snapshot;if(s.allies.some(a=>a.hp<a.maxhp))allyHit=true;const e=s.enemies[hostile];if(e&&(e.hp<ehp||e.dead))enemyHit=true;}
- check('Freed conscripts attack the Crown Guard without the player',enemyHit);
- check('The Crown Guard turns on the freed conscripts',allyHit);
- g.start(5,1,'story',4);check('A checkpoint after the pylons keeps the freed conscripts and the finished objectives',g.snapshot.allies.length===4&&g.snapshot.mission.completed===3);
- g.start(5,2,'story',3);const before=g.snapshot.allies.length;g.test.skipTo(g.snapshot.plan.encounters.findIndex(e=>e.task===0));g.step(1/60);g.test.finishEncounter();ticks(2);
- check('Breaking the first collar pylon frees two conscripts, drawn on their own ROM records (FERRIS), not as copies of the heroes',before===0&&g.snapshot.allies.length===2&&g.snapshot.allies.every(a=>a.conscript&&!a.rig&&a.rom&&a.rom.fid!=null&&/^0x/.test(a.rom.key||'')));
- // STORY.md rule 4 (one mirror): the final chapter's regulars and officers are people (Crown Guard), never hero copies
- {const kinds=new Set();for(let k=0;k<12;k++){g.start(5,0,'story');const n=g.snapshot.plan.encounters.length;if(k>=n-1)break;g.test.skipTo(k);g.step(1/60);for(let i=0;i<240;i++){g.step(1/60);for(const e of g.snapshot.enemies)if(!e.boss)kinds.add(e.type);if(i%40===39)g.snapshot.enemies.forEach((e,j)=>{if(!e.boss&&!e.dead&&!e.elite)g.test.damageEnemy(j,99999);});}}
-  check(`Chapter 6 sends Crown Guard and graft subjects, no hero copies (${[...kinds].sort().join(', ')})`,kinds.size>=4&&!kinds.has('mirror'));}
+ // The Crown dam (stage 8, revision 3): Sable's Crown Guard and a few graft subjects in small waves; no conscript allies,
+ // no hero copies; finishing a task frees nobody.
+ g.start(7,2,'story',3);g.test.skipTo(g.snapshot.plan.encounters.findIndex(e=>e.task===0));g.step(1/60);g.test.finishEncounter();ticks(2);
+ check('Finishing a Crown dam task frees no allies (no conscripts in revision 3)',g.snapshot.allies.length===0&&g.snapshot.mission.completed>=1);
+ {const kinds=new Set();let most=0;for(let k=0;k<13;k++){g.start(7,0,'story');const n=g.snapshot.plan.encounters.length;if(k>=n-1)break;g.test.skipTo(k);g.step(1/60);for(let i=0;i<240;i++){g.step(1/60);const live=g.snapshot.enemies.filter(e=>!e.boss&&!e.dead&&!e.dying&&e.state!=='flee');most=Math.max(most,live.length);for(const e of g.snapshot.enemies)if(!e.boss)kinds.add(e.type);if(i%40===39)g.snapshot.enemies.forEach((e,j)=>{if(!e.boss&&!e.dead&&!e.elite)g.test.damageEnemy(j,99999);});}}
+  check(`Stage 8 sends Crown Guard and graft subjects, no hero copies, at most four on screen at once (${[...kinds].sort().join(', ')}; most ${most})`,kinds.size>=4&&!kinds.has('mirror')&&most<=4);}
 
  // Checkpoints at every section.
  g.start(0,0);const sec=g.snapshot.plan.sections[3];g.test.skipTo(sec.first);check('Entering a section saves a checkpoint there',g.snapshot.checkpoint.section===3);
@@ -114,11 +108,11 @@ const g6=await page.evaluate(async()=>{
  const until=(cond,max)=>{let n=0;while(!cond()&&n<max){g.step(1/60);n++;}return n;};
  const load=async i=>{await SEQUEL_RENDER.loadChapter(i);for(let k=0;k<100&&!STAGE_RENDER.ready(i);k++)await new Promise(r=>setTimeout(r,20));};
  {const C=EDEN_CAMPAIGN[0];await load(0);let st=g.test.startCard(0,1,'story');const c0=g.snapshot.card;
-  check('A chapter opens on its card (state brief): chapter 1 shows the EASTCOAST 2513 caption first',st==='brief'&&c0&&c0.phase==='card'&&c0.pre===C.card.pre&&!!window.ARCADE_UI);
+  check('A stage opens on its card (state brief): stage 1 shows the EAST COAST — SIX MONTHS LATER caption first',st==='brief'&&c0&&c0.phase==='card'&&c0.pre===C.card.pre&&/EAST COAST/.test(C.card.pre)&&!!window.ARCADE_UI);
   const seen=[];until(()=>{const c=g.snapshot.card;if(c&&c.phase==='panel'&&!seen.includes(c.k))seen.push(c.k);return g.state==='play';},6000);
   const s=g.snapshot,dialog=C.dialog.split('\n');
   check(`The card leads through every intermission panel (${seen.length}/${C.inter.length}) into play`,g.state==='play'&&seen.length===C.inter.length&&seen.every((k,i)=>k===i));
-  check('Play opens with the chapter dialog on the radio, ahead of the section line',[s.radio,...s.radioQueue].filter(Boolean).slice(0,dialog.length).join('|')===dialog.join('|'));
+  check('Play opens with the stage dialog on the radio, ahead of the section line',[s.radio,...s.radioQueue].filter(Boolean).slice(0,dialog.length).join('|')===dialog.join('|'));
   await load(1);g.test.startCard(1,1,'story');document.getElementById('enter-stage').click();check('ENTER skips the card and the panels',g.state==='play'&&!g.snapshot.card);
   await load(0);g.test.startCard(0,1,'story',3);const c3=g.snapshot.card;let panels=false;until(()=>{if(g.snapshot.card?.phase==='panel')panels=true;return g.state==='play';},2000);
   check('A checkpoint resume shows the card only',c3&&c3.start===3&&!c3.pre&&!panels&&g.state==='play');
@@ -127,9 +121,9 @@ const g6=await page.evaluate(async()=>{
   check('NEXT finishes the typing first, then turns to the first panel',typed.phase==='card'&&typed.t>2&&next.phase==='panel'&&next.k===0);}
  {g.start(0,1);let s=g.snapshot;const capA=s.caption?.text;g.step(1/60);const id0=g.snapshot.audio.id;
   const a1=s.plan.encounters.findIndex(e=>e.area===1);g.test.skipTo(a1);const capB=g.snapshot.caption?.text;until(()=>!g.snapshot.caption,400);const gone=!g.snapshot.caption;
-  check('Each area opens with its caption on row 23 for 2.5 s (WASSOON HARBOR, THE JAIL QUAY)',capA===EDEN_CAMPAIGN[0].sections[0].cap&&capB===EDEN_CAMPAIGN[0].sections[2].cap&&gone);
+  check('Each area opens with its caption on row 23 for 2.5 s (THE WATERFRONT, THE CARGO SHEDS)',capA===EDEN_CAMPAIGN[0].sections[0].cap&&capB===EDEN_CAMPAIGN[0].sections[2].cap&&gone);
   const cues=[];for(const k of [0,4,8]){g.test.skipTo(k);g.step(1/60);cues.push([g.snapshot.section,g.snapshot.audio.id]);}
-  check(`Music follows the chapter's cue per section (${JSON.stringify(cues)})`,id0===EDEN_CAMPAIGN[0].music.stage[0]&&cues.every(([sec,id])=>id===EDEN_CAMPAIGN[0].music.stage[sec]));}
+  check(`Music follows the stage's cue per section (${JSON.stringify(cues)})`,id0===EDEN_CAMPAIGN[0].music.stage[0]&&cues.every(([sec,id])=>id===EDEN_CAMPAIGN[0].music.stage[sec]));}
  {// the radio strip draws in the ROM 8x16 font (ARCADE_UI.text, traced) inside layout.radio
   g.start(0,1);g.test.say('ROOK: Never seen you before in my life. And it’s a short life.');const glyphs=[];ARCADE_UI.trace=e=>glyphs.push(e);g.render();ARCADE_UI.trace=null;g.test.say(null);
   const R=g.layout.radio.map(v=>v/2),inStrip=glyphs.filter(e=>e.font===16&&e.y>=R[1]&&e.y+16<=R[1]+R[3]+1);
@@ -137,7 +131,7 @@ const g6=await page.evaluate(async()=>{
  {// the tally: VITALITY hp x 100, ENEMIES the chapter's beaten enemies x 100, FINAL BLOW 20 000 for a special finish
   g.start(0,1);const score0=g.snapshot.score,hp=Math.round(g.snapshot.player.hp);g.test.clear();const T=g.snapshot.tally;
   check('The stage clear shows the tally and pays its total',g.state==='clear'&&T.vitality===hp*100&&T.enemies===0&&T.finalBlow===0&&T.total===T.vitality+T.enemies+T.finalBlow&&g.snapshot.score===score0+T.total);
-  until(()=>g.snapshot.tally.story,400);check('After the tally the chapter end is typed in the panel',g.snapshot.tally.story&&!!document.getElementById('clear-end'));
+  until(()=>g.snapshot.tally.story,400);check('After the tally the stage end is typed in the panel',g.snapshot.tally.story&&!!document.getElementById('clear-end'));
   g.start(0,1);g.test.spawnBoss();until(()=>{const b=g.snapshot.enemies.find(e=>e.boss);return b&&b.state!=='intro';},400);
   const bi=g.snapshot.enemies.findIndex(e=>e.boss);g.test.damageEnemy(bi,g.snapshot.enemies[bi].hp-3);
   const bossHp=()=>g.snapshot.enemies.find(e=>e.boss)?.hp;
@@ -146,18 +140,20 @@ const g6=await page.evaluate(async()=>{
   const killed=!(bossHp()>0);g.snapshot.enemies.forEach((e,j)=>{if(!e.boss&&!e.dead&&!e.dying)g.test.damageEnemy(j,99999);});until(()=>g.state==='clear',900);
   check('A special that finishes the boss scores the FINAL BLOW 20 000',killed&&g.state==='clear'&&g.snapshot.tally.finalBlow===20000);}
  {// containers are ROM records from the stage recipes: every on-foot section authors its own
-  let bad=[];for(let i=0;i<6;i++){g.start(i);const P=g.snapshot.plan;for(const s of P.sections){const box=s.props.filter(p=>p.kind==='crate'||p.kind==='barrel');if(!s.drive&&!box.length)bad.push(s.stage+' none');for(const p of box){const r=ROM_FX.props[p.kind];if(!r||r.rec==null)bad.push(s.stage+' '+p.kind);}}}
+  let bad=[];for(let i=0;i<EDEN_CAMPAIGN.length;i++){g.start(i);const P=g.snapshot.plan;for(const s of P.sections){const box=s.props.filter(p=>p.kind==='crate'||p.kind==='barrel');if(!s.drive&&!box.length)bad.push(s.stage+' none');for(const p of box){const r=ROM_FX.props[p.kind];if(!r||r.rec==null)bad.push(s.stage+' '+p.kind);}}}
   check('Every on-foot section authors its containers, each a ROM container record (crate = DRAMCAN, barrel = TARU)',bad.length===0);}
- {// the ending: EDEN_ENDING's beats in order, then the final panel
-  g.start(5,1,'story',5);g.test.freeClones(4);g.test.clear();g.test.ending();const beats=[],stumbled=[],carStops=[];let n=0,wentBack=false,conscripts=0,roadCast='';
-  while(n<12000&&!g.snapshot.ending.done){g.step(1/60);n++;if(n%10)continue;const e=g.snapshot.ending;if(e.beat&&beats[beats.length-1]!==e.beat)beats.push(e.beat);if(e.beat==='run'&&e.actors.some(a=>a.state==='down'))stumbled.push(n);if(e.beat==='run')conscripts=Math.max(conscripts,e.actors.filter(a=>a.conscript&&a.hero<0).length);
-   if(e.beat==='choice'&&e.actors[0]&&Math.abs(g.snapshot.player.x-e.actors[0].x)<30&&g.snapshot.player.dir===-1)wentBack=true;if(e.beat==='road')roadCast=e.actors.map(a=>a.hero).join(',');if(e.beat==='road'&&e.car&&e.car.v===0)carStops.push(n);if(n%600===0)g.render();}
+ {// the ending: EDEN_ENDING's beats in order, then the final panel (revision 3: all four leave together)
+  g.start(7,1,'story',5);g.test.clear();g.test.ending();const beats=[],carStops=[];let n=0,runners=0,stumbled=false,conscripts=0,walkers=0,boxes=new Set(),crossing=false;
+  while(n<14000&&!g.snapshot.ending.done){g.step(1/60);n++;if(n%10)continue;const e=g.snapshot.ending;if(e.beat&&beats[beats.length-1]!==e.beat)beats.push(e.beat);
+   if(e.beat==='run'){runners=Math.max(runners,e.actors.filter(a=>a.hero>=0&&!a.conscript).length);if(e.actors.some(a=>a.state==='down'))stumbled=true;conscripts=Math.max(conscripts,e.actors.filter(a=>a.conscript).length);}
+   if(e.beat==='road'){walkers=Math.max(walkers,e.actors.length);if(e.car&&e.car.v===0)carStops.push(n);if(e.crossing?.dino?.walking)crossing=true;}
+   if(e.box)boxes.add(e.beat+':'+e.box.who);if(n%600===0)g.render();}
   g.render();
   check(`The ending plays EDEN_ENDING's beats in order (${beats.join(' ')})`,JSON.stringify(beats)===JSON.stringify(EDEN_ENDING.map(b=>b.beat))&&g.state==='ending'&&!!document.getElementById('chapters'));
-  check('In the ending the four freed conscripts run for the gatehouse, one stumbles, your own hero goes back for him, and on the sunset road only Mustapha and Mess walk until the Cadillac pulls up',conscripts===4&&stumbled.length>0&&wentBack&&roadCast==='0,3'&&carStops.length>0);
+  check(`In the ending each hero does a part (${[...boxes].filter(b=>/^roles/.test(b)).join(' ')}), all four run for the Cadillac together (nobody stumbles, no conscripts), and on the road the car stops for a crossing dinosaur with nobody walking`,['jack','mustapha','mess','hannah'].every(h=>boxes.has('roles:'+h))&&runners===3&&!stumbled&&conscripts===0&&walkers===0&&carStops.length>0&&crossing);
   // the staff roll is traced: red categories and white names in the ROM font over the road (chapter 2's E3a0 loop, many
-  // colours, not a blank screen), then THANK YOU once the roll has passed (G6 verify #7)
-  await load(1);g.test.credits();for(let i=0;i<300;i++)g.step(1/60);let gl=[];ARCADE_UI.trace=e=>gl.push(e);g.render();ARCADE_UI.trace=null;
+  // colours, not a blank screen), then THANK YOU once the roll has passed (G6 verify #7); the road is stage 3's (ch3)
+  await load(2);g.test.credits();for(let i=0;i<300;i++)g.step(1/60);let gl=[];ARCADE_UI.trace=e=>gl.push(e);g.render();ARCADE_UI.trace=null;
   // (from file:// the stage pages taint the canvas, which only drawing them can do: then the road counts as drawn)
   const pens=new Set(gl.map(e=>e.pen)),cv=document.getElementById('game'),cols=new Set();let px=null;try{px=cv.getContext('2d').getImageData(0,Math.floor(cv.height*.62),cv.width,Math.floor(cv.height*.3)).data;}catch(e){for(let i=0;i<40;i++)cols.add(i);}
   if(px)for(let i=0;i<px.length;i+=28)cols.add(px[i]<<16|px[i+1]<<8|px[i+2]);const roll=gl.length>=20&&pens.has('red')&&pens.has('white');
@@ -170,22 +166,22 @@ const g6=await page.evaluate(async()=>{
  return out;
 }).catch(e=>[{name:'G6 story checks threw: '+e.message,passed:false}]);
 checks.push(...g6);
-// G6 verify fixes: the ending opens on Crownback's fall in the spillway (CAMPAIGN §11.2 #1); every picture of the §4.7 table carries its
+// G6 verify fixes: the ending opens on Crownback's fall into the discharge works (CAMPAIGN §11.2 #1); every picture of the §4.7 table carries its
 // subject (pics.json `sprites`) over its shipped background, Echo's sound bars move; the ch5 vat hall tanks hold the
 // hero copies under their name plates (CAMPAIGN §9.1 S4).
 const subjectPics=Object.entries(JSON.parse(fs.readFileSync('tools/re/levels/pics.json','utf8')).pics).filter(([,p])=>(p.sprites||[]).length).map(([id])=>id);
 const g6b=await page.evaluate(async ids=>{
  const g=LAST_EDEN,out=[];const check=(name,value)=>out.push({name,passed:!!value});
  const load=async i=>{await SEQUEL_RENDER.loadChapter(i);for(let k=0;k<100&&!STAGE_RENDER.ready(i);k++)await new Promise(r=>setTimeout(r,20));};
- {g.start(5,1,'story',5);g.test.freeClones(4);g.test.clear();g.test.ending();const L0=g.snapshot.ending?.lot;let own=true,drawn=false,n=0;
+ {g.start(7,1,'story',5);g.test.clear();g.test.ending();const L0=g.snapshot.ending?.lot;let own=true,drawn=false,n=0;
   while(n<600&&g.snapshot.ending?.beat==='fall'){g.step(1/60);n++;const l=g.snapshot.ending.lot;if(l&&(!l.map||l.map===l.gelMap))own=false;if(n===30){g.render();drawn=!!g.snapshot.ending.lot?.drawn;}}
-  while(n<1200&&g.snapshot.ending?.beat!=='run'){g.step(1/60);n++;}
-  check('The ending opens on CROWNBACK fallen in the spillway (his lying frame, crownback main 11) in his own colours, never gel, under Sable’s fall box',!!L0&&L0.key==='crownback:11'&&L0.parts>=1&&drawn&&own&&EDEN_ENDING[0].who==='sable'&&g.snapshot.ending?.beat==='run'&&!g.snapshot.ending.lot);}
+  while(n<2400&&g.snapshot.ending?.beat!=='run'){g.step(1/60);n++;}
+  check('The ending opens on CROWNBACK fallen in the discharge works (his lying frame, crownback main 11) in his own colours, never gel, under Hannah’s fall box',!!L0&&L0.key==='crownback:11'&&L0.parts>=1&&drawn&&own&&EDEN_ENDING[0].who==='hannah'&&g.snapshot.ending?.beat==='run'&&!g.snapshot.ending.lot);}
  // G6 verify r2 #1: the player's path (beat Crownback, wait out the tally, SEE THE ENDING). The beaten Crownback falls
  // over (crownback main 9: roar, stagger, fall, lying) at his defeat; in the fall beat it is that same body lying (main 11),
  // drawn once (it leaves the enemy list). The boss rebuild replaced the six-part stand-in's body main 10 with these anims.
  {const ticks=n=>{for(let i=0;i<n;i++)g.step(1/60);},key=(code,on)=>window.dispatchEvent(new KeyboardEvent(on?'keydown':'keyup',{code,bubbles:true}));
-  g.start(5,1,'story');g.test.spawnBoss();ticks(170);g.test.damageEnemy(0,9999);ticks(180);g.test.damageEnemy(0,9999);ticks(110);
+  g.start(7,1,'story');g.test.spawnBoss();ticks(170);g.test.damageEnemy(0,9999);ticks(180);g.test.damageEnemy(0,9999);ticks(110);
   const t=g.snapshot.mission.active;if(t){g.test.move(t.x,t.y);key('KeyE',true);ticks(100);key('KeyE',false);}ticks(240);
   const bi=g.snapshot.enemies.findIndex(e=>e.type==='fessenden');if(bi>=0)g.test.damageEnemy(bi,99999);
   let n=0,fell=null;while(g.state!=='clear'&&n<900){g.step(1/60);n++;if(n===20)fell=g.snapshot.enemies.find(e=>e.type==='fessenden')?.ba?.key||null;}
@@ -193,7 +189,7 @@ const g6b=await page.evaluate(async ids=>{
   const L1=g.snapshot.ending?.lot;let once=true,own=true,seen=0,drawn=false;n=0;
   while(n<1200&&['fall','alarm'].includes(g.snapshot.ending?.beat)){g.step(1/60);n++;const s=g.snapshot;if(s.enemies.some(e=>e.type==='fessenden'))once=false;const l=s.ending.lot;
    if(l&&s.ending.beat==='fall'){seen++;if(!l.map||l.map===l.gelMap)own=false;if(seen===20){g.render();drawn=!!g.snapshot.ending.lot?.drawn;}}}
-  check('After the real fight Crownback falls over at his defeat and the ending’s fall beat shows that body once, where it was beaten, in his own colours',fell==='crownback:9'&&!!rem&&!!L1&&L1.remnant&&L1.key==='crownback:11'&&Math.abs(L1.x-rx)<1&&once&&seen>0&&drawn&&own&&g.snapshot.ending?.beat==='run');}
+  check('After the real fight Crownback falls over at his defeat and the ending’s fall beat shows that body once, where it was beaten, in his own colours',fell==='crownback:9'&&!!rem&&!!L1&&L1.remnant&&L1.key==='crownback:11'&&Math.abs(L1.x-rx)<1&&once&&seen>0&&drawn&&own&&g.snapshot.ending?.beat==='roles');}
  {for(let k=0;k<400&&!ids.every(id=>g.test.composePic(id));k++)await new Promise(r=>setTimeout(r,25));
   const art=g.test.picArt(),file=location.protocol==='file:',img=src=>new Promise(r=>{const im=new Image();im.onload=()=>r(im);im.onerror=()=>r(null);im.src=src;});
   const px=(im,sx,sy,w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(im,sx,sy,w,h,0,0,w,h);return x.getImageData(0,0,w,h).data;};
@@ -206,8 +202,9 @@ const g6b=await page.evaluate(async ids=>{
   check(`Every picture with a subject in the CAMPAIGN §4.7 table is composed with it over its background (${rows.join(' ')})`,ids.length>=11&&bad.length===0);
   let moved=file;if(!file){const P=ARCADE_UI.resolvePic('p-echo-speaker'),[w,h]=art['p-echo-speaker'].size;g.test.picFrame('p-echo-speaker',10);const a=px(P.img,0,0,w,h);g.test.picFrame('p-echo-speaker',47);moved=diff(a,px(P.img,0,0,w,h))>.01;}
   check('Echo’s picture is her speaker grille with sound bars that move (layout C leaves room for the line beside it)',moved&&art['p-echo-speaker'].live&&32+art['p-echo-speaker'].size[0]<192);}
- {await load(4);g.start(4,1,'story',3);g.test.say(null);g.step(1/60);const gl=[];ARCADE_UI.trace=e=>gl.push(e);g.render();ARCADE_UI.trace=null;const txt=gl.filter(e=>e.font===8).map(e=>e.ch).join('');
-  check('In the vat hall the hero copies float in Echo’s tanks: the opening screen shows the plates TENREC, DUNDEE and O’BRADOVICH',g.snapshot.section===3&&txt.includes('TENREC')&&txt.includes('DUNDEE')&&txt.includes('BRADOVICH'));}
+ {await load(6);g.start(6,1,'story',3);g.test.say(null);g.step(1/60);const gl=[];ARCADE_UI.trace=e=>gl.push(e);g.render();ARCADE_UI.trace=null;const txt=gl.filter(e=>e.font===8).map(e=>e.ch).join('');
+  // revision 3: no cloned heroes; the observatory archive (old vat hall recipe) shows no hero tanks or name plates
+  check('The observatory archive has no cloned-hero tanks (no TENREC / DUNDEE / O’BRADOVICH plates)',g.snapshot.section===3&&!txt.includes('TENREC')&&!txt.includes('DUNDEE')&&!txt.includes('BRADOVICH'));}
  return out;
 },subjectPics).catch(e=>[{name:'G6 verify-fix checks threw: '+e.message,passed:false}]);
 checks.push(...g6b);

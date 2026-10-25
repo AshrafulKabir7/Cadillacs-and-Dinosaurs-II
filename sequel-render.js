@@ -21,17 +21,20 @@
     get bossRoster(){return window.BOSS_DEFS?Object.values(BOSS_DEFS).flatMap(b=>[b.body,b.phase2&&b.phase2.body]).filter(Boolean).concat(['crownEngine']):[];},
     get bossCount(){const S=window.SPRITES;return S&&typeof S.has==='function'?this.bossRoster.filter(id=>S.has('bosses',id)).length:0;},
     // the chapter's stage pages and its boss art (the lazy sheets of its bosses' generated bodies: BOSS_DEFS body, phase2
-    // body, jet / fx effects and `art`; chapter 6 is Sable's fight and CROWNBACK's)
+    // body, jet / fx effects and `art`; the last stage is Sable's fight and CROWNBACK's: BOSS_DEFS.sable.treatment)
     get artState(){return artState;},
     artReady(){const S=window.SPRITES;if(!S||typeof S.loadSheets!=='function')return true;if(artState===0&&S.ready)this.preloadArt();return artState===2;},
-    preloadArt(){if(artState!==0)return;artState=1;Promise.all([0,1,2,3,4,5].map(i=>this.bossArt(i))).then(()=>{artState=2;});},
+    preloadArt(){if(artState!==0)return;artState=1;Promise.all((window.EDEN_CAMPAIGN||[]).map((_,i)=>this.bossArt(i))).then(()=>{artState=2;});},
     loadChapter(i){const st=window.STAGE_RENDER?STAGE_RENDER.require(i):Promise.resolve(0);return Promise.all([st,this.bossArt(i)]).then(r=>r[0]);},
     bossArtIds(i){const C=window.EDEN_CAMPAIGN,D=window.BOSS_DEFS;if(!C||!D||!C[i])return [];const ids=[];
       const add=b=>{if(typeof b==='string'&&!ids.includes(b))ids.push(b);};
       const scan=d=>{if(!d)return;[d.body,d.jet,d.fx].forEach(add);if(Array.isArray(d.art))d.art.forEach(add);for(const m of Object.values(d.moves||{}))if(m)add(m.projBody);};
-      for(const k of [C[i].kind].concat(i===5?['fessenden']:[])){const d=D[k];if(!d)continue;scan(d);scan(d.phase2);}
+      for(const k of [C[i].kind].concat(D[C[i].kind]&&D[C[i].kind].treatment?[D[C[i].kind].treatment]:[])){const d=D[k];if(!d)continue;scan(d);scan(d.phase2);}
       return ids;},
-    bossArt(i){const S=window.SPRITES;return S&&typeof S.loadSheets==='function'?S.loadSheets('bosses',this.bossArtIds(i).map(b=>'b-'+b)):Promise.resolve(0);},
+    // ...and the generated general enemies (revision 3: ROM_ENEMIES types with `generated`, sheets 'e-<type>'): all of
+    // them with every stage (small; summons and test spawns may bring one into any stage)
+    enemyArtIds(){const F=window.ROM_ENEMIES;return F&&F.types?Object.keys(F.types).filter(t=>F.types[t].generated&&F.sheets&&F.sheets['e-'+t]).map(t=>'e-'+t):[];},
+    bossArt(i){const S=window.SPRITES;if(!S||typeof S.loadSheets!=='function')return Promise.resolve(0);return Promise.all([S.loadSheets('bosses',this.bossArtIds(i).map(b=>'b-'+b)),S.loadSheets('enemies',this.enemyArtIds())]).then(r=>r[0]+r[1]);},
     pagesLoaded:i=>window.STAGE_RENDER?STAGE_RENDER.loaded(i):0,
   };
   // the boss art preload starts as soon as the start-up sprites are decoded (after the title is up)

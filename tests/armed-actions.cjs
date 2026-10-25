@@ -28,24 +28,24 @@ const BASE=require('./lib/arcade.cjs').BASE;   // the game page, play.html on GA
    results.push([`Hero ${hero+1}: picking up a gun crouches, cancels a pending punch and then fires`,crouch&&!punched&&g.snapshot.player.weapon==='gun'&&Math.abs(e.maxhp-e.hp-32*(hero===2?1.25:1))<.01]);
   }
   g.start(0);g.test.move(74,M());const e=target(47);g.test.equip('gun');g.controls.attack();ticks(25);results.push(['Gunfire does not hit a close target behind the hero',e.hp===e.maxhp]);
-  // G5 (PLAN §7 5b, CAMPAIGN §7.4): Thorne / Glassback will not leave her nest (leashed to the nest driver beside it): she never goes more than BOSS_DEFS.raptor.tether
-  // (260 px) from it, wherever the hero leads it (L554 reads the tether from BOSS_DEFS).
-  {g.start(2,0,'story');g.test.spawnBoss();ticks(160);const s0=g.snapshot,dr=s0.mission.active,teth=BOSS_DEFS.raptor.tether;let far=0;
+  // G5 (PLAN §7 5b, CAMPAIGN §7.4; revision 3: stage 2): Headkeeper Thorne will not leave her collar winch (the boss task
+  // beside her): she never goes more than BOSS_DEFS.thorne.tether (260 px) from it, wherever the hero leads her.
+  {g.start(1,0,'story');g.test.spawnBoss();ticks(160);const s0=g.snapshot,dr=s0.mission.active,teth=BOSS_DEFS.thorne.tether;let far=0;
    for(const [dx,f] of [[18,.5],[18,.2],[200,.8],[18,.83]]){g.test.move(s0.lock.left+dx,g.test.lane(f));for(let i=0;i<150;i++){g.step(.016);const b=g.snapshot.enemies.find(e=>e.boss);if(b&&b.state!=='intro'&&b.state!=='flee')far=Math.max(far,Math.abs(b.x-dr.x));}}
-   results.push([`Glassback never strays more than her ${teth}-px leash from the nest driver (max ${far.toFixed(1)} px)`,teth===260&&far>0&&far<=teth+.5]);}
-  // CAMPAIGN §7.4: beyond her leash is a safe rest. A hero more than the tether from the driver (lock.left + 20) is never
-  // reached by Glassback's blows, while one inside her reach is.
-  {const hits=dx=>{g.start(2,0,'story');g.test.spawnBoss();ticks(160);const L=g.snapshot.lock,dr=g.snapshot.mission.active;let lost=0,last=g.snapshot.player.hp,lives=g.snapshot.lives;
+   results.push([`Thorne never strays more than her ${teth}-px leash from the collar winch (max ${far.toFixed(1)} px)`,teth===260&&far>0&&far<=teth+.5]);}
+  // CAMPAIGN §7.4: beyond her leash is a safe rest. A hero more than the tether from the winch (lock.left + 20) is never
+  // reached by Thorne's blows, while one inside her reach is.
+  {const hits=dx=>{g.start(1,0,'story');g.test.spawnBoss();ticks(160);const L=g.snapshot.lock,dr=g.snapshot.mission.active;let lost=0,last=g.snapshot.player.hp,lives=g.snapshot.lives;
     for(let i=0;i<600;i++){g.test.move(L.left+dx,g.snapshot.player.y);g.step(.016);const p=g.snapshot.player;if(p.hp<last)lost+=last-p.hp;last=p.hp;}return {lost:lost+(lives-g.snapshot.lives)*999,far:Math.abs(dr.x-(L.left+dx))};};
    const out=hits(20),inn=hits(150);
-   results.push([`Beyond Glassback's leash is a safe rest (a hero ${out.far.toFixed(0)} px from the driver loses ${out.lost.toFixed(0)} HP; ${inn.far.toFixed(0)} px away, ${inn.lost.toFixed(0)} HP)`,out.far>BOSS_DEFS.raptor.tether&&out.lost===0&&inn.far<BOSS_DEFS.raptor.tether&&inn.lost>0]);}
-  // The boss rebuild: chapter 3's boss is Headkeeper Thorne, who grafts herself into GLASSBACK at 0 HP (phase 2 on its own
-  // body); the nest driver keeps Glassback standing (HP floor 1) and smashing it brings her down (arrested, not fled).
-  g.start(2);g.test.spawnBoss();ticks(160);g.test.damageEnemy(0,9999);ticks(200);results.push(['Headkeeper Thorne grafts herself into Glassback at 0 HP',g.snapshot.enemies[0].phase===2&&g.snapshot.enemies[0].name==='GLASSBACK'&&g.snapshot.enemies[0].state!=='mutate']);
-  g.test.damageEnemy(0,9999);results.push(['Glassback stays in the fight while the sonic driver is active',g.snapshot.enemies[0].hp===1&&g.snapshot.mission.active?.kind==='beacon']);g.test.damageObjective(9999);results.push(['Glassback falls (arrested, human again) when the sonic driver is destroyed',g.snapshot.enemies[0].defeat?.kind==='arrest']);
-  g.start(5);g.test.spawnBoss();ticks(160);g.test.damageEnemy(0,9999);ticks(190);const b=g.snapshot.enemies.find(e=>e.boss);results.push(['Sable survives into the gate controls phase',b.type==='sable'&&b.phase===2&&b.hp>0]);
-  for(let i=0;i<700&&!g.snapshot.zones.some(z=>z.style==='flood');i++)g.step(.016);
-  results.push(['The gate controls announce a spillway surge that requires changing lanes',g.snapshot.zones.some(z=>z.style==='flood'&&!z.air&&z.total===1.25)]);
+   results.push([`Beyond Thorne's leash is a safe rest (a hero ${out.far.toFixed(0)} px from the winch loses ${out.lost.toFixed(0)} HP; ${inn.far.toFixed(0)} px away, ${inn.lost.toFixed(0)} HP)`,out.far>BOSS_DEFS.thorne.tether&&out.lost===0&&inn.far<BOSS_DEFS.thorne.tether&&inn.lost>0]);}
+  // Revision 3: Thorne stays human in stage 2. Smashing her winch opens her (x1.5); beaten, she goes into the river and
+  // escapes (defeat 'escape': no transformation, no arrest). Glassback is a separate stage-6 fight, already transformed.
+  g.start(1);g.test.spawnBoss();ticks(160);g.test.damageObjective(9999);ticks(2);results.push(['Smashing Thorne’s collar winch opens her to x1.5',g.snapshot.enemies[0].type==='thorne'&&g.snapshot.enemies[0].vulnMul===1.5&&!g.snapshot.mission.active]);
+  g.test.damageEnemy(0,9999);ticks(2);results.push(['Beaten, Thorne escapes into the river (no transformation, no arrest)',g.snapshot.enemies[0].type==='thorne'&&g.snapshot.enemies[0].phase===1&&g.snapshot.enemies[0].defeat?.kind==='escape']);
+  g.start(5);g.test.spawnBoss();ticks(170);results.push(['Stage 6’s boss is GLASSBACK, fought already transformed',g.snapshot.enemies[0].type==='glassback'&&g.snapshot.enemies[0].name==='GLASSBACK'&&g.snapshot.enemies[0].phase===1]);
+  {const b0=g.snapshot.enemies[0];g.test.damageEnemy(0,b0.hp-b0.maxhp*.3);ticks(2);results.push(['Damaging Glassback’s harness (35 %) starts her uncontrolled final rush',g.snapshot.enemies[0].state==='script'||g.snapshot.enemies[0].tempoMul>1]);}
+  g.start(7);g.test.spawnBoss();ticks(160);g.test.damageEnemy(0,9999);ticks(30);{const b=g.snapshot.enemies.find(e=>e.boss&&!e.dead);results.push(['Beaten, Sable takes the treatment at once (no gate-controls phase): CROWNBACK transforms',!!b&&b.type==='fessenden'&&b.state==='mutate'&&g.snapshot.mission.active==null]);}
   return results;
  });for(const [name,ok] of rows)check(name,ok);
  // Real input: running persists while its direction stays held (the release is the KI22 check below).

@@ -1,2690 +1,349 @@
 {
-  "id": "ch6",
-  "title": "THE CROWN SPIRE",
-  "objPage": "S8A2",
-  "preset": "storm-crown",
-  "fx": {
-    "rain": true,
-    "lightning": {
-      "alpha": 0.4,
-      "frames": 2,
-      "every": [
-        240,
-        420
-      ],
-      "layer": "s3"
-    }
-  },
-  "notes": [
-    "COHERENCE (2026-10-22): ch6 is the Crown dam, crossed once from the road to the floodgate: a0 THE DAM TERRACES is the dam road, a stone causeway over the reservoir with the drowned city beyond (E7a0 0-1216 only), a1 THE DAM GALLERY is the torch-lit gallery inside the dam face, its gates and chains above the turquoise sluice water (E8a1 608-1376 only), a2 THE CROWN FLOODGATE goes on along that gallery into the sluice basin (E8a1 1024-1792: the same stone and water, the basin opening between its piped walls). Each area walks back and forth through its source strip (legs <= 512 px, leftward legs mirrored), so every join is a mirror join or a continuation; the place changes only at the fades and never goes back.",
-    "Palette (the dam): every slice is recoloured into quiet grey masonry (saturation 0.45-0.5, 25% toward #7a8090), the gallery's iron doors become brass sluice gates (row 6: hue +30, 35% toward #c8a040) and the water turquoise (E8a1 row 4: 30% toward #30c8b8; the reservoir in E7a0's far layer, row 23, 45% toward #2ab0a0); the far layer keeps the storm dusk (s3ops) with the runtime lightning and rain.",
-    "Lanes: the E7a0 causeway deck (y 113-160) is walk-patched one row onto its front coping (floor art), lane 64; the E8a1 gallery ledge (rows y 128-192, floor art) is walk-patched onto the wading strip below it, lane 96, in a1 and a2.",
-    "Boss arena (6-6, MARSHAL SABLE / CROWNBACK): the floodgate basin itself: turquoise water between the dam's piped walls, brass sluice gates set into the basin walls (the E8a1 door, lifted, in brass), the gallery's chains; the runtime adds the spill wheels and the Crown set pieces.",
-    "Section casts (CAMPAIGN §4.4 'cast', merged over the chapter pool): lighter A/BOMB/KNIFE variants where the ROM-affine HP budget of the chapter's waves exceeded ENEMIES §2.6 by more than 15% (tests/campaign.cjs (8)); ratio now 1.139.",
-    "Priority: the E7a0 causeway is drawn with prio \"none\" (its front coping is a foreground row in 1993, and the widened lane runs over it). Far layer: E7a0's reservoir and drowned city under the storm in all three areas (past the road, through the gallery openings, beyond the basin)."
-  ],
-  "areas": [
+ "id": "ch6",
+ "title": "THE VERDANT BIODOME",
+ "objPage": "S2A0",
+ "preset": "verdant",
+ "notes": [
+  "Painted scenery (revision 3, step D): the 6 st6 paintings (work/bg/gen/st6 -> strips tools/art/strips/st6, prompts tools/art/bg-prompts.json); each area is the four strips of its two paintings in storyline order (a<N>-1 A, B, a<N>-2 A, B), overlapping 32 px with a floor-only crossfade (2592 px).",
+  "Gameplay structure (sections, lock counts, task props, casts, boss lock) from step B, re-fitted to the painted areas and their floor lines."
+ ],
+ "areas": [
+  {
+   "id": "a0",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
     {
-      "id": "a0",
-      "w": 2368,
-      "h": 224,
-      "bg": "auto",
-      "s2": [
-        {
-          "slice": {
-            "src": "E7a0",
-            "x": [
-              0,
-              512
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            0,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.45,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25
-            }
-          ],
-          "prio": "none"
-        },
-        {
-          "slice": {
-            "src": "E7a0",
-            "x": [
-              512,
-              864
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            512,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.45,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25
-            }
-          ],
-          "prio": "none"
-        },
-        {
-          "slice": {
-            "src": "E7a0",
-            "x": [
-              544,
-              864
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            864,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.45,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25
-            }
-          ],
-          "prio": "none"
-        },
-        {
-          "slice": {
-            "src": "E7a0",
-            "x": [
-              544,
-              704
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1184,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.45,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25
-            }
-          ],
-          "prio": "none"
-        },
-        {
-          "slice": {
-            "src": "E7a0",
-            "x": [
-              704,
-              1216
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1344,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.45,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25
-            }
-          ],
-          "prio": "none"
-        },
-        {
-          "slice": {
-            "src": "E7a0",
-            "x": [
-              704,
-              1216
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1856,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.45,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25
-            }
-          ],
-          "prio": "none"
-        }
+     "img": "tools/art/strips/st6/st6-a0-1-A.png",
+     "at": 0,
+     "lift": 5,
+     "note": "inside the ruined botanical dome: iron-framed glass, giant tropical plants, nesting beds under heat lamps (lifted 5 px: floor 142 like its neighbours)"
+    },
+    {
+     "img": "tools/art/strips/st6/st6-a0-1-B.png",
+     "at": 640,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "incubators of stolen eggs, empty restraint frames sized for large animals, chains bolted to the floor"
+    },
+    {
+     "img": "tools/art/strips/st6/st6-a0-2-A.png",
+     "at": 1280,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "the walkway between planting beds and the glass wall, watering pipes, broken planters"
+    },
+    {
+     "img": "tools/art/strips/st6/st6-a0-2-B.png",
+     "at": 1920,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "the nursery: small cages, feeding troughs, the feed cart, the iron gate into the pens"
+    }
+   ],
+   "sections": [
+    {
+     "id": "6-1",
+     "name": "THE NESTING BEDS",
+     "x0": 0,
+     "len": 1296,
+     "cap": "THE GLASS PERIMETER",
+     "locks": [
+      640,
+      912
+     ],
+     "bossLock": null,
+     "scenery": [
+      "flock",
+      "herd"
+     ],
+     "cast": {
+      "gunner": [
+       "bomber",
+       "poacherJ"
       ],
-      "s3": [
-        {
-          "x": [
-            0,
-            2368
-          ],
-          "src": "E7a0",
-          "ops": [
-            {
-              "op": "tint",
-              "rgb": "#2ab0a0",
-              "amount": 0.45,
-              "rows": [
-                23
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 1.3,
-              "l": 1.25,
-              "rows": [
-                23
-              ]
-            }
-          ],
-          "note": "the reservoir and the drowned city beyond the dam road, storm dusk",
-          "x3": [
-            0,
-            768
-          ]
-        }
-      ],
-      "walk": {
-        "patch": [
-          {
-            "rect": [
-              352,
-              160,
-              2016,
-              16
-            ],
-            "walk": true,
-            "why": "E7a0 causeway front coping (floor art): lane 64 px"
-          }
-        ]
+      "knifer": [
+       "blade",
+       "knife"
+      ]
+     },
+     "props": [
+      {
+       "kind": "crate",
+       "x": 222
       },
-      "sections": [
-        {
-          "id": "6-1",
-          "name": "THE SPIRE APPROACH",
-          "x0": 0,
-          "len": 1344,
-          "cap": "THE SPIRE TERRACES",
-          "locks": [
-            640,
-            960
-          ],
-          "bossLock": null,
-          "set": [
-            "zeke"
-          ],
-          "scenery": [
-            "pteranodon-bg"
-          ],
-          "cast": {
-            "gunner": [
-              "poacherJ",
-              "bomber"
-            ]
-          },
-          "s3": "E1a2",
-          "props": [
-            {
-              "kind": "crate",
-              "x": 222
-            },
-            {
-              "kind": "barrel",
-              "x": 607
-            },
-            {
-              "kind": "barrel",
-              "x": 992
-            }
-          ]
-        },
-        {
-          "id": "6-2",
-          "name": "THE MIRROR GANG",
-          "x0": 1344,
-          "len": 1024,
-          "locks": [
-            1536,
-            1984
-          ],
-          "bossLock": null,
-          "note": "the gothic hall: columns, carved double doors",
-          "cast": {
-            "gunner": [
-              "poacherJ",
-              "bomber"
-            ]
-          },
-          "props": [
-            {
-              "kind": "crate",
-              "x": 193
-            },
-            {
-              "kind": "barrel",
-              "x": 578
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "a1",
-      "w": 2560,
-      "h": 224,
-      "bg": "auto",
-      "s2": [
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              608,
-              1120
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            0,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.5,
-              "l": 0.95,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 30,
-              "s": 1.3,
-              "l": 1.3,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#c8a040",
-              "amount": 0.35,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 1.3,
-              "l": 1.15,
-              "rows": [
-                4
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#30c8b8",
-              "amount": 0.3,
-              "rows": [
-                4
-              ]
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              608,
-              1120
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            512,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.5,
-              "l": 0.95,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 30,
-              "s": 1.3,
-              "l": 1.3,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#c8a040",
-              "amount": 0.35,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 1.3,
-              "l": 1.15,
-              "rows": [
-                4
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#30c8b8",
-              "amount": 0.3,
-              "rows": [
-                4
-              ]
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              608,
-              1120
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            1024,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.5,
-              "l": 0.95,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 30,
-              "s": 1.3,
-              "l": 1.3,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#c8a040",
-              "amount": 0.35,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 1.3,
-              "l": 1.15,
-              "rows": [
-                4
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#30c8b8",
-              "amount": 0.3,
-              "rows": [
-                4
-              ]
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              864,
-              1120
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            1536,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.5,
-              "l": 0.95,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 30,
-              "s": 1.3,
-              "l": 1.3,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#c8a040",
-              "amount": 0.35,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 1.3,
-              "l": 1.15,
-              "rows": [
-                4
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#30c8b8",
-              "amount": 0.3,
-              "rows": [
-                4
-              ]
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              864,
-              1376
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            1792,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.5,
-              "l": 0.95,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 30,
-              "s": 1.3,
-              "l": 1.3,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#c8a040",
-              "amount": 0.35,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 1.3,
-              "l": 1.15,
-              "rows": [
-                4
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#30c8b8",
-              "amount": 0.3,
-              "rows": [
-                4
-              ]
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              1120,
-              1376
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            2304,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.5,
-              "l": 0.95,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 30,
-              "s": 1.3,
-              "l": 1.3,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#c8a040",
-              "amount": 0.35,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 1.3,
-              "l": 1.15,
-              "rows": [
-                4
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#30c8b8",
-              "amount": 0.3,
-              "rows": [
-                4
-              ]
-            }
-          ]
-        }
-      ],
-      "s3": [
-        {
-          "x": [
-            0,
-            2560
-          ],
-          "src": "E7a0",
-          "ops": [
-            {
-              "op": "tint",
-              "rgb": "#2ab0a0",
-              "amount": 0.45,
-              "rows": [
-                23
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 1.3,
-              "l": 1.25,
-              "rows": [
-                23
-              ]
-            }
-          ],
-          "note": "the reservoir under the storm through the gallery openings",
-          "x3": [
-            0,
-            768
-          ]
-        }
-      ],
-      "sections": [
-        {
-          "id": "6-3",
-          "name": "YOU VS. YOU",
-          "x0": 0,
-          "len": 1024,
-          "cap": "THE SPIRE HALLS",
-          "locks": [
-            192,
-            640
-          ],
-          "bossLock": null,
-          "note": "the hall opens into the dam gallery",
-          "cast": {
-            "gunner": [
-              "skinner",
-              "poacherJ"
-            ]
-          },
-          "s3": "E6a0",
-          "props": [
-            {
-              "kind": "barrel",
-              "x": 193
-            },
-            {
-              "kind": "crate",
-              "x": 578
-            }
-          ]
-        },
-        {
-          "id": "6-4",
-          "name": "BREAK THE COMMAND",
-          "x0": 1024,
-          "len": 1536,
-          "locks": [
-            1216,
-            1664,
-            2176
-          ],
-          "bossLock": null,
-          "props": [
-            {
-              "kind": "barrel",
-              "x": 193
-            },
-            {
-              "kind": "barrel",
-              "x": 578
-            },
-            {
-              "kind": "crate",
-              "x": 963
-            },
-            {
-              "kind": "barrel",
-              "x": 1348
-            },
-            {
-              "kind": "gate",
-              "name": "COMMAND PYLON A",
-              "x": 300
-            },
-            {
-              "kind": "gate",
-              "name": "COMMAND PYLON B",
-              "x": 760
-            },
-            {
-              "kind": "gate",
-              "name": "COMMAND PYLON C",
-              "x": 1220
-            }
-          ],
-          "cast": {
-            "gunner": [
-              "skinner",
-              "poacherJ"
-            ]
-          },
-          "s3": "E6a0"
-        }
-      ],
-      "walk": {
-        "patch": [
-          {
-            "rect": [
-              0,
-              128,
-              2560,
-              64
-            ],
-            "walk": true,
-            "why": "E8a1 gallery ledge (floor art, rows y 128-192) joined to the wading strip: lane 96 px"
-          }
-        ]
+      {
+       "kind": "barrel",
+       "x": 607
+      },
+      {
+       "kind": "barrel",
+       "x": 992
       }
+     ],
+     "note": "the nesting beds; the incubators and restraint frames"
     },
     {
-      "id": "a2",
-      "w": 2176,
-      "h": 224,
-      "bg": "auto",
-      "s2": [
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              1024,
-              1536
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            0,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.5,
-              "l": 0.95,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 30,
-              "s": 1.3,
-              "l": 1.3,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#c8a040",
-              "amount": 0.35,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 1.3,
-              "l": 1.15,
-              "rows": [
-                4
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#30c8b8",
-              "amount": 0.3,
-              "rows": [
-                4
-              ]
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              1536,
-              1792
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            512,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.5,
-              "l": 0.95,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 30,
-              "s": 1.3,
-              "l": 1.3,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#c8a040",
-              "amount": 0.35,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 1.3,
-              "l": 1.15,
-              "rows": [
-                4
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#30c8b8",
-              "amount": 0.3,
-              "rows": [
-                4
-              ]
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              1536,
-              1792
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            768,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.5,
-              "l": 0.95,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 30,
-              "s": 1.3,
-              "l": 1.3,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#c8a040",
-              "amount": 0.35,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 1.3,
-              "l": 1.15,
-              "rows": [
-                4
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#30c8b8",
-              "amount": 0.3,
-              "rows": [
-                4
-              ]
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              1536,
-              1792
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            1024,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.5,
-              "l": 0.95,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 30,
-              "s": 1.3,
-              "l": 1.3,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#c8a040",
-              "amount": 0.35,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 1.3,
-              "l": 1.15,
-              "rows": [
-                4
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#30c8b8",
-              "amount": 0.3,
-              "rows": [
-                4
-              ]
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              1536,
-              1792
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            1280,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.5,
-              "l": 0.95,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 30,
-              "s": 1.3,
-              "l": 1.3,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#c8a040",
-              "amount": 0.35,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 1.3,
-              "l": 1.15,
-              "rows": [
-                4
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#30c8b8",
-              "amount": 0.3,
-              "rows": [
-                4
-              ]
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              1536,
-              1792
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            1536,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.5,
-              "l": 0.95,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 30,
-              "s": 1.3,
-              "l": 1.3,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#c8a040",
-              "amount": 0.35,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 1.3,
-              "l": 1.15,
-              "rows": [
-                4
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#30c8b8",
-              "amount": 0.3,
-              "rows": [
-                4
-              ]
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              1536,
-              1792
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            1792,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.5,
-              "l": 0.95,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 30,
-              "s": 1.3,
-              "l": 1.3,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#c8a040",
-              "amount": 0.35,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 1.3,
-              "l": 1.15,
-              "rows": [
-                4
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#30c8b8",
-              "amount": 0.3,
-              "rows": [
-                4
-              ]
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              1536,
-              1664
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            2048,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.5,
-              "l": 0.95,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 30,
-              "s": 1.3,
-              "l": 1.3,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#c8a040",
-              "amount": 0.35,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 1.3,
-              "l": 1.15,
-              "rows": [
-                4
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#30c8b8",
-              "amount": 0.3,
-              "rows": [
-                4
-              ]
-            }
-          ]
-        },
-        {
-          "patch": {
-            "src": "E8a1",
-            "x": [
-              448,
-              512
-            ],
-            "h": [
-              896,
-              976
-            ]
-          },
-          "rows": [
-            6
-          ],
-          "at": [
-            1712,
-            32
-          ],
-          "prio": "none",
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.5,
-              "l": 0.95,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 30,
-              "s": 1.3,
-              "l": 1.3,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#c8a040",
-              "amount": 0.35,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 1.3,
-              "l": 1.15,
-              "rows": [
-                4
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#30c8b8",
-              "amount": 0.3,
-              "rows": [
-                4
-              ]
-            }
-          ],
-          "note": "brass sluice gate (the E8a1 cell door, lifted, in brass) set into the basin wall"
-        },
-        {
-          "patch": {
-            "src": "E8a1",
-            "x": [
-              448,
-              512
-            ],
-            "h": [
-              896,
-              976
-            ]
-          },
-          "rows": [
-            6
-          ],
-          "at": [
-            1808,
-            32
-          ],
-          "prio": "none",
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.5,
-              "l": 0.95,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#7a8090",
-              "amount": 0.25,
-              "rows": [
-                0,
-                1,
-                2,
-                3,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 30,
-              "s": 1.3,
-              "l": 1.3,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#c8a040",
-              "amount": 0.35,
-              "rows": [
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 1.3,
-              "l": 1.15,
-              "rows": [
-                4
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#30c8b8",
-              "amount": 0.3,
-              "rows": [
-                4
-              ]
-            }
-          ],
-          "note": "brass sluice gate (the E8a1 cell door, lifted, in brass) set into the basin wall"
-        }
-      ],
-      "s3": [
-        {
-          "x": [
-            0,
-            2176
-          ],
-          "src": "E7a0",
-          "ops": [
-            {
-              "op": "tint",
-              "rgb": "#2ab0a0",
-              "amount": 0.45,
-              "rows": [
-                23
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 1.3,
-              "l": 1.25,
-              "rows": [
-                23
-              ]
-            }
-          ],
-          "note": "the reservoir under the storm beyond the floodgate basin",
-          "x3": [
-            0,
-            768
-          ]
-        }
-      ],
-      "sections": [
-        {
-          "id": "6-5",
-          "name": "THE CLONE WAR",
-          "x0": 0,
-          "len": 1024,
-          "cap": "THE CROWN FLOODGATE",
-          "locks": [
-            192,
-            640
-          ],
-          "bossLock": null,
-          "set": [
-            "zeke"
-          ],
-          "note": "the arch gallery under the dam; a wide flat band for the battle",
-          "cast": {
-            "gunner": [
-              "skinner",
-              "poacherJ"
-            ]
-          },
-          "props": [
-            {
-              "kind": "barrel",
-              "x": 193
-            },
-            {
-              "kind": "crate",
-              "x": 578
-            }
-          ]
-        },
-        {
-          "id": "6-6",
-          "name": "THE CROWN FLOODGATE",
-          "x0": 1024,
-          "len": 1152,
-          "locks": [
-            1216
-          ],
-          "bossLock": 1792,
-          "props": [
-            {
-              "kind": "barrel",
-              "x": 193
-            },
-            {
-              "kind": "barrel",
-              "x": 578
-            },
-            {
-              "kind": "crate",
-              "x": 963
-            },
-            {
-              "kind": "spillway-gate",
-              "x": 1100
-            },
-            {
-              "kind": "spillway-wheel",
-              "x": 858
-            },
-            {
-              "kind": "spillway-wheel",
-              "x": 960
-            },
-            {
-              "kind": "crown-engine",
-              "x": 1056
-            }
-          ],
-          "note": "boss lock 1792-2176 = E1a1 240-304 + the spillway basin (E8a1 1504-1664 and its mirror; E8a1 has no boss window); the Crown Engine stands in the basin at 2080",
-          "cast": {
-            "gunner": [
-              "skinner",
-              "poacherJ"
-            ]
-          }
-        }
-      ],
-      "walk": {
-        "patch": [
-          {
-            "rect": [
-              0,
-              128,
-              2176,
-              64
-            ],
-            "walk": true,
-            "why": "E8a1 gallery ledge and basin rim (floor art) joined to the wading strip: lane 96 px"
-          }
-        ]
+     "id": "6-2",
+     "name": "THE ANIMAL PENS",
+     "x0": 1296,
+     "len": 1296,
+     "locks": [
+      1456,
+      2176
+     ],
+     "bossLock": null,
+     "set": [
+      "naguri-vignette"
+     ],
+     "props": [
+      {
+       "kind": "crate",
+       "x": 193
+      },
+      {
+       "kind": "barrel",
+       "x": 578
+      },
+      {
+       "kind": "valve",
+       "name": "TREATMENT FEED · PENS",
+       "x": 420
       }
-    }
-  ],
-  "s3ops": [
-    {
-      "op": "scale",
-      "rgb": [
-        0.5,
-        0.5,
-        0.7
+     ],
+     "cast": {
+      "gunner": [
+       "bomber",
+       "poacherJ"
+      ],
+      "knifer": [
+       "blade",
+       "knife"
       ]
-    },
-    {
-      "op": "hsl",
-      "h": -40,
-      "s": 0.6,
-      "l": 0.9
-    },
-    {
-      "op": "tint",
-      "rgb": "#6a4a9a",
-      "amount": 0.3
+     },
+     "note": "task 0 (TREATMENT FEED · PENS) on the watering pipes of the walkway (lock 1456); the nursery and the gate into the pens"
     }
-  ]
+   ],
+   "anims": []
+  },
+  {
+   "id": "a1",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
+    {
+     "img": "tools/art/strips/st6/st6-a1-1-A.png",
+     "at": 0,
+     "lift": 6,
+     "note": "the animal pens along the dome corridor: thick bars, straw, warning lamps (lifted 6 px: floor 139 like a1-1-B)"
+    },
+    {
+     "img": "tools/art/strips/st6/st6-a1-1-B.png",
+     "at": 640,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "the laboratory corridor: specimen tanks of green fluid, pipes, the steel cell doors"
+    },
+    {
+     "img": "tools/art/strips/st6/st6-a1-2-A.png",
+     "at": 1280,
+     "blend": 32,
+     "blendRows": "floor",
+     "ramp": 32,
+     "note": "the treatment ward: beds with restraint straps, IV stands, curtains, blank monitors"
+    },
+    {
+     "img": "tools/art/strips/st6/st6-a1-2-B.png",
+     "at": 1920,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "the laboratory: culture vats of glowing green fluid, workbenches, microscopes, serum racks"
+    }
+   ],
+   "sections": [
+    {
+     "id": "6-3",
+     "name": "THE PEN CORRIDOR",
+     "x0": 0,
+     "len": 1296,
+     "cap": "THE TREATMENT WARDS",
+     "locks": [
+      224,
+      832
+     ],
+     "bossLock": null,
+     "scenery": [
+      "hatchlings"
+     ],
+     "note": "the animal pens and the laboratory corridor; elite WARD ORDERLY (WRENCH T.) at lock 832",
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
+      },
+      {
+       "kind": "crate",
+       "x": 578
+      }
+     ]
+    },
+    {
+     "id": "6-4",
+     "name": "THE TREATMENT WARDS",
+     "x0": 1296,
+     "len": 1296,
+     "locks": [
+      1488,
+      2176
+     ],
+     "bossLock": null,
+     "scenery": [
+      "herd"
+     ],
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
+      },
+      {
+       "kind": "barrel",
+       "x": 578
+      },
+      {
+       "kind": "valve",
+       "name": "TREATMENT FEED · WARDS",
+       "x": 420
+      }
+     ],
+     "cast": {
+      "gunner": [
+       "poacherJ",
+       "bomber"
+      ],
+      "knifer": [
+       "blade",
+       "knife"
+      ]
+     },
+     "note": "task 1 (TREATMENT FEED · WARDS) between the ward beds (lock 1488); the culture-vat laboratory"
+    }
+   ],
+   "anims": []
+  },
+  {
+   "id": "a2",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
+    {
+     "img": "tools/art/strips/st6/st6-a2-1-A.png",
+     "at": 0,
+     "lift": 12,
+     "note": "the approach to the test enclosure: claw gouges across the glass, the harness rack, the broken brass goggles and red braid on the bench (lifted 12 px: floor 137)"
+    },
+    {
+     "img": "tools/art/strips/st6/st6-a2-1-B.png",
+     "at": 640,
+     "blend": 32,
+     "blendRows": "floor",
+     "lift": 10,
+     "note": "the viewing gallery: reinforced glass cracked from the inside, bars bent outward (lifted 10 px)"
+    },
+    {
+     "img": "tools/art/strips/st6/st6-a2-2-A.png",
+     "at": 1280,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "inside the test enclosure: claw-scarred glass walls, sand floor, broken feeding gates, hanging harness chains"
+    },
+    {
+     "img": "tools/art/strips/st6/st6-a2-2-B.png",
+     "at": 1920,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "the far end of the enclosure: the shattered panel open to the jungle, twisted bars, emergency lights (the boss arena)"
+    }
+   ],
+   "sections": [
+    {
+     "id": "6-5",
+     "name": "THE FAILED TRIALS",
+     "x0": 0,
+     "len": 1296,
+     "cap": "THE TEST ENCLOSURE",
+     "locks": [
+      384,
+      832
+     ],
+     "bossLock": null,
+     "props": [
+      {
+       "kind": "crate",
+       "x": 193
+      },
+      {
+       "kind": "barrel",
+       "x": 578
+      },
+      {
+       "kind": "valve",
+       "name": "TREATMENT FEED · TRIALS",
+       "x": 1040
+      }
+     ],
+     "note": "the approach to the enclosure; task 2 (TREATMENT FEED · TRIALS) at the viewing gallery (lock 832)",
+     "cast": {
+      "gunner": [
+       "poacherJ",
+       "bomber"
+      ]
+     }
+    },
+    {
+     "id": "6-6",
+     "name": "THE TEST ENCLOSURE",
+     "x0": 1296,
+     "len": 1296,
+     "locks": [
+      1424,
+      1824
+     ],
+     "bossLock": 2208,
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
+      },
+      {
+       "kind": "crate",
+       "x": 578
+      },
+      {
+       "kind": "barrel",
+       "x": 963
+      },
+      {
+       "kind": "barrel",
+       "x": 1180
+      }
+     ],
+     "note": "inside the test enclosure; boss lock 2208-2592: the shattered far panel (Glassback)",
+     "cast": {
+      "gunner": [
+       "bomber",
+       "poacherJ"
+      ],
+      "knifer": [
+       "blade",
+       "knife"
+      ]
+     }
+    }
+   ],
+   "anims": []
+  }
+ ]
 }

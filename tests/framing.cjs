@@ -68,7 +68,7 @@ const A = require('./lib/arcade.cjs');
       if (p.y < b.top - 0.01 || p.y > b.bottom + 0.01) bad.push(`ch${ch + 1} ${what}: y ${p.y.toFixed(1)} outside [${b.top},${b.bottom}]`);
       if (p.x < v.x + 16 - 0.01 || p.x > v.x + 367 + 0.01) bad.push(`ch${ch + 1} ${what}: x ${p.x.toFixed(1)} outside [${v.x + 16},${v.x + 367}]`);
       if (STG && typeof STG.walkable === 'function' && !p.driving) { let w = null; for (const a of [s.area.index, s.area.id]) { try { w = STG.walkable(a, p.x, p.y); if (w !== undefined) break; } catch (e) { /* next */ } } if (w === false) bad.push(`ch${ch + 1} ${what}: not walkable at ${p.x.toFixed(0)},${p.y.toFixed(0)}`); } };
-    for (let ch = 0; ch < 6; ch++) {
+    for (let ch = 0; ch < EDEN_CAMPAIGN.length; ch++) {
       g.start(ch, 1, 'easy'); let s = g.snapshot; const x0 = s.player.x;
       AT.move(x0, s.band.top - 60); g.step(1 / 60); probeTick(ch, 'teleport above');
       AT.move(x0, s.band.bottom + 60); g.step(1 / 60); probeTick(ch, 'teleport below');
@@ -84,7 +84,7 @@ const A = require('./lib/arcade.cjs');
   await C.gated('G1', `Reinforcements enter fully off screen (±${margin} px) and drops start above the HUD, in every chapter and area`, G1, g1why, () => ev(margin => {
     const g = LAST_EDEN, bad = [], STG = window.STAGE || null; let sampled = 0, sloped = 0, skipped = 0; const areasSeen = new Set();
     const bandAt = (s, x) => { if (!STG || typeof STG.bandAt !== 'function') return null; for (const a of [s.area.index, s.area.id]) { try { const b = STG.bandAt(a, x); if (b) return Array.isArray(b) ? { top: b[0], bottom: b[1] } : b; } catch (e) { /* next */ } } return null; };
-    for (let ch = 0; ch < 6; ch++) {
+    for (let ch = 0; ch < EDEN_CAMPAIGN.length; ch++) {
       g.start(ch, 1, 'easy'); const encs = g.snapshot.plan.encounters;
       for (let k = 0; k < encs.length; k++) {
         g.test.skipTo(k); let s = null; for (let t = 0; t < 10; t++) { g.step(1 / 60); s = g.snapshot; if (s.enemies.length) break; }
@@ -117,7 +117,7 @@ const A = require('./lib/arcade.cjs');
       for (let k = 0; k < c.f.length; k++) for (const p of R.parts(id, { full: { clip: role, k } }, null)) { const loc = SP.locate(p.fam || 'heroes', p.rec, p.fam === 'heroes' ? p.sheet : null); if (loc) mirrorReach = Math.max(mirrorReach, (loc.r[4] - p.x) * S); } }
     const rect = i => { const s = g.snapshot, e = s.enemies[i], a = g.test.romAnimOf(i); if (!a || a.fid == null) return null; const fr = F.frames[a.fid]; if (!fr) return null;
       const x0 = e.dir > 0 ? e.x + fr[5] - fr[3] : e.x - fr[5], y0 = (e.y - e.z) - fr[6]; return { x0, x1: x0 + fr[3], y0, y1: y0 + fr[4] }; };
-    for (let ch = 0; ch < 6; ch++) {
+    for (let ch = 0; ch < EDEN_CAMPAIGN.length; ch++) {
       g.start(ch, 0, 'normal'); const encs = g.snapshot.plan.encounters.length;
       for (let k = 0; k < encs; k++) {
         g.start(ch, 0, 'normal'); g.step(1 / 60); g.step(1 / 60); g.test.skipTo(k); const seen = new Set();
@@ -163,7 +163,9 @@ const A = require('./lib/arcade.cjs');
   });
 
   // ---------------------------------------------------------------- G2 foreground pass (http only)
-  await C.gated('G2', 'A foreground (fg) stage pixel covers the player sprite', S.G2 && http, http ? 'stage-render.js + STAGE_DATA pages (G2)' : 'http (file:// taints the canvas)', async () => {
+  // Painted areas have no fg pages (work/story3/PAINT-FORMAT.md): once every chapter is painted there is nothing to test.
+  const anyFg = await page.evaluate(() => Object.values((window.STAGE_DATA && STAGE_DATA.chapters) || {}).some(ch => (ch.areas || []).some(a => a.fg && a.fg.length && !a.stub)));
+  await C.gated('G2', 'A foreground (fg) stage pixel covers the player sprite', S.G2 && http && anyFg, !http ? 'http (file:// taints the canvas)' : !anyFg ? 'no stage area has fg pages (every chapter is painted)' : 'stage-render.js + STAGE_DATA pages (G2)', async () => {
     const pick = await page.evaluate(async () => {
       const g = LAST_EDEN, CH = STAGE_DATA.chapters || {}, ids = Object.keys(CH).sort();
       for (let ci = 0; ci < ids.length; ci++) {
@@ -190,7 +192,10 @@ const A = require('./lib/arcade.cjs');
     });
     if (!pick) return 'no area with an opaque fg pixel over the band was found in STAGE_DATA';
     const placed = await ev(pick => { const g = LAST_EDEN; g.start(pick.chapter, 1, 'easy');
-      const encs = g.snapshot.plan.encounters; let best = -1; encs.forEach((e, k) => { if ((e.area === undefined || e.area === pick.area) && e.x <= pick.ax + 200 && (best < 0 || e.x > encs[best].x)) best = k; });
+      const encs = g.snapshot.plan.encounters, inArea = e => e.area === undefined || e.area === pick.area; let best = -1;
+      // the lock whose window shows the fg pixel (camera at e.x, 384 wide), else the last lock before it
+      encs.forEach((e, k) => { if (inArea(e) && e.x <= pick.ax - 40 && pick.ax + 40 < e.x + 384 && (best < 0 || e.x > encs[best].x)) best = k; });
+      if (best < 0) encs.forEach((e, k) => { if (inArea(e) && e.x <= pick.ax + 200 && (best < 0 || e.x > encs[best].x)) best = k; });
       if (best >= 0) { g.test.skipTo(best); for (let i = 0; i < 5; i++) g.step(1 / 60); g.test.clearFighters(); for (let i = 0; i < 10; i++) g.step(1 / 60); }
       g.test.move(pick.ax, pick.feet, pick.area); for (let i = 0; i < 90; i++) g.step(1 / 60); g.test.move(pick.ax, pick.feet, pick.area); g.render();
       const s = g.snapshot, v = s.view; return { sx: (pick.ax - v.x) * 2, sy: (pick.ay - v.y) * 2, visible: pick.ax >= v.x && pick.ax < v.x + v.w && pick.ay >= v.y && pick.ay < v.y + v.h, area: s.area && s.area.index, px: s.player.x, py: s.player.y }; }, pick);
@@ -218,7 +223,7 @@ const A = require('./lib/arcade.cjs');
     const spy = (obj, names) => { for (const k of names) { if (!obj || typeof obj[k] !== 'function') continue; const o = obj[k]; obj[k] = function (...a) { if (a.some(isMap)) maps++; return o.apply(this, a); }; restore.push(() => { obj[k] = o; }); } };
     spy(window.HeroRig, ['draw', 'parts']); spy(window.HeroRig && window.HeroRig.prototype, ['draw', 'parts']); spy(window.SPRITES, ['canvasFor', 'colourise', 'colorise', 'colorize', 'sheet']);
     try {
-      g.start(5, 0, 'easy', 4); AT.move(AT.view().x + 120, AT.M());
+      g.start(7, 0, 'easy', 4); AT.move(AT.view().x + 120, AT.M());
       for (const [t, dx, f] of [['mirror', 90, .3], ['mirror', 140, .7], ['brute', 200, .5], ['gunner', 240, .2]]) AT.spawn(t, AT.view().x + dx, AT.lane(f));
       try { g.test.freeClones(2); } catch (e) { /* optional */ }
       for (let i = 0; i < 30; i++) g.step(1 / 60); g.render();
@@ -237,7 +242,7 @@ const A = require('./lib/arcade.cjs');
   // freed at the collar pylons are conscripts on their own ROM records (snapshot `rom`), not hero copies.
   const clones = !S.G3 ? null : await ev(() => {
     const g = LAST_EDEN, R = window.HeroRig, ids = R && R.data && R.data.gameOrder; if (!ids) return null;
-    g.start(5, 0, 'easy', 4); AT.move(AT.view().x + 120, AT.M());
+    g.start(7, 0, 'easy', 4); AT.move(AT.view().x + 120, AT.M());
     for (const [t, dx, f] of [['mirror', 90, .3], ['mirror', 160, .7]]) AT.spawn(t, AT.view().x + dx, AT.lane(f));
     try { g.test.freeClones(2); } catch (e) { /* optional */ }
     const roles = new Set(), keys = new Set(), bad = [], EN = window.ROM_ENEMIES || SPRITE_DATA.families.enemies; let n = 0, nc = 0;
@@ -266,7 +271,7 @@ const A = require('./lib/arcade.cjs');
     });
   const cadillac = !S.G3 ? null : await ev(() => {
     const g = LAST_EDEN, art = g.test && g.test.art, C = window.ROM_FX && ROM_FX.cadillac; if (!art || !C) return null;
-    g.start(1, 1, 'easy', 0); for (let i = 0; i < 30; i++) g.step(1 / 60);
+    g.start(2, 1, 'easy', 0); for (let i = 0; i < 30; i++) g.step(1 / 60);
     const recs = [], parts = [], SP = window.SPRITES, od = SP.drawRec, oh = HeroRig.draw;
     SP.drawRec = function (gx, fam, rec, map) { recs.push(`${fam}:${rec}:${map}`); return od.apply(this, arguments); };
     HeroRig.draw = function (gx, ps) { for (const p of ps || []) parts.push(p.rec); return oh.apply(this, arguments); };
@@ -277,7 +282,7 @@ const A = require('./lib/arcade.cjs');
   await C.gated('G3b', 'The Cadillac is the ROM car: body 1097/1098 and both wheels in S3A0, Jack\'s main:29 drive record on the seat', !!cadillac,
     S.G3 ? 'LAST_EDEN.test.art (the ROM car, G3b) or ROM_FX.cadillac (WP-J) is missing' : 'hero-rig.js (G3)', () => {
       const c = cadillac, has = r => c.recs.includes(`fx:${r}:${c.map}`);
-      if (!c.driving) return 'chapter 2 did not start in the car';
+      if (!c.driving) return 'stage 3 (the causeway) did not start in the car';
       if (!c.body.some(has)) return `no body record drawn: ${c.recs.join(',') || 'no ROM record at all'}`;
       if (c.recs.filter(s => c.wheels.some(w => s === `fx:${w}:${c.map}`)).length < 2) return `fewer than two wheel records: ${c.recs.join(',')}`;
       if (!c.parts.some(r => c.drive.includes(r))) return `the driver is not a main:29 record (${c.drive}): parts ${c.parts.join(',')}`;
@@ -315,7 +320,7 @@ const A = require('./lib/arcade.cjs');
       ['fight', () => { const g = LAST_EDEN; g.start(0, 1, 'easy'); const k = g.snapshot.plan.encounters.findIndex(e => e.task !== undefined && !e.boss); g.test.skipTo(k); for (let i = 0; i < 40; i++) g.step(1 / 60);
         const p = g.snapshot.player, e = g.test.spawnEnemy(p.x + 70, p.y, 'raider'); e.hp = e.maxhp = 5000; e.state = 'recover'; e.timer = 999; const i = g.snapshot.enemies.findIndex(x => x.id === e.id); g.test.damageEnemy(i, 5); g.test.damageEnemy(i, 5);
         g.test.equip('rifle', 4); for (let t = 0; t < 200 && g.snapshot.caption; t++) g.step(1 / 60); return { lock: !!g.snapshot.lock, foe: g.test.hud().foe && g.test.hud().foe.name, mission: !!g.snapshot.mission }; }],
-      ['car', () => { const g = LAST_EDEN; g.start(1, 1, 'easy'); g.test.skipTo(1); for (let i = 0; i < 40; i++) g.step(1 / 60); for (let t = 0; t < 200 && g.snapshot.caption; t++) g.step(1 / 60); return { driving: g.snapshot.driving, lock: !!g.snapshot.lock }; }],
+      ['car', () => { const g = LAST_EDEN; g.start(2, 1, 'easy'); g.test.skipTo(1); for (let i = 0; i < 40; i++) g.step(1 / 60); for (let t = 0; t < 200 && g.snapshot.caption; t++) g.step(1 / 60); return { driving: g.snapshot.driving, lock: !!g.snapshot.lock }; }],
       ['boss', () => { const g = LAST_EDEN; g.start(0, 1, 'easy'); g.test.spawnBoss(); for (let t = 0; t < 400 && (g.snapshot.bossCard || g.snapshot.caption); t++) g.step(1 / 60); return { foe: g.test.hud().foe && g.test.hud().foe.name, card: !!g.snapshot.bossCard }; }],
     ];
     for (const [name, fn] of scenes) {

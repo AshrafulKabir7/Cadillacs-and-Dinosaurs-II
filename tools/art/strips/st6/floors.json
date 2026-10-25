@@ -1,0 +1,188 @@
+{
+ "note": "written by tools/art/import-bg.cjs; floor = the strip y where the back scenery meets the walkable floor (override from tools/art/bg-floors.json, else detected)",
+ "colours": 94,
+ "images": [
+  {
+   "id": "a0-1",
+   "src": "work/bg/gen/st6/st6-a0-1.png",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  {
+   "id": "a0-2",
+   "src": "work/bg/gen/st6/st6-a0-2.png",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  {
+   "id": "a1-1",
+   "src": "work/bg/gen/st6/st6-a1-1.png",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  {
+   "id": "a1-2",
+   "src": "work/bg/gen/st6/st6-a1-2.png",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  {
+   "id": "a2-1",
+   "src": "work/bg/gen/st6/st6-a2-1.png",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  {
+   "id": "a2-2",
+   "src": "work/bg/gen/st6/st6-a2-2.png",
+   "size": [
+    1536,
+    1024
+   ]
+  }
+ ],
+ "strips": {
+  "st6-a0-1-A": {
+   "floor": 147,
+   "detected": 147,
+   "score": 0.6767,
+   "override": null,
+   "bandTop": 147,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 83863
+  },
+  "st6-a0-1-B": {
+   "floor": 142,
+   "detected": 142,
+   "score": 0.5986,
+   "override": null,
+   "bandTop": 142,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 79819
+  },
+  "st6-a0-2-A": {
+   "floor": 142,
+   "detected": 142,
+   "score": 0.5386,
+   "override": null,
+   "bandTop": 142,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 73610
+  },
+  "st6-a0-2-B": {
+   "floor": 135,
+   "detected": 135,
+   "score": 0.5634,
+   "override": null,
+   "bandTop": 135,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 72267
+  },
+  "st6-a1-1-A": {
+   "floor": 145,
+   "detected": 145,
+   "score": 0.7072,
+   "override": null,
+   "bandTop": 145,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 67707
+  },
+  "st6-a1-1-B": {
+   "floor": 139,
+   "detected": 139,
+   "score": 0.578,
+   "override": null,
+   "bandTop": 139,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 69199
+  },
+  "st6-a1-2-A": {
+   "floor": 130,
+   "detected": 130,
+   "score": 0.6571,
+   "override": null,
+   "bandTop": 130,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 77300
+  },
+  "st6-a1-2-B": {
+   "floor": 126,
+   "detected": 126,
+   "score": 0.5602,
+   "override": null,
+   "bandTop": 126,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 77313
+  },
+  "st6-a2-1-A": {
+   "floor": 149,
+   "detected": 149,
+   "score": 0.6277,
+   "override": null,
+   "bandTop": 149,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 76840
+  },
+  "st6-a2-1-B": {
+   "floor": 147,
+   "detected": 147,
+   "score": 0.508,
+   "override": null,
+   "bandTop": 147,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 75599
+  },
+  "st6-a2-2-A": {
+   "floor": 137,
+   "detected": 137,
+   "score": 0.4857,
+   "override": null,
+   "bandTop": 137,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 74847
+  },
+  "st6-a2-2-B": {
+   "floor": 128,
+   "detected": 128,
+   "score": 0.4753,
+   "override": null,
+   "bandTop": 128,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 74931
+  }
+ }
+}

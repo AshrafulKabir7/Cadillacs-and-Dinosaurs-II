@@ -26,7 +26,7 @@ const BASELINE = path.join(A.RESULTS, 'perf-baseline.json');
     const reset = () => { for (const k in counts) counts[k] = 0; };
     const scene = { chapter: 5, section: 4, spawned: [] };
     try {
-      g.start(5, 0, 'easy', 4);                                   // ch6 S5: the clone war
+      g.start(7, 0, 'easy', 4);                                   // stage 8 S5 (the gatehouse stairs; the old ch6 clone-war spot)
       const v = AT.view(), x0 = v.x + 120; AT.move(x0, AT.M());
       const roster = [['mirror', 90, .25], ['mirror', 150, .6], ['mirror', 210, .85], ['brute', 240, .4], ['gunner', 300, .15], ['knifer', 180, .95], ['mutant', 260, .7], ['regent', 330, .5]];
       for (const [t, dx, f] of roster) { try { const e = AT.spawn(t, x0 + dx, AT.lane(f)); scene.spawned.push(t + (e && e.clone ? '(clone)' : '')); } catch (e) { scene.spawned.push(t + '!' + e.message); } }

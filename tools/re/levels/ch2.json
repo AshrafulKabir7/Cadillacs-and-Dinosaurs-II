@@ -1,691 +1,351 @@
 {
-  "id": "ch2",
-  "title": "THE CORAL CAUSEWAY",
-  "objPage": "S3A0",
-  "preset": "coral",
-  "notes": [
-    "COHERENCE (2026-10-22): ch2 is one place, the tidal causeway, from end to end. The drive (a0 = S1-S3, a2 = S6) is the HELL ROAD loop E3a0 15872-19712 (the ROM's own repeat, period 3840 = 0xF00) under the coral palette; a1 (S4-S5, on foot at the old toll post) is the same causeway: E3a0 6144-6656 walked back and forth (every leg <= 512 px, leftward legs mirrored) under the same palette, with the same sea along its far edge and the same far layer, so stopping the car does not change the place.",
-    "The causeway: the far edge of the HELL ROAD ground (y 128-160) is sea in every column: E6a1 open-water cells (E6a1 2688-3008, h 304-336, palette row 20, dimmed to the dusk), every other 320-px copy mirrored so the copies meet on mirror joins; the HELL ROAD mesas now stand in the sea as coral stacks.",
-    "2-6 THE RISING TIDE (boss: BREAKWATER, the harnessed ankylosaur towing freight): the tide is one row higher and has crossed the far edge of the road (water at y 112-176; the drive band stays 161-224). The low-tide flats carry the wreck of an old pier: rope-wound pilings (the E7a2 cable-wound pillar, lifted, behind the sprites) stand in the water every 640 px, where abandoned freight was once moored. The loop's wrap copy (x 3840-4224) repeats x 0-384 exactly, patches included.",
-    "Gate 4 takes the loop exemption (user question 5 default) only for the boss window: the loop content repeats into the original HELL ROAD boss window at 32752 (reported as a warning); every loop column is patched, so no verbatim run remains.",
-    "The coral preset's ops are all row-role ops; every area gives explicit row ops instead (E3a0 scroll2 row 2 = the sand: hue -12 and 16% toward #d98a8a, coral flats; scroll3 row 4 = the mesas: 30% toward #d98a8a, coral stacks; row 5 = the dusk sky: 18% toward #3a5a9a, sea light), so no piece keeps the original palette.",
-    "a1 toll post: the portal timber of E6a0 (864-896, rows 9/8/3/2 lifted, dressing) stands as toll posts at the section join and at the barrier."
-  ],
-  "areas": [
+ "id": "ch2",
+ "title": "THE SWAMP FOREST",
+ "objPage": "S2A0",
+ "preset": "flood",
+ "notes": [
+  "Painted scenery (revision 3, step C): the 12 st2 paintings (work/bg/gen/st2 -> strips tools/art/strips/st2, prompts tools/art/bg-prompts.json); each area is the four strips of its two paintings in storyline order (a<N>-1 A, B, a<N>-2 A, B), overlapping 32 px with a floor-only crossfade where the floors differ (2592-2656 px).",
+  "Gameplay structure (sections, lock counts, task props, casts, boss lock) from step B, re-fitted to the painted areas and their floor lines."
+ ],
+ "areas": [
+  {
+   "id": "a0",
+   "w": 2656,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
     {
-      "id": "a0",
-      "w": 3392,
-      "h": 224,
-      "bg": "auto",
-      "drive": true,
-      "ops": [
-        {
-          "op": "hsl",
-          "h": -12,
-          "s": 1,
-          "l": 1.04,
-          "rows": [
-            2
-          ],
-          "layer": "s2"
-        },
-        {
-          "op": "tint",
-          "rgb": "#d98a8a",
-          "amount": 0.16,
-          "rows": [
-            2
-          ],
-          "layer": "s2"
-        },
-        {
-          "op": "tint",
-          "rgb": "#7a5a6a",
-          "amount": 0.12,
-          "rows": [
-            0
-          ],
-          "layer": "s2"
-        },
-        {
-          "op": "tint",
-          "rgb": "#d98a8a",
-          "amount": 0.3,
-          "rows": [
-            4
-          ],
-          "layer": "s3"
-        },
-        {
-          "op": "tint",
-          "rgb": "#3a5a9a",
-          "amount": 0.18,
-          "rows": [
-            5
-          ],
-          "layer": "s3"
-        }
-      ],
-      "loop": {
-        "src": "E3a0",
-        "x0": 15872,
-        "period": 3840,
-        "h": [
-          16,
-          240
-        ],
-        "exempt": true
-      },
-      "rowscroll": {
-        "y": 128,
-        "rows": 32,
-        "from": 0.5,
-        "to": 0.984375,
-        "base": 32,
-        "den": 64
-      },
-      "s3": {
-        "src": "E3a0",
-        "shift": 3,
-        "x3": [
-          2304,
-          2944
-        ],
-        "period": 256,
-        "fill": "repeat"
-      },
-      "s2": [
-        {
-          "patch": {
-            "src": "E6a1",
-            "x": [
-              2688,
-              3008
-            ],
-            "h": [
-              304,
-              336
-            ]
-          },
-          "at": [
-            0,
-            128
-          ],
-          "every": 320,
-          "alternate": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 10,
-              "s": 0.85,
-              "l": 0.85
-            },
-            {
-              "op": "tint",
-              "rgb": "#3a5a9a",
-              "amount": 0.15
-            }
-          ],
-          "note": "the sea beyond the causeway: E6a1 open water over the far edge of the ground (y 128-160)"
-        }
-      ],
-      "start": {
-        "x": 60
-      },
-      "sections": [
-        {
-          "id": "2-1",
-          "name": "LOW TIDE",
-          "x0": 0,
-          "len": 1344,
-          "cap": "THE CORAL CAUSEWAY",
-          "locks": [
-            640,
-            960
-          ],
-          "bossLock": null,
-          "drive": true,
-          "scenery": [
-            "herd",
-            "pteranodon-bg"
-          ],
-          "props": []
-        },
-        {
-          "id": "2-2",
-          "name": "THE POD CONVOY",
-          "x0": 1344,
-          "len": 1024,
-          "locks": [
-            1536,
-            1984
-          ],
-          "bossLock": null,
-          "drive": true,
-          "set": [
-            "zeke"
-          ],
-          "props": [
-            {
-              "kind": "cargo",
-              "name": "CARGO POD A",
-              "x": 640
-            }
-          ]
-        },
-        {
-          "id": "2-3",
-          "name": "OUTRIDERS",
-          "x0": 2368,
-          "len": 1024,
-          "locks": [
-            2560,
-            3008
-          ],
-          "bossLock": null,
-          "drive": true,
-          "set": [
-            "zeke"
-          ],
-          "props": [
-            {
-              "kind": "cargo",
-              "name": "CARGO POD B",
-              "x": 192
-            }
-          ]
-        }
-      ]
+     "img": "tools/art/strips/st2/st2-a0-1-A.png",
+     "at": 0,
+     "note": "the old hunting trail, a rusty leg trap"
     },
     {
-      "id": "a1",
-      "w": 2048,
-      "h": 224,
-      "bg": "auto",
-      "preset": false,
-      "ops": [
-        {
-          "op": "hsl",
-          "h": -12,
-          "s": 1,
-          "l": 1.04,
-          "rows": [
-            2
-          ],
-          "layer": "s2"
-        },
-        {
-          "op": "tint",
-          "rgb": "#d98a8a",
-          "amount": 0.16,
-          "rows": [
-            2
-          ],
-          "layer": "s2"
-        },
-        {
-          "op": "tint",
-          "rgb": "#7a5a6a",
-          "amount": 0.12,
-          "rows": [
-            0
-          ],
-          "layer": "s2"
-        },
-        {
-          "op": "tint",
-          "rgb": "#d98a8a",
-          "amount": 0.3,
-          "rows": [
-            4
-          ],
-          "layer": "s3"
-        },
-        {
-          "op": "tint",
-          "rgb": "#3a5a9a",
-          "amount": 0.18,
-          "rows": [
-            5
-          ],
-          "layer": "s3"
-        }
-      ],
-      "s2": [
-        {
-          "slice": {
-            "src": "E3a0",
-            "x": [
-              6144,
-              6656
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            0,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E3a0",
-            "x": [
-              6144,
-              6656
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            512,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E3a0",
-            "x": [
-              6144,
-              6656
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1024,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E3a0",
-            "x": [
-              6400,
-              6656
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1536,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E3a0",
-            "x": [
-              6400,
-              6656
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1792,
-            0
-          ]
-        },
-        {
-          "patch": {
-            "src": "E6a1",
-            "x": [
-              2688,
-              3008
-            ],
-            "h": [
-              304,
-              336
-            ]
-          },
-          "at": [
-            0,
-            128
-          ],
-          "every": 320,
-          "alternate": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 10,
-              "s": 0.85,
-              "l": 0.85
-            },
-            {
-              "op": "tint",
-              "rgb": "#3a5a9a",
-              "amount": 0.15
-            }
-          ],
-          "note": "the same sea along the far edge of the causeway as on the drive",
-          "repeat": 7
-        },
-        {
-          "patch": {
-            "src": "E6a0",
-            "x": [
-              864,
-              896
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "rows": [
-            9,
-            8,
-            3,
-            2
-          ],
-          "at": [
-            1008,
-            0
-          ],
-          "join": true,
-          "prio": "none",
-          "note": "toll post (the E6a0 portal timber, lifted)"
-        },
-        {
-          "patch": {
-            "src": "E6a0",
-            "x": [
-              864,
-              896
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "rows": [
-            9,
-            8,
-            3,
-            2
-          ],
-          "at": [
-            1680,
-            0
-          ],
-          "join": true,
-          "prio": "none",
-          "note": "toll post (the E6a0 portal timber, lifted)"
-        }
-      ],
-      "s3": [
-        {
-          "x": [
-            0,
-            2048
-          ],
-          "src": "E3a0",
-          "shift": 3,
-          "x3": [
-            2304,
-            2944
-          ],
-          "fill": "repeat",
-          "note": "the drive's far layer (sea light, coral stacks), not periodic on foot"
-        }
-      ],
-      "sections": [
-        {
-          "id": "2-4",
-          "name": "THE TOLL FORT",
-          "x0": 0,
-          "len": 1024,
-          "cap": "THE OLD TOLL POST",
-          "locks": [
-            192,
-            640
-          ],
-          "bossLock": null,
-          "note": "T drops from the stockade",
-          "props": [
-            {
-              "kind": "crate",
-              "x": 193
-            },
-            {
-              "kind": "barrel",
-              "x": 578
-            }
-          ]
-        },
-        {
-          "id": "2-5",
-          "name": "THE BARRIER WINCH",
-          "x0": 1024,
-          "len": 1024,
-          "locks": [
-            1216,
-            1664
-          ],
-          "bossLock": null,
-          "props": [
-            {
-              "kind": "barrel",
-              "x": 193
-            },
-            {
-              "kind": "crate",
-              "x": 578
-            },
-            {
-              "kind": "gate",
-              "name": "TOLL BARRIER WINCH",
-              "x": 700
-            },
-            {
-              "kind": "parked-car",
-              "x": 120
-            },
-            {
-              "kind": "chain-barrier",
-              "x": 740
-            }
-          ]
-        }
-      ]
+     "img": "tools/art/strips/st2/st2-a0-1-B.png",
+     "at": 640,
+     "ramp": 32,
+     "note": "the poachers' hunting blind, chained cages, rifle rack",
+     "blend": 32,
+     "blendRows": "floor"
     },
     {
-      "id": "a2",
-      "w": 1152,
-      "h": 224,
-      "bg": "auto",
-      "drive": true,
-      "ops": [
-        {
-          "op": "hsl",
-          "h": -12,
-          "s": 1,
-          "l": 1.04,
-          "rows": [
-            2
-          ],
-          "layer": "s2"
-        },
-        {
-          "op": "tint",
-          "rgb": "#d98a8a",
-          "amount": 0.16,
-          "rows": [
-            2
-          ],
-          "layer": "s2"
-        },
-        {
-          "op": "tint",
-          "rgb": "#7a5a6a",
-          "amount": 0.12,
-          "rows": [
-            0
-          ],
-          "layer": "s2"
-        },
-        {
-          "op": "tint",
-          "rgb": "#d98a8a",
-          "amount": 0.3,
-          "rows": [
-            4
-          ],
-          "layer": "s3"
-        },
-        {
-          "op": "tint",
-          "rgb": "#3a5a9a",
-          "amount": 0.18,
-          "rows": [
-            5
-          ],
-          "layer": "s3"
-        },
-        {
-          "op": "tint",
-          "rgb": "#3a7a9a",
-          "amount": 0.1,
-          "rows": [
-            2
-          ],
-          "layer": "s2"
-        }
-      ],
-      "loop": {
-        "src": "E3a0",
-        "x0": 15872,
-        "period": 3840,
-        "h": [
-          16,
-          240
-        ],
-        "exempt": true
-      },
-      "rowscroll": {
-        "y": 128,
-        "rows": 32,
-        "from": 0.5,
-        "to": 0.984375,
-        "base": 32,
-        "den": 64
-      },
-      "s3": {
-        "src": "E3a0",
-        "shift": 3,
-        "x3": [
-          2304,
-          2944
-        ],
-        "period": 256,
-        "fill": "repeat"
-      },
-      "s2": [
-        {
-          "patch": {
-            "src": "E6a1",
-            "x": [
-              2688,
-              3008
-            ],
-            "h": [
-              272,
-              336
-            ]
-          },
-          "at": [
-            0,
-            112
-          ],
-          "every": 320,
-          "alternate": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 10,
-              "s": 0.85,
-              "l": 0.85
-            },
-            {
-              "op": "tint",
-              "rgb": "#3a5a9a",
-              "amount": 0.15
-            }
-          ],
-          "note": "the rising tide: E6a1 open water over y 112-176, one row higher than 2-1..2-3 and over the top 16 px of the road"
-        },
-        {
-          "patch": {
-            "src": "E7a2",
-            "x": [
-              400,
-              432
-            ],
-            "h": [
-              112,
-              192
-            ]
-          },
-          "rows": [
-            21
-          ],
-          "at": [
-            272,
-            48
-          ],
-          "every": 640,
-          "prio": "none",
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -20,
-              "s": 0.6,
-              "l": 0.8
-            },
-            {
-              "op": "tint",
-              "rgb": "#3a5a9a",
-              "amount": 0.2
-            }
-          ],
-          "note": "an old pier's rope-wound piling standing in the tide (the E7a2 cable-wound pillar, lifted), every 640 px of the loop"
-        }
-      ],
-      "sections": [
-        {
-          "id": "2-6",
-          "name": "THE LAST WAGON",
-          "x0": 0,
-          "len": 1152,
-          "cap": "THE RISING TIDE",
-          "locks": [
-            192
-          ],
-          "bossLock": 768,
-          "drive": true,
-          "set": [
-            "zeke"
-          ],
-          "note": "RISK R7: the loop vs the HELL ROAD boss window (gate-4 loop exemption)"
-        }
-      ]
+     "img": "tools/art/strips/st2/st2-a0-2-A.png",
+     "at": 1312,
+     "note": "raised walkway over the swamp, net traps (a straight cut and a step: the planks start at the bank)",
+     "step": true
+    },
+    {
+     "img": "tools/art/strips/st2/st2-a0-2-B.png",
+     "at": 1984,
+     "note": "river bank of broken traps and bones (a straight cut and a step: the planks end at the bank)",
+     "step": true
     }
-  ]
+   ],
+   "walk": {
+    "patch": [
+     {
+      "rect": [
+       1312,
+       208,
+       672,
+       16
+      ],
+      "walk": false,
+      "why": "the walkway's front beam and posts stand in the water (a0-2-A rows 196-224)"
+     }
+    ]
+   },
+   "sections": [
+    {
+     "id": "2-1",
+     "name": "THE HUNTING TRAILS",
+     "x0": 0,
+     "len": 1312,
+     "cap": "THE OLD HUNTING GROUNDS",
+     "locks": [
+      640,
+      928
+     ],
+     "bossLock": null,
+     "scenery": [
+      "flock",
+      "herd"
+     ],
+     "cast": {
+      "gunner": [
+       "poacherJ",
+       "skinner"
+      ],
+      "knifer": [
+       "blade"
+      ]
+     },
+     "props": [
+      {
+       "kind": "crate",
+       "x": 222
+      },
+      {
+       "kind": "barrel",
+       "x": 607
+      },
+      {
+       "kind": "barrel",
+       "x": 992
+      }
+     ]
+    },
+    {
+     "id": "2-2",
+     "name": "THE SNARE WALK",
+     "x0": 1312,
+     "len": 1344,
+     "locks": [
+      1904,
+      2272
+     ],
+     "bossLock": null,
+     "set": [
+      "naguri-vignette"
+     ],
+     "props": [
+      {
+       "kind": "crate",
+       "x": 300
+      },
+      {
+       "kind": "barrel",
+       "x": 700
+      }
+     ],
+     "cast": {
+      "gunner": [
+       "poacherJ",
+       "skinner"
+      ],
+      "knifer": [
+       "blade"
+      ]
+     },
+     "note": "locks off the walkway (its band is only 149-208); the sprung snares and bones on the river bank (lock 1904)"
+    }
+   ],
+   "anims": []
+  },
+  {
+   "id": "a1",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
+    {
+     "img": "tools/art/strips/st2/st2-a1-1-A.png",
+     "at": 0,
+     "lift": 24,
+     "note": "the nesting ground: empty nests, stolen egg baskets (lifted 24 px: floor 131 like B, a 93-px band instead of 69)"
+    },
+    {
+     "img": "tools/art/strips/st2/st2-a1-1-B.png",
+     "at": 640,
+     "note": "field station: dart crates, catch-poles and prods, collars on a line",
+     "blend": 32,
+     "blendRows": "floor"
+    },
+    {
+     "img": "tools/art/strips/st2/st2-a1-2-A.png",
+     "at": 1280,
+     "note": "egg cart, a generator charging the prods",
+     "blend": 32,
+     "blendRows": "floor"
+    },
+    {
+     "img": "tools/art/strips/st2/st2-a1-2-B.png",
+     "at": 1920,
+     "ramp": 32,
+     "note": "timber pens of empty collars, the bait bucket",
+     "blend": 32,
+     "blendRows": "floor"
+    }
+   ],
+   "sections": [
+    {
+     "id": "2-3",
+     "name": "THE NESTING GROUND",
+     "x0": 0,
+     "len": 1296,
+     "cap": "THE NESTING GROUND",
+     "locks": [
+      256,
+      832
+     ],
+     "bossLock": null,
+     "scenery": [
+      "hatchlings"
+     ],
+     "note": "the robbed nests (lock 256); task 0 (PROD RACK) and the elite CAMP HANDLER at the field station (lock 832)",
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
+      },
+      {
+       "kind": "crate",
+       "x": 578
+      },
+      {
+       "kind": "beacon",
+       "name": "PROD RACK",
+       "x": 1000
+      }
+     ]
+    },
+    {
+     "id": "2-4",
+     "name": "THE COLLAR PENS",
+     "x0": 1296,
+     "len": 1296,
+     "locks": [
+      1424,
+      2176
+     ],
+     "bossLock": null,
+     "scenery": [
+      "herd"
+     ],
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
+      },
+      {
+       "kind": "barrel",
+       "x": 578
+      },
+      {
+       "kind": "beacon",
+       "name": "COLLAR CRATES",
+       "x": 320
+      }
+     ],
+     "cast": {
+      "gunner": [
+       "poacherJ",
+       "skinner"
+      ],
+      "knifer": [
+       "blade"
+      ]
+     },
+     "note": "task 1 (COLLAR CRATES) by the egg cart and the prod generator (lock 1424)"
+    }
+   ],
+   "anims": []
+  },
+  {
+   "id": "a2",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
+    {
+     "img": "tools/art/strips/st2/st2-a2-1-A.png",
+     "at": 0,
+     "note": "the loading camp: tents, floodlights, cages on pallets"
+    },
+    {
+     "img": "tools/art/strips/st2/st2-a2-1-B.png",
+     "at": 640,
+     "ramp": 32,
+     "note": "transport pens, crate loader, prod rack",
+     "blend": 32,
+     "blendRows": "floor"
+    },
+    {
+     "img": "tools/art/strips/st2/st2-a2-2-A.png",
+     "at": 1280,
+     "ramp": 64,
+     "note": "the headkeeper's tent: goggles and a red braid on the table",
+     "blend": 32,
+     "blendRows": "floor"
+    },
+    {
+     "img": "tools/art/strips/st2/st2-a2-2-B.png",
+     "at": 1920,
+     "note": "the loading platform over the river, crane and motor launch (the boss arena)",
+     "blend": 32,
+     "blendRows": "floor"
+    }
+   ],
+   "sections": [
+    {
+     "id": "2-5",
+     "name": "THE CAGE ROW",
+     "x0": 0,
+     "len": 1296,
+     "cap": "THE LOADING CAMP",
+     "locks": [
+      320,
+      832
+     ],
+     "bossLock": null,
+     "props": [
+      {
+       "kind": "crate",
+       "x": 193
+      },
+      {
+       "kind": "barrel",
+       "x": 578
+      },
+      {
+       "kind": "beacon",
+       "name": "TRANQUILIZER STATION",
+       "x": 1024
+      }
+     ],
+     "note": "task 2 (TRANQUILIZER STATION) at the transport pens and the prod rack (lock 832)",
+     "cast": {
+      "gunner": [
+       "skinner",
+       "poacherJ"
+      ]
+     }
+    },
+    {
+     "id": "2-6",
+     "name": "THE LOADING PLATFORM",
+     "x0": 1296,
+     "len": 1296,
+     "locks": [
+      1424
+     ],
+     "bossLock": 2208,
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
+      },
+      {
+       "kind": "crate",
+       "x": 578
+      },
+      {
+       "kind": "barrel",
+       "x": 900
+      }
+     ],
+     "note": "boss lock 2208-2592: the loading platform; Thorne's COLLAR WINCH (the boss task) stands at lock.right - 64",
+     "cast": {
+      "gunner": [
+       "poacherJ",
+       "skinner"
+      ],
+      "knifer": [
+       "blade"
+      ]
+     }
+    }
+   ],
+   "anims": []
+  }
+ ]
 }

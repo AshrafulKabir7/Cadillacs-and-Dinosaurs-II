@@ -1,0 +1,334 @@
+{
+ "id": "ch8",
+ "title": "THE CROWN DAM",
+ "objPage": "S8A2",
+ "preset": "storm-crown",
+ "fx": {
+  "rain": true,
+  "lightning": {
+   "alpha": 0.4,
+   "frames": 2,
+   "every": [
+    240,
+    420
+   ],
+   "layer": "s3"
+  }
+ },
+ "notes": [
+  "Painted scenery (revision 3, step D): the 5 st8 paintings (work/bg/gen/st8 -> strips tools/art/strips/st8, prompts tools/art/bg-prompts.json; st8 has no a0-2). a0 is the turbine gallery (one painting, 1312 px); a1 and a2 are the four strips of their two paintings in storyline order (a<N>-1 A, B, a<N>-2 A, B), overlapping 32 px with a floor-only crossfade (2592 px).",
+  "Gameplay structure (sections, lock counts, task props, casts, boss lock) from step B, re-fitted to the painted areas and their floor lines. a0 is one painting, so 8-1 and 8-2 share it (672 + 640 px); a1 is the lifts and platform (8-3) and the gatehouse with the lift gear (8-4); a2 is the gate control room and the blast doors (8-5) and the dam crest (8-6, the boss arena at the spillway gantry)."
+ ],
+ "areas": [
+  {
+   "id": "a0",
+   "w": 1312,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
+    {
+     "img": "tools/art/strips/st8/st8-a0-1-A.png",
+     "at": 0,
+     "note": "the turbine gallery inside the dam: generator turbines in a row, big pipes, catwalk railings, floodlights"
+    },
+    {
+     "img": "tools/art/strips/st8/st8-a0-1-B.png",
+     "at": 640,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "the turbine hall: penstock pipes, valves, the crown on a turbine housing, puddles on the steel floor"
+    }
+   ],
+   "sections": [
+    {
+     "id": "8-1",
+     "name": "THE SERVICE BRIDGE",
+     "x0": 0,
+     "len": 672,
+     "cap": "THE TURBINE GALLERIES",
+     "locks": [
+      192,
+      288
+     ],
+     "bossLock": null,
+     "set": [
+      "zeke"
+     ],
+     "scenery": [
+      "pteranodon-bg"
+     ],
+     "cast": {
+      "gunner": [
+       "poacherJ",
+       "bomber"
+      ]
+     },
+     "props": [
+      {
+       "kind": "crate",
+       "x": 222
+      },
+      {
+       "kind": "barrel",
+       "x": 430
+      },
+      {
+       "kind": "barrel",
+       "x": 560
+      }
+     ],
+     "note": "the turbine gallery"
+    },
+    {
+     "id": "8-2",
+     "name": "THE TURBINE HALL",
+     "x0": 672,
+     "len": 640,
+     "locks": [
+      800,
+      928
+     ],
+     "bossLock": null,
+     "note": "the turbine hall; the GATE CAPTAIN at lock 928",
+     "cast": {
+      "gunner": [
+       "poacherJ",
+       "bomber"
+      ]
+     },
+     "props": [
+      {
+       "kind": "crate",
+       "x": 193
+      },
+      {
+       "kind": "barrel",
+       "x": 578
+      }
+     ]
+    }
+   ],
+   "anims": []
+  },
+  {
+   "id": "a1",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
+    {
+     "img": "tools/art/strips/st8/st8-a1-1-A.png",
+     "at": 0,
+     "note": "the maintenance lifts: steel lift cages in the concrete shaft, counterweights, warning stripes"
+    },
+    {
+     "img": "tools/art/strips/st8/st8-a1-1-B.png",
+     "at": 640,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "the maintenance platform along the dam wall: pipes and valves, rain through the grating"
+    },
+    {
+     "img": "tools/art/strips/st8/st8-a1-2-A.png",
+     "at": 1280,
+     "blend": 32,
+     "blendRows": "floor",
+     "lift": 10,
+     "note": "the gatehouse exterior: the crown on the concrete, gate machinery and giant gears behind bars (lifted 10 px: floor 139)"
+    },
+    {
+     "img": "tools/art/strips/st8/st8-a1-2-B.png",
+     "at": 1920,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "inside the gatehouse: the wall chart of the shoulder brace and shield-arm, medical cases, the rack of pistols and the blade"
+    }
+   ],
+   "sections": [
+    {
+     "id": "8-3",
+     "name": "THE MAINTENANCE PLATFORMS",
+     "x0": 0,
+     "len": 1296,
+     "cap": "THE MAINTENANCE LIFTS",
+     "locks": [
+      224,
+      832
+     ],
+     "bossLock": null,
+     "note": "the lift cages and the maintenance platform",
+     "cast": {
+      "gunner": [
+       "skinner",
+       "poacherJ"
+      ]
+     },
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
+      },
+      {
+       "kind": "crate",
+       "x": 578
+      }
+     ]
+    },
+    {
+     "id": "8-4",
+     "name": "THE GATEHOUSE",
+     "x0": 1296,
+     "len": 1296,
+     "locks": [
+      1424,
+      1744,
+      2176
+     ],
+     "bossLock": null,
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
+      },
+      {
+       "kind": "barrel",
+       "x": 578
+      },
+      {
+       "kind": "crate",
+       "x": 963
+      },
+      {
+       "kind": "barrel",
+       "x": 1100
+      },
+      {
+       "kind": "gate",
+       "name": "LIFT CONTROL · LOWER",
+       "x": 300
+      },
+      {
+       "kind": "gate",
+       "name": "LIFT CONTROL · UPPER",
+       "x": 1220
+      }
+     ],
+     "cast": {
+      "gunner": [
+       "skinner",
+       "poacherJ"
+      ]
+     },
+     "note": "task 0 (LIFT CONTROL · LOWER) by the gear cage (lock 1424); task 1 (LIFT CONTROL · UPPER) inside the gatehouse (lock 2176)"
+    }
+   ],
+   "anims": []
+  },
+  {
+   "id": "a2",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
+    {
+     "img": "tools/art/strips/st8/st8-a2-1-A.png",
+     "at": 0,
+     "lift": 12,
+     "note": "the gate control room: the release gears and lever, control panels, the crown on the wall (lifted 12 px: floor 137)"
+    },
+    {
+     "img": "tools/art/strips/st8/st8-a2-1-B.png",
+     "at": 640,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "the open steel blast doors onto the dam crest, rain, floodlights"
+    },
+    {
+     "img": "tools/art/strips/st8/st8-a2-2-A.png",
+     "at": 1280,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "the dam crest in pouring rain: the reservoir high behind the parapet, floodlight towers, the crown on the parapet"
+    },
+    {
+     "img": "tools/art/strips/st8/st8-a2-2-B.png",
+     "at": 1920,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "the crest by the spillway: the damaged service gantry, the spillway gates, dawn over the valley (the boss arena)"
+    }
+   ],
+   "sections": [
+    {
+     "id": "8-5",
+     "name": "THE GATE CONTROL ROOM",
+     "x0": 0,
+     "len": 1296,
+     "cap": "THE GATE CONTROLS",
+     "locks": [
+      384,
+      832
+     ],
+     "bossLock": null,
+     "set": [
+      "zeke"
+     ],
+     "note": "the release gears; the CROWN SERGEANT at lock 384; task 2 (GATEHOUSE DOOR) at the open blast doors (lock 832)",
+     "cast": {
+      "gunner": [
+       "skinner",
+       "poacherJ"
+      ]
+     },
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
+      },
+      {
+       "kind": "crate",
+       "x": 578
+      },
+      {
+       "kind": "gate",
+       "name": "GATEHOUSE DOOR",
+       "x": 860
+      }
+     ]
+    },
+    {
+     "id": "8-6",
+     "name": "THE DAM CREST",
+     "x0": 1296,
+     "len": 1296,
+     "locks": [
+      1424
+     ],
+     "bossLock": 2208,
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
+      },
+      {
+       "kind": "barrel",
+       "x": 578
+      },
+      {
+       "kind": "crate",
+       "x": 963
+      }
+     ],
+     "note": "the dam crest; boss lock 2208-2592: the spillway gantry (Marshal Sable, then CROWNBACK)",
+     "cast": {
+      "gunner": [
+       "skinner",
+       "poacherJ"
+      ]
+     }
+    }
+   ],
+   "anims": []
+  }
+ ]
+}

@@ -1,6 +1,6 @@
 // Cadillacs & Dinosaurs II: the enemy kinds and the boss fights, authored on the ROM data (PLAN §4.4, WP-C).
 //   window.ENEMY_KINDS : constants (K), one table per sequel kind (ENEMIES §2.5), the cast ids (CAMPAIGN §4.4) and helpers.
-//   window.BOSS_DEFS   : the seven fights (CAMPAIGN §12.4, the ENEMIES §6.1 move-record shape).
+//   window.BOSS_DEFS   : the boss fights of the eight stages (STORY.md revision 3; the ENEMIES §6.1 move-record shape).
 // Animation references are relative to the variant's ROM sets: ['main', 3] = '<variant main set>:3', ['down', 2] and
 // ['held', 0] the shared reaction sets, ['hit', n] / ['grab', n] the boss-format ones; strings '0x6FB6A:33' are absolute
 // keys. Every reference exists in ROM_ENEMIES.anims / ROM_BOSSES.anims (sprite-data-enemies.js / sprite-data-bosses.js):
@@ -32,14 +32,14 @@
     // Arcade damage formula 0x6422 without the victim factors, ×1.2 for the sequel's 120-HP hero.
     // `row` = the variant's rankRow[32] (ROM 0x2C3AE + r84*8), or the r84 number itself (PLAN §4.4 DMG(tbl, r84, lvl))
     DMG(tbl, row, lvl, mult = 1) { if (typeof row === 'number') row = rankRowOf(row); const r = row && row.length ? row[Math.max(0, Math.min(31, lvl | 0))] : 32; return Math.max(1, Math.round(tbl * r / 32 * 1.2 * mult)); },
-    LV: [9, 10, 11, 12, 13, 14],              // arcade level word 0xFF85EE per chapter
+    LV: [9, 10, 10, 11, 12, 12, 13, 14],      // arcade level word 0xFF85EE per stage (revision 3: eight stages)
     LV_SHIFT: { easy: -3, normal: 0, hard: 6 },
     BOSS_DMG: 1,                              // 0.8 until the G8 balance pass (PLAN §7 G8; the bot stays in 150-300 s)
     telegraph: { easy: 1.6, normal: 1, hard: 1 },
     DEPTH: 26,                                // |dy| tolerance of a melee hit (35 canvas px today ÷ 1.35, U10)
     MIRROR_HP: 150,                           // hero copies have no ROM body (today's BASE_HP.mirror)
     UNITS: { dist: 'arcade px', time: 'ROM frames at 60 Hz (keys ending in s: seconds)', kindSpeed: 'px/frame (ENEMY_KINDS vx, walk, speed)', bossVx: "px/s (BOSS_DEFS move vx, CAMPAIGN §12.4; 'road+N' = road speed + N)", hp: 'sequel HP = K.HP(rom HP at K.lvl(ch, diff))' },
-    lvl(ch, diff) { const s = K.LV_SHIFT[diff] || 0; return Math.max(0, Math.min(31, K.LV[Math.max(0, Math.min(5, ch | 0))] + s)); },
+    lvl(ch, diff) { const s = K.LV_SHIFT[diff] || 0; return Math.max(0, Math.min(31, K.LV[Math.max(0, Math.min(K.LV.length - 1, ch | 0))] + s)); },
   };
 
   K.HP_A = K.HP_FORMULAS[K.HP_USE].a; K.HP_B = K.HP_FORMULAS[K.HP_USE].b;
@@ -158,10 +158,10 @@
         { id: 'clawLunge', a: ['main', 14], reach: [30, 70], w: 1 }],
       cadence: 45,
     },
-    // ---------------------------------------------------------------- regent: KING KIMO KIMO (TYROG), +0x23 slot 29 / 30 / 31
+    // ---------------------------------------------------------------- regent: KING KIMO KIMO (TYROG), +0x23 slot 29 / 30 / 31 (ch7 the observatory 30, ch8 the dam 29)
     regent: {
       type: 'kingkimo', label: 'variant', variants: { A: 1 }, hp: 'rom', speed: 110 / 1.35 / 60, grab: true, drop: 'food',
-      slot: { ch5: 30, ch6: 29, brood: 29 }, maxPerChapter: 4,
+      slot: { ch7: 30, ch8: 29, brood: 29 }, maxPerChapter: 4,
       st: R({ idle: ['main', 0], idleHold: ['main', 38], walk: ['main', 20], crawl: ['main', 1], taunt: ['main', 23],
         roar: ['main', 4], rear: ['main', 21], spitPose: ['main', 22], riseTall: ['main', 7], enter: ['main', 21], land: ['main', 25], dead: ['main', 36], flee: ['main', 1] }),
       atk: [{ id: 'lash', a: ['main', 3], reach: [36, 74], w: 3 },
@@ -173,6 +173,48 @@
         { id: 'spit', a: ['main', 22], kind: 'spit', range: [36, 220], obj: ['0x71408:10', '0x71408:11'], spawn: { dx: 60, h: 96 }, n: 2, air: false, dmg: 10, crawl: 2, w: 1 }],
       brood: { variants: 'A', submerge: { hidden: 1.0, tell: 0.9, r: 63, dmg: 30, every: 12 }, roar: ['main', 4], call: { kind: 'mutant', n: 2, max: 2, emerge: 'emerge' } },
       cadence: 50,
+    },
+    // ---------------------------------------------------------------- the generated general enemies (revision 3)
+    // No ROM body: their atlases come from tools/art/import-sprite.cjs (tools/art/specs/<type>.json, spec.family 'enemies';
+    // sprite-data-enemy-<type>.js joins ROM_ENEMIES as one more type whose sets main / down / held are all '<type>'), so
+    // every state below is ['main', n] of that atlas: 0 idle, 1 walk, then the kind's own moves, and the reactions
+    // hurt (main 5) / hurt-low 6 / fly 7 (fall, fall, lying) / dead 8 / rise 9 / held 10 / kneed 11 / thrown 12. HP, damage
+    // (the anims' own `atk` records, K.DMG on the stage's level) and walk come from the variant data in the same file.
+    // Crown Militiaman (stages 1, 5, 7, 8): Sable's uniformed militia, riot shield and baton. The shield blocks a hero's
+    // ground blows from the front while he walks, guards or idles (game.js militiaBlocks): jump attacks, throws, gunfire and
+    // hits from behind get through (he turns round only 0.45 s after a hero got behind him: turnLag), and the 3rd blocked
+    // blow inside 2.5 s breaks his guard (main 13 stagger, 0.9 s open).
+    militia: {
+      type: 'militia', label: 'variant', variants: { A: 1 }, hp: 'rom', speed: 'rom', grab: true, drop: 'food', generated: true,
+      walk: { A: 1.05 }, stop: 58, turnLag: 0.45,
+      st: { idle: ['main', 0], walk: ['main', 1], enter: ['main', 1], flee: ['main', 1], guard: ['main', 2], hurt: [['main', 5], ['main', 6]], fly: ['main', 7], flyHeld: ['main', 7], thrownLand: ['main', 7],
+        dead: ['main', 8], deadThrown: ['main', 8], rise: ['main', 9], held: ['main', 10], kneed: ['main', 11], thrown: [['main', 12]], dizzy: ['main', 13] },
+      atk: [{ id: 'baton', a: ['main', 3], reach: [30, 64], w: 3 },
+        { id: 'bash', a: ['main', 4], reach: [20, 56], w: 1 }],
+      shield: { breakAfter: 3, window: 2.5, stagger: 0.9, push: 10 },
+      cadence: 52,
+    },
+    // Trapper (stages 2, 6): Thorne's handler with an electric catch-pole. He keeps the pole's length away (stop 92) and
+    // lunges: a hero caught by the prod is held in the shock for `shock.hold` s (game.js trapperShock), then knocked back.
+    trapper: {
+      type: 'trapper', label: 'variant', variants: { A: 1 }, hp: 'rom', speed: 'rom', grab: true, drop: 'food', generated: true,
+      walk: { A: 1.1 }, stop: 92,
+      st: { idle: ['main', 0], walk: ['main', 1], enter: ['main', 1], flee: ['main', 1], taunt: ['main', 3], hurt: [['main', 4], ['main', 5]], fly: ['main', 6], flyHeld: ['main', 6], thrownLand: ['main', 6],
+        dead: ['main', 7], deadThrown: ['main', 7], rise: ['main', 8], held: ['main', 9], kneed: ['main', 10], thrown: [['main', 11]] },
+      atk: [{ id: 'lunge', a: ['main', 2], reach: [36, 112], w: 1, shock: { hold: 0.6, mul: 1.4 } }],
+      cadence: 64,
+    },
+    // Hybrid Enforcer (stages 6, 7, 8): a volunteer of Echo's treatment, scaled skin and hooked claws. A leaping slash
+    // from range (a pounce: the whole flight is active, it knocks down) and a claw slash up close; roars at its stop.
+    // Sheets: Codex hybrid 00-05 (tools/art/specs/hybrid.json -> sprite-data-enemy-hybrid.js + assets/enemy-art/hybrid.js).
+    hybrid: {
+      type: 'hybrid', variants: { A: 1 }, label: 'variant', hp: 'rom', speed: 'rom', grab: true, drop: 'food', generated: true,
+      walk: { A: 1.25 }, stop: 52,
+      st: { idle: ['main', 0], walk: ['main', 1], enter: ['main', 1], flee: ['main', 1], taunt: ['main', 4], hurt: [['main', 5], ['main', 6]], fly: ['main', 7], flyHeld: ['main', 7], thrownLand: ['main', 7],
+        dead: ['main', 8], deadThrown: ['main', 8], rise: ['main', 9], held: ['main', 10], kneed: ['main', 11], thrown: [['main', 12]] },
+      atk: [{ id: 'slash', a: ['main', 3], reach: [20, 62], hit: [1], w: 2 },
+        { id: 'pounce', a: ['main', 2], kind: 'leap', reach: [70, 150], arc: { t: 0.55, h: 40 }, w: 1 }],
+      cadence: 46,
     },
     // ---------------------------------------------------------------- biker: Bike RIDE (R) / JUMP (J), rider FERRIS
     biker: {
@@ -217,6 +259,7 @@
     poacherJ: ['gunner', 'A'], skinner: ['gunner', 'B'], gutter: ['gunner', 'C'], dyna: ['gunner', 'T'], bomber: ['gunner', 'U'],
     hammerT: ['brute', 'A'], blkElmer: ['brute', 'B'], wrenchT: ['brute', 'C'], naguri: ['brute', 'N'], lashT: ['brute', 'L'],
     bludge: ['mutant', 'A'], tyrog: ['regent', 'A'], ride: ['biker', 'R'], jump: ['biker', 'J'], hopper: ['raptor', 'A'], mirror: ['mirror', 'hero'],
+    militiaman: ['militia', 'A'], trapper: ['trapper', 'A'], enforcer: ['hybrid', 'A'],
   };
 
   // ------------------------------------------------------------------ helpers (pure; no Math.random)
@@ -303,49 +346,33 @@
         desperate: { a: 'main:8', kind: 'script', at: 0.5, inv: 1.2, tempo: 1.3, toast: 'ROOK IS ENRAGED', shake: 10 } },
       phases: [{ at: 1, pattern: ['gaff', 'rope', 'gaff', 'barrel', 'gaff', 'rope'] }, { at: 0.5, pattern: ['gaff', 'crane', 'rope', 'barrel', 'gaff', 'crane'] }],
       defeat: { anim: 'main:9', arrest: true, note: 'arrested: drops the hook, sits on a mooring post, hands up (held; no dissolve)' } },
-    // HAULMASTER KRAG -> IRONCLUB (kind 'truck', the engine's id; chapter 2). The convoy's haulmaster takes an early test
-    // dose of Echo's serum (the Crown treatment's first trial) and becomes an armoured ankylosaur-man. Fought on foot: at
-    // the last wagon's lock the convoy halts and the gang leaves the Cadillac. Phase 1 on 'krag' (sprite-data-boss-krag.js;
-    // tools/art/specs/krag.json): anims 0 idle, 1 walk, 2 chain whip (the chain drawn back, the lash along his lane), 3 the
-    // shoulder charge, 4 hurt, 5 the serum (syringe, plates bursting). At 0 HP he transforms (Krag's main 5, then
-    // Ironclub's main 9: invulnerable) into phase 2 on 'ironclub' (sprite-data-boss-ironclub.js): 0 idle, 1 walk, 2 tail
-    // club (raised behind, the spin, the low smash in front, back to stance), 3 overhead smash (both clubs up, the
-    // shockwave), 4 curling up, 5 the rolling ball, 6 uncurling (open, x1.5), 7 hurt, 8 defeat (cracking, stagger, knees,
-    // lying half-human: arrested), 9 the end of the serum, 10 lying.
-    truck: { name: 'HAULMASTER KRAG', body: 'krag', pal: 'home', hp: 340, clone: false, onFoot: true, flinch: 'main:4', sparks: true,
-      intro: { walk: 'main:1', pose: 'main:2', t: 2.4 },
-      moves: { whip: { a: 'main:2', kind: 'strike', depth: 18, dmg: 16 }, charge: { a: 'main:3', kind: 'rush', vx: 300, dmg: 18, knock: true } },
-      phases: [{ at: 1, pattern: ['whip', 'whip', 'charge', 'whip', 'charge'] }],
-      transform: { anims: [5, 9], t: 2.4, note: 'Krag main 5 then Ironclub main 9, invulnerable' },
-      phase2: { name: 'IRONCLUB', body: 'ironclub', hp: 560, flinch: 'main:7',
-        moves: { tail: { a: 'main:2', kind: 'zone', depth: 36, hits: [{ behind: true, r: 110 }, { r: 120 }], r: 120, dmg: 22, knock: true },
-          smash: { a: 'main:3', kind: 'zone', shock: true, r: 84, dmg: 24, knock: true },
-          roll: { a: 'main:4>5', kind: 'rush', vx: 380, dmg: 24, knock: true, spin: true, after: { a: 'main:6', t: 0.9, hurt: 1.5 } } },
-        pattern: ['tail', 'smash', 'roll', 'tail', 'roll', 'smash'],
-        defeat: { anim: 'main:8', arrest: true, note: 'back to human, arrested (no death)' } } },
-    // HEADKEEPER THORNE -> GLASSBACK (kind 'raptor', the engine's id; chapter 3). Thorne runs Sable's hatchery in the
-    // glass dome and steers the collared raptors with the NEST SONIC DRIVER (the beacon objective at lock.right - 260).
-    // Phase 1 on 'thorne' (sprite-data-boss-thorne.js; tools/art/specs/thorne.json): anims 0 idle, 1 walk, 2 the electric
-    // staff thrust (along her lane), 3 the overhead swing, 4 hurt, 5 the whistle (the pack answers), 6 the graft (syringe,
-    // feathers bursting). At 0 HP she injects the therizinosaur graft (Thorne's main 6, then Glassback's main 8:
-    // invulnerable) and fights on as GLASSBACK (sprite-data-boss-glassback.js): 0 idle, 1 walk, 2 claw sweep (claws
-    // crossed high 30 ticks, the slash, the long low sweep, recovery), 3 the crouch, 4 the pounce (in the air, landing),
-    // 5 the screech (raptors answer), 6 hurt, 7 defeat (feathers flying, stagger, knees, lying human again: arrested),
-    // 8 the end of the graft, 9 lying. The driver steers her: while it hums Glassback cannot be beaten (hpFloor) and keeps
-    // to its leash (tether); every third of its HP lost staggers her (drowsy); once it is smashed she is open (x1.5).
-    raptor: { name: 'HEADKEEPER THORNE', body: 'thorne', pal: 'home', hp: 320, clone: false, flinch: 'main:4', callA: 'main:5',
-      driver: { name: 'NEST SONIC DRIVER', at: 'lock.right-260' }, tether: 260,
+    // HEADKEEPER THORNE (kind 'thorne'; stage 2, the swamp camp), human only: she is not transformed here (stage 6 brings
+    // her back as GLASSBACK). On 'thorne' (sprite-data-boss-thorne.js; tools/art/specs/thorne.json): anims 0 idle, 1 walk,
+    // 2 the long electric prod thrust along her lane, 3 the overhead staff swing, 4 hurt, 5 the throw (her whistle pose,
+    // the arm up: she lobs bait that draws two raptors in, ifAliveBelow keeps it to a pair). The camp's COLLAR WINCH (the
+    // boss task, a beacon at lock.right - 64) holds the animals: each third of its HP lost staggers her (drowsy) and once
+    // it is smashed she is open (x1.5) to the end. She keeps to a leash round the winch while it stands (tether). Beaten,
+    // she is knocked off the collapsing platform into the river and escapes downstream (defeat.escape: no arrest).
+    thorne: { name: 'HEADKEEPER THORNE', body: 'thorne', pal: 'home', hp: 760, clone: false, flinch: 'main:4', callA: 'main:5', tempo: 1.1, walkMul: 1.2,
+      driver: { name: 'COLLAR WINCH', at: 'lock.right-64' }, tether: 260,
+      near: { move: 'swing', r: 50, cd: 2.6 },
       intro: { walk: 'main:1', pose: 'main:5', t: 2.4 },
       moves: { thrust: { a: 'main:2', kind: 'strike', depth: 18, dmg: 16 }, swing: { a: 'main:3', kind: 'strike', reach: 62, dmg: 18, knock: true },
-        whistle: { a: 'main:5', kind: 'summon', type: 'raptor', n: 2, ifAliveBelow: 2, from: 0.8 },
-        drowsy: { kind: 'state', onDriverThird: true, t: 3, hurt: 1.5 }, roar: { kind: 'summon', type: 'raptor', n: 2, once: 0.66 } },
-      phases: [{ at: 1, pattern: ['thrust', 'swing', 'thrust', 'whistle', 'swing'] }],
-      transform: { anims: [6, 8], t: 2.4, note: 'Thorne main 6 then Glassback main 8, invulnerable' },
-      phase2: { name: 'GLASSBACK', body: 'glassback', hp: 520, flinch: 'main:6', callA: 'main:5', driver: { name: 'NEST SONIC DRIVER', hpFloor: 1 },
-        moves: { sweep: { a: 'main:2', kind: 'strike', reach: 92, depth: 30, dmg: 22, knock: true, air: false }, pounce: { a: 'main:3>4', kind: 'leap', range: [70, 170], r: 56, dmg: 22, shadow: true },
-          screech: { a: 'main:5', kind: 'summon', type: 'raptor', n: 2, ifAliveBelow: 2 }, drowsy: { kind: 'state', onDriverThird: true, t: 3, hurt: 1.5 } },
-        pattern: ['sweep', 'pounce', 'sweep', 'screech', 'pounce', 'sweep'],
-        defeat: { anim: 'main:7', arrest: true, note: 'the graft burns out: lying human again, arrested; the eggs and the pack are safe' } } },
+        bait: { a: 'main:5', kind: 'lob', proj: 'bait', summon: { type: 'raptor', n: 2 }, ifAliveBelow: 2, dmg: 6, r: 30, from: 0.9 },
+        drowsy: { kind: 'state', onDriverThird: true, t: 3, hurt: 1.5 } },
+      phases: [{ at: 1, pattern: ['thrust', 'swing', 'thrust', 'bait', 'swing'] }, { at: 0.5, pattern: ['thrust', 'bait', 'swing', 'thrust', 'swing', 'bait'] }],
+      defeat: { escape: true, anim: 'main:4', note: 'knocked into the river off the loading platform; she reaches a launch downstream (no arrest, no transformation)' } },
+    // HAULMASTER KRAG (kind 'truck', the engine's id; stage 3), human only (Ironclub is a separate captain now, stage 5).
+    // Fought on foot: at the last hauler's lock the convoy halts and the gang leaves the Cadillac. On 'krag'
+    // (sprite-data-boss-krag.js; tools/art/specs/krag.json): anims 0 idle, 1 walk, 2 chain whip (the chain drawn back,
+    // the lash along his lane), 3 the shoulder charge, 4 hurt. From 60 % his hauler crew jumps down (crew). Beaten, he goes
+    // down on the wet road and is held (defeat main 4, held).
+    truck: { name: 'HAULMASTER KRAG', body: 'krag', pal: 'home', hp: 780, clone: false, onFoot: true, flinch: 'main:4', tempo: 1.15, walkMul: 1.25,
+      intro: { walk: 'main:1', pose: 'main:2', t: 2.4 },
+      moves: { whip: { a: 'main:2', kind: 'strike', depth: 18, dmg: 16 }, charge: { a: 'main:3', kind: 'rush', vx: 300, dmg: 18, knock: true },
+        crew: { a: 'main:2', kind: 'summon', type: 'raider', n: 2, hp: 70, ifAliveBelow: 1, from: 0.6 } },
+      phases: [{ at: 1, pattern: ['whip', 'whip', 'charge', 'whip', 'charge'] }, { at: 0.5, pattern: ['whip', 'charge', 'crew', 'whip', 'charge', 'whip'] }],
+      defeat: { anim: 'main:4', arrest: true, note: 'down on the wet road, held (no transformation in this stage)' } },
     // FOREMAN CINDER -> OVERDRIVE CINDER (kind 'cinder'; chapter 4). Not a serum: losing, he slams his diving helmet shut and
     // overloads his steam rig into heavy brass armour with a steam-cannon pile-driver arm. Phase 1 on 'cinder'
     // (sprite-data-boss-cinder.js; tools/art/specs/cinder.json): anims 0 idle, 1 walk, 2 driver slam (raised high, then
@@ -371,6 +398,44 @@
           surge: { kind: 'env', every: 8, zones: [-70, 70], t: 1.25, dmg: 24, air: false, from: 0.5 } },
         pattern: ['cannon', 'jam', 'vent', 'charge', 'cannon', 'jam', 'vent'],
         defeat: { anim: 'main:8', arrest: true, note: 'he climbs out of the broken rig and surrenders, hands up (no melt)' } } },
+    // IRONCLUB (kind 'ironclub'; stage 5, Crown Valley): Sable's augmented shock captain, a willing subject of Echo's
+    // treatment (his own face: shaved head, crown tattoo; not Krag). Revision 3, two forms (the engine's generic second
+    // form: defOf, bossDown). Phase 1, the ARMOURED CAPTAIN on 'ironcap' (sprite-data-boss-ironcap.js;
+    // tools/art/specs/ironcap.json): 0 idle, 1 walk, 2 haymaker (the fist drawn back, the coolant venting, the punch),
+    // 3 double slam (both fists into the ground: a shockwave to jump), 4 hurt, 5 the armour bursting off (the transform's
+    // first half), 6 the stomping charge. At 0 HP he sheds the armour (ironcap main 5, then IRONCLUB's main 9, the roar;
+    // invulnerable) and fights on plated on 'ironclub' (sprite-data-boss-ironclub.js; tools/art/specs/ironclub.json,
+    // the redesigned body): 0 idle, 1 walk, 2 tail club (raised behind, the low sweep forward, the club resting), 3
+    // overhead smash (both clubs up, the shockwave), 4 curling up, 5 the rolling ball, 6 uncurling (open, x1.5: the cooling
+    // harness vents), 7 hurt, 8 defeat (recoil, falling back, collapsed on his knees, the canisters smashed), 9 the roar
+    // (the end of the transform), 10 lying, 11 roar, 12 knocked back.
+    ironclub: { name: 'IRONCLUB', body: 'ironcap', pal: 'home', hp: 400, clone: false, flinch: 'main:4', sparks: true, tempo: 1.05, walkMul: 1.1,
+      intro: { walk: 'main:1', pose: 'main:2', t: 2.6 },
+      moves: { punch: { a: 'main:2', kind: 'strike', reach: 100, depth: 22, dmg: 20, knock: true },
+        slam: { a: 'main:3', kind: 'zone', shock: true, r: 76, dmg: 22, knock: true },
+        charge: { a: 'main:6', kind: 'rush', vx: 300, dmg: 20, knock: true } },
+      phases: [{ at: 1, pattern: ['punch', 'slam', 'punch', 'charge', 'slam', 'punch'] }],
+      transform: { anims: [5, 9], t: 2.6, note: 'the armour bursts off (ironcap main 5), then the plated body roars (ironclub main 9), invulnerable' },
+      phase2: { name: 'IRONCLUB', body: 'ironclub', hp: 600, flinch: 'main:7',
+        moves: { tail: { a: 'main:2', kind: 'zone', depth: 36, hits: [{ behind: true, r: 110 }, { r: 124 }], r: 124, dmg: 22, knock: true },
+          smash: { a: 'main:3', kind: 'zone', shock: true, r: 84, dmg: 24, knock: true },
+          roll: { a: 'main:4>5', kind: 'rush', vx: 380, dmg: 24, knock: true, spin: true, after: { a: 'main:6', t: 0.9, hurt: 1.5 } } },
+        phases: [{ at: 1, pattern: ['tail', 'smash', 'roll', 'tail', 'roll', 'smash'] }, { at: 0.4, pattern: ['roll', 'tail', 'smash', 'roll', 'tail', 'roll'] }],
+        defeat: { anim: 'main:8', arrest: true, note: 'down for good in the town square; the plates stay (no cure)' } } },
+    // GLASSBACK (kind 'glassback'; stage 6, the biodome's test enclosure): Thorne after Echo's augmentation, fought already
+    // transformed (her voice first: bossSay). On 'glassback' (sprite-data-boss-glassback.js; tools/art/specs/glassback.json):
+    // 0 idle, 1 walk, 2 claw sweep (claws crossed high 30 ticks, the slash, the long low sweep, recovery), 3 the crouch,
+    // 4 the pounce (in the air, landing), 5 the screech (failed subjects answer), 6 hurt, 7 defeat (stagger, knees, lying:
+    // she stays Glassback), 9 lying. Her support harness: at 35 % it splits (harness, a script) and the final rush starts,
+    // tempo x1.45 and the pounces every other move. A big animal turns late (turnLate: the tail punishes her back).
+    glassback: { name: 'GLASSBACK', body: 'glassback', pal: 'home', hp: 1000, clone: false, flinch: 'main:6', callA: 'main:5', tempo: 1.1, turnLate: true,
+      intro: { walk: 'main:1', pose: 'main:5', t: 2.6 },
+      moves: { sweep: { a: 'main:2', kind: 'strike', reach: 92, depth: 30, dmg: 22, knock: true, air: false }, pounce: { a: 'main:3>4', kind: 'leap', range: [70, 170], r: 56, dmg: 22, shadow: true },
+        rush: { a: 'main:3>4', kind: 'leap', range: [50, 210], r: 62, dmg: 24, shadow: true },
+        screech: { a: 'main:5', kind: 'summon', type: 'mutant', n: 2, hp: 70, ifAliveBelow: 1, from: 0.8 },
+        harness: { a: 'main:6', kind: 'script', at: 0.35, inv: 1.2, tempo: 1.45, toast: 'HER HARNESS SPLITS · THE FINAL RUSH', shake: 10 } },
+      phases: [{ at: 1, pattern: ['sweep', 'pounce', 'sweep', 'screech', 'pounce', 'sweep'] }, { at: 0.35, pattern: ['pounce', 'sweep', 'rush', 'pounce', 'sweep', 'rush'] }],
+      defeat: { anim: 'main:7', arrest: true, note: 'brought down, still Glassback: the harness is wrecked, the body does not change back' } },
     // DR. ECHO -> ECHO ENGINE (kind 'echo'; chapter 5). Echo invented the serum but never tests it on herself: cornered in
     // the observatory she climbs into her four-legged brass sound-walker. Phase 1 on 'echo' (sprite-data-boss-echo.js;
     // tools/art/specs/echo.json): anims 0 idle, 1 walk, 2 dish ring (the dish raised over her shoulder 36 ticks, then a
@@ -381,11 +446,10 @@
     // tell), 3 overheat (steaming, x1.5), 4 stomp (rearing up, the front legs slam: a violet ring, enginefx main 1, to
     // jump), 5 crouch, 6 the low leap onto a lane (its shadow marks the landing), 7 hurt, 8 defeat (sparking, legs
     // buckling, collapsed with Echo climbing out, Echo kneeling with her hands up beside the wreck, frame 10).
-    echo: { name: 'DR. ECHO', body: 'echo', pal: 'home', hp: 420, clone: false, flinch: 'main:4', callA: 'main:5',
+    echo: { name: 'DR. ECHO', body: 'echo', pal: 'home', hp: 460, clone: false, flinch: 'main:4', callA: 'main:5',
       intro: { walk: 'main:1', pose: 'main:5', t: 2.4 },
       moves: { ring: { a: 'main:2', kind: 'shot', cannon: true, projBody: 'echoring', muzzle: { dx: 46, dz: 70 }, vx: 260, dmg: 18 },
-        fork: { a: 'main:3', kind: 'strike', reach: 58, dmg: 14 }, backstep: { a: 'main:1', kind: 'move', within: 60, back: [60, 100] },
-        drain: { kind: 'env', at: 0.5, style: 'flood', zones: [-70, 0, 70], t: 1.25, dmg: 24, air: false } },
+        fork: { a: 'main:3', kind: 'strike', reach: 58, dmg: 14 }, backstep: { a: 'main:1', kind: 'move', within: 60, back: [60, 100] } },
       phases: [{ at: 1, pattern: ['ring', 'fork', 'backstep', 'ring', 'ring', 'fork'] }],
       transform: { anims: [1, 9], t: 2.4, note: 'Echo walk then the Engine main 9 (boarding), invulnerable' },
       phase2: { name: 'ECHO ENGINE', body: 'engine', hp: 520, flinch: 'main:7', fx: 'enginefx', jet: 'enginefx', rig: 'main:10', rigFrom: 3, rigDx: 96,
@@ -400,14 +464,20 @@
     // 0 idle, 1 walk, 2 draw (raise, aim), 3 volley (six shots: the art's muzzle-flash frames are the active frames),
     // 4 quick shot, 5 reload, 6 pistol whip (the close-range blow), 7 command (gun raised), 8 hop (the cornered step-out),
     // 9 the treatment (inject, swell, half-grown; Crownback's transform anim finishes it). His muzzle sits 81 px up.
-    sable: { name: 'MARSHAL SABLE', body: 'sable', pal: 'home', hp: 800, clone: false, bullet: '0xEC', muzzle: 81,
+    // Revision 3: one human phase (no gate-controls chair). At 0 HP Mustapha disengages the release mechanism (releaseSay)
+    // and Sable takes the treatment (`treatment`: CROWNBACK, kind 'fessenden'). Revision 3 adds his heavy blade (Codex sheet
+    // sableblade 01, imported into the same body and palette): 10 the blade stance, 11 the overhead slash (raised behind
+    // the head, the diagonal cut: knocks down; also his answer to a hero crowding him, `near`), 12 the lunging thrust.
+    // Sheet sableblade 02-arm: 13 the braced-arm smash (the brass arm hammered into the floor: knocks down), 14 the brace
+    // broken (sparking, his own arm showing): a punish window after the smash, longer once the brace has cracked.
+    sable: { name: 'MARSHAL SABLE', body: 'sable', pal: 'home', hp: 900, clone: false, bullet: '0xEC', muzzle: 81, treatment: 'fessenden',
+      near: { move: 'slash', r: 54, cd: 2.6 },
       intro: { walk: 'main:1', pose: 'main:2', t: 2.4 },
       moves: { draw: { a: 'main:2', kind: 'tell' }, fan: { a: 'main:3', kind: 'volley', n: 6, lanes: [0, -24, 24], dmg: 16 }, quick: { a: 'main:4', kind: 'shot', dmg: 18 }, reload: { a: 'main:5', kind: 'window', t: 0.5, hurt: 1.5, line: 'reload' },
-        punch: { a: 'main:6', kind: 'strike', reach: 44, dmg: [10, 19] }, kick: { a: 'main:8', kind: 'leap', when: 'cornered', dmg: 14 }, summon: { a: 'main:7', kind: 'summon', type: 'knifer', n: 2, hp: 70, ifAliveBelow: 2 } },
-      phases: [{ at: 1, pattern: ['draw', 'fan', 'reload', 'quick', 'punch'] }, { at: 0.6, pattern: ['quick', 'fan', 'kick', 'reload', 'summon'] }],
-      phase2: { name: 'SABLE · GATE CONTROLS', art: { bake: 'E8a3 throne steps + glass capsule (~200x150) + two blue tank columns, standing in for the dam control chair', pal: 'crown', insert: 'sable idle clipped in the glass' }, hp: 1050, stationary: true, hurtBox: 'capsule', hurtAfterSurge: { mult: 1.5, t: 3 },
-        moves: { turrets: { kind: 'volley' }, surge: { kind: 'env', style: 'flood', zones: [-70, 0, 70], r: 43, t: 1.25, dmg: 30, air: false }, vents: { kind: 'zone', style: 'slam', tell: 0.9, r: 83 }, summon: { kind: 'summon', type: 'raider', n: 2, hp: 70, from: 'R' } },
-        pattern: ['turrets', 'surge', 'vents', 'summon', 'surge'], defeat: { sparks: true, gate: 'FINAL SPILLWAY RELEASE', say: 'gateSay' } } },
+        punch: { a: 'main:6', kind: 'strike', reach: 44, dmg: [10, 19] }, kick: { a: 'main:8', kind: 'leap', when: 'cornered', dmg: 14 }, summon: { a: 'main:7', kind: 'summon', type: 'knifer', n: 2, hp: 70, ifAliveBelow: 2 },
+        slash: { a: 'main:11', kind: 'strike', reach: 70, depth: 22, dmg: 20, knock: true }, thrust: { a: 'main:12', kind: 'strike', reach: 94, depth: 16, dmg: 18 },
+        armsmash: { a: 'main:13', kind: 'strike', reach: 62, depth: 30, dmg: 24, knock: true }, braced: { a: 'main:10', kind: 'window', t: 0.5, hurt: 1.3 }, broken: { a: 'main:14', kind: 'window', t: 0.9, hurt: 1.6, line: 'brace' } },
+      phases: [{ at: 1, pattern: ['draw', 'fan', 'reload', 'thrust', 'quick', 'armsmash', 'braced', 'slash', 'punch'] }, { at: 0.6, pattern: ['quick', 'thrust', 'armsmash', 'broken', 'fan', 'slash', 'kick', 'reload', 'summon', 'armsmash', 'broken', 'slash'] }] },
     // CROWNBACK (kind 'fessenden', the engine's id; work/story2/BOSS-SPECS.md 6c) on his generated body ('crownback',
     // sprite-data-boss-crownback.js; tools/art/specs/crownback.json): anims 0 idle, 1 walk, 2 gate-arm sweep (shoulder drawn
     // back 30 ticks, arm across, the extended blow, head-down recovery), 3 tail sweep (tail lifted 30 ticks, the swing behind,
@@ -415,15 +485,16 @@
     // recovery), 5 brace (hand planted), 6 rush (the low charge), 7 hurt (stagger), 8 roar, 9 defeat (roar, stagger, fall,
     // lying), 10 the end of the treatment (half-grown, roaring; Sable's anim 9 starts it), 11 lying in the spillway, 12 the crouch
     // before the rush. The jet
-    // is its own body ('crownjet'). Phases: planted behind the shield arm (the spillway wheels stagger him), wading out at
-    // 66 % when the arm plates crack, the guard broken at 33 % (x1.5, two guards, the desperate rush).
-    fessenden: { name: 'CROWNBACK', body: 'crownback', jet: 'crownjet', art: ['sable'], hp: 1150, clone: false, walkA: 'main:1', flinch: 'main:7',
+    // is its own body ('crownjet'). Phases: planted behind the shield arm, wading out at 66 % when the arm plates crack,
+    // the guard broken at 33 % (x1.5, two guards, the desperate rush). Revision 3: no spillway wheels (the river never
+    // fights for the heroes); beaten, he falls into the discharge works (no survival tease).
+    fessenden: { name: 'CROWNBACK', body: 'crownback', jet: 'crownjet', art: ['sable'], hp: 1300, clone: false, walkA: 'main:1', flinch: 'main:7',
       intro: { treatment: true, settle: 'lock.right-120', t: 3.4, card: 'CROWNBACK · THE CROWN TREATMENT', byHero: true, inv: true },
       targets: 'hostileTarget (allies included)',
       moves: { gatearm: { a: 'main:2', kind: 'strike', depth: 44, dmg: 30, knock: true }, tail: { a: 'main:3', kind: 'zone', depth: 40, hits: [{ behind: true, r: 150 }, { r: 150 }], r: 150, dmg: 22, knock: true },
         jet: { a: 'main:4', kind: 'jet', len: 240, lane: 14, t: 0.55, dmg: 26, knock: true, mouth: { dx: 86, z: 95 } }, brace: { a: 'main:5', kind: 'env', style: 'flood', zones: [-70, 0, 70], r: 43, t: 1.25, dmg: 24, air: false },
         rush: { a: 'main:12>6', kind: 'rush', vx: 384, dmg: 26, knock: true, from: 0.34 } },
-      phases: [{ at: 1, mode: 'planted', wheels: { at: ['lock.left+90', 'lock.center'], hold: 1, stagger: 4, hurt: 1.5, recharge: 12 }, pattern: ['gatearm', 'jet', 'tail', 'gatearm', 'brace'], speed: 0.6 },
+      phases: [{ at: 1, mode: 'planted', pattern: ['gatearm', 'jet', 'tail', 'gatearm', 'brace'], speed: 0.6 },
         { at: 0.66, mode: 'wading', roar: true, pattern: ['gatearm', 'tail', 'jet', 'gatearm', 'brace', 'tail'], speed: 1 },
         { at: 0.33, mode: 'collapse', roar: true, bodyHurt: 1.5, pattern: ['rush', 'gatearm', 'jet', 'tail', 'rush', 'brace'], speed: 1.25, summon: { type: 'raider', n: 2, hp: 70, once: true }, line: 'p20 at 0.2' }],
       defeat: { anim: 'main:9', lie: 'main:11', box: { who: 'sable', line: 'defeat' }, crossfade: 1.5, then: 'clear' } },

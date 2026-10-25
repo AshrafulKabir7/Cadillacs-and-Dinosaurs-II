@@ -130,8 +130,9 @@
     const p = document.getElementById('resume'); if (!p) return;
     let cp = null; try { cp = (JSON.parse(localStorage.getItem('last-eden-save') || '{}') || {}).checkpoint || null; } catch (e) { cp = null; }
     if (!cp || typeof cp.level !== 'number') return;
-    const names = ['Wassoon', 'the Coral Causeway', 'the Verdant Biodome', 'the Sink', 'the Observatory', 'the Crown dam'];
-    p.textContent = `Welcome back. Your checkpoint in chapter 0${cp.level + 1}, ${names[cp.level] || ''}, is saved: choose Continue on the title screen.`;
+    // the eight stages (revision 3); a save from the six-chapter game is migrated by game.js when the title loads
+    const names = ['the City in the Sea', 'the Swamp Forest', 'the Coral Causeway', 'the Sink', 'Crown Valley', 'the Verdant Biodome', 'the Observatory', 'the Crown dam'];
+    p.textContent = `Welcome back. Your checkpoint in stage 0${cp.level + 1}, ${names[cp.level] || ''}, is saved: choose Continue on the title screen.`;
     p.hidden = false;
   }
 

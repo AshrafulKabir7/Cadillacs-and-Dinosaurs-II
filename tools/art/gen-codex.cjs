@@ -67,10 +67,12 @@ function findExe(arg) {
   if (!hits.length) throw new Error('codex.exe not found: install / open the Codex app once, or pass --exe');
   return hits[0];
 }
-function newestGenerated(since) {
-  const root = path.join(os.homedir(), '.codex', 'generated_images'); if (!fs.existsSync(root)) return null;
+// Only this run's own session folder (its log prints 'session id: <id>'): with several streams running at once, the
+// newest image anywhere is often another job's.
+function newestGenerated(since, session) {
+  const root = path.join(os.homedir(), '.codex', 'generated_images'); if (!fs.existsSync(root) || !session) return null;
   let best = null;
-  for (const d of fs.readdirSync(root)) {
+  for (const d of fs.readdirSync(root).filter(d => d === session)) {
     const dir = path.join(root, d); if (!fs.statSync(dir).isDirectory()) continue;
     for (const f of fs.readdirSync(dir)) { const p = path.join(dir, f), m = fs.statSync(p).mtimeMs; if (/\.png$/i.test(f) && m >= since && (!best || m > best.m)) best = { p, m }; }
   }
@@ -90,7 +92,8 @@ function run(ref, opt) {
   const r = cp.spawnSync(exe, ['exec', '--skip-git-repo-check', '-s', 'workspace-write', '-i', path.basename(local), '-'], { cwd: dir, input: text, encoding: 'utf8', timeout: opt.timeout * 1000, windowsHide: true });
   fs.writeFileSync(out.replace(/\.png$/, '.log.txt'), `${r.stdout || ''}\n${r.stderr || ''}`);
   if (!fs.existsSync(out) || fs.statSync(out).mtimeMs < t0) {
-    const g = newestGenerated(t0);                                  // the agent did not copy it: take Codex's own copy
+    const sid = (/session id:\s*([0-9a-f-]+)/i.exec(`${r.stdout || ''}\n${r.stderr || ''}`) || [])[1];
+    const g = newestGenerated(t0, sid);                             // the agent did not copy it: take Codex's own copy
     if (g) fs.copyFileSync(g, out);
   }
   if (!fs.existsSync(out)) throw new Error(`${ref}: no image (status ${r.status}${r.error ? ', ' + r.error.message : ''}); see ${path.relative(ROOT, out.replace(/\.png$/, '.log.txt'))}`);

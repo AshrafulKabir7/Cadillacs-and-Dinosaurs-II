@@ -1,32 +1,34 @@
 {
   "id": "ironclub",
   "name": "IRONCLUB",
-  "note": "Sources: design/sprites-raw/ironclub (ChatGPT sheets, magenta, facing left). Per-sheet scales normalise the body to the idle sheet (~145 arcade px, 1.6 hero). Anim numbers are BOSS_DEFS.truck phase2 'main:<n>' references.",
-  "height": 145,
+  "note": "Revision 3: the redesigned IRONCLUB (his own face: shaved head, crown tattoo, no beard; blue-grey plates, gold spikes, club fists and tail club, the cooling harness), phase 2 of BOSS_DEFS.ironclub after the armoured captain ('ironcap'). Sources: work/art/gen/ironclub2 (Codex sheets from tools/art/boss-prompts.json 'ironclub2', magenta, facing left); each sheet's first pose is the idle reference (~132 arcade px, 1.67 hero). The anim numbers keep the old body's (BOSS_DEFS 'main:<n>'): 0 idle, 1 walk, 2 tail, 3 smash, 4 curl, 5 ball, 6 uncurl, 7 hurt, 8 defeat, 9 the end of the transform (the roar), 10 lying, 11 roar, 12 knocked back. The first body (design/sprites-raw/ironclub, Krag's face) is retired.",
+  "height": 132,
   "bg": "#FF00FF",
   "chapterTag": 96,
   "ship": "sprite-data-boss-ironclub.js",
   "anchor": "torso",
   "inputs": [
-    { "file": "design/sprites-raw/ironclub/iron-idle-walk.png", "split": "auto", "names": ["idle0", "idle1", "walk0", "walk1", "walk2", "walk3"], "scale": 0.38 },
-    { "file": "design/sprites-raw/ironclub/iron-tail-club.png", "split": "auto", "names": ["tail0", "tail1", "tail2", "tail3"], "scale": 0.33 },
-    { "file": "design/sprites-raw/ironclub/iron-smash-roll.png", "split": "auto", "names": ["smash0", "smash1", "ball", "uncurl"], "scale": 0.355 },
-    { "file": "design/sprites-raw/ironclub/iron-hurt-defeat.png", "split": "auto", "names": ["hurt0", "hurt1", "kneel", "lie"], "scale": 0.37 },
-    { "file": "design/sprites-raw/ironclub/krag-transform.png", "crop": [740, 0, 1260, 668], "split": "auto", "names": ["half", "roar"], "scale": 0.248 }
+    { "file": "work/art/gen/ironclub2/ironclub2-01-idle-walk.png", "split": "auto", "names": ["idle0", "walk1", "walk2", "walk3"] },
+    { "file": "work/art/gen/ironclub2/ironclub2-02-tail.png", "split": "auto", "names": ["_ref2", "tailTell", "tailSwing", "tailEnd"] },
+    { "file": "work/art/gen/ironclub2/ironclub2-03-smash.png", "split": "auto", "names": ["_ref3", "smashTell", "smash", "roar"] },
+    { "file": "work/art/gen/ironclub2/ironclub2-04-roll.png", "split": "auto", "names": ["_ref4", "curl", "ball", "uncurl"] },
+    { "file": "work/art/gen/ironclub2/ironclub2-05-hurt.png", "split": "auto", "names": ["_ref5", "hurt1", "fall", "defeat"] }
   ],
   "anims": [
-    { "name": "idle", "frames": ["idle0", "idle1"], "dur": 30, "loop": 0 },
-    { "name": "walk", "frames": ["walk0", "walk1", "walk2", "walk3"], "dur": 11, "loop": 0, "alignTo": "idle0" },
-    { "name": "tail", "frames": ["tail0", "tail1", "tail2", "tail3"], "dur": [30, 8, 16, 22], "act": [1, 2], "alignTo": "idle0" },
-    { "name": "smash", "frames": ["smash0", "smash1"], "dur": [34, 26], "act": [1], "alignTo": "idle0" },
-    { "name": "curl", "frames": ["uncurl"], "dur": 24, "alignTo": "idle0" },
-    { "name": "ball", "frames": ["ball"], "dur": 30, "act": [0], "alignTo": "idle0" },
-    { "name": "uncurl", "frames": ["uncurl"], "dur": 40, "alignTo": "idle0" },
-    { "name": "hurt", "frames": ["hurt0"], "dur": 14, "alignTo": "idle0" },
-    { "name": "defeat", "frames": ["hurt0", "hurt1", "kneel", "lie"], "dur": [16, 18, 30, 60], "alignTo": "idle0" },
-    { "name": "transform", "frames": ["half", "roar"], "dur": [30, 44], "alignTo": "idle0" },
-    { "name": "lie", "frames": ["lie"], "dur": 60, "alignTo": "idle0" }
+    { "name": "idle", "frames": ["idle0"], "dur": 30, "loop": 0 },
+    { "name": "walk", "frames": ["walk1", "walk2", "walk3", "walk2"], "dur": 11, "loop": 0, "alignTo": "idle0" },
+    { "name": "tail", "frames": ["tailTell", "tailSwing", "tailEnd"], "dur": [30, 16, 24], "act": [1], "align": "none" },
+    { "name": "smash", "frames": ["smashTell", "smash"], "dur": [32, 26], "act": [1], "align": "none" },
+    { "name": "curl", "frames": ["curl"], "dur": 24, "align": "none" },
+    { "name": "ball", "frames": ["ball"], "dur": 30, "act": [0], "align": "none" },
+    { "name": "uncurl", "frames": ["uncurl"], "dur": 40, "align": "none" },
+    { "name": "hurt", "frames": ["hurt1"], "dur": 14, "alignTo": "idle0" },
+    { "name": "defeat", "frames": ["hurt1", "fall", "defeat"], "dur": [16, 22, 60], "align": "none" },
+    { "name": "transform", "frames": ["roar"], "dur": 44, "alignTo": "idle0" },
+    { "name": "lie", "frames": ["defeat"], "dur": 60, "align": "none" },
+    { "name": "roar", "frames": ["roar"], "dur": 36, "alignTo": "idle0" },
+    { "name": "knockback", "frames": ["fall"], "dur": 30, "align": "none" }
   ],
-  "palette": { "mode": "ramps", "lock": ["#333333"] },
+  "palette": { "mode": "ramps", "lock": ["#ffbb88", "#cc7755", "#335544", "#668877"] },
   "clean": { "smooth": 1 }
 }

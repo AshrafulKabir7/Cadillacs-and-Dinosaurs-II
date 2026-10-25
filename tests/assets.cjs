@@ -1,7 +1,7 @@
 // Node-only asset gate (PLAN §3.3, §8.4; ARCHITECTURE §5.3, §5.4, §7 "New checks"). No browser, no ROM needed.
 // Run from the repo root: node tests/assets.cjs
 //   G0  `build-game-assets.cjs check` exits 0; no .bin/.zip/.mp4/.rar tracked; SPRITE_DATA sheets decode and their sums match
-//   G2  every page named in STAGE_DATA exists, pages <= 1024x1024, <= 1.0 MB per chapter, <= 5 MB in all;
+//   G2  every page named in STAGE_DATA exists, pages <= 1024x1024, <= 1.25 MB per chapter, <= 10 MB in all;
 //       STAGE.bandAt/walkable/resolveMove data checks (WP-E asked for them here)
 //   G8  budgets: eager non-audio <= 3.5 MB, per-module budgets, any shipped file <= 1.5 MB, tracked files <= 2 MB
 //       outside assets/audio; no retired legacy file (ARCHITECTURE §5.6) left in the tree or in play.html. Since G8
@@ -18,7 +18,7 @@ const C = A.checks('assets');
 const LEGACY_SCRIPTS = ['assets.js', 'weapon-art.js', 'combat-art.js', 'hero-art.js', 'sequel-art.js', 'environment-art.js', 'arcade-heroes.js', 'arcade-items.js'];
 const LEGACY_FILES = [...LEGACY_SCRIPTS, 'world-art.js', 'assets/scenery', 'assets/original', 'assets/sprites.png', 'assets/combat-sprites.png', 'assets/hero-actions.png', 'assets/arcade-heroes.png'];
 const LEGACY_LARGE = ['assets/original/', 'assets/scenery/', 'sequel-art.js', 'world-art.js', 'assets/sprites.png', 'assets/combat-sprites.png', 'assets/hero-actions.png', 'assets/arcade-heroes.png'];
-const BUDGET = { eager: 3.5 * MiB, anyShipped: 1.5 * MiB, tracked: 2 * MiB, stagePerChapter: 1.0 * MiB, stagesTotal: 5 * MiB, stageData: 0.15 * MiB, page: 1024,
+const BUDGET = { eager: 3.5 * MiB, anyShipped: 1.5 * MiB, tracked: 2 * MiB, stagePerChapter: 1.25 * MiB, stagesTotal: 10 * MiB, stageData: 0.15 * MiB, page: 1024,
   files: { 'sprite-data-heroes.js': 0.9 * MiB, 'sprite-data-fx.js': 0.35 * MiB, 'sprite-data-enemies.js': 1.1 * MiB, 'sprite-data-bosses.js': 1.5 * MiB, 'sprite-data-ui.js': 0.15 * MiB, 'stage-data.js': 0.15 * MiB } };
 
 // the game page is play.html; index.html is the home page (checked on its own below: local files only, no game script)
@@ -115,7 +115,7 @@ const pngSize = file => { const b = Buffer.alloc(24); const fd = fs.openSync(fil
       if (unknown.length) C.warn('G2', 'Page entries of an unrecognised shape', unknown.slice(0, 3).join('; '));
       C.check('G2', 'Every stage page is <= 1024x1024', oversize.length === 0, oversize.slice(0, 5).join(', '));
       const over = Object.entries(perChapter).filter(([ch, s]) => ch !== 'pics' && s > BUDGET.stagePerChapter);
-      C.check('G2', 'Stage pages <= 1.0 MB per chapter and <= 5 MB in all', over.length === 0 && total <= BUDGET.stagesTotal, over.map(([ch, s]) => `${ch} ${MB(s)}`).join(', ') + ` total ${MB(total)}`);
+      C.check('G2', 'Stage pages <= 1.25 MB per chapter and <= 10 MB in all', over.length === 0 && total <= BUDGET.stagesTotal, over.map(([ch, s]) => `${ch} ${MB(s)}`).join(', ') + ` total ${MB(total)}`);
       // STAGE band/mask API (ARCHITECTURE §4.3) as pure data checks, when stage-render.js loads in Node.
       if (!exists('stage-render.js')) C.skip('G2', 'STAGE.bandAt/walkable/resolveMove agree with STAGE_DATA on every column', 'stage-render.js not shipped yet');
       else {

@@ -32,7 +32,7 @@
   const HERO_NAMES = { jack: 'JACK', hannah: 'HANNAH', mustapha: 'MUSTAPHA', mess: 'MESS', fessenden: 'FESSENDEN', clone: 'YOUR CLONE', sable: 'SABLE', echo: 'ECHO' };
   // Marker spots on the 224x96 card map, keyed by the shipped campaign.js card.marker ids (CAMPAIGN §12.1: wassoon,
   // causeway, frontier, city-in-the-sea, cliffs, river-head). Authored guesses; a card's `markerAt` overrides them.
-  const CARD_MARKERS = { wassoon: [166, 66], causeway: [124, 80], frontier: [40, 34], 'city-in-the-sea': [176, 46], cliffs: [60, 72], 'river-head': [196, 20] };
+  const CARD_MARKERS = { wassoon: [166, 66], swamp: [92, 30], causeway: [124, 80], 'city-in-the-sea': [176, 46], valley: [150, 22], frontier: [40, 34], cliffs: [60, 72], 'river-head': [196, 20] };
   const STAFF_ROLL = [                                                                             // CAMPAIGN §11.4
     ['CADILLACS & DINOSAURS II', ['THE CROWN TIDE']],
     ['AN UNOFFICIAL FAN SEQUEL', ['MADE FOR MOSTAFA']],
@@ -470,7 +470,7 @@
     return true;
   }
 
-  // Chapter card: the map in its frame, a blinking marker, "CHAPTER N" and the typed name; ch1 shows `pre` first.
+  // Stage card: the map in its frame, a blinking marker, "STAGE N" and the typed name; stage 1 shows `pre` first.
   // `t` = frames since the card began (typing and blinking derive from it); `typed` overrides the typing budget.
   function card(g, c) {
     c = c || {};
@@ -496,7 +496,7 @@
       text(g, c.label, lx + 4, 102, { shadow: false });
     }
     const budget = c.typed != null ? typedBudget(c.typed) : typedBudget(tt === Infinity ? null : tt);
-    const title = c.title != null ? c.title : 'CHAPTER ' + (c.chapter == null ? '' : c.chapter);
+    const title = c.title != null ? c.title : 'STAGE ' + (c.chapter == null ? '' : c.chapter);
     const r1 = text(g, title, 192, 136, { font: 16, align: 'center', snap: true, max: budget === Infinity ? undefined : budget });
     const left = budget === Infinity ? undefined : Math.max(0, budget - r1.shown);
     const r2 = text(g, c.name || '', 192, 168, { font: 16, align: 'center', snap: true, max: left });
@@ -520,12 +520,12 @@
     return true;
   }
 
-  // Stage clear tally: CHAPTER N CLEAR, VITALITY / ENEMIES / FINAL BLOW / TOTAL; rows appear every 30 frames of `t`.
+  // Stage clear tally: STAGE N CLEAR, VITALITY / ENEMIES / FINAL BLOW / TOTAL; rows appear every 30 frames of `t`.
   function tally(g, s) {
     s = s || {};
     const t = s.t == null ? Infinity : s.t, rowsOn = Math.floor(t / TIMING.tallyRow);
     if (s.dim !== false) { g.fillStyle = 'rgba(0,0,0,' + (s.dim == null ? 0.65 : s.dim) + ')'; g.fillRect(0, 0, AW, AH); }
-    text(g, s.title || ('CHAPTER ' + (s.chapter == null ? '' : s.chapter) + ' CLEAR'), 192, 32, { font: 16, align: 'center', snap: true, pen: 'yellow' });
+    text(g, s.title || ('STAGE ' + (s.chapter == null ? '' : s.chapter) + ' CLEAR'), 192, 32, { font: 16, align: 'center', snap: true, pen: 'yellow' });
     const rows = [['VITALITY', s.vitality], ['ENEMIES', s.enemies], ['FINAL BLOW', s.finalBlow]];
     rows.forEach((r, i) => {
       if (rowsOn < i + 1) return;
@@ -565,8 +565,10 @@
   function thanks(g, lines, opts) {
     lines = clipLines(lines); opts = opts || {};
     const big = (str, y, pen) => { const fits = cellsOf(tokens(str)) * 16 <= 368; text(g, str, 192, y, fits ? { scale: 2, align: 'center', outline: true, pen } : { font: 16, align: 'center', outline: true, pen }); };
+    // two lines: the top and the foot of the screen; three (the final card): top, middle and foot
     if (lines[0]) big(lines[0], 40, opts.pen || 'white');
-    if (lines[1]) big(lines[1], 168, opts.pen2 || opts.pen || 'yellow');
+    if (lines.length > 2) { big(lines[1], 104, opts.pen2 || opts.pen || 'yellow'); big(lines[2], 168, opts.pen3 || opts.pen || 'white'); }
+    else if (lines[1]) big(lines[1], 168, opts.pen2 || opts.pen || 'yellow');
   }
 
   // In-stage dialogue box: framed 72x72 portrait at (40,32), lines at x 144 from y 48 with a 16 px pitch (the ROM's

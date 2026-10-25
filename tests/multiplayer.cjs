@@ -1046,7 +1046,7 @@ const TRACE_PAGE = `async ({ chapters, steps, every }) => {
   }
   return { traces: out, keys: Object.keys(g.snapshot) };
 }`;
-async function recordTrace(browser, seed = 9090, steps = 3600, every = 60, chapters = [0, 1, 5]) {
+async function recordTrace(browser, seed = 9090, steps = 3600, every = 60, chapters = [0, 2, 7]) {   // stage 1, the causeway drive, the dam (revision 3)
   const ctx = await browser.newContext(); const page = await ctx.newPage(); const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   try {

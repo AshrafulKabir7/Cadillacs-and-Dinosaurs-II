@@ -1,1090 +1,326 @@
 {
-  "id": "ch1",
-  "title": "WASSOON",
-  "objPage": "S1A0",
-  "preset": "harbor-night",
-  "fx": {
-    "rain": true
+ "id": "ch1",
+ "title": "CITY IN THE SEA",
+ "objPage": "S1A0",
+ "preset": "harbor-night",
+ "notes": [
+  "Painted scenery (revision 3, step C): the 12 st1 paintings (work/bg/gen/st1 -> strips tools/art/strips/st1, prompts tools/art/bg-prompts.json); each area is the four strips of its two paintings in storyline order (a<N>-1 A, B, a<N>-2 A, B), overlapping 32 px with a floor-only crossfade where the floors differ (2592-2656 px).",
+  "Gameplay structure (sections, lock counts, task props, casts, boss lock) from step B, re-fitted to the painted areas and their floor lines."
+ ],
+ "areas": [
+  {
+   "id": "a0",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
+    {
+     "img": "tools/art/strips/st1/st1-a0-1-A.png",
+     "at": 0,
+     "lift": 17,
+     "note": "waterfront promenade, militia checkpoint (lifted 17 px: floor 128 like B, the 96-px band the test-safe start needs)"
+    },
+    {
+     "img": "tools/art/strips/st1/st1-a0-1-B.png",
+     "at": 640,
+     "note": "waterfront street, the chained cage cart",
+     "blend": 32,
+     "blendRows": "floor"
+    },
+    {
+     "img": "tools/art/strips/st1/st1-a0-2-A.png",
+     "at": 1280,
+     "ramp": 32,
+     "note": "fish market arcade",
+     "blend": 32,
+     "blendRows": "floor"
+    },
+    {
+     "img": "tools/art/strips/st1/st1-a0-2-B.png",
+     "at": 1920,
+     "note": "the cage the market dinosaur smashed open",
+     "blend": 32,
+     "blendRows": "floor"
+    }
+   ],
+   "walk": {
+    "patch": [
+     {
+      "rect": [
+       2304,
+       128,
+       176,
+       16
+      ],
+      "walk": false,
+      "why": "the broken cage planks and chains spill over the floor line (a0-2-B x 384-560)"
+     }
+    ]
+   },
+   "start": {
+    "x": 60
+   },
+   "sections": [
+    {
+     "id": "1-1",
+     "name": "THE WATERFRONT",
+     "x0": 0,
+     "len": 1296,
+     "cap": "THE WATERFRONT",
+     "locks": [
+      640,
+      912
+     ],
+     "bossLock": null,
+     "props": [
+      {
+       "kind": "crate",
+       "x": 170
+      },
+      {
+       "kind": "crate",
+       "x": 330
+      },
+      {
+       "kind": "drop",
+       "type": "gun",
+       "x": 260
+      }
+     ],
+     "scenery": [
+      "flock"
+     ],
+     "note": "test-safe start: flat 0-640, band 128-224 (a0-1-A lifted), no lock before 600"
+    },
+    {
+     "id": "1-2",
+     "name": "THE FISH MARKET",
+     "x0": 1296,
+     "len": 1296,
+     "locks": [
+      1456,
+      2176
+     ],
+     "bossLock": null,
+     "props": [
+      {
+       "kind": "crate",
+       "x": 120
+      },
+      {
+       "kind": "crate",
+       "x": 152
+      },
+      {
+       "kind": "crate",
+       "x": 470
+      },
+      {
+       "kind": "gate",
+       "name": "BARGE LOCK · NET MENDERS",
+       "x": 352
+      }
+     ],
+     "note": "task 0 (BARGE LOCK · NET MENDERS) in the fish market (lock 1456); the market raptor breaks loose at its smashed cage (lock 2176)"
+    }
+   ],
+   "anims": []
   },
-  "notes": [
-    "COHERENCE (2026-10-22): ch1 is one rainy night at one harbor, walked west to east: a0 WASSOON HARBOR is the sea-wall road (E4a0 352-1024 only), a1 THE JAIL QUAY is the row of quay sheds behind it (E6a0 0-832 only: plank sheds and brick), a2 THE HARBOR GATE is the stone jail quay at the water where the prison barge loads (E8a1 96-1376 only: cell doors, wall shackles, torches, the harbor water at the foot of the wall). Each area walks back and forth through its one source strip (every leg <= 512 px, leftward legs mirrored), so every join is a mirror join or a continuation and the scenery never jumps between unrelated places; the place changes only at the two fades.",
-    "Palette: harbor-night on every slice (night scale, pens 1-3 kept for lamp and window glow, 20% toward #1a2a5a on every row); s3ops on the far layer. One far layer for the whole chapter: the E4a0 bay (sea, fortress domes, the far city) behind the sea wall, over the shed roofs and through the quay arches.",
-    "Test-safe start (gate 3): the E4a0 pavement is widened toward the sea wall under every slice of a0 (E4a0 floor cells h 16-64 copied to y 112 with their terrain), so the lane 113-224 is floor art and flat over the first 640 px.",
-    "a2 lane: the E8a1 quay ledge (rows y 128-192, floor art) is walk-patched onto the wading strip below it, lane 129-224.",
-    "Boss arena (1-6, WARDEN ROOK, the dock jailer with the boat hook and rope): the quay is rigged for loading the barge: crane masts (E6a0 lattice towers, lifted), hanging chains with hooks (E8a1 shackles, lifted), the barge's iron cell doors; the runtime adds the crane set piece and its shadow."
-  ],
-  "areas": [
+  {
+   "id": "a1",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
     {
-      "id": "a0",
-      "w": 2368,
-      "h": 224,
-      "bg": "auto",
-      "s2": [
-        {
-          "slice": {
-            "src": "E4a0",
-            "x": [
-              352,
-              864
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            0,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E4a0",
-            "x": [
-              608,
-              864
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            512,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E4a0",
-            "x": [
-              608,
-              1024
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            768,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E4a0",
-            "x": [
-              864,
-              1024
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1184,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E4a0",
-            "x": [
-              352,
-              864
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1344,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E4a0",
-            "x": [
-              352,
-              864
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1856,
-            0
-          ]
-        },
-        {
-          "terrain": "copy",
-          "floor": true,
-          "note": "the pavement widened toward the sea wall (E4a0 floor cells copied up to y 112 with their terrain)",
-          "patch": {
-            "src": "E4a0",
-            "x": [
-              352,
-              864
-            ],
-            "h": [
-              16,
-              64
-            ]
-          },
-          "at": [
-            0,
-            112
-          ]
-        },
-        {
-          "terrain": "copy",
-          "floor": true,
-          "note": "the pavement widened toward the sea wall (E4a0 floor cells copied up to y 112 with their terrain)",
-          "patch": {
-            "src": "E4a0",
-            "x": [
-              608,
-              864
-            ],
-            "h": [
-              16,
-              64
-            ]
-          },
-          "at": [
-            512,
-            112
-          ],
-          "flip": true
-        },
-        {
-          "terrain": "copy",
-          "floor": true,
-          "note": "the pavement widened toward the sea wall (E4a0 floor cells copied up to y 112 with their terrain)",
-          "patch": {
-            "src": "E4a0",
-            "x": [
-              608,
-              1024
-            ],
-            "h": [
-              16,
-              64
-            ]
-          },
-          "at": [
-            768,
-            112
-          ]
-        },
-        {
-          "terrain": "copy",
-          "floor": true,
-          "note": "the pavement widened toward the sea wall (E4a0 floor cells copied up to y 112 with their terrain)",
-          "patch": {
-            "src": "E4a0",
-            "x": [
-              864,
-              1024
-            ],
-            "h": [
-              16,
-              64
-            ]
-          },
-          "at": [
-            1184,
-            112
-          ],
-          "flip": true
-        },
-        {
-          "terrain": "copy",
-          "floor": true,
-          "note": "the pavement widened toward the sea wall (E4a0 floor cells copied up to y 112 with their terrain)",
-          "patch": {
-            "src": "E4a0",
-            "x": [
-              352,
-              864
-            ],
-            "h": [
-              16,
-              64
-            ]
-          },
-          "at": [
-            1344,
-            112
-          ],
-          "flip": true
-        },
-        {
-          "terrain": "copy",
-          "floor": true,
-          "note": "the pavement widened toward the sea wall (E4a0 floor cells copied up to y 112 with their terrain)",
-          "patch": {
-            "src": "E4a0",
-            "x": [
-              352,
-              864
-            ],
-            "h": [
-              16,
-              64
-            ]
-          },
-          "at": [
-            1856,
-            112
-          ]
-        }
-      ],
-      "s3": [
-        {
-          "x": [
-            0,
-            2368
-          ],
-          "src": "E4a0",
-          "shift": 1,
-          "note": "the bay at night behind the whole sea wall"
-        }
-      ],
-      "anims": [],
-      "start": {
-        "x": 60
+     "img": "tools/art/strips/st1/st1-a1-1-A.png",
+     "at": 0,
+     "note": "cargo sheds, hooks and chains on every beam"
+    },
+    {
+     "img": "tools/art/strips/st1/st1-a1-1-B.png",
+     "at": 640,
+     "note": "stacked crown-stamped dinosaur cages",
+     "blend": 32,
+     "blendRows": "floor"
+    },
+    {
+     "img": "tools/art/strips/st1/st1-a1-2-A.png",
+     "at": 1280,
+     "ramp": 32,
+     "note": "crane yard",
+     "blend": 32,
+     "blendRows": "floor"
+    },
+    {
+     "img": "tools/art/strips/st1/st1-a1-2-B.png",
+     "at": 1920,
+     "ramp": 64,
+     "note": "loading bay: racks of boat hooks, shackles",
+     "blend": 32,
+     "blendRows": "floor"
+    }
+   ],
+   "sections": [
+    {
+     "id": "1-3",
+     "name": "THE CARGO SHEDS",
+     "x0": 0,
+     "len": 1296,
+     "cap": "THE CARGO SHEDS",
+     "locks": [
+      224,
+      832
+     ],
+     "bossLock": null,
+     "note": "elite BARGE BOSUN at the cage stacks (lock 832)",
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
       },
-      "sections": [
-        {
-          "id": "1-1",
-          "name": "THE SEA WALL",
-          "x0": 0,
-          "len": 1344,
-          "cap": "WASSOON HARBOR",
-          "locks": [
-            640,
-            960
-          ],
-          "bossLock": null,
-          "props": [
-            {
-              "kind": "crate",
-              "x": 170
-            },
-            {
-              "kind": "crate",
-              "x": 330
-            },
-            {
-              "kind": "drop",
-              "type": "gun",
-              "x": 260
-            }
-          ],
-          "scenery": [
-            "flock"
-          ],
-          "note": "test-safe start: flat 0-640, band 113-224 on the widened pavement, no lock before 600"
-        },
-        {
-          "id": "1-2",
-          "name": "THE COLD CRATES",
-          "x0": 1344,
-          "len": 1024,
-          "locks": [
-            1536,
-            1984
-          ],
-          "bossLock": null,
-          "props": [
-            {
-              "kind": "crate",
-              "x": 120
-            },
-            {
-              "kind": "crate",
-              "x": 152
-            },
-            {
-              "kind": "crate",
-              "x": 470
-            },
-            {
-              "kind": "pod",
-              "name": "COLD POD · LOT 07",
-              "x": 700
-            }
-          ]
-        }
-      ]
+      {
+       "kind": "crate",
+       "x": 578
+      }
+     ]
     },
     {
-      "id": "a1",
-      "w": 2048,
-      "h": 224,
-      "bg": "auto",
-      "s2": [
-        {
-          "slice": {
-            "src": "E6a0",
-            "x": [
-              0,
-              512
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            0,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E6a0",
-            "x": [
-              256,
-              512
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            512,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E6a0",
-            "x": [
-              256,
-              512
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            768,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E6a0",
-            "x": [
-              512,
-              832
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1024,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E6a0",
-            "x": [
-              320,
-              832
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1344,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E6a0",
-            "x": [
-              320,
-              512
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1856,
-            0
-          ]
-        }
-      ],
-      "s3": [
-        {
-          "x": [
-            0,
-            2048
-          ],
-          "src": "E4a0",
-          "shift": 1,
-          "note": "the bay behind the quay sheds"
-        }
-      ],
-      "anims": [],
-      "sections": [
-        {
-          "id": "1-3",
-          "name": "THE CANNERY",
-          "x0": 0,
-          "len": 1024,
-          "cap": "THE JAIL QUAY",
-          "locks": [
-            192,
-            640
-          ],
-          "bossLock": null,
-          "note": "elite LOT 07 · HEAVY; fg catwalk rails (priority pens)",
-          "props": [
-            {
-              "kind": "barrel",
-              "x": 193
-            },
-            {
-              "kind": "crate",
-              "x": 578
-            }
-          ]
-        },
-        {
-          "id": "1-4",
-          "name": "THE JAIL BARGE",
-          "x0": 1024,
-          "len": 1024,
-          "locks": [
-            1216,
-            1664
-          ],
-          "bossLock": null,
-          "props": [
-            {
-              "kind": "barrel",
-              "x": 193
-            },
-            {
-              "kind": "barrel",
-              "x": 578
-            },
-            {
-              "kind": "pod",
-              "name": "COLD POD · LOT 12",
-              "x": 700
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "a2",
-      "w": 2176,
-      "h": 224,
-      "bg": "auto",
-      "s2": [
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              96,
-              608
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            0,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              96,
-              608
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            512,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              96,
-              544
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            1024,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              544,
-              1024
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            1472,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a1",
-            "x": [
-              800,
-              1024
-            ],
-            "h": [
-              784,
-              1008
-            ]
-          },
-          "at": [
-            1952,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "patch": {
-            "src": "E7a2",
-            "x": [
-              400,
-              432
-            ],
-            "h": [
-              112,
-              240
-            ]
-          },
-          "rows": [
-            21
-          ],
-          "at": [
-            1296,
-            0
-          ],
-          "prio": "none",
-          "note": "mooring post wound with rope (the E7a2 cable-wound pillar, lifted, on the back edge of the quay)"
-        },
-        {
-          "patch": {
-            "src": "E8a1",
-            "x": [
-              240,
-              256
-            ],
-            "h": [
-              896,
-              976
-            ]
-          },
-          "rows": [
-            8
-          ],
-          "pens": [
-            10,
-            11,
-            12,
-            13,
-            14
-          ],
-          "at": [
-            1360,
-            32
-          ],
-          "note": "loading chain with its hook (the E8a1 wall shackle, lifted)"
-        },
-        {
-          "patch": {
-            "src": "E8a1",
-            "x": [
-              240,
-              256
-            ],
-            "h": [
-              896,
-              976
-            ]
-          },
-          "rows": [
-            8
-          ],
-          "pens": [
-            10,
-            11,
-            12,
-            13,
-            14
-          ],
-          "at": [
-            1424,
-            32
-          ],
-          "note": "loading chain with its hook (the E8a1 wall shackle, lifted)"
-        },
-        {
-          "patch": {
-            "src": "E7a2",
-            "x": [
-              400,
-              432
-            ],
-            "h": [
-              112,
-              240
-            ]
-          },
-          "rows": [
-            21
-          ],
-          "at": [
-            1776,
-            0
-          ],
-          "prio": "none",
-          "note": "mooring post wound with rope (the E7a2 cable-wound pillar, lifted, on the back edge of the quay)"
-        },
-        {
-          "patch": {
-            "src": "E8a1",
-            "x": [
-              240,
-              256
-            ],
-            "h": [
-              896,
-              976
-            ]
-          },
-          "rows": [
-            8
-          ],
-          "pens": [
-            10,
-            11,
-            12,
-            13,
-            14
-          ],
-          "at": [
-            1840,
-            32
-          ],
-          "note": "loading chain with its hook (the E8a1 wall shackle, lifted)"
-        },
-        {
-          "patch": {
-            "src": "E8a1",
-            "x": [
-              240,
-              256
-            ],
-            "h": [
-              896,
-              976
-            ]
-          },
-          "rows": [
-            8
-          ],
-          "pens": [
-            10,
-            11,
-            12,
-            13,
-            14
-          ],
-          "at": [
-            1888,
-            32
-          ],
-          "note": "loading chain with its hook (the E8a1 wall shackle, lifted)"
-        },
-        {
-          "patch": {
-            "src": "E8a1",
-            "x": [
-              240,
-              256
-            ],
-            "h": [
-              896,
-              976
-            ]
-          },
-          "rows": [
-            8
-          ],
-          "pens": [
-            10,
-            11,
-            12,
-            13,
-            14
-          ],
-          "at": [
-            1952,
-            32
-          ],
-          "note": "loading chain with its hook (the E8a1 wall shackle, lifted)"
-        },
-        {
-          "patch": {
-            "src": "E8a1",
-            "x": [
-              240,
-              256
-            ],
-            "h": [
-              896,
-              976
-            ]
-          },
-          "rows": [
-            8
-          ],
-          "pens": [
-            10,
-            11,
-            12,
-            13,
-            14
-          ],
-          "at": [
-            2016,
-            32
-          ],
-          "note": "loading chain with its hook (the E8a1 wall shackle, lifted)"
-        },
-        {
-          "patch": {
-            "src": "E8a1",
-            "x": [
-              240,
-              256
-            ],
-            "h": [
-              896,
-              976
-            ]
-          },
-          "rows": [
-            8
-          ],
-          "pens": [
-            10,
-            11,
-            12,
-            13,
-            14
-          ],
-          "at": [
-            2064,
-            32
-          ],
-          "note": "loading chain with its hook (the E8a1 wall shackle, lifted)"
-        },
-        {
-          "patch": {
-            "src": "E7a2",
-            "x": [
-              400,
-              432
-            ],
-            "h": [
-              112,
-              240
-            ]
-          },
-          "rows": [
-            21
-          ],
-          "at": [
-            2128,
-            0
-          ],
-          "prio": "none",
-          "note": "mooring post wound with rope (the E7a2 cable-wound pillar, lifted, on the back edge of the quay)"
-        }
-      ],
-      "s3": [
-        {
-          "x": [
-            0,
-            2176
-          ],
-          "src": "E4a0",
-          "shift": 1,
-          "note": "the bay through the quay arches"
-        }
-      ],
-      "walk": {
-        "patch": [
-          {
-            "rect": [
-              0,
-              128,
-              2176,
-              64
-            ],
-            "walk": true,
-            "why": "E8a1 quay ledge (floor art, rows y 128-192) joined to the wading strip: lane 96 px"
-          }
-        ]
+     "id": "1-4",
+     "name": "THE CAGE STACKS",
+     "x0": 1296,
+     "len": 1296,
+     "locks": [
+      1424,
+      2176
+     ],
+     "bossLock": null,
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
       },
-      "sections": [
-        {
-          "id": "1-5",
-          "name": "THE BELL ROOFS",
-          "x0": 0,
-          "len": 1024,
-          "cap": "THE HARBOR GATE",
-          "locks": [
-            192,
-            640
-          ],
-          "bossLock": null,
-          "scenery": [
-            "flock"
-          ],
-          "props": [
-            {
-              "kind": "crate",
-              "x": 193
-            },
-            {
-              "kind": "barrel",
-              "x": 578
-            },
-            {
-              "kind": "pod",
-              "name": "PODS · MANIFEST CASE",
-              "x": 880
-            }
-          ]
-        },
-        {
-          "id": "1-6",
-          "name": "THE WARDEN’S GATE",
-          "x0": 1024,
-          "len": 1152,
-          "locks": [
-            1216
-          ],
-          "bossLock": 1792,
-          "props": [
-            {
-              "kind": "barrel",
-              "x": 900
-            },
-            {
-              "kind": "barrel",
-              "x": 940
-            },
-            {
-              "kind": "barrel",
-              "x": 1040
-            },
-            {
-              "kind": "barrel",
-              "x": 1080
-            },
-            {
-              "kind": "crane-shadow",
-              "x": 960
-            }
-          ],
-          "set": [
-            "barrel",
-            "crane"
-          ],
-          "note": "boss lock 1792-2176 = E4a0 columns only (E4a0 has no boss window)"
-        }
-      ],
-      "anims": []
+      {
+       "kind": "barrel",
+       "x": 578
+      },
+      {
+       "kind": "gate",
+       "name": "BARGE LOCK · DOCKWORKERS",
+       "x": 320
+      }
+     ],
+     "note": "task 1 (BARGE LOCK · DOCKWORKERS) in the crane yard (lock 1424)"
     }
-  ],
-  "s3ops": [
+   ],
+   "anims": []
+  },
+  {
+   "id": "a2",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
     {
-      "op": "scale",
-      "rgb": [
-        0.45,
-        0.5,
-        0.75
-      ]
+     "img": "tools/art/strips/st1/st1-a2-1-A.png",
+     "at": 0,
+     "note": "the jail quay cut into the sea wall"
     },
     {
-      "op": "tint",
-      "rgb": "#1a2a5a",
-      "amount": 0.2
-    }
-  ],
-  "roles": {
-    "E4a0": {
-      "s2": {
-        "stone": [
-          0,
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15,
-          16,
-          17,
-          18,
-          19,
-          20,
-          21,
-          22,
-          23,
-          24,
-          25,
-          26,
-          27,
-          28,
-          29,
-          30,
-          31
-        ]
-      }
+     "img": "tools/art/strips/st1/st1-a2-1-B.png",
+     "at": 640,
+     "note": "the prison barge alongside the quay",
+     "blend": 32,
+     "blendRows": "floor"
     },
-    "E6a0": {
-      "s2": {
-        "stone": [
-          0,
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15,
-          16,
-          17,
-          18,
-          19,
-          20,
-          21,
-          22,
-          23,
-          24,
-          25,
-          26,
-          27,
-          28,
-          29,
-          30,
-          31
-        ]
-      }
+    {
+     "img": "tools/art/strips/st1/st1-a2-2-A.png",
+     "at": 1280,
+     "ramp": 32,
+     "note": "the dock commander's quay: boat-hook rack, crane hook",
+     "blend": 32,
+     "blendRows": "floor"
     },
-    "E8a1": {
-      "s2": {
-        "stone": [
-          0,
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15,
-          16,
-          17,
-          18,
-          19,
-          20,
-          21,
-          22,
-          23,
-          24,
-          25,
-          26,
-          27,
-          28,
-          29,
-          30,
-          31
-        ]
-      }
+    {
+     "img": "tools/art/strips/st1/st1-a2-2-B.png",
+     "at": 1920,
+     "ramp": 32,
+     "note": "the pier end and the barge stern (the boss arena)",
+     "blend": 32,
+     "blendRows": "floor"
     }
+   ],
+   "sections": [
+    {
+     "id": "1-5",
+     "name": "THE PRISON BARGE",
+     "x0": 0,
+     "len": 1296,
+     "cap": "THE PRISON QUAY",
+     "locks": [
+      384,
+      832
+     ],
+     "bossLock": null,
+     "scenery": [
+      "flock"
+     ],
+     "props": [
+      {
+       "kind": "crate",
+       "x": 193
+      },
+      {
+       "kind": "barrel",
+       "x": 578
+      },
+      {
+       "kind": "gate",
+       "name": "BARGE LOCK · THE HOLD",
+       "x": 1040
+      }
+     ],
+     "note": "task 2 (BARGE LOCK · THE HOLD) at the barge gangplank (lock 832)"
+    },
+    {
+     "id": "1-6",
+     "name": "THE PRISON QUAY",
+     "x0": 1296,
+     "len": 1296,
+     "locks": [
+      1424
+     ],
+     "bossLock": 2208,
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 1052
+      },
+      {
+       "kind": "barrel",
+       "x": 1092
+      },
+      {
+       "kind": "barrel",
+       "x": 1192
+      },
+      {
+       "kind": "barrel",
+       "x": 1232
+      },
+      {
+       "kind": "crane-shadow",
+       "x": 1112
+      }
+     ],
+     "set": [
+      "barrel",
+      "crane"
+     ],
+     "note": "boss lock 2208-2592: the pier end with the barge stern; Rook's barrels and crane shadow inside it"
+    }
+   ],
+   "anims": []
   }
+ ]
 }

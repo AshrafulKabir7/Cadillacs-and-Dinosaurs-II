@@ -109,7 +109,7 @@ async function main() {
   });
   C.check(STEP, 'Room (joiner): code, slots 1P player / 2P you / 3P empty', room.code === 'DINO-4KQ7' && room.slots.join() === 'player,you,empty', JSON.stringify(room));
   C.check(STEP, 'Hero picker in select order 1,2,0,3; the host’s hero is disabled and tagged 1P; mine is pressed', room.heroes.map(x => x.h).join() === '1,2,0,3' && room.heroes[0].dis && room.heroes[0].tag === '1P' && room.heroes.filter(x => x.pressed === 'true').length === 1, JSON.stringify(room.heroes));
-  C.check(STEP, 'Joiner sees READY, no START, no KICK, the host’s chapter/difficulty read-only', room.start && room.ready && !room.kick && room.chDis && /CHAPTER 03/.test(room.chap) && room.dif === 'normal', JSON.stringify(room));
+  C.check(STEP, 'Joiner sees READY, no START, no KICK, the host’s chapter/difficulty read-only', room.start && room.ready && !room.kick && room.chDis && /STAGE 03/.test(room.chap) && room.dif === 'normal', JSON.stringify(room));
   // pick a hero, then ready
   await page.click('[data-mp-hero="0"]');
   const pick = await page.evaluate(() => ({ c: NET_STUB.calls.filter(c => c[0] === 'client.chooseHero').map(c => c[1]), p: document.querySelector('[data-mp-hero="0"]').getAttribute('aria-pressed'), st: localStorage.getItem('cnd2-mp-hero') }));
@@ -144,7 +144,7 @@ async function main() {
   await page.evaluate(() => EDEN_LOBBY.showBanner('clear-wait'));
   const b3 = await text(page, '#mp-status-banner');
   await page.evaluate(() => EDEN_LOBBY.hideBanner());
-  C.check(STEP, 'Banners: host pause shows "1P PAUSED THE GAME" and clears on resume; showBanner kinds', b1.t === '1P PAUSED THE GAME' && !b1.h && b2 && b3 === 'CHAPTER CLEAR · WAITING FOR 1P', JSON.stringify({ b1, b2, b3 }));
+  C.check(STEP, 'Banners: host pause shows "1P PAUSED THE GAME" and clears on resume; showBanner kinds', b1.t === '1P PAUSED THE GAME' && !b1.h && b2 && b3 === 'STAGE CLEAR · WAITING FOR 1P', JSON.stringify({ b1, b2, b3 }));
   const pe = await page.evaluate(() => getComputedStyle(document.querySelector('#mp-layer')).pointerEvents);
   C.check(STEP, 'The in-game layer never takes clicks', pe === 'none', pe);
   // leave dialog: STAY then LEAVE
@@ -173,7 +173,7 @@ async function main() {
   C.check(STEP, 'HOST: loads PeerJS, hosts with lobby {chapter, difficulty, unlocked} and the last-used hero', hs.h && hs.h[1].lobby.unlocked === 3 && hs.h[1].lobby.difficulty === 'normal' && hs.h[1].lobby.chapter === 0 && hs.h[1].hero === 0 && hs.mine[0] === 0, JSON.stringify(hs.h));
   C.check(STEP, 'Room text has no stray null/undefined', await page.evaluate(() => !/(null|undefined|NaN)/.test(document.querySelector('#mp-room').textContent)), await page.evaluate(() => document.querySelector('#mp-room').textContent.slice(0, 200)));
   C.check(STEP, 'Host room: DINO code, START ALONE enabled, no READY, slots you/empty/empty', /^DINO-[2-9A-HJKMNP-Z]{4}$/.test(hs.code) && /START ALONE/.test(hs.start) && !hs.sdis && hs.ready && hs.slots.join() === 'you,empty,empty' && /WAITING FOR PLAYERS/.test(hs.status), JSON.stringify(hs));
-  C.check(STEP, 'Host chooses among unlocked chapters and the three difficulties; COPY LINK shown over http; SHARE only with navigator.share', hs.chOpts.length === 3 && /CHAPTER 01/.test(hs.chOpts[0]) && !hs.chDis && hs.difOpts.join() === 'easy,normal,hard' && hs.link && hs.share === await page.evaluate(() => !!navigator.share), JSON.stringify(hs));
+  C.check(STEP, 'Host chooses among unlocked chapters and the three difficulties; COPY LINK shown over http; SHARE only with navigator.share', hs.chOpts.length === 3 && /STAGE 01/.test(hs.chOpts[0]) && !hs.chDis && hs.difOpts.join() === 'easy,normal,hard' && hs.link && hs.share === await page.evaluate(() => !!navigator.share), JSON.stringify(hs));
   // copy code / link
   await page.click('#mp-copy-code');
   await page.waitForFunction(() => document.querySelector('#mp-copy-code').textContent !== 'COPY CODE', null, { timeout: 2000 }).catch(() => {});
@@ -311,7 +311,7 @@ async function main() {
   await page.evaluate(() => { NET_STUB.cfg.joinPhase = 'play'; NET_STUB.cfg.joinSlot = 2; EDEN_LOBBY.open(lobbyOpts({ mode: 'join', code: 'DINO-4KQ7' })); });
   await screen(page, 'mp-room', 3000);
   const dp = await page.evaluate(() => ({ phase: document.querySelector('#mp-room').dataset.phase, prog: document.querySelector('#mp-progress').textContent, ready: document.querySelector('#mp-ready').hidden, ji: !document.querySelector('#mp-joinin').hidden, slots: [...document.querySelectorAll('[data-mp-slot]')].map(n => n.dataset.state) }));
-  C.check(STEP, 'Late joiner: data-phase="play", "GAME IN PROGRESS · CHAPTER 03 · DIFFICULTY NORMAL", JOIN IN instead of READY', dp.phase === 'play' && dp.prog === 'GAME IN PROGRESS · CHAPTER 03 · DIFFICULTY NORMAL' && dp.ready && dp.ji && dp.slots[2] === 'you', JSON.stringify(dp));
+  C.check(STEP, 'Late joiner: data-phase="play", "GAME IN PROGRESS · STAGE 03 · DIFFICULTY NORMAL", JOIN IN instead of READY', dp.phase === 'play' && dp.prog === 'GAME IN PROGRESS · STAGE 03 · DIFFICULTY NORMAL' && dp.ready && dp.ji && dp.slots[2] === 'you', JSON.stringify(dp));
   // JOIN IN with a hero the host has not confirmed: ready waits for the roster; a hero-taken reject cancels the drop-in
   const tk = await page.evaluate(() => { NET_STUB.calls.length = 0; const b = [...document.querySelectorAll('[data-mp-hero]')].find(x => !x.disabled && x.getAttribute('aria-pressed') !== 'true'); b.click(); document.querySelector('#mp-joinin').click();
     const sent = NET_STUB.calls.map(c => c[0]); NET_STUB.last.emit('reject', { reason: 'hero-taken', detail: 'Another player took that hero — pick another.', fatal: false });

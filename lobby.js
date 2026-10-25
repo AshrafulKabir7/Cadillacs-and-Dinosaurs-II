@@ -58,7 +58,7 @@
     'closed': 'host-left', 'room-full': 'full', 'webrtc': 'webrtc-unsupported', 'load': 'peerjs-load' };
   const BANNERS = {
     'waiting-host': 'WAITING FOR HOST…', 'host-paused': '1P PAUSED THE GAME', 'unstable': 'CONNECTION UNSTABLE',
-    'gameover-wait': 'GAME OVER · WAITING FOR 1P', 'clear-wait': 'CHAPTER CLEAR · WAITING FOR 1P',
+    'gameover-wait': 'GAME OVER · WAITING FOR 1P', 'clear-wait': 'STAGE CLEAR · WAITING FOR 1P',
     'drop-in': 'YOU’LL DROP IN AT THE NEXT BREAK IN THE FIGHTING',
   };
   const HELD_HERO = 'That hero is held for a player who lost the connection (for up to 30 seconds). Pick another.';
@@ -107,13 +107,13 @@
   const shortHero = i => heroName(i).split(/\s+/)[0];
   function chapters() {
     let c = null; try { c = S.adapter && S.adapter.chapters && S.adapter.chapters(); } catch (e) { c = null; }
-    return Array.isArray(c) && c.length ? c.map((x, i) => ({ index: num(x.index, i), name: String(x.name || 'CHAPTER ' + (i + 1)), unlocked: x.unlocked !== false })) : [{ index: 0, name: 'CHAPTER 1', unlocked: true }];
+    return Array.isArray(c) && c.length ? c.map((x, i) => ({ index: num(x.index, i), name: String(x.name || 'STAGE ' + (i + 1)), unlocked: x.unlocked !== false })) : [{ index: 0, name: 'STAGE 1', unlocked: true }];
   }
   function difficulties() {
     let d = null; try { d = S.adapter && S.adapter.difficulties && S.adapter.difficulties(); } catch (e) { d = null; }
     return Array.isArray(d) && d.length ? d.map(x => ({ key: String(x.key), label: String(x.label || x.key).toUpperCase() })) : DEFAULT_DIFFICULTIES;
   }
-  const chapterLabel = i => { const c = chapters().find(x => x.index === i); return `CHAPTER ${String(i + 1).padStart(2, '0')}${c ? ' · ' + c.name.toUpperCase() : ''}`; };
+  const chapterLabel = i => { const c = chapters().find(x => x.index === i); return `STAGE ${String(i + 1).padStart(2, '0')}${c ? ' · ' + c.name.toUpperCase() : ''}`; };
   const difficultyLabel = k => { const d = difficulties().find(x => x.key === k); return d ? d.label : String(k || 'NORMAL').toUpperCase(); };
 
   function callAdapter(name, ...args) {
@@ -662,7 +662,7 @@
       b.addEventListener('click', () => pickHero(i));
       return b;
     });
-    r.chapter = h('select', { id: 'mp-chapter', class: 'mp-select', 'aria-label': 'Chapter' });
+    r.chapter = h('select', { id: 'mp-chapter', class: 'mp-select', 'aria-label': 'Stage' });
     r.chapter.addEventListener('change', () => setLobby({ chapter: +r.chapter.value }));
     r.difficulty = h('select', { id: 'mp-difficulty', class: 'mp-select', 'aria-label': 'Difficulty' });
     r.difficulty.addEventListener('change', () => setLobby({ difficulty: r.difficulty.value }));
@@ -681,7 +681,7 @@
       h('div', { class: 'mp-slots' }, r.slots.map(s => s.card)),
       h('div', { class: 'mp-pick' }, h('span', { class: 'mp-label', text: 'CHOOSE YOUR HERO' }), h('div', { class: 'mp-heroes' }, r.heroes)),
       h('div', { class: 'mp-settings' },
-        h('label', { class: 'mp-field' }, h('span', { class: 'mp-label', text: 'CHAPTER' }), r.chapter),
+        h('label', { class: 'mp-field' }, h('span', { class: 'mp-label', text: 'STAGE' }), r.chapter),
         h('label', { class: 'mp-field' }, h('span', { class: 'mp-label', text: 'DIFFICULTY' }), r.difficulty)),
       r.error,
       h('div', { class: 'mp-room-foot' }, r.status, h('div', { class: 'menu-buttons mp-buttons' }, r.ready, r.joinin, r.start, r.leave)),

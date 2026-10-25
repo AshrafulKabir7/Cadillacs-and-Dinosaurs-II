@@ -1,1164 +1,274 @@
 {
-  "id": "ch3",
-  "title": "THE VERDANT BIODOME",
-  "objPage": "S2A0",
-  "preset": "verdant",
-  "notes": [
-    "COHERENCE (2026-10-22): ch3 walks into the Verdant Biodome from outside in: a0 THE GLASS PERIMETER is the jungle edge at the lake (E2a0 0-1472 only), a1 THE HATCHERY is the greenhouse ruin under the broken glass dome (E6a0 944-1968 only: the dome frame with the sky through it, the pipe ribs, the lamp-hung rock beds), a2 THE NEST is the overgrown nest jungle inside (E6a1 512-1792 only, the mother's kind standing among the trunks). Each area walks back and forth through its one source strip (legs <= 512 px, leftward legs mirrored), so every join is a mirror join or a continuation; the place changes only at the fades.",
-    "Palette: verdant on every slice (rock and timber rows hue +35, 15% toward #5c4, sky lightness 1.1) plus a greenhouse tint per area; the far layer of each area is its own source's (the lake and sky, the sky through the dome glass, the jungle canopy).",
-    "Boss arena (3-6, GLASSBACK, the therizinosaur mother guarding her eggs): egg clutches in straw nests along the back of the lane (the E5a0 field boulders, lifted, their stone pens tinted eggshell and the grass around them dried to straw) and the bones of what came too close (the E5a0 triceratops skull, lifted); all behind the sprites.",
-    "Section casts (CAMPAIGN §4.4 'cast', merged over the chapter pool): lighter A/BOMB/KNIFE variants where the ROM-affine HP budget of the chapter's waves exceeded ENEMIES §2.6 by more than 15% (tests/campaign.cjs (8)); ratio now 1.139."
-  ],
-  "areas": [
+ "id": "ch3",
+ "title": "THE CORAL CAUSEWAY",
+ "objPage": "S3A0",
+ "preset": "coral",
+ "notes": [
+  "Painted scenery (revision 3, step D): the 4 st3 paintings (work/bg/gen/st3 -> strips tools/art/strips/st3, prompts tools/art/bg-prompts.json). a0 and a1 are driving loops of one painting each (strip A, strip B overlapping 32 px with a crossfade; the B strip's tail fades over x 0..32, so the wrap is a crossfade too); a2 (on foot) is the four strips of a2-1 and a2-2 in storyline order, overlapping 32 px with a floor-only crossfade, ending on the bridge deck (Krag's arena).",
+  "Gameplay structure (sections, lock counts, task props, casts, boss lock) from step B. The paintings put the two drive legs first (a0 coastal highway, a1 low-tide causeway) and the checkpoint on foot last, so 3-3 moved into a1 and 3-4..3-6 into a2; 3-6 keeps its drive flag (campaign.js): the Cadillac drives past Krag's parked hauler onto the bridge, where the boss lock stops the convoy."
+ ],
+ "areas": [
+  {
+   "id": "a0",
+   "w": 1664,
+   "h": 224,
+   "bg": "auto",
+   "drive": true,
+   "loop": {
+    "period": 1280
+   },
+   "paint": [
     {
-      "id": "a0",
-      "w": 2368,
-      "h": 224,
-      "bg": "auto",
-      "s2": [
-        {
-          "slice": {
-            "src": "E2a0",
-            "x": [
-              0,
-              512
-            ],
-            "h": [
-              80,
-              304
-            ]
-          },
-          "at": [
-            0,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E2a0",
-            "x": [
-              320,
-              512
-            ],
-            "h": [
-              80,
-              304
-            ]
-          },
-          "at": [
-            512,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E2a0",
-            "x": [
-              320,
-              832
-            ],
-            "h": [
-              80,
-              304
-            ]
-          },
-          "at": [
-            704,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E2a0",
-            "x": [
-              704,
-              832
-            ],
-            "h": [
-              80,
-              304
-            ]
-          },
-          "at": [
-            1216,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E2a0",
-            "x": [
-              704,
-              1216
-            ],
-            "h": [
-              80,
-              304
-            ]
-          },
-          "at": [
-            1344,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E2a0",
-            "x": [
-              1216,
-              1472
-            ],
-            "h": [
-              80,
-              304
-            ]
-          },
-          "at": [
-            1856,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E2a0",
-            "x": [
-              1216,
-              1472
-            ],
-            "h": [
-              80,
-              304
-            ]
-          },
-          "at": [
-            2112,
-            0
-          ],
-          "flip": true
-        }
-      ],
-      "s3": [
-        {
-          "x": [
-            0,
-            2368
-          ],
-          "src": "E2a0",
-          "note": "the lake and the sky over the jungle edge"
-        }
-      ],
-      "sections": [
-        {
-          "id": "3-1",
-          "name": "THE LAST FENCE",
-          "x0": 0,
-          "len": 1344,
-          "cap": "THE GLASS PERIMETER",
-          "locks": [
-            640,
-            960
-          ],
-          "bossLock": null,
-          "scenery": [
-            "flock",
-            "herd"
-          ],
-          "cast": {
-            "gunner": [
-              "bomber",
-              "poacherJ"
-            ],
-            "knifer": [
-              "blade",
-              "knife"
-            ]
-          },
-          "props": [
-            {
-              "kind": "crate",
-              "x": 222
-            },
-            {
-              "kind": "barrel",
-              "x": 607
-            },
-            {
-              "kind": "barrel",
-              "x": 992
-            }
-          ]
-        },
-        {
-          "id": "3-2",
-          "name": "THE COLLAR PENS",
-          "x0": 1344,
-          "len": 1024,
-          "locks": [
-            1536,
-            1984
-          ],
-          "bossLock": null,
-          "set": [
-            "naguri-vignette"
-          ],
-          "props": [
-            {
-              "kind": "crate",
-              "x": 193
-            },
-            {
-              "kind": "barrel",
-              "x": 578
-            },
-            {
-              "kind": "beacon",
-              "name": "PEN SONIC LURE",
-              "x": 420
-            }
-          ],
-          "cast": {
-            "gunner": [
-              "bomber",
-              "poacherJ"
-            ],
-            "knifer": [
-              "blade",
-              "knife"
-            ]
-          }
-        }
-      ]
+     "img": "tools/art/strips/st3/st3-a0-1-A.png",
+     "at": 0,
+     "lift": 14,
+     "note": "the old coastal highway: guard rails, the empty billboard frame, palms (lifted 14 px: its road edge and lane line meet strip B's)"
     },
     {
-      "id": "a1",
-      "w": 2048,
-      "h": 224,
-      "bg": "auto",
-      "s2": [
-        {
-          "slice": {
-            "src": "E6a0",
-            "x": [
-              944,
-              1456
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            0,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E6a0",
-            "x": [
-              1456,
-              1968
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            512,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E6a0",
-            "x": [
-              1456,
-              1968
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1024,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E6a0",
-            "x": [
-              1456,
-              1712
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1536,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E6a0",
-            "x": [
-              1456,
-              1712
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1792,
-            0
-          ],
-          "flip": true
-        }
-      ],
-      "s3": [
-        {
-          "x": [
-            0,
-            2048
-          ],
-          "src": "E6a0",
-          "x3": [
-            0,
-            576
-          ],
-          "note": "the sky and the old lattice masts through the dome glass"
-        }
-      ],
-      "sections": [
-        {
-          "id": "3-3",
-          "name": "THE EGG RACKS",
-          "x0": 0,
-          "len": 1024,
-          "cap": "THE HATCHERY",
-          "locks": [
-            192,
-            640
-          ],
-          "bossLock": null,
-          "scenery": [
-            "hatchlings"
-          ],
-          "note": "elite PACK ALPHA; fg vine trunks and fern band (priority pens)",
-          "props": [
-            {
-              "kind": "barrel",
-              "x": 193
-            },
-            {
-              "kind": "crate",
-              "x": 578
-            }
-          ]
-        },
-        {
-          "id": "3-4",
-          "name": "THE RIVER WALK",
-          "x0": 1024,
-          "len": 1024,
-          "locks": [
-            1216,
-            1664
-          ],
-          "bossLock": null,
-          "scenery": [
-            "herd"
-          ],
-          "props": [
-            {
-              "kind": "barrel",
-              "x": 193
-            },
-            {
-              "kind": "barrel",
-              "x": 578
-            },
-            {
-              "kind": "beacon",
-              "name": "RIVER SONIC LURE",
-              "x": 420
-            }
-          ],
-          "cast": {
-            "gunner": [
-              "poacherJ",
-              "bomber"
-            ],
-            "knifer": [
-              "blade",
-              "knife"
-            ]
-          }
-        }
-      ],
-      "ops": [
-        {
-          "op": "tint",
-          "rgb": "#3a6a3a",
-          "amount": 0.12
-        }
-      ]
-    },
-    {
-      "id": "a2",
-      "w": 2560,
-      "h": 224,
-      "bg": "auto",
-      "s2": [
-        {
-          "slice": {
-            "src": "E6a1",
-            "x": [
-              512,
-              1024
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            0,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E6a1",
-            "x": [
-              768,
-              1024
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            512,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E6a1",
-            "x": [
-              768,
-              1024
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            768,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E6a1",
-            "x": [
-              1024,
-              1536
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            1024,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E6a1",
-            "x": [
-              1536,
-              1792
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            1536,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E6a1",
-            "x": [
-              1536,
-              1792
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            1792,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E6a1",
-            "x": [
-              1536,
-              1792
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            2048,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E6a1",
-            "x": [
-              1536,
-              1792
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            2304,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "patch": {
-            "src": "E5a0",
-            "x": [
-              0,
-              64
-            ],
-            "h": [
-              624,
-              672
-            ]
-          },
-          "rows": [
-            3
-          ],
-          "at": [
-            1600,
-            112
-          ],
-          "prio": "none",
-          "preset": false,
-          "ops": [
-            {
-              "op": "tint",
-              "rgb": "#f4e8c8",
-              "amount": 0.55,
-              "pens": [
-                0,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.6,
-              "l": 1.12,
-              "pens": [
-                0,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -45,
-              "s": 0.55,
-              "l": 0.85,
-              "pens": [
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#8a6a3a",
-              "amount": 0.35,
-              "pens": [
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13
-              ]
-            }
-          ],
-          "note": "egg clutch in a straw nest (E5a0 field boulders lifted: stone pens tinted eggshell, the grass dried to straw)"
-        },
-        {
-          "patch": {
-            "src": "E5a0",
-            "x": [
-              432,
-              608
-            ],
-            "h": [
-              624,
-              672
-            ]
-          },
-          "rows": [
-            8
-          ],
-          "pens": [
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            12,
-            13,
-            14
-          ],
-          "at": [
-            1680,
-            112
-          ],
-          "prio": "none",
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.7,
-              "l": 1
-            }
-          ],
-          "note": "bones near the nest (the E5a0 triceratops skull, lifted off its grass)"
-        },
-        {
-          "patch": {
-            "src": "E5a0",
-            "x": [
-              224,
-              320
-            ],
-            "h": [
-              624,
-              672
-            ]
-          },
-          "rows": [
-            3
-          ],
-          "at": [
-            1856,
-            112
-          ],
-          "prio": "none",
-          "preset": false,
-          "ops": [
-            {
-              "op": "tint",
-              "rgb": "#f4e8c8",
-              "amount": 0.55,
-              "pens": [
-                0,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.6,
-              "l": 1.12,
-              "pens": [
-                0,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -45,
-              "s": 0.55,
-              "l": 0.85,
-              "pens": [
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#8a6a3a",
-              "amount": 0.35,
-              "pens": [
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13
-              ]
-            }
-          ],
-          "note": "egg clutch in a straw nest (E5a0 field boulders lifted: stone pens tinted eggshell, the grass dried to straw)"
-        },
-        {
-          "patch": {
-            "src": "E5a0",
-            "x": [
-              0,
-              64
-            ],
-            "h": [
-              624,
-              672
-            ]
-          },
-          "rows": [
-            3
-          ],
-          "at": [
-            1984,
-            112
-          ],
-          "prio": "none",
-          "preset": false,
-          "ops": [
-            {
-              "op": "tint",
-              "rgb": "#f4e8c8",
-              "amount": 0.55,
-              "pens": [
-                0,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.6,
-              "l": 1.12,
-              "pens": [
-                0,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -45,
-              "s": 0.55,
-              "l": 0.85,
-              "pens": [
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#8a6a3a",
-              "amount": 0.35,
-              "pens": [
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13
-              ]
-            }
-          ],
-          "note": "egg clutch in a straw nest (E5a0 field boulders lifted: stone pens tinted eggshell, the grass dried to straw)"
-        },
-        {
-          "patch": {
-            "src": "E5a0",
-            "x": [
-              224,
-              320
-            ],
-            "h": [
-              624,
-              672
-            ]
-          },
-          "rows": [
-            3
-          ],
-          "at": [
-            2096,
-            112
-          ],
-          "prio": "none",
-          "preset": false,
-          "ops": [
-            {
-              "op": "tint",
-              "rgb": "#f4e8c8",
-              "amount": 0.55,
-              "pens": [
-                0,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.6,
-              "l": 1.12,
-              "pens": [
-                0,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -45,
-              "s": 0.55,
-              "l": 0.85,
-              "pens": [
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#8a6a3a",
-              "amount": 0.35,
-              "pens": [
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13
-              ]
-            }
-          ],
-          "note": "egg clutch in a straw nest (E5a0 field boulders lifted: stone pens tinted eggshell, the grass dried to straw)"
-        },
-        {
-          "patch": {
-            "src": "E5a0",
-            "x": [
-              432,
-              608
-            ],
-            "h": [
-              624,
-              672
-            ]
-          },
-          "rows": [
-            8
-          ],
-          "pens": [
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            12,
-            13,
-            14
-          ],
-          "at": [
-            2272,
-            112
-          ],
-          "prio": "none",
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.7,
-              "l": 1
-            }
-          ],
-          "note": "bones near the nest (the E5a0 triceratops skull, lifted off its grass)"
-        },
-        {
-          "patch": {
-            "src": "E5a0",
-            "x": [
-              224,
-              320
-            ],
-            "h": [
-              624,
-              672
-            ]
-          },
-          "rows": [
-            3
-          ],
-          "at": [
-            2448,
-            112
-          ],
-          "prio": "none",
-          "preset": false,
-          "ops": [
-            {
-              "op": "tint",
-              "rgb": "#f4e8c8",
-              "amount": 0.55,
-              "pens": [
-                0,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.6,
-              "l": 1.12,
-              "pens": [
-                0,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": -45,
-              "s": 0.55,
-              "l": 0.85,
-              "pens": [
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13
-              ]
-            },
-            {
-              "op": "tint",
-              "rgb": "#8a6a3a",
-              "amount": 0.35,
-              "pens": [
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13
-              ]
-            }
-          ],
-          "note": "egg clutch in a straw nest (E5a0 field boulders lifted: stone pens tinted eggshell, the grass dried to straw)"
-        }
-      ],
-      "s3": [
-        {
-          "x": [
-            0,
-            2560
-          ],
-          "src": "E6a1",
-          "note": "the jungle canopy inside the dome"
-        }
-      ],
-      "anims": [],
-      "sections": [
-        {
-          "id": "3-5",
-          "name": "THE NEST TRAIL",
-          "x0": 0,
-          "len": 1024,
-          "cap": "THE NEST",
-          "locks": [
-            192,
-            640
-          ],
-          "bossLock": null,
-          "props": [
-            {
-              "kind": "crate",
-              "x": 193
-            },
-            {
-              "kind": "barrel",
-              "x": 578
-            },
-            {
-              "kind": "beacon",
-              "name": "NEST APPROACH LURE",
-              "x": 860
-            }
-          ],
-          "note": "the animated water cells of E2a1 lie at X 1872-2576, outside the used ranges: nothing to carry",
-          "cast": {
-            "gunner": [
-              "poacherJ",
-              "bomber"
-            ]
-          }
-        },
-        {
-          "id": "3-6",
-          "name": "THE REGENT’S NEST",
-          "x0": 1024,
-          "len": 1536,
-          "locks": [
-            1216,
-            1664
-          ],
-          "bossLock": 2176,
-          "props": [
-            {
-              "kind": "barrel",
-              "x": 193
-            },
-            {
-              "kind": "crate",
-              "x": 578
-            },
-            {
-              "kind": "barrel",
-              "x": 963
-            },
-            {
-              "kind": "barrel",
-              "x": 1348
-            },
-            {
-              "kind": "chain-anchor",
-              "x": 1400
-            }
-          ],
-          "note": "boss lock 2176-2560 = the teal pool and stone skull (E6a1 2848-3168, not a boss window); NEST SONIC DRIVER spawned with the boss at lock.right-260",
-          "cast": {
-            "gunner": [
-              "bomber",
-              "poacherJ"
-            ],
-            "knifer": [
-              "blade",
-              "knife"
-            ]
-          }
-        }
-      ],
-      "ops": [
-        {
-          "op": "tint",
-          "rgb": "#2a5a3a",
-          "amount": 0.1
-        }
-      ]
+     "img": "tools/art/strips/st3/st3-a0-1-B.png",
+     "at": 640,
+     "blend": 32,
+     "note": "toppled road barriers and the stripped car wreck; its tail fades over x 0..32 (the loop wrap)"
     }
-  ]
+   ],
+   "start": {
+    "x": 60
+   },
+   "sections": [
+    {
+     "id": "3-1",
+     "name": "THE COASTAL HIGHWAY",
+     "x0": 0,
+     "len": 1664,
+     "cap": "THE CORAL CAUSEWAY",
+     "locks": [
+      640,
+      1088
+     ],
+     "bossLock": null,
+     "drive": true,
+     "scenery": [
+      "herd",
+      "pteranodon-bg"
+     ],
+     "props": []
+    }
+   ],
+   "anims": []
+  },
+  {
+   "id": "a1",
+   "w": 2432,
+   "h": 224,
+   "bg": "auto",
+   "drive": true,
+   "loop": {
+    "period": 1280
+   },
+   "paint": [
+    {
+     "img": "tools/art/strips/st3/st3-a1-1-A.png",
+     "at": 0,
+     "floor": 124,
+     "note": "the causeway at low tide: coral heads, the hauler's deep tyre ruts on the verge"
+    },
+    {
+     "img": "tools/art/strips/st3/st3-a1-1-B.png",
+     "at": 640,
+     "floor": 124,
+     "blend": 32,
+     "note": "the road dips under a sheet of sea water: dinosaur footprints, the half-sunk trailer"
+    }
+   ],
+   "walk": {
+    "patch": [
+     {
+      "rect": [
+       0,
+       208,
+       2432,
+       16
+      ],
+      "walk": false,
+      "why": "the coral heads along the front edge of the causeway (both strips, rows 200-224)"
+     }
+    ]
+   },
+   "sections": [
+    {
+     "id": "3-2",
+     "name": "THE TIDAL ROAD",
+     "x0": 0,
+     "len": 1216,
+     "cap": "THE LOW-TIDE CAUSEWAY",
+     "locks": [
+      256,
+      768
+     ],
+     "bossLock": null,
+     "drive": true,
+     "set": [
+      "zeke"
+     ],
+     "props": [
+      {
+       "kind": "cargo",
+       "name": "CARGO TRAILER A",
+       "x": 768
+      }
+     ],
+     "note": "task 0 (CARGO TRAILER A) rides with lock 768"
+    },
+    {
+     "id": "3-3",
+     "name": "THE MOVING CONVOY",
+     "x0": 1216,
+     "len": 1216,
+     "locks": [
+      1408,
+      1920
+     ],
+     "bossLock": null,
+     "drive": true,
+     "set": [
+      "zeke"
+     ],
+     "props": [
+      {
+       "kind": "cargo",
+       "name": "CARGO TRAILER B",
+       "x": 192
+      }
+     ],
+     "note": "task 1 (CARGO TRAILER B) rides with lock 1408; the CONVOY OUTRIDER (lock 1920) over the flooded dip"
+    }
+   ],
+   "anims": []
+  },
+  {
+   "id": "a2",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
+    {
+     "img": "tools/art/strips/st3/st3-a2-1-A.png",
+     "at": 0,
+     "note": "the convoy checkpoint: smashed toll booths, sandbags, crown banners, tyre ruts"
+    },
+    {
+     "img": "tools/art/strips/st3/st3-a2-1-B.png",
+     "at": 640,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "the convoy yard: the loading-arm gantry (hook and chain), cages, laboratory containers"
+    },
+    {
+     "img": "tools/art/strips/st3/st3-a2-2-A.png",
+     "at": 1280,
+     "ramp": 64,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "Krag's armored hauler parked behind the barrier"
+    },
+    {
+     "img": "tools/art/strips/st3/st3-a2-2-B.png",
+     "at": 1920,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "the old concrete bridge deck over the sea (the boss arena)"
+    }
+   ],
+   "sections": [
+    {
+     "id": "3-4",
+     "name": "THE SMASHED TOLLS",
+     "x0": 0,
+     "len": 768,
+     "cap": "THE BRIDGE CHECKPOINT",
+     "locks": [
+      192,
+      384
+     ],
+     "bossLock": null,
+     "note": "the toll booths and sandbag walls of the checkpoint",
+     "props": [
+      {
+       "kind": "crate",
+       "x": 193
+      },
+      {
+       "kind": "barrel",
+       "x": 578
+      }
+     ]
+    },
+    {
+     "id": "3-5",
+     "name": "THE CHECKPOINT WINCH",
+     "x0": 768,
+     "len": 768,
+     "locks": [
+      800,
+      960,
+      1152
+     ],
+     "bossLock": null,
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 96
+      },
+      {
+       "kind": "crate",
+       "x": 416
+      },
+      {
+       "kind": "gate",
+       "name": "CHECKPOINT WINCH",
+       "x": 288
+      },
+      {
+       "kind": "parked-car",
+       "x": 680
+      },
+      {
+       "kind": "chain-barrier",
+       "x": 360
+      },
+      {
+       "kind": "crate",
+       "x": 640
+      }
+     ],
+     "note": "task 2 (CHECKPOINT WINCH) under the loading-arm gantry hook (lock 800); the Cadillac waits in front of Krag's hauler"
+    },
+    {
+     "id": "3-6",
+     "name": "THE ARMORED HAULER",
+     "x0": 1536,
+     "len": 1056,
+     "locks": [
+      1792
+     ],
+     "bossLock": 2208,
+     "set": [
+      "zeke"
+     ],
+     "note": "drive past the parked hauler onto the bridge (lock 1792); boss lock 2208-2592 on the bridge deck: the convoy halts, everybody out",
+     "props": [
+      {
+       "kind": "crate",
+       "x": 160
+      },
+      {
+       "kind": "barrel",
+       "x": 420
+      }
+     ]
+    }
+   ],
+   "anims": []
+  }
+ ]
 }

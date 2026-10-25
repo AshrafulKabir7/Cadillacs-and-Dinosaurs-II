@@ -21,8 +21,11 @@
 //                area between uses it too (no A -> B -> A); every slice is recoloured (an identity palette is an
 //                error); the cross-chapter rule (no shared slice columns between consecutive chapters) and the
 //                column-use report are in originalityAll
-// 5 budget       pages <= 1024^2, <= 1.0 MB per chapter, <= 5 MB in all, stage-data.js <= 150 KB, files <= 1.5 MB
+// 5 budget       pages <= 1024^2, <= 1.25 MB per chapter, <= 10 MB in all, stage-data.js <= 150 KB, files <= 1.5 MB
 // 6 determinism  a fresh compose of the chapter reproduces the same pixels, walk mask and bands
+// Painted areas ("paint", levels-compose.cjs composePaint) take paintSeams() for gate 1 (strip coverage, band overlap
+// and floor step at every strip boundary and the loop wrap, RGB step warning) and skip the ROM-cell rules: joinCuts,
+// the slice sums, the far-layer rule, every gate-4 originality rule and the loop patch share (R7). Gates 2, 3, 5, 6 apply.
 // The HELL ROAD loop (CAMPAIGN R7, PLAN R7, user question 5) takes the default: the `loop` gate-4 exemption; its
 // verbatim run and boss-window overlap are reported as warnings and listed in originality.json.
 'use strict';
@@ -30,10 +33,12 @@ const fs = require('fs'), path = require('path');
 const C = require('./levels-compose.cjs');
 
 const ROOT = path.resolve(__dirname, '..', '..', '..');
-const EXPECT = { ch1: { len: 6592, locks: 12 }, ch2: { len: 6592, locks: 12 }, ch3: { len: 6976, locks: 13 }, ch4: { len: 6592, locks: 12 }, ch5: { len: 6592, locks: 12 }, ch6: { len: 7104, locks: 13 } };
+// the eight stages of revision 3 (work/story3): stages 1-2 are painted (3 areas of 4 strips, 2592-2656 px); 3-8 keep step B's placeholder lengths
+// until their paintings land (update an entry whenever a stage's areas are re-fitted)
+const EXPECT = { ch1: { len: 7776, locks: 12 }, ch2: { len: 7840, locks: 12 }, ch3: { len: 6688, locks: 13 }, ch4: { len: 7776, locks: 12 }, ch5: { len: 6496, locks: 12 }, ch6: { len: 7776, locks: 13 }, ch7: { len: 6496, locks: 12 }, ch8: { len: 6496, locks: 13 } };
 const EXCLUDED = [['E1a0', 0, 896], ['E4a1', 0, 1e9], ['E4a0', 0, 352], ['E2a2', 0, 1e9], ['E5a1', 0, 1e9], ['E6a2', 0, 1e9], ['E7a1', 0, 1e9]];
 const LIMITS = { seamOverlap: 48, seamTop: 16, seamRGB: 48, joinCut: 16, s3Cut: 8, voidRows: 16, recolour: 0.5, loopPatch: 0.25, lockBand: 64, lockShare: 0.75, verbatim: 512, returnPatch: 0.25,
-  pagesPerChapter: 1048576, pagesTotal: 5242880, stageData: 153600, anyFile: 1572864, page: 1024 };
+  pagesPerChapter: 1310720, pagesTotal: 10485760, stageData: 153600, anyFile: 1572864, page: 1024 };
 
 const bandH = b => (b ? b[1] - b[0] + 1 : 0);
 function colBand(a, x) { const c = Math.max(0, Math.min(a.walk.cols - 1, Math.floor(x / C.CELL))); return a.walk.band[c]; }
@@ -51,7 +56,7 @@ function validate(chap, recipe, { out = ROOT, data = null } = {}) {
       x = s.x0 + s.len; lockCount += (s.locks || []).length + (s.bossLock != null ? 1 : 0);
       for (const l of s.locks || []) if (l < s.x0 || l + C.VIEW.w > s.x0 + s.len) E(2, `${s.id} lock ${l} window is not inside the section ${s.x0}-${s.x0 + s.len}`);
       if (s.bossLock != null && (s.bossLock < s.x0 || s.bossLock + C.VIEW.w > s.x0 + s.len)) E(2, `${s.id} boss lock ${s.bossLock} window outside the section`);
-      if (!A.loop) { const sum = (A.s2 || []).filter(p => p.slice && (p.at || [0, 0])[0] < s.x0 + s.len && (p.at || [0, 0])[0] + p.slice.x[1] - p.slice.x[0] > s.x0).reduce((n, p) => n + p.slice.x[1] - p.slice.x[0], 0); if (sum !== s.len) E(2, `${s.id}: slices sum to ${sum}, section length ${s.len} (a slice may not straddle a section boundary)`); }
+      if (!A.loop && !A.paint) { const sum = (A.s2 || []).filter(p => p.slice && (p.at || [0, 0])[0] < s.x0 + s.len && (p.at || [0, 0])[0] + p.slice.x[1] - p.slice.x[0] > s.x0).reduce((n, p) => n + p.slice.x[1] - p.slice.x[0], 0); if (sum !== s.len) E(2, `${s.id}: slices sum to ${sum}, section length ${s.len} (a slice may not straddle a section boundary)`); }
     }
     if (x !== a.w) E(2, `${a.id}: sections cover ${x} of ${a.w} px`);
   }
@@ -62,9 +67,10 @@ function validate(chap, recipe, { out = ROOT, data = null } = {}) {
   for (const a of chap.areas) {
     const A = a.recipe, base = a.s2.pieces.filter(p => (p.kind === 'slice' && !p.blend) || p.kind === 'loop').sort((p, q) => p.x0 - q.x0);
     // ---- gate 1: seams
+    if (A.paint) paintSeams(a, seams, E, W);
     let covered = 0;
-    for (const p of base) { if (p.x0 > covered && p.kind !== 'loop') E(1, `${a.id}: columns ${covered}-${p.x0} have no slice`); covered = Math.max(covered, p.x1); }
-    if (covered < a.w) E(1, `${a.id}: columns ${covered}-${a.w} have no slice`);
+    if (!A.paint) for (const p of base) { if (p.x0 > covered && p.kind !== 'loop') E(1, `${a.id}: columns ${covered}-${p.x0} have no slice`); covered = Math.max(covered, p.x1); }
+    if (!A.paint && covered < a.w) E(1, `${a.id}: columns ${covered}-${a.w} have no slice`);
     for (let i = 1; i < base.length; i++) {
       const L = base[i - 1], R = base[i], b = R.x0; if (b >= a.w || b !== L.x1) continue;
       const bl = colBand(a, b - 1), br = colBand(a, b);
@@ -104,7 +110,8 @@ function validate(chap, recipe, { out = ROOT, data = null } = {}) {
     // whose terrain is walkable in every row (the ROM never authored a lane there, e.g. E8a1 past the 3008 fade); open
     // floor over the source's own far layer is what the original shows (E8a3 under the bridge) and only warns.
     const voidCols = [], voidOrig = [], spanAt = x => (a.s3 || []).find(sp => !sp.period && x >= sp.x0 && x < sp.x1) || (a.s3 || []).find(sp => sp.period);
-    for (let c = 0; c < cols; c++) { const bb = band[c]; if (!bb) continue; let bad = 0;
+    // (a painted area is opaque wherever a strip covers it; paintSeams reports uncovered columns)
+    for (let c = 0; c < cols; c++) { const bb = band[c]; if (!bb || A.paint) continue; let bad = 0;
       for (let r = Math.floor((bb[0] - 1) / C.CELL); r * C.CELL < bb[1]; r++) { if (!mask[r * cols + c]) continue; let o = 0; for (let y = r * C.CELL; y < r * C.CELL + C.CELL; y++) for (let x = 0; x < C.CELL; x++) if (a.s2.L.pen[y * a.s2.artW + c * C.CELL + x] !== 15) o++;
         const share = o / 256, viaPatch = a.walk.patched.has(r * a.walk.artCols + c);
         if (viaPatch && share < 0.5) { bad = 2; break; } if (share < 0.05) bad = Math.max(bad, 1); }
@@ -160,7 +167,7 @@ function validate(chap, recipe, { out = ROOT, data = null } = {}) {
     // coherence: one source family per area
     const fam = [...new Set(base.map(p => p.src))].sort();
     if (fam.length > 1) E(4, `${a.id}: slices come from ${fam.length} original areas (${fam.join(', ')}); an area is one place (one source family; dress it with patches)`);
-    if (A.loop) {   // PLAN R7 / CAMPAIGN 2-6: the drive boss section patches >= 25 % of the loop cells
+    if (A.loop && !A.paint) {   // PLAN R7 / CAMPAIGN 2-6: the drive boss section patches >= 25 % of the loop cells
       const pc = A.loop.period / C.CELL; let n = 0; for (const q of a.s2.patchSet) if (q % a.s2.cols < pc) n++;
       const share = n / (pc * a.walk.rows), boss = (A.sections || []).some(s => s.bossLock != null);
       loopRep.push({ area: a.id, patchedCells: n, cells: pc * a.walk.rows, share: +share.toFixed(4), boss });
@@ -203,19 +210,54 @@ function validate(chap, recipe, { out = ROOT, data = null } = {}) {
   if (fs.existsSync(dir)) {
     let bytes = 0;
     for (const f of walk(dir)) { const s = fs.statSync(f).size; bytes += s; if (s > LIMITS.anyFile) E(5, `${rel(out, f)} is ${s} bytes > 1.5 MB`); const d = pngSize(f); if (d && (d.w > LIMITS.page || d.h > LIMITS.page)) E(5, `${rel(out, f)} is ${d.w}x${d.h}`); }
-    if (bytes > LIMITS.pagesPerChapter) E(5, `${ch} pages ${(bytes / 1048576).toFixed(3)} MB > 1.0 MB`);
+    if (bytes > LIMITS.pagesPerChapter) E(5, `${ch} pages ${(bytes / 1048576).toFixed(3)} MB > 1.25 MB`);
     gates[5] = Object.assign(gates[5] || {}, { bytes });
   } else W(5, `${ch}: no pages written under ${rel(ROOT, dir)}`);
-  const all = path.join(out, 'assets', 'stages'); if (fs.existsSync(all)) { const t = walk(all).reduce((n, f) => n + fs.statSync(f).size, 0); if (t > LIMITS.pagesTotal) E(5, `all stage pages ${(t / 1048576).toFixed(3)} MB > 5 MB`); }
+  const all = path.join(out, 'assets', 'stages'); if (fs.existsSync(all)) { const t = walk(all).reduce((n, f) => n + fs.statSync(f).size, 0); if (t > LIMITS.pagesTotal) E(5, `all stage pages ${(t / 1048576).toFixed(3)} MB > 10 MB`); }
   const sd = path.join(out, 'stage-data.js'); if (fs.existsSync(sd) && fs.statSync(sd).size > LIMITS.stageData) E(5, `stage-data.js is ${fs.statSync(sd).size} bytes > 150 KB`);
   // ---- gate 6: determinism (a fresh compose gives the same pixels, mask and bands)
   {
-    const again = C.compose(recipe), sig = x => x.areas.map(a => [fnv(a.s2.L.pen), fnv(a.s2.L.pal), fnv(Uint16ToBytes(a.s2.L.ctx)), fnv(a.walk.mask), JSON.stringify(a.walk.band), (a.s3 || []).map(sp => fnv(sp.L.pen)).join(','), a.bg].join(':')).join('|');
+    const again = C.compose(recipe), sig = x => x.areas.map(a => [...(a.s2.L.rgba ? [fnv(a.s2.L.rgba)] : []), fnv(a.s2.L.pen), fnv(a.s2.L.pal), fnv(Uint16ToBytes(a.s2.L.ctx)), fnv(a.walk.mask), JSON.stringify(a.walk.band), (a.s3 || []).map(sp => fnv(sp.L.pen)).join(','), a.bg].join(':')).join('|');
     if (sig(again) !== sig(chap)) E(6, `${ch}: a second compose differs from the first`);
     const ctxSig = x => x.ctxs.list.map(c => c.key + fnv(c.rgb)).join('|'); if (ctxSig(again) !== ctxSig(chap)) E(6, `${ch}: palette contexts differ between composes`);
   }
   for (const g of [1, 2, 3, 4, 5, 6]) gates[g] = Object.assign({ errors: 0 }, gates[g] || {}, { ok: !(gates[g] && gates[g].errors) });
   return { ok: !errors.length, errors, warnings, gates, seams, locks: lockRep, s3cuts, voids, loops: loopRep };
+}
+// ---- gate 1 for a painted area (levels-compose.cjs composePaint): the strips cover the area (the loop period of a
+// loop area) without a gap; at every strip boundary the bands overlap >= 48 px and the floor lines differ <= 16 px
+// unless the right strip is marked "step"; the mean RGB step across a straight cut is reported (warning above 48: a
+// cut that is not on a pillar or post; blend:N or another strip order hides it); a loop's wrap (period-1 | 0) is
+// checked the same way. joinCuts, the far-layer rule and the originality gates are ROM-cell rules and do not apply.
+// A far layer ("s3") or rowscroll on a painted area is warned about: the strips are opaque, rowscroll shears them.
+function paintSeams(a, seams, E, W) {
+  const A = a.recipe, s2 = a.s2, limit = A.loop ? A.loop.period : a.w, ps = s2.pieces.slice().sort((p, q) => p.x0 - q.x0 || p.index - q.index);
+  let covered = 0; const gaps = [];
+  for (const p of ps) { if (p.x0 > covered) gaps.push(`${covered}-${p.x0}`); covered = Math.max(covered, p.x1); }
+  if (covered < limit) gaps.push(`${covered}-${limit}`);
+  if (gaps.length) E(1, `${a.id}: columns ${gaps.join(', ')} have no painted strip`);
+  const bounds = [];
+  for (let i = 1; i < ps.length; i++) if (ps[i].x0 > 0 && ps[i].x0 < limit) bounds.push({ L: ps[i - 1], R: ps[i], b: ps[i].x0 });
+  if (A.loop && ps.length) bounds.push({ L: ps[ps.length - 1], R: ps[0], b: limit, wrap: true });
+  for (const { L, R, b, wrap } of bounds) {
+    const bl = colBand(a, b - 1 - (R.ramp >> 1 || 0)), br = colBand(a, wrap ? 0 : b + Math.max(R.blend || 0, R.ramp >> 1 || 0));
+    // the step: the largest band-top change between neighbouring 16-px columns around the boundary (a ramp spreads it)
+    let dt = bl && br ? 0 : 999; const win = 32 + (R.ramp >> 1 || 0) + (R.blend || 0);
+    if (!wrap) for (let x = Math.max(C.CELL, b - win); x <= Math.min(a.w - 1, b + win); x += C.CELL) { const p0 = colBand(a, x - C.CELL), p1 = colBand(a, x); if (p0 && p1) dt = Math.max(dt, Math.abs(p0[0] - p1[0])); }
+    else if (bl && br) dt = Math.abs(bl[0] - br[0]);
+    const ov = bl && br ? Math.min(bl[1], br[1]) - Math.max(bl[0], br[0]) + 1 : 0;
+    let sum = 0, n = 0; const x1 = wrap ? 0 : b; for (let y = 0; y < s2.H; y++) { const q0 = (y * s2.artW + b - 1) * 4, q1 = (y * s2.artW + x1) * 4; if (!s2.L.rgba[q0 + 3] || !s2.L.rgba[q1 + 3]) continue; sum += (Math.abs(s2.L.rgba[q0] - s2.L.rgba[q1]) + Math.abs(s2.L.rgba[q0 + 1] - s2.L.rgba[q1 + 1]) + Math.abs(s2.L.rgba[q0 + 2] - s2.L.rgba[q1 + 2])) / 3; n++; }
+    const rgb = n ? sum / n : 0, name = p => `${p.src}${p.flip ? ' flip' : ''}`;
+    const rec = { area: a.id, x: b, left: name(L), right: name(R), bands: [bl, br], overlap: ov, topStep: dt, step: !!(A.paint[R.index] && A.paint[R.index].step), rgb, blend: R.blend || 0, ramp: R.ramp || 0, wrap: !!wrap, paint: true };
+    seams.push(rec);
+    if (ov < LIMITS.seamOverlap) E(1, `${a.id} x ${b} (${rec.left} | ${rec.right}${wrap ? ', loop wrap' : ''}): bands ${JSON.stringify(bl)} / ${JSON.stringify(br)} overlap ${ov} < ${LIMITS.seamOverlap}`);
+    if (dt > LIMITS.seamTop && !rec.step) E(1, `${a.id} x ${b} (${rec.left} | ${rec.right}${wrap ? ', loop wrap' : ''}): floor lines differ by ${dt} > ${LIMITS.seamTop} (ramp:N slopes it, step:true accepts it, or override a floor in tools/art/bg-floors.json)`);
+    if (rgb > LIMITS.seamRGB && !rec.blend) W(1, `${a.id} x ${b} (${rec.left} | ${rec.right}${wrap ? ', loop wrap' : ''}): mean RGB step ${rgb.toFixed(1)} across a straight cut (blend:N or a cut on a pillar hides it)`);
+  }
+  // a loop's band follows world x while its art scrolls by cam.x + road: one floor for every strip keeps them in step
+  if (A.loop) { const fl = [...new Set(ps.map(p => p.floor))]; if (fl.length > 1) W(1, `${a.id}: the loop strips have floor lines ${fl.join(', ')}; the walk band follows world x while the art scrolls by the road, so give every strip of a loop one "floor"`); }
+  if (A.s3) W(1, `${a.id}: "s3" is ignored on a painted area (the strips are opaque)`);
+  if (A.rowscroll) W(1, `${a.id}: rowscroll on a painted area shears the painted rows ${A.rowscroll.y}-${A.rowscroll.y + A.rowscroll.rows}`);
 }
 // a column is verbatim when it is unpatched and fewer than half of its opaque pixels changed colour (a palette page
 // that changes one word does not make a column new)

@@ -1,0 +1,188 @@
+{
+ "note": "written by tools/art/import-bg.cjs; floor = the strip y where the back scenery meets the walkable floor (override from tools/art/bg-floors.json, else detected)",
+ "colours": 95,
+ "images": [
+  {
+   "id": "a0-1",
+   "src": "work/bg/gen/st1/st1-a0-1.png",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  {
+   "id": "a0-2",
+   "src": "work/bg/gen/st1/st1-a0-2.png",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  {
+   "id": "a1-1",
+   "src": "work/bg/gen/st1/st1-a1-1.png",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  {
+   "id": "a1-2",
+   "src": "work/bg/gen/st1/st1-a1-2.png",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  {
+   "id": "a2-1",
+   "src": "work/bg/gen/st1/st1-a2-1.png",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  {
+   "id": "a2-2",
+   "src": "work/bg/gen/st1/st1-a2-2.png",
+   "size": [
+    1536,
+    1024
+   ]
+  }
+ ],
+ "strips": {
+  "st1-a0-1-A": {
+   "floor": 145,
+   "detected": 145,
+   "score": 0.3531,
+   "override": null,
+   "bandTop": 145,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 79220
+  },
+  "st1-a0-1-B": {
+   "floor": 126,
+   "detected": 126,
+   "score": 0.2997,
+   "override": null,
+   "bandTop": 126,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 86986
+  },
+  "st1-a0-2-A": {
+   "floor": 140,
+   "detected": 140,
+   "score": 0.4141,
+   "override": null,
+   "bandTop": 140,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 87088
+  },
+  "st1-a0-2-B": {
+   "floor": 135,
+   "detected": 135,
+   "score": 0.271,
+   "override": null,
+   "bandTop": 135,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 86627
+  },
+  "st1-a1-1-A": {
+   "floor": 136,
+   "detected": 136,
+   "score": 0.3583,
+   "override": null,
+   "bandTop": 136,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 79400
+  },
+  "st1-a1-1-B": {
+   "floor": 132,
+   "detected": 132,
+   "score": 0.47,
+   "override": null,
+   "bandTop": 132,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 77467
+  },
+  "st1-a1-2-A": {
+   "floor": 145,
+   "detected": 145,
+   "score": 0.4571,
+   "override": null,
+   "bandTop": 145,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 81611
+  },
+  "st1-a1-2-B": {
+   "floor": 125,
+   "detected": 125,
+   "score": 0.4902,
+   "override": null,
+   "bandTop": 125,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 85842
+  },
+  "st1-a2-1-A": {
+   "floor": 133,
+   "detected": 133,
+   "score": 0.4679,
+   "override": null,
+   "bandTop": 133,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 77572
+  },
+  "st1-a2-1-B": {
+   "floor": 134,
+   "detected": 134,
+   "score": 0.2954,
+   "override": null,
+   "bandTop": 134,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 74785
+  },
+  "st1-a2-2-A": {
+   "floor": 146,
+   "detected": 146,
+   "score": 0.4469,
+   "override": null,
+   "bandTop": 146,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 74235
+  },
+  "st1-a2-2-B": {
+   "floor": 136,
+   "detected": 136,
+   "score": 0.3108,
+   "override": null,
+   "bandTop": 136,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 70541
+  }
+ }
+}

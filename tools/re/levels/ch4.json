@@ -1,1056 +1,315 @@
 {
-  "id": "ch4",
-  "title": "THE SINK",
-  "objPage": "S8A1",
-  "preset": "drowned",
-  "notes": [
-    "COHERENCE (2026-10-22): ch4 goes down into the Sink, Fessenden's drowned underworld, in one direction: a0 THE SINK is the flooded street at the rim (E1a2 176-848 only: the broken brick wall over the drowned city, floodwater over the pavement), a1 THE PUMP STATION is the pump hall below it (E4a2 0-1024 only: the grated floor under the hall's own far layer of pipes, pressure globes and vats, the vats' red liquid turned to floodwater), a2 THE DIG is the excavation in Fessenden's flooded caves (E8a2 1792-2816 only: the cave arches, raised water, scaffold timbers and pump risers). Each area walks back and forth through its one source strip (legs <= 512 px, leftward legs mirrored), so every join is a mirror join or a continuation; the place changes only at the fades.",
-    "Palette: the drowned preset (flood + ruin + night 0.8, lifted 1.45 in lightness) in the pump hall; the street and the caves take a damp teal tint (hue -12..-15, saturation 0.7-0.8, 22% toward #2a5a5a / #1a3a3a) that keeps their brick and rock readable; the standing water is E8a1's harbor water (palette row 4) darkened to murky teal.",
-    "a2 is the chapter's return visit (ARCHITECTURE §3.8): Fessenden's caves six months on, flooded and dug out by Cinder's crews; >= 25% of its cells are patched (the floodwater over the cave floor, scaffold timbers, pump risers).",
-    "Boss arena (4-6, FOREMAN CINDER, the salvage diver with the pile driver): the dig's pump house: pump risers with their elbows (E7a3 816-912, palette row 4 lifted) between scaffold timbers (the E6a0 portal timber, rows 9/8/3/2 lifted) over the flooded floor; the runtime adds the pump columns (props) and the vent cycles."
-  ],
-  "areas": [
+ "id": "ch4",
+ "title": "THE SINK",
+ "objPage": "S8A1",
+ "preset": "drowned",
+ "notes": [
+  "Painted scenery (revision 3, step D): the 12 st4 paintings (work/bg/gen/st4 -> strips tools/art/strips/st4, prompts tools/art/bg-prompts.json); each area is the four strips of its two paintings in storyline order (a<N>-1 A, B, a<N>-2 A, B), overlapping 32 px with a floor-only crossfade (2592 px).",
+  "Gameplay structure (sections, lock counts, task props, casts, boss lock) from step B, re-fitted to the painted areas and their floor lines; section names follow the paintings."
+ ],
+ "areas": [
+  {
+   "id": "a0",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
     {
-      "id": "a0",
-      "w": 2368,
-      "h": 224,
-      "bg": "auto",
-      "s2": [
-        {
-          "slice": {
-            "src": "E1a2",
-            "x": [
-              176,
-              688
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            0,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -15,
-              "s": 0.7,
-              "l": 0.95
-            },
-            {
-              "op": "tint",
-              "rgb": "#2a5a5a",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E1a2",
-            "x": [
-              176,
-              688
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            512,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -15,
-              "s": 0.7,
-              "l": 0.95
-            },
-            {
-              "op": "tint",
-              "rgb": "#2a5a5a",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E1a2",
-            "x": [
-              176,
-              496
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            1024,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -15,
-              "s": 0.7,
-              "l": 0.95
-            },
-            {
-              "op": "tint",
-              "rgb": "#2a5a5a",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E1a2",
-            "x": [
-              496,
-              848
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            1344,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -15,
-              "s": 0.7,
-              "l": 0.95
-            },
-            {
-              "op": "tint",
-              "rgb": "#2a5a5a",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E1a2",
-            "x": [
-              496,
-              848
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            1696,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -15,
-              "s": 0.7,
-              "l": 0.95
-            },
-            {
-              "op": "tint",
-              "rgb": "#2a5a5a",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E1a2",
-            "x": [
-              496,
-              816
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            2048,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -15,
-              "s": 0.7,
-              "l": 0.95
-            },
-            {
-              "op": "tint",
-              "rgb": "#2a5a5a",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "patch": {
-            "src": "E8a1",
-            "x": [
-              96,
-              416
-            ],
-            "h": [
-              784,
-              832
-            ]
-          },
-          "at": [
-            0,
-            192
-          ],
-          "every": 320,
-          "alternate": true,
-          "repeat": 8,
-          "prio": "none",
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.55,
-              "l": 0.62
-            },
-            {
-              "op": "tint",
-              "rgb": "#1a3a3a",
-              "amount": 0.3
-            }
-          ],
-          "note": "floodwater over the near half of the pavement (E8a1 water, every other copy mirrored)"
-        }
-      ],
-      "s3": [
-        {
-          "x": [
-            0,
-            2368
-          ],
-          "src": "E1a2",
-          "note": "the drowned city beyond the broken wall",
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -15,
-              "s": 0.7,
-              "l": 0.95
-            },
-            {
-              "op": "tint",
-              "rgb": "#2a5a5a",
-              "amount": 0.22
-            }
-          ]
-        }
-      ],
-      "hazards": [],
-      "sections": [
-        {
-          "id": "4-1",
-          "name": "WHERE HANNAH FELL",
-          "x0": 0,
-          "len": 1344,
-          "cap": "THE SINK",
-          "locks": [
-            640,
-            960
-          ],
-          "bossLock": null,
-          "cast": {
-            "gunner": [
-              "poacherJ",
-              "bomber"
-            ]
-          },
-          "props": [
-            {
-              "kind": "crate",
-              "x": 222
-            },
-            {
-              "kind": "barrel",
-              "x": 607
-            },
-            {
-              "kind": "barrel",
-              "x": 992
-            }
-          ]
-        },
-        {
-          "id": "4-2",
-          "name": "THE SHATTERED TANKS",
-          "x0": 1344,
-          "len": 1024,
-          "locks": [
-            1536,
-            1984
-          ],
-          "bossLock": null,
-          "props": [
-            {
-              "kind": "crate",
-              "x": 193
-            },
-            {
-              "kind": "barrel",
-              "x": 578
-            },
-            {
-              "kind": "valve",
-              "name": "SEA VALVE · TANK ROW",
-              "x": 420
-            }
-          ],
-          "note": "every tank in the broken-tank dynamic state; BLUDGE come out of the water",
-          "cast": {
-            "gunner": [
-              "poacherJ",
-              "bomber"
-            ]
-          }
-        }
-      ],
-      "walk": {
-        "patch": [
-          {
-            "rect": [
-              0,
-              160,
-              2368,
-              16
-            ],
-            "walk": true,
-            "why": "E1a2 sidewalk top row (floor art): lane 64 px"
-          }
-        ]
-      },
-      "anims": []
+     "img": "tools/art/strips/st4/st4-a0-1-A.png",
+     "at": 0,
+     "note": "the ruined foundations in the flooded pit: broken pillars, salvage cranes, pump hoses (lifted 15 px: floor 140 like a0-2)",
+     "lift": 15
     },
     {
-      "id": "a1",
-      "w": 2048,
-      "h": 224,
-      "bg": "auto",
-      "s2": [
-        {
-          "slice": {
-            "src": "E4a2",
-            "x": [
-              0,
-              512
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            0,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E4a2",
-            "x": [
-              512,
-              1024
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            512,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E4a2",
-            "x": [
-              512,
-              1024
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1024,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E4a2",
-            "x": [
-              512,
-              768
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1536,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E4a2",
-            "x": [
-              768,
-              1024
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1792,
-            0
-          ]
-        }
-      ],
-      "s3": [
-        {
-          "x": [
-            0,
-            2048
-          ],
-          "src": "E4a2",
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 170,
-              "s": 0.9,
-              "l": 0.9,
-              "rows": [
-                7
-              ],
-              "pens": [
-                1,
-                2,
-                3,
-                4,
-                5
-              ]
-            },
-            {
-              "op": "hsl",
-              "h": 170,
-              "s": 0.9,
-              "l": 0.9,
-              "rows": [
-                1
-              ],
-              "pens": [
-                10,
-                11,
-                12,
-                13,
-                14
-              ]
-            }
-          ],
-          "note": "the pump hall: pipes, pressure globes and the vats, their red liquid turned to floodwater"
-        }
-      ],
-      "hazards": [],
-      "sections": [
-        {
-          "id": "4-3",
-          "name": "THE DRAIN",
-          "x0": 0,
-          "len": 1024,
-          "cap": "THE DROWNED CAVES",
-          "locks": [
-            192,
-            640
-          ],
-          "bossLock": null,
-          "note": "elite BROOD MOTHER; the pit rect is her pool, the back of the E8a1 sluice basin between the two scaffold posts",
-          "props": [
-            {
-              "kind": "barrel",
-              "x": 193
-            },
-            {
-              "kind": "crate",
-              "x": 578
-            }
-          ]
-        },
-        {
-          "id": "4-4",
-          "name": "THE PUMP SCAFFOLDS",
-          "x0": 1024,
-          "len": 1024,
-          "locks": [
-            1216,
-            1664
-          ],
-          "bossLock": null,
-          "props": [
-            {
-              "kind": "barrel",
-              "x": 193
-            },
-            {
-              "kind": "barrel",
-              "x": 578
-            },
-            {
-              "kind": "valve",
-              "name": "SEA VALVE · SCAFFOLDS",
-              "x": 420
-            }
-          ],
-          "cast": {
-            "gunner": [
-              "poacherJ",
-              "bomber"
-            ]
-          }
-        }
-      ],
-      "anims": [],
-      "ops": [
-        {
-          "op": "hsl",
-          "h": 0,
-          "s": 1.1,
-          "l": 1.45
-        }
-      ]
+     "img": "tools/art/strips/st4/st4-a0-1-B.png",
+     "at": 640,
+     "note": "the excavation wall punched with pile-driver holes, hoses, work lamps (lifted 13 px)",
+     "blend": 32,
+     "blendRows": "floor",
+     "lift": 13
     },
     {
-      "id": "a2",
-      "w": 2176,
-      "h": 224,
-      "bg": "auto",
-      "returnVisit": {
-        "source": [
-          8,
-          2
-        ],
-        "why": "Fessenden's caves six months on: flooded to the knee and dug out by Cinder's salvage crews, scaffolds and pump risers in the arches"
-      },
-      "s2": [
-        {
-          "slice": {
-            "src": "E8a2",
-            "x": [
-              1792,
-              2304
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            0,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -12,
-              "s": 0.8,
-              "l": 0.85
-            },
-            {
-              "op": "tint",
-              "rgb": "#1a3a3a",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a2",
-            "x": [
-              1792,
-              2304
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            512,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -12,
-              "s": 0.8,
-              "l": 0.85
-            },
-            {
-              "op": "tint",
-              "rgb": "#1a3a3a",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a2",
-            "x": [
-              1792,
-              2304
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            1024,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -12,
-              "s": 0.8,
-              "l": 0.85
-            },
-            {
-              "op": "tint",
-              "rgb": "#1a3a3a",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a2",
-            "x": [
-              2304,
-              2816
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            1536,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -12,
-              "s": 0.8,
-              "l": 0.85
-            },
-            {
-              "op": "tint",
-              "rgb": "#1a3a3a",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E8a2",
-            "x": [
-              2688,
-              2816
-            ],
-            "h": [
-              272,
-              496
-            ]
-          },
-          "at": [
-            2048,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -12,
-              "s": 0.8,
-              "l": 0.85
-            },
-            {
-              "op": "tint",
-              "rgb": "#1a3a3a",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "patch": {
-            "src": "E8a1",
-            "x": [
-              96,
-              416
-            ],
-            "h": [
-              784,
-              832
-            ]
-          },
-          "at": [
-            0,
-            176
-          ],
-          "every": 320,
-          "alternate": true,
-          "repeat": 7,
-          "prio": "none",
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -10,
-              "s": 0.55,
-              "l": 0.62
-            },
-            {
-              "op": "tint",
-              "rgb": "#1a3a3a",
-              "amount": 0.3
-            }
-          ],
-          "note": "the raised floodwater over the cave floor (E8a1 water, every other copy mirrored)"
-        },
-        {
-          "patch": {
-            "src": "E6a0",
-            "x": [
-              864,
-              896
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "rows": [
-            9,
-            8,
-            3,
-            2
-          ],
-          "at": [
-            240,
-            0
-          ],
-          "prio": "none",
-          "note": "scaffold timber (the E6a0 portal timber, lifted)"
-        },
-        {
-          "patch": {
-            "src": "E6a0",
-            "x": [
-              864,
-              896
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "rows": [
-            9,
-            8,
-            3,
-            2
-          ],
-          "at": [
-            880,
-            0
-          ],
-          "prio": "none",
-          "note": "scaffold timber (the E6a0 portal timber, lifted)"
-        },
-        {
-          "patch": {
-            "src": "E6a0",
-            "x": [
-              864,
-              896
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "rows": [
-            9,
-            8,
-            3,
-            2
-          ],
-          "at": [
-            1520,
-            0
-          ],
-          "prio": "none",
-          "note": "scaffold timber (the E6a0 portal timber, lifted)"
-        },
-        {
-          "patch": {
-            "src": "E7a3",
-            "x": [
-              816,
-              912
-            ],
-            "h": [
-              112,
-              240
-            ]
-          },
-          "rows": [
-            4
-          ],
-          "at": [
-            1200,
-            16
-          ],
-          "prio": "none",
-          "note": "pump riser with its elbows (E7a3 816-912, palette row 4 lifted)"
-        },
-        {
-          "patch": {
-            "src": "E6a0",
-            "x": [
-              864,
-              896
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "rows": [
-            9,
-            8,
-            3,
-            2
-          ],
-          "at": [
-            1776,
-            0
-          ],
-          "prio": "none",
-          "note": "scaffold timber (the E6a0 portal timber, lifted)"
-        },
-        {
-          "patch": {
-            "src": "E7a3",
-            "x": [
-              816,
-              912
-            ],
-            "h": [
-              112,
-              240
-            ]
-          },
-          "rows": [
-            4
-          ],
-          "at": [
-            1856,
-            16
-          ],
-          "prio": "none",
-          "note": "pump riser with its elbows (E7a3 816-912, palette row 4 lifted)"
-        },
-        {
-          "patch": {
-            "src": "E7a3",
-            "x": [
-              816,
-              912
-            ],
-            "h": [
-              112,
-              240
-            ]
-          },
-          "rows": [
-            4
-          ],
-          "at": [
-            2032,
-            16
-          ],
-          "prio": "none",
-          "note": "pump riser with its elbows (E7a3 816-912, palette row 4 lifted)"
-        },
-        {
-          "patch": {
-            "src": "E6a0",
-            "x": [
-              864,
-              896
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "rows": [
-            9,
-            8,
-            3,
-            2
-          ],
-          "at": [
-            2144,
-            0
-          ],
-          "prio": "none",
-          "note": "scaffold timber (the E6a0 portal timber, lifted)"
-        }
-      ],
-      "s3": [
-        {
-          "x": [
-            0,
-            2176
-          ],
-          "src": "E8a2",
-          "x3": [
-            960,
-            1920
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": -12,
-              "s": 0.8,
-              "l": 0.85
-            },
-            {
-              "op": "tint",
-              "rgb": "#1a3a3a",
-              "amount": 0.22
-            }
-          ],
-          "note": "the flooded cave lake and its crystals beyond the arches"
-        }
-      ],
-      "hazards": [],
-      "sections": [
-        {
-          "id": "4-5",
-          "name": "THE DROWNED THRONE",
-          "x0": 0,
-          "len": 1024,
-          "cap": "THE THRONE ROOM",
-          "locks": [
-            192,
-            640
-          ],
-          "bossLock": null,
-          "props": [
-            {
-              "kind": "crate",
-              "x": 193
-            },
-            {
-              "kind": "barrel",
-              "x": 578
-            },
-            {
-              "kind": "valve",
-              "name": "SEA VALVE · THRONE DRAIN",
-              "x": 880
-            }
-          ],
-          "note": "the capsule chamber is a regular lock here, never the boss lock",
-          "cast": {
-            "gunner": [
-              "poacherJ",
-              "bomber"
-            ]
-          }
-        },
-        {
-          "id": "4-6",
-          "name": "CINDER’S DIG",
-          "x0": 1024,
-          "len": 1152,
-          "locks": [
-            1216
-          ],
-          "bossLock": 1792,
-          "props": [
-            {
-              "kind": "barrel",
-              "x": 193
-            },
-            {
-              "kind": "crate",
-              "x": 578
-            },
-            {
-              "kind": "barrel",
-              "x": 963
-            },
-            {
-              "kind": "pump-column",
-              "x": 860
-            },
-            {
-              "kind": "pump-column",
-              "x": 1060
-            }
-          ],
-          "note": "boss lock 1792-2176 = E8a2 columns; E8a2 has no boss window"
-        }
-      ],
-      "anims": []
+     "img": "tools/art/strips/st4/st4-a0-2-A.png",
+     "at": 1280,
+     "note": "the mouth of the damaged service tunnel, the fallen blank sign frame",
+     "blend": 32,
+     "blendRows": "floor"
+    },
+    {
+     "img": "tools/art/strips/st4/st4-a0-2-B.png",
+     "at": 1920,
+     "note": "inside the service tunnel: pipes and cable trays, the propped collapse",
+     "blend": 32,
+     "blendRows": "floor"
     }
-  ]
+   ],
+   "sections": [
+    {
+     "id": "4-1",
+     "name": "THE RUINED FOUNDATIONS",
+     "x0": 0,
+     "len": 1296,
+     "cap": "THE SINK",
+     "locks": [
+      640,
+      912
+     ],
+     "bossLock": null,
+     "cast": {
+      "gunner": [
+       "poacherJ",
+       "bomber"
+      ]
+     },
+     "props": [
+      {
+       "kind": "crate",
+       "x": 222
+      },
+      {
+       "kind": "barrel",
+       "x": 607
+      },
+      {
+       "kind": "barrel",
+       "x": 992
+      }
+     ]
+    },
+    {
+     "id": "4-2",
+     "name": "THE SERVICE TUNNEL",
+     "x0": 1296,
+     "len": 1296,
+     "locks": [
+      1456,
+      2176
+     ],
+     "bossLock": null,
+     "props": [
+      {
+       "kind": "crate",
+       "x": 193
+      },
+      {
+       "kind": "barrel",
+       "x": 578
+      },
+      {
+       "kind": "valve",
+       "name": "SHAFT WINCH · YARD",
+       "x": 420
+      }
+     ],
+     "note": "task 0 (SHAFT WINCH · YARD) by the tunnel mouth (lock 1456)",
+     "cast": {
+      "gunner": [
+       "poacherJ",
+       "bomber"
+      ]
+     }
+    }
+   ],
+   "anims": []
+  },
+  {
+   "id": "a1",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
+    {
+     "img": "tools/art/strips/st4/st4-a1-1-A.png",
+     "at": 0,
+     "note": "flooded loading chambers: rusted cargo doors, refrigeration units, hoists"
+    },
+    {
+     "img": "tools/art/strips/st4/st4-a1-1-B.png",
+     "at": 640,
+     "note": "stripped machinery, torch scorch marks, salvage crates, a pump running",
+     "blend": 32,
+     "blendRows": "floor"
+    },
+    {
+     "img": "tools/art/strips/st4/st4-a1-2-A.png",
+     "at": 1280,
+     "note": "the sluice room: heavy pumps, steam from the valves",
+     "blend": 32,
+     "blendRows": "floor",
+     "ramp": 32
+    },
+    {
+     "img": "tools/art/strips/st4/st4-a1-2-B.png",
+     "at": 1920,
+     "note": "the emptied captive workers area: chains on the wall, the cage lift, the guard post",
+     "blend": 32,
+     "blendRows": "floor"
+    }
+   ],
+   "sections": [
+    {
+     "id": "4-3",
+     "name": "THE LOADING CHAMBERS",
+     "x0": 0,
+     "len": 1296,
+     "cap": "THE FLOODED CHAMBERS",
+     "locks": [
+      224,
+      832
+     ],
+     "bossLock": null,
+     "note": "elite BROOD MOTHER among the stripped machinery (lock 832)",
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
+      },
+      {
+       "kind": "crate",
+       "x": 578
+      }
+     ]
+    },
+    {
+     "id": "4-4",
+     "name": "THE SLUICE ROOM",
+     "x0": 1296,
+     "len": 1296,
+     "locks": [
+      1696,
+      2176
+     ],
+     "bossLock": null,
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
+      },
+      {
+       "kind": "barrel",
+       "x": 578
+      },
+      {
+       "kind": "valve",
+       "name": "SHAFT WINCH · SCAFFOLDS",
+       "x": 700
+      }
+     ],
+     "cast": {
+      "gunner": [
+       "poacherJ",
+       "bomber"
+      ]
+     },
+     "note": "task 1 (SHAFT WINCH · SCAFFOLDS) at the chained wall of the workers area (lock 1696)"
+    }
+   ],
+   "anims": []
+  },
+  {
+   "id": "a2",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
+    {
+     "img": "tools/art/strips/st4/st4-a2-1-A.png",
+     "at": 0,
+     "note": "the top of the salvage shaft: winch towers, pipe scaffold, rig footprints in the silt"
+    },
+    {
+     "img": "tools/art/strips/st4/st4-a2-1-B.png",
+     "at": 640,
+     "note": "the rig maintenance bay: the spare pile-driver arm on a hoist, the cutting arm (lifted 12 px: floor 135 like its neighbours)",
+     "blend": 32,
+     "blendRows": "floor",
+     "lift": 12
+    },
+    {
+     "img": "tools/art/strips/st4/st4-a2-2-A.png",
+     "at": 1280,
+     "note": "the shaft floor: pile-driver craters, broken generators, winches and chains",
+     "blend": 32,
+     "blendRows": "floor"
+    },
+    {
+     "img": "tools/art/strips/st4/st4-a2-2-B.png",
+     "at": 1920,
+     "note": "the bottom of the unstable shaft: the huge winch drum, collapsing scaffolds (the boss arena)",
+     "blend": 32,
+     "blendRows": "floor"
+    }
+   ],
+   "sections": [
+    {
+     "id": "4-5",
+     "name": "THE SHAFT HEAD",
+     "x0": 0,
+     "len": 1296,
+     "cap": "THE SALVAGE SHAFT",
+     "locks": [
+      384,
+      832
+     ],
+     "bossLock": null,
+     "props": [
+      {
+       "kind": "crate",
+       "x": 193
+      },
+      {
+       "kind": "barrel",
+       "x": 578
+      },
+      {
+       "kind": "valve",
+       "name": "SHAFT WINCH · CHAMBERS",
+       "x": 1040
+      }
+     ],
+     "note": "task 2 (SHAFT WINCH · CHAMBERS) in the rig maintenance bay (lock 832)",
+     "cast": {
+      "gunner": [
+       "poacherJ",
+       "bomber"
+      ]
+     }
+    },
+    {
+     "id": "4-6",
+     "name": "THE SALVAGE SHAFT",
+     "x0": 1296,
+     "len": 1296,
+     "locks": [
+      1424
+     ],
+     "bossLock": 2208,
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
+      },
+      {
+       "kind": "crate",
+       "x": 578
+      },
+      {
+       "kind": "barrel",
+       "x": 1107
+      },
+      {
+       "kind": "pump-column",
+       "x": 1004
+      },
+      {
+       "kind": "pump-column",
+       "x": 1204
+      }
+     ],
+     "note": "boss lock 2208-2592: the bottom of the shaft, the winch drum; the pump columns inside it"
+    }
+   ],
+   "anims": []
+  }
+ ]
 }

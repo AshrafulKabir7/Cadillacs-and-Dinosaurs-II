@@ -1,0 +1,323 @@
+{
+ "id": "militia",
+ "name": "CROWN MILITIAMAN",
+ "family": "enemies",
+ "chapterTag": 111,
+ "height": 80,
+ "bg": "#FF00FF",
+ "anchor": "feet",
+ "ship": "sprite-data-enemy-militia.js",
+ "note": "Generated general enemy (revision 3): Sable's uniformed militia, riot shield and baton. Stages 1, 5, 7, 8. About 80 arcade px (a ROM knife man is 82, Jack 79).",
+ "enemy": {
+  "data": {
+   "hud": "MILITIAMAN",
+   "face": "VICE T.",
+   "hp": [
+    52,
+    52,
+    52,
+    52,
+    52,
+    52,
+    52,
+    52,
+    52,
+    60,
+    60,
+    60,
+    68,
+    68,
+    68,
+    68,
+    76,
+    76,
+    76,
+    76,
+    76,
+    76,
+    76,
+    76,
+    92,
+    92,
+    92,
+    92,
+    92,
+    92,
+    92,
+    92
+   ],
+   "rankRow": [
+    32,
+    32,
+    32,
+    32,
+    35,
+    35,
+    35,
+    35,
+    38,
+    38,
+    38,
+    38,
+    44,
+    44,
+    44,
+    44,
+    48,
+    48,
+    48,
+    48,
+    52,
+    52,
+    52,
+    52,
+    56,
+    56,
+    56,
+    56,
+    60,
+    60,
+    60,
+    68
+   ],
+   "walk": 1.05
+  }
+ },
+ "inputs": [
+  {
+   "file": "work/art/gen/militia/militia-00-model.png",
+   "split": "auto",
+   "names": [
+    "idle0"
+   ]
+  },
+  {
+   "file": "work/art/gen/militia/militia-01-idle-walk.png",
+   "split": "auto",
+   "names": [
+    "_ref1",
+    "idle1",
+    "walk1",
+    "walk2"
+   ]
+  },
+  {
+   "file": "work/art/gen/militia/militia-02-walk-guard.png",
+   "split": "auto",
+   "names": [
+    "_ref2",
+    "walk3",
+    "walk4",
+    "guard"
+   ]
+  },
+  {
+   "file": "work/art/gen/militia/militia-03-attack.png",
+   "split": "auto",
+   "names": [
+    "_ref3",
+    "tell",
+    "strike",
+    "bash"
+   ]
+  },
+  {
+   "file": "work/art/gen/militia/militia-04-hurt.png",
+   "split": "auto",
+   "names": [
+    "_ref4",
+    "hurt1",
+    "hurt2",
+    "fall"
+   ]
+  },
+  {
+   "file": "work/art/gen/militia/militia-05-down.png",
+   "split": "auto",
+   "names": [
+    "_ref5",
+    "down",
+    "getup",
+    "stagger"
+   ]
+  }
+ ],
+ "anims": [
+  {
+   "name": "idle",
+   "frames": [
+    "idle0",
+    "idle1"
+   ],
+   "dur": 24,
+   "loop": 0
+  },
+  {
+   "name": "walk",
+   "frames": [
+    "walk1",
+    "walk2",
+    "walk3",
+    "walk4"
+   ],
+   "dur": 8,
+   "loop": 0,
+   "alignTo": "idle0"
+  },
+  {
+   "name": "guard",
+   "frames": [
+    "guard"
+   ],
+   "dur": 30,
+   "alignTo": "idle0"
+  },
+  {
+   "name": "strike",
+   "frames": [
+    "tell",
+    "strike"
+   ],
+   "dur": [
+    20,
+    18
+   ],
+   "act": [
+    1
+   ],
+   "align": "none",
+   "atk": {
+    "id": 900,
+    "tbl": 11,
+    "stun": 4,
+    "react": 2,
+    "hitstop": 6,
+    "src": "sequel: militia baton swing"
+   }
+  },
+  {
+   "name": "bash",
+   "frames": [
+    "guard",
+    "bash"
+   ],
+   "dur": [
+    14,
+    20
+   ],
+   "act": [
+    1
+   ],
+   "align": "none",
+   "atk": {
+    "id": 901,
+    "tbl": 12,
+    "stun": 11,
+    "react": 4,
+    "hitstop": 9,
+    "src": "sequel: militia shield bash (knocks down)"
+   }
+  },
+  {
+   "name": "hurt",
+   "frames": [
+    "hurt1"
+   ],
+   "dur": 10
+  },
+  {
+   "name": "hurt-low",
+   "frames": [
+    "hurt2"
+   ],
+   "dur": 10
+  },
+  {
+   "name": "fly",
+   "frames": [
+    "fall",
+    "fall",
+    "down"
+   ],
+   "dur": [
+    12,
+    12,
+    40
+   ],
+   "align": "none"
+  },
+  {
+   "name": "dead",
+   "frames": [
+    "fall",
+    "down"
+   ],
+   "dur": [
+    10,
+    60
+   ],
+   "align": "none"
+  },
+  {
+   "name": "rise",
+   "frames": [
+    "down",
+    "getup"
+   ],
+   "dur": [
+    6,
+    20
+   ],
+   "align": "none"
+  },
+  {
+   "name": "held",
+   "frames": [
+    "hurt1"
+   ],
+   "dur": 30
+  },
+  {
+   "name": "kneed",
+   "frames": [
+    "hurt2",
+    "hurt2",
+    "hurt2",
+    "hurt2",
+    "hurt2"
+   ],
+   "dur": 8
+  },
+  {
+   "name": "thrown",
+   "frames": [
+    "hurt1",
+    "hurt2",
+    "fall",
+    "fall"
+   ],
+   "dur": 8,
+   "align": "none"
+  },
+  {
+   "name": "stagger",
+   "frames": [
+    "stagger"
+   ],
+   "dur": 30,
+   "alignTo": "idle0"
+  }
+ ],
+ "palette": {
+  "mode": "ramps",
+  "lock": [
+   "#337766",
+   "#448877",
+   "#aaaaaa",
+   "#cccccc"
+  ]
+ },
+ "clean": {
+  "smooth": 1
+ }
+}

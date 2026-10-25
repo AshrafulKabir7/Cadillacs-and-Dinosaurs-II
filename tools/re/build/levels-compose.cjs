@@ -16,6 +16,25 @@
 // (a pillar, a tree, a pipe) off its background. Every pixel keeps its provenance (layer.pc -> the piece map), which
 // gate 1 uses to find cuts at joins (joinCuts). A loop area's wrap copy repeats its first 384 px exactly, patches
 // included. "s3":"auto" gives one far layer per section (a section may name it with "s3").
+// Painted areas (work/story3/PAINT-FORMAT.md): an area with "paint":[{img, at, flip?, x?:[x0,x1], floor?, blend?}]
+// instead of "s2" is drawn from painted strips (tools/art/import-bg.cjs: 672x224 indexed PNGs, one palette per stage)
+// in true colour instead of ROM cells, and ships the same shape (s2 pages, walk {cell, cols, rows, mask, band},
+// camera/locks/sections, start, bg), so stage-render.js and game.js need nothing new. img = a repo-relative path;
+// at = area x of the strip's left edge (or [x, y]); x = the strip columns used (default all); flip mirrors the strip;
+// floor = the strip y where the back scenery meets the floor (default: tools/art/bg-floors.json, then the strip's
+// floors.json, then detection). Pieces apply in order, a later one replaces what it covers. Seams: a straight cut by
+// default (the prompts end every strip on a pillar / post / trunk); blend:N crossfades the first N px of a piece over
+// what is under it (blendRows:"floor" mixes only the floor rows and cuts the scenery straight in the middle of the
+// fade; the mixed pixels are snapped to the area's own colours, so pages stay indexed); lift:N moves the strip up N rows (the
+// sky loses N rows at the top, the strip's bottom N floor rows repeat at the bottom, the floor line rises by N: a
+// deeper walk band for a strip whose floor is low); ramp:N slopes the walk band
+// from the left strip's floor line to this one's over N px instead of a step; step:true accepts a step > 16 px. Walk: per 16-px
+// column the cells from the one holding the floor line down are walkable, the band top is the floor line itself
+// (feet never stand on the back scenery, never above the clamp 81); walk.patch rects work as on ROM areas. A loop
+// paint area ("loop":{"period":P}, no src) paints [0, P) (e.g. a strip at 0 and the same strip flipped at 672,
+// P = 1344, so both joins are mirror joins) and repeats it past P like a ROM loop. No fg pages (nothing is drawn over
+// the sprites), no far layer ("s3" is ignored: the paintings are opaque), rowscroll should stay off (it would shear the
+// painted road rows). ROM-only gates (joinCuts, originality, KI1) skip painted areas; see levels-validate.cjs.
 'use strict';
 const fs = require('fs'), path = require('path');
 
@@ -23,7 +42,8 @@ const ROOT = path.resolve(__dirname, '..', '..', '..');
 const LEVELS = path.join(ROOT, 'tools', 're', 'levels');
 const EXTRACT = path.join(ROOT, 'work', 're', 'extract');
 const VERIFY = path.join(ROOT, 'work', 're', 'verify-extract', 'stages');
-const CHAPTERS = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6'];
+// every tools/re/levels/ch<N>.json, in stage order (8 stages since the revision-3 story)
+const CHAPTERS = require('fs').readdirSync(require('path').join(__dirname, '../levels')).filter(f => /^ch\d+\.json$/.test(f)).map(f => f.slice(0, -5)).sort((p, q) => +p.slice(2) - +q.slice(2));
 const VIEW = { w: 384, h: 224 }, CLAMP = { top: 81, bottom: 224 }, PAGE = 1024, CELL = 16;
 const WALK_TYPES = new Set([0, 21]);
 
@@ -156,6 +176,7 @@ function rolesFor(recipe, srcId, layer) { const r = recipe.roles && recipe.roles
 
 // ---------------------------------------------------------------- scroll2 composition
 function composeS2(recipe, area, ctxs) {
+  if (area.paint) return composePaint(recipe, area);
   const loop = area.loop || null;
   const artW = Math.max(area.w, loop ? loop.period + VIEW.w : 0);
   req(artW % CELL === 0, `${area.id}: width ${artW} not a multiple of 16`);
@@ -271,6 +292,93 @@ function composeS2(recipe, area, ctxs) {
   }
   return { L, artW, H, cols, rows, terrain, prov, pieces, map, patchCells: patchCells.size, patchSet: patchCells, cellSrc };
 }
+// ---------------------------------------------------------------- painted areas
+let IB = null; const importBg = () => IB || (IB = require('../../art/import-bg.cjs'));
+const STRIPS = new Map();
+function paintImage(rel) {
+  const file = path.resolve(ROOT, rel); if (STRIPS.has(file)) return STRIPS.get(file);
+  req(fs.existsSync(file), `paint image ${rel} not found (run node tools/art/import-bg.cjs)`);
+  const p = require('./png.cjs').read(file), im = { file, rel: path.relative(ROOT, file).split(path.sep).join('/'), w: p.width, h: p.height, rgba: p.rgba, floor: importBg().floorOf(file) };
+  STRIPS.set(file, im); return im;
+}
+const paintFiles = area => (area.paint || []).map(p => paintImage(p.img).rel);
+// The same s2 shape as composeS2 (L, artW, H, cols, rows, terrain, prov, pieces, map, patchCells, patchSet, cellSrc)
+// plus L.rgba (true colour; pen 0 = painted, 15 = open) and the per-16-px-column floor line (floor, floorCell).
+function composePaint(recipe, area) {
+  req(!(area.s2 && area.s2.length), `${area.id}: an area is either painted ("paint") or composed of ROM cells ("s2"), not both`);
+  const loop = area.loop || null, period = loop ? loop.period : 0;
+  req(!loop || (period > 0 && period % CELL === 0 && !loop.src), `${area.id}: a painted loop is {"period": P} with P a multiple of 16 (no src)`);
+  // art: a loop only ever shows [0, period + 384) (layerX = (cam.x + road) mod period), so its pages stop there; the
+  // walk grid keeps the gameplay width (the floor of x is the floor of x mod period)
+  const artW = loop ? period + VIEW.w : area.w, gameW = Math.max(area.w, artW), H = area.h || VIEW.h;
+  req(area.w % CELL === 0, `${area.id}: width ${area.w} not a multiple of 16`);
+  const cols = gameW / CELL, rows = H / CELL, limit = loop ? period : artW;
+  const L = newLayer(artW, H); L.rgba = new Uint8Array(artW * H * 4);
+  const floorPx = new Int16Array(gameW).fill(-1), mixed = new Uint8Array(artW * H), pieces = [];
+  const mix = (q, s, t, im) => { const d = q * 4; if (L.pen[q] !== 15 && t < 1) { if (t <= 0) return; for (let c = 0; c < 3; c++) L.rgba[d + c] = Math.round(L.rgba[d + c] * (1 - t) + im.rgba[s + c] * t); mixed[q] = 1; } else { for (let c = 0; c < 3; c++) L.rgba[d + c] = im.rgba[s + c]; mixed[q] = 0; } L.rgba[d + 3] = 255; L.pen[q] = 0; };
+  for (const [pi, p] of area.paint.entries()) {
+    const im = paintImage(p.img), [ax, ay] = Array.isArray(p.at) ? p.at : [p.at || 0, 0], [x0, x1] = p.x || [0, im.w], flip = !!(p.flip || p.mirror), blend = p.blend | 0, floorOnly = p.blendRows === 'floor', lift = p.lift | 0;
+    req(lift >= 0 && lift < im.h >> 1, `${area.id} paint[${pi}] ${im.rel}: lift ${p.lift} must be 0..${(im.h >> 1) - 1}`);
+    req(Number.isInteger(ax) && Number.isInteger(ay) && x0 >= 0 && x1 <= im.w && x1 > x0, `${area.id} paint[${pi}] ${im.rel}: bad at ${JSON.stringify(p.at)} or x ${JSON.stringify(p.x)}`);
+    req(ay >= 0 && ay + im.h <= H, `${area.id} paint[${pi}] ${im.rel}: ${im.h} px tall at y ${ay} does not fit the ${H}-px area`);
+    const floor = ay + (p.floor != null ? p.floor : im.floor) - lift, w = x1 - x0, ramp = p.ramp | 0, leftFloor = ax > 0 && ax <= limit ? floorPx[ax - 1] : -1;
+    // a loop piece that runs past the period wraps its tail onto x 0.. and fades it out over what is there (the tail
+    // continues the art left of the period, so the wrap join is a crossfade too)
+    const tail = loop ? Math.max(0, ax + w - period) : 0;
+    for (let k = 0; k < w; k++) {
+      let ox = ax + k, t = k < blend ? (k + 0.5) / blend : 1;
+      if (loop && ox >= period && tail) { t = Math.min(t, 1 - (ox - period + 0.5) / tail); ox -= period; }
+      if (ox < 0 || ox >= limit) continue;
+      const sx = flip ? x1 - 1 - k : x0 + k;
+      const fl = floorPx[ox] < 0 ? floor : Math.min(floorPx[ox], floor) - 2;   // blendRows 'floor': only the floor rows mix
+      for (let y = 0; y < im.h; y++) {
+        const Y = ay + y, q = Y * artW + ox, tt = floorOnly && t < 1 && Y < fl ? (t >= 0.5 ? 1 : 0) : t, sy = y + lift < im.h ? y + lift : y;   // lift: the strip moves up N rows, its bottom N floor rows repeat below
+        mix(q, (sy * im.w + sx) * 4, tt, im); if (tt > 0) L.pc[q] = pi + 1;
+      }
+      if (t >= 0.5 || floorPx[ox] < 0) floorPx[ox] = floor;
+    }
+    // ramp:N - the floor line runs straight from the left neighbour's floor to this strip's over the N px centred on
+    // the strip's left edge (the band slopes like a ROM diagonal instead of stepping; feet may stand up to half the
+    // step on the deeper strip's scenery there)
+    if (ramp && leftFloor >= 0) { const r0 = Math.max(0, ax - (ramp >> 1)), r1 = Math.min(limit, ax + (ramp >> 1)), f0 = r0 > 0 ? (floorPx[r0 - 1] >= 0 ? floorPx[r0 - 1] : leftFloor) : leftFloor; for (let x = r0; x < r1; x++) floorPx[x] = Math.round(f0 + (floor - f0) * (x - r0 + 0.5) / (r1 - r0)); }
+    pieces.push({ kind: 'paint', index: pi, ramp, lift, src: path.basename(im.rel, '.png'), img: im.rel, x0: ax, x1: Math.min(ax + w, limit), y: ay, srcX: [x0, x1], flip, floor, blend, blendRows: floorOnly ? 'floor' : 'all', tail, ctx: null, note: p.note || null, pc: pi + 1 });
+  }
+  // crossfaded pixels -> the nearest colour the area already uses (4-bit cell LUT, OKLab), so pages stay indexed
+  if (mixed.some(v => v)) {
+    const own = new Set(); for (let q = 0; q < artW * H; q++) if (L.pen[q] !== 15 && !mixed[q]) own.add((L.rgba[q * 4] << 16) | (L.rgba[q * 4 + 1] << 8) | L.rgba[q * 4 + 2]);
+    const C = require('../../art/colour.cjs'), pal = [...own].sort((p, q) => p - q), labs = pal.map(v => C.rgbToLab((v >> 16) & 255, (v >> 8) & 255, v & 255)), lut = new Map();
+    for (let q = 0; q < artW * H; q++) {
+      if (!mixed[q]) continue; const d = q * 4, k = (Math.round(L.rgba[d] / 17) << 8) | (Math.round(L.rgba[d + 1] / 17) << 4) | Math.round(L.rgba[d + 2] / 17);
+      let v = lut.get(k); if (v == null) { const l = C.rgbToLab(((k >> 8) & 15) * 17, ((k >> 4) & 15) * 17, (k & 15) * 17); let bd = Infinity; for (let i = 0; i < labs.length; i++) { const e = 1.4 * (l[0] - labs[i][0]) ** 2 + (l[1] - labs[i][1]) ** 2 + (l[2] - labs[i][2]) ** 2; if (e < bd) { bd = e; v = pal[i]; } } lut.set(k, v); }
+      L.rgba[d] = (v >> 16) & 255; L.rgba[d + 1] = (v >> 8) & 255; L.rgba[d + 2] = v & 255;
+    }
+  }
+  // the loop's wrap copy: the art past the period repeats [0, period) exactly
+  if (loop) {
+    for (let x = period; x < artW; x++) { const s = x - period; for (let y = 0; y < H; y++) { const q = y * artW + x, r = y * artW + s; L.pen[q] = L.pen[r]; L.pc[q] = L.pc[r]; L.rgba.copyWithin(q * 4, r * 4, r * 4 + 4); } }
+    for (let x = period; x < gameW; x++) floorPx[x] = floorPx[x % period];
+  }
+  // terrain per 16-px column: the cell holding the floor line (the deepest one over the column's 16 px) and every
+  // cell below it are free floor (type 0), the cells above are wall (type 1); unpainted columns have no cells
+  const terrain = new Int16Array(cols * rows).fill(-1), floorC = new Int16Array(cols).fill(-1), floorCell = new Int16Array(cols).fill(-1);
+  for (let c = 0; c < cols; c++) {
+    let f = -1; for (let x = c * CELL; x < c * CELL + CELL; x++) f = Math.max(f, floorPx[x]); if (f < 0) continue;
+    floorC[c] = f; floorCell[c] = Math.max(0, Math.floor((f - 1) / CELL));
+    for (let r = 0; r < rows; r++) terrain[r * cols + c] = r >= floorCell[c] ? 0 : 1;
+  }
+  return { L, artW, H, cols, rows, terrain, prov: new Array(cols).fill(null), pieces, map: [], patchCells: 0, patchSet: new Set(), cellSrc: new Array(cols * rows).fill(null), paint: true, floor: floorC, floorCell };
+}
+// a page of a painted layer with more than 256 colours (strips of several stage palettes on one page) is
+// re-quantised to 256 (tools/art/import-bg.cjs stage palette), so every page ships as an indexed PNG
+function fitPage(rgba, w, h) {
+  const seen = new Set(); for (let i = 0; i < w * h; i++) { if (!rgba[i * 4 + 3]) continue; seen.add((rgba[i * 4] << 16) | (rgba[i * 4 + 1] << 8) | rgba[i * 4 + 2]); if (seen.size > 256) break; }
+  if (seen.size <= 256) return rgba;
+  const I = importBg(), px = new Float64Array(w * h * 3); for (let i = 0; i < w * h; i++) { px[i * 3] = rgba[i * 4]; px[i * 3 + 1] = rgba[i * 4 + 1]; px[i * 3 + 2] = rgba[i * 4 + 2]; }
+  const st = { w, h, px }, out = I.applyPalette(st, I.stagePalette([st], 255));
+  for (let i = 0; i < w * h; i++) if (!rgba[i * 4 + 3]) out[i * 4] = out[i * 4 + 1] = out[i * 4 + 2] = out[i * 4 + 3] = 0;
+  return out;
+}
+
 // ---------------------------------------------------------------- seam analysis (gate 1)
 // The source pixel an output pixel came from (piece map), and its neighbour in source space one pixel to the right
 // (dir +1) or left (dir -1) of the output column: what the original art has next to it.
@@ -406,6 +514,8 @@ function walkOf(area, s2) {
       if (!pick) pick = runs.slice().sort((p, q) => (q[1] - q[0]) - (p[1] - p[0]) || q[1] - p[1])[0];
     }
     band[c] = pick ? [Math.max(CLAMP.top, pick[0] * CELL + 1), Math.min(CLAMP.bottom, pick[1] * CELL)] : null;
+    // painted areas: a band that starts in the cell holding the floor line starts on the floor line itself
+    if (pick && s2.paint && pick[0] === s2.floorCell[c] && s2.floor[c] > band[c][0]) band[c][0] = Math.min(s2.floor[c], band[c][1]);
     if (pick) prev = pick;
   }
   // mask shipped = walkable cells of the gameplay width, clipped to the clamp rows
@@ -450,6 +560,11 @@ function composeAnims(recipe, area, ctxs) {
 // ---------------------------------------------------------------- colouring and pages
 function rgbaOf(L, ctxs, { fg = false, x0 = 0, y0 = 0, w = L.w, h = L.h } = {}) {
   const out = new Uint8Array(w * h * 4); let n = 0;
+  if (L.rgba) {   // a painted layer: true colour, nothing in front of the sprites
+    if (fg) return { rgba: out, opaque: 0 };
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const X = x0 + x, Y = y0 + y; if (X >= L.w || Y >= L.h) continue; const q = Y * L.w + X; if (L.pen[q] === 15) continue; out.set(L.rgba.subarray(q * 4, q * 4 + 4), (y * w + x) * 4); n++; }
+    return { rgba: n ? fitPage(out, w, h) : out, opaque: n };
+  }
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     const X = x0 + x, Y = y0 + y; if (X >= L.w || Y >= L.h) continue;
     const q = Y * L.w + X, pen = L.pen[q]; if (pen === 15) continue;
@@ -492,7 +607,8 @@ function atlasOfAnims(anims, ctxs) {
 // ---------------------------------------------------------------- backdrop colour ('auto')
 function autoBg(s2, s3, ctxs) {
   const count = new Map(), add = (L, y0, y1) => { if (!L) return; for (let y = y0; y < Math.min(y1, L.h); y++) for (let x = 0; x < L.w; x += 2) { const q = y * L.w + x; if (L.pen[q] === 15) continue; const c = ctxs.list[L.ctx[q]], k = (L.pal[q] * 16 + L.pen[q]) * 3, v = (c.rgb[k] << 16) | (c.rgb[k + 1] << 8) | c.rgb[k + 2]; count.set(v, (count.get(v) || 0) + 1); } };
-  if (s3 && s3.length) add(s3[0].L, 0, 8); else add(s2.L, 0, 8);
+  if (s2.L.rgba) { const L = s2.L; for (let y = 0; y < 8; y++) for (let x = 0; x < L.w; x += 2) { const q = y * L.w + x; if (L.pen[q] === 15) continue; const v = (L.rgba[q * 4] << 16) | (L.rgba[q * 4 + 1] << 8) | L.rgba[q * 4 + 2]; count.set(v, (count.get(v) || 0) + 1); } }
+  else if (s3 && s3.length) add(s3[0].L, 0, 8); else add(s2.L, 0, 8);
   let best = 0, bn = -1; for (const [v, n] of [...count.entries()].sort((a, b) => a[0] - b[0])) if (n > bn) { bn = n; best = v; }
   return '#' + best.toString(16).padStart(6, '0');
 }
@@ -517,7 +633,7 @@ function compose(recipe, opts = {}) {
   const ctxs = opts.ctxs || new Contexts();
   const areas = recipe.areas.map((area, ai) => {
     const s2 = composeS2(recipe, area, ctxs);
-    const s3 = composeS3(recipe, area, s2.artW, ctxs, s2);
+    const s3 = s2.paint ? null : composeS3(recipe, area, s2.artW, ctxs, s2);   // painted strips are opaque: no far layer
     const walk = walkOf(area, s2);
     const anims = composeAnims(recipe, area, ctxs);
     const { camera, locks } = areaCamera(recipe, area, ai, recipe.areas.length);
@@ -539,7 +655,7 @@ function stageEntry(chap, files) {
       const sec = (A.sections || []).map(s => ({ id: s.id, name: s.name || null, x0: s.x0, len: s.len, cap: s.cap || null, locks: (s.locks || []).slice(), bossLock: s.bossLock == null ? null : s.bossLock,
         drive: !!(s.drive || A.drive), props: s.props || [], set: s.set || [], scenery: s.scenery || [], cast: s.cast || null, music: s.music || null, note: s.note || null }));
       return {
-        id: a.id, w: a.w, h: a.h, artW: a.artW, bg: a.bg, page: PAGE, dir,
+        id: a.id, w: a.w, h: a.h, artW: a.artW, bg: a.bg, page: PAGE, dir, ...(A.paint ? { paint: true } : {}),
         s2: f.s2 || [], fg: f.fg || [],
         s3: a.s3 ? { w: a.s3[0].w, h: VIEW.h, shift: a.s3[0].shift, y: { mode: 'fixed', y0: 0 }, pages: (f.s3 || []).flat(), spans: a.s3.map((sp, k) => ({ x0: sp.x0, x1: sp.x1, c0: sp.c0, shift: sp.shift, w: sp.w, period: sp.period || null, pages: f.s3[k] || [] })) } : null,
         anims: f.anims || [], animFile: f.anims && f.anims.length ? 'anim.png' : null,
@@ -595,6 +711,7 @@ function buildAll({ chapters = CHAPTERS, out = ROOT, lib: L = {}, validate = nul
     if (!fs.existsSync(path.join(LEVELS, `${ch}.json`))) { log(`stages ${ch}: no recipe, skipped`); continue; }
     const recipe = loadRecipe(ch), chap = compose(recipe);
     composed[ch] = chap;
+    for (const a of recipe.areas) for (const f of paintFiles(a)) if (!report.inputs.includes(f)) report.inputs.push(f);
     const pageFiles = {};
     let bytes = 0;
     for (const a of chap.areas) {
@@ -673,7 +790,7 @@ function usedSourceColumns() {
     const r = loadRecipe(ch);
     for (const a of r.areas) {
       for (const p of a.s2 || []) { const sl = p.slice; if (!sl) continue; const src = source(sl.src), fr = framing(src, sl); for (let X = sl.x[0]; X < sl.x[1]; X += CELL) used.set(`${src.id}:${X}`, { src: src.id, X, frame: fr }); }
-      if (a.loop) { const src = source(a.loop.src), fr = a.loop.h || defaultFrame(src); for (let X = a.loop.x0; X < a.loop.x0 + a.loop.period; X += CELL) used.set(`${src.id}:${X}`, { src: src.id, X, frame: fr }); }
+      if (a.loop && a.loop.src) { const src = source(a.loop.src), fr = a.loop.h || defaultFrame(src); for (let X = a.loop.x0; X < a.loop.x0 + a.loop.period; X += CELL) used.set(`${src.id}:${X}`, { src: src.id, X, frame: fr }); }
     }
   }
   return [...used.values()];
@@ -764,4 +881,4 @@ function liveBeyond(dir, s, area) {
   return { cells, equal };
 }
 
-module.exports = { joinCuts, sourceOf, srcPixel, colourAt, compose, composePic, buildAll, selfTest, source, scriptBossWindows, BOSS_WINDOWS, CHAPTERS, VIEW, CLAMP, PAGE, CELL, WALK_TYPES, loadRecipe, rgbaOf, pagesOf, Contexts, newLayer, blitTile, cell2, defaultFrame, framing, bandRunAt, usedSourceColumns, packBits, stagesJson, srcWrap, emptyTile, emptyS3 };
+module.exports = { composePaint, paintImage, fitPage, stageEntry, joinCuts, sourceOf, srcPixel, colourAt, compose, composePic, buildAll, selfTest, source, scriptBossWindows, BOSS_WINDOWS, CHAPTERS, VIEW, CLAMP, PAGE, CELL, WALK_TYPES, loadRecipe, rgbaOf, pagesOf, Contexts, newLayer, blitTile, cell2, defaultFrame, framing, bandRunAt, usedSourceColumns, packBits, stagesJson, srcWrap, emptyTile, emptyS3 };

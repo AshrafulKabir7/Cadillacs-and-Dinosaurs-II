@@ -1,30 +1,316 @@
 {
   "id": "sable",
   "name": "MARSHAL SABLE",
-  "note": "Sources: design/sprites-raw/crownback (ChatGPT sheets, magenta, facing left). Each input carries its own scale so Sable stands ~96 arcade px in every sheet (the generator drew each sheet at a different size). Anim numbers are BOSS_DEFS.sable 'main:<n>' references.",
+  "note": "Sources: design/sprites-raw/crownback (ChatGPT sheets, magenta, facing left). Each input carries its own scale so Sable stands ~96 arcade px in every sheet (the generator drew each sheet at a different size). Anim numbers are BOSS_DEFS.sable 'main:<n>' references. Revision 3: the blade (work/art/gen/sableblade 01-blade: anims 10 stance, 11 slash, 12 thrust) and the braced arm (02-arm: 13 armsmash, 14 the brace broken), Codex sheets from tools/art/boss-prompts.json 'sableblade' whose first pose is the idle reference (~96 px).",
   "height": 96,
   "bg": "#FF00FF",
   "chapterTag": 91,
   "ship": "sprite-data-boss-sable.js",
   "inputs": [
-    { "file": "design/sprites-raw/crownback/ref-sheet-b.png", "crop": [20, 270, 340, 650], "name": "idle0", "scale": 0.1548 },
-    { "file": "design/sprites-raw/crownback/sable-walk.png", "split": "auto", "names": ["walk0", "walk1", "walk2", "walk3"], "scale": 0.158 },
-    { "file": "design/sprites-raw/crownback/sable-shoot.png", "split": "auto", "names": ["raise", "aim", "fire", "lower"], "scale": 0.158 },
-    { "file": "design/sprites-raw/crownback/sable-transform-alt.png", "crop": [0, 150, 1225, 517], "split": "auto", "names": ["inject", "swell", "half"], "scale": 0.247 }
+    {
+      "file": "design/sprites-raw/crownback/ref-sheet-b.png",
+      "crop": [
+        20,
+        270,
+        340,
+        650
+      ],
+      "name": "idle0",
+      "scale": 0.1548
+    },
+    {
+      "file": "design/sprites-raw/crownback/sable-walk.png",
+      "split": "auto",
+      "names": [
+        "walk0",
+        "walk1",
+        "walk2",
+        "walk3"
+      ],
+      "scale": 0.158
+    },
+    {
+      "file": "design/sprites-raw/crownback/sable-shoot.png",
+      "split": "auto",
+      "names": [
+        "raise",
+        "aim",
+        "fire",
+        "lower"
+      ],
+      "scale": 0.158
+    },
+    {
+      "file": "design/sprites-raw/crownback/sable-transform-alt.png",
+      "crop": [
+        0,
+        150,
+        1225,
+        517
+      ],
+      "split": "auto",
+      "names": [
+        "inject",
+        "swell",
+        "half"
+      ],
+      "scale": 0.247
+    },
+    {
+      "file": "work/art/gen/sableblade/sableblade-01-blade.png",
+      "split": "auto",
+      "names": [
+        "bladeIdle",
+        "bladeTell",
+        "slash",
+        "thrust"
+      ]
+    },
+    {
+      "file": "work/art/gen/sableblade/sableblade-02-arm.png",
+      "split": "auto",
+      "names": [
+        "_ref2",
+        "armTell",
+        "armSmash",
+        "braceBroken"
+      ]
+    }
   ],
   "anims": [
-    { "name": "idle", "frames": ["idle0"], "dur": 30, "loop": 0 },
-    { "name": "walk", "frames": ["walk0", "walk1", "walk2", "walk3"], "dur": 9, "loop": 0, "alignTo": "idle0" },
-    { "name": "draw", "frames": ["raise", "aim"], "dur": [16, 14], "alignTo": "idle0" },
-    { "name": "volley", "frames": ["aim", "fire", "aim", "fire", "aim", "fire", "aim"], "dur": [10, 6, 6, 6, 6, 6, 10], "act": [1, 3, 5], "alignTo": "idle0" },
-    { "name": "quick", "frames": ["raise", "aim", "fire", "aim"], "dur": [12, 14, 8, 12], "act": [2], "alignTo": "idle0" },
-    { "name": "reload", "frames": ["lower"], "dur": 60, "alignTo": "idle0" },
-    { "name": "whip", "frames": ["raise", "lower", "idle0"], "dur": [18, 14, 10], "act": [1], "align": "none", "alignTo": "idle0" },
-    { "name": "command", "frames": ["raise"], "dur": 36, "alignTo": "idle0" },
-    { "name": "hop", "frames": ["walk0", "walk2"], "dur": [10, 20], "act": [1], "alignTo": "idle0" },
-    { "name": "transform", "frames": ["inject", "swell", "half"], "dur": [36, 32, 30], "align": "none", "alignTo": "idle0" }
+    {
+      "name": "idle",
+      "frames": [
+        "idle0"
+      ],
+      "dur": 30,
+      "loop": 0
+    },
+    {
+      "name": "walk",
+      "frames": [
+        "walk0",
+        "walk1",
+        "walk2",
+        "walk3"
+      ],
+      "dur": 9,
+      "loop": 0,
+      "alignTo": "idle0"
+    },
+    {
+      "name": "draw",
+      "frames": [
+        "raise",
+        "aim"
+      ],
+      "dur": [
+        16,
+        14
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "volley",
+      "frames": [
+        "aim",
+        "fire",
+        "aim",
+        "fire",
+        "aim",
+        "fire",
+        "aim"
+      ],
+      "dur": [
+        10,
+        6,
+        6,
+        6,
+        6,
+        6,
+        10
+      ],
+      "act": [
+        1,
+        3,
+        5
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "quick",
+      "frames": [
+        "raise",
+        "aim",
+        "fire",
+        "aim"
+      ],
+      "dur": [
+        12,
+        14,
+        8,
+        12
+      ],
+      "act": [
+        2
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "reload",
+      "frames": [
+        "lower"
+      ],
+      "dur": 60,
+      "alignTo": "idle0"
+    },
+    {
+      "name": "whip",
+      "frames": [
+        "raise",
+        "lower",
+        "idle0"
+      ],
+      "dur": [
+        18,
+        14,
+        10
+      ],
+      "act": [
+        1
+      ],
+      "align": "none",
+      "alignTo": "idle0"
+    },
+    {
+      "name": "command",
+      "frames": [
+        "raise"
+      ],
+      "dur": 36,
+      "alignTo": "idle0"
+    },
+    {
+      "name": "hop",
+      "frames": [
+        "walk0",
+        "walk2"
+      ],
+      "dur": [
+        10,
+        20
+      ],
+      "act": [
+        1
+      ],
+      "alignTo": "idle0"
+    },
+    {
+      "name": "transform",
+      "frames": [
+        "inject",
+        "swell",
+        "half"
+      ],
+      "dur": [
+        36,
+        32,
+        30
+      ],
+      "align": "none",
+      "alignTo": "idle0"
+    },
+    {
+      "name": "stance",
+      "frames": [
+        "bladeIdle"
+      ],
+      "dur": 30,
+      "alignTo": "idle0"
+    },
+    {
+      "name": "slash",
+      "frames": [
+        "bladeTell",
+        "slash",
+        "bladeIdle"
+      ],
+      "dur": [
+        22,
+        16,
+        12
+      ],
+      "act": [
+        1
+      ],
+      "align": "none"
+    },
+    {
+      "name": "thrust",
+      "frames": [
+        "bladeIdle",
+        "thrust",
+        "bladeIdle"
+      ],
+      "dur": [
+        16,
+        18,
+        10
+      ],
+      "act": [
+        1
+      ],
+      "align": "none"
+    },
+    {
+      "name": "armsmash",
+      "frames": [
+        "armTell",
+        "armSmash",
+        "bladeIdle"
+      ],
+      "dur": [
+        26,
+        22,
+        10
+      ],
+      "act": [
+        1
+      ],
+      "align": "none"
+    },
+    {
+      "name": "broken",
+      "frames": [
+        "braceBroken"
+      ],
+      "dur": 40,
+      "align": "none"
+    }
   ],
   "anchor": "feet",
-  "palette": { "mode": "ramps" },
-  "clean": { "smooth": 1 }
+  "palette": {
+    "mode": "ramps",
+    "fixed": [
+      "#113322",
+      "#115533",
+      "#226655",
+      "#337755",
+      "#886622",
+      "#bb8822",
+      "#eeaa55",
+      "#222222",
+      "#443333",
+      "#776666",
+      "#bbaa88",
+      "#eeddbb",
+      "#884422",
+      "#cc7744",
+      "#111111"
+    ],
+    "_doc": "the palette the first import built (revision 2), fixed so the blade sheet maps into the same coat greens"
+  },
+  "clean": {
+    "smooth": 1
+  }
 }

@@ -15,7 +15,8 @@
   'use strict';
   var VIEW_W = 384, VIEW_H = 224, CELL = 16;
   var data = function () { return root.STAGE_DATA || null; };
-  var CH = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6'];
+  // the chapters of STAGE_DATA in stage order (ch1..ch8 since the revision-3 story)
+  var CH = (function () { var d = root.STAGE_DATA, ks = d && d.chapters ? Object.keys(d.chapters) : []; return ks.sort(function (p, q) { return +p.slice(2) - +q.slice(2); }); })();
 
   // ---------------------------------------------------------------- refs
   function chapterId(ref) {

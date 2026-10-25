@@ -1,0 +1,5 @@
+{
+  "about": "Floor-line overrides for tools/art/import-bg.cjs, by strip id (<stage>-<image>-A|B). The floor line is the strip y (0..223, in 672x224 strip px) where the back scenery meets the walkable floor; it becomes the walk band top of every area column the strip covers (levels-compose.cjs paint areas). A value is a number or {\"floor\": y, \"note\": \"why\"}. Check work/bg/review/<stage>.png after changing one.",
+  "floors": {
+  }
+}

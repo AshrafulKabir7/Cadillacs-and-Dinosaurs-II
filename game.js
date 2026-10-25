@@ -14,6 +14,8 @@ const HEROES=[
  {id:'mess',name:'MESS O\'BRADOVICH',nickname:'',tag:'THE HEAVY HITTER',hp:170,speed:90,power:29,color:'#b5cc85',special:'Knuckle bomb'}
 ];
 const LEVELS=window.EDEN_CAMPAIGN,CFG=window.COMBAT_CONFIG;
+// eight stages since the revision-3 story (STORY.md); internal ids ch1..ch8, levelIndex 0..LASTCH
+const NCH=LEVELS.length,LASTCH=NCH-1;
 const normalizeDifficulty=k=>CFG.difficulty[k]?k:CFG.aliases[k]||'normal';
 const rules=()=>CFG.difficulty[normalizeDifficulty(difficulty)];
 // The player's walk, depth and run speeds in px/s: the sequel's table (HEROES[].speed, depth x.64, run x1.68), or with
@@ -94,7 +96,10 @@ const bossScale=()=>NPRES>1?[1,1.2,1.46][Math.min(3,NPRES)-1]:1;
 const crowdLimit=()=>rules().crowdLimit+(NPRES>1?NPRES-1:0);
 let save={unlocked:0,checkpoint:null,best:0},settings={music:true,sfx:true,aspect:'4:3'};
 try{save={...save,...JSON.parse(localStorage.getItem('last-eden-save')||'{}')};settings={...settings,...JSON.parse(localStorage.getItem('last-eden-settings')||'{}')};}catch{}
-save.unlocked=clamp(Number(save.unlocked)||0,0,5);
+// a save from the six-chapter game (no rev): its chapter indices move to the eight-stage order (old ch1..6 = stages 1, 3,
+// 6, 4, 7, 8), and the unlock covers every stage up to the furthest one it reached
+if(save.rev!==3){const M=[0,2,5,3,6,7],u=Number(save.unlocked)||0;save.unlocked=Math.max(0,...M.filter((_,i)=>i<=u));if(save.checkpoint&&save.checkpoint.level!=null)save.checkpoint={...save.checkpoint,level:M[clamp(save.checkpoint.level|0,0,5)],section:0};save.rev=3;}
+save.unlocked=clamp(Number(save.unlocked)||0,0,LASTCH);
 // Display aspect (ARCHITECTURE D3, §1.4): the cabinet's 4:3 by default, square pixels (12:7) as a setting. CSS only; the
 // canvas bitmap never changes.
 const ASPECTS=['4:3','12:7'];if(!ASPECTS.includes(settings.aspect))settings.aspect='4:3';
@@ -116,7 +121,7 @@ function sample(name,vol=.85,max=5){
   try{a.currentTime=0;a.volume=vol;const p=a.play();if(p)p.catch(()=>{});}catch{return null;}
   return a;
 }
-function sfx(name){if(!settings.sfx)return;unlockAudio();if(name.startsWith('vo:')){playVoice(name.slice(3));return;}if(SAMPLE_FOR[name]&&sample(SAMPLE_FOR[name]==='pistol'&&name==='enemygun'?'pistol':SAMPLE_FOR[name]))return;if(['gun','shotgun','rocket','explosion','swing'].includes(name)&&audio){const dur=name==='explosion'?.55:name==='rocket'?.25:name==='shotgun'?.2:name==='swing'?.07:.09;const b=audio.createBuffer(1,Math.ceil(audio.sampleRate*dur),audio.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);const n=audio.createBufferSource(),g=audio.createGain(),f=audio.createBiquadFilter();n.buffer=b;f.type='lowpass';f.frequency.value=name==='explosion'?750:name==='swing'?1600:3500;g.gain.value=name==='swing'?.05:.13;n.connect(f).connect(g).connect(audio.destination);n.start();}if(name==='hit'){tone(130,.09,'sawtooth',.09,35);tone(630,.045,'square',.025,60);}if(name==='jump')tone(190,.15,'triangle',.06,550);if(name==='gun')tone(900,.09,'sawtooth',.065,50);if(name==='pickup'){tone(440,.1,'square',.04);setTimeout(()=>tone(660,.1,'square',.04),70);}if(name==='special'){tone(90,.35,'sawtooth',.07,600);tone(440,.25,'triangle',.04,100);}if(name==='hurt')tone(180,.2,'sawtooth',.06,40);if(name==='clear'){[392,494,587,784].forEach((f,i)=>setTimeout(()=>tone(f,.3,'triangle',.05),i*100));}}
+function sfx(name){if(!settings.sfx)return;unlockAudio();if(name.startsWith('vo:')){playVoice(name.slice(3));return;}if(SAMPLE_FOR[name]&&sample(SAMPLE_FOR[name]==='pistol'&&name==='enemygun'?'pistol':SAMPLE_FOR[name]))return;if(['gun','shotgun','rocket','explosion','swing'].includes(name)&&audio){const dur=name==='explosion'?.55:name==='rocket'?.25:name==='shotgun'?.2:name==='swing'?.07:.09;const b=audio.createBuffer(1,Math.ceil(audio.sampleRate*dur),audio.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);const n=audio.createBufferSource(),g=audio.createGain(),f=audio.createBiquadFilter();n.buffer=b;f.type='lowpass';f.frequency.value=name==='explosion'?750:name==='swing'?1600:3500;g.gain.value=name==='swing'?.05:.13;n.connect(f).connect(g).connect(audio.destination);n.start();}if(name==='hit'){tone(130,.09,'sawtooth',.09,35);tone(630,.045,'square',.025,60);}if(name==='jump')tone(190,.15,'triangle',.06,550);if(name==='gun')tone(900,.09,'sawtooth',.065,50);if(name==='pickup'){tone(440,.1,'square',.04);setTimeout(()=>tone(660,.1,'square',.04),70);}if(name==='special'){tone(90,.35,'sawtooth',.07,600);tone(440,.25,'triangle',.04,100);}if(name==='hurt')tone(180,.2,'sawtooth',.06,40);if(name==='block'){tone(1250,.07,'square',.045,700);tone(2300,.05,'triangle',.03,1800);}if(name==='zap'){tone(70,.42,'sawtooth',.05,140);tone(1900,.3,'square',.018,600);}if(name==='clear'){[392,494,587,784].forEach((f,i)=>setTimeout(()=>tone(f,.3,'triangle',.05),i*100));}}
 // Original arcade voices (assets/sfx/voice, built by tools/audio/build-voices.cjs; work/audio/VOICES.md says which clip
 // is which and how it was identified). voice(kind) speaks for the current hero (`selected`) or, for the shared kinds, for
 // the enemies and bosses. Each kind has a cooldown (per hero for the hero kinds) so a brawl stays readable, its variants
@@ -186,7 +191,7 @@ const WEAPONS = {
 // soundtrack's ids (soundtrack-data.js); '06'/'09'/'10' are the chapter-1 anchors regression.cjs pins.
 const stageMusic = () => {const S=level.music?.stage||[];return S[clamp(Math.max(0,sectionIndex),0,S.length-1)]||'06';};
 // Heavy weapons carried by one enemy in every third fight; they drop it when beaten.
-const CARRIED = [['shotgun','gun','rod'],['uzi','grenade','club'],['rifle','club','knife'],['m16','dynamite','torch'],['bazooka','m16','grenade'],['bazooka','m16','shotgun']];
+const CARRIED = [['shotgun','gun','rod'],['rifle','club','knife'],['uzi','grenade','club'],['m16','dynamite','torch'],['shotgun','uzi','club'],['rifle','m16','grenade'],['bazooka','m16','grenade'],['bazooka','m16','shotgun']];
 // The Cadillac is the ROM car at one arcade px per art px (car(), G3b). CAR_SCALE is the old vector car's 0.85 and only
 // places the road dust and the boost exhaust (roadDust), which land on the ROM car's rear wheel and tail.
 const CAR_SCALE=1.15*LEG,CAR_REACH=95,CAR_EDGE=122;
@@ -454,7 +459,7 @@ function strike(v,amount,fromX,ignoreAir=false,hit=null){if(v===player)damagePla
 function updateHostileObject(b,dt){
   b.age=(b.age||0)+dt;
   if(b.kind==='bomb'){b.t+=dt;const p=Math.min(1,b.t/b.T);b.x=b.x0+(b.x1-b.x0)*p;b.y=b.y0+(b.y1-b.y0)*p;b.z=b.z0*(1-p)+Math.sin(p*Math.PI)*b.h;
-    if(p>=1){b.life=0;b.z=0;if(b.slag){for(const v of fighters())if(Math.hypot((v.x-b.x)*.8,v.y-b.y)<b.r&&v.z<19)strike(v,b.damage,b.x,false,b.hit||null);burst(b.x,b.y-6,'#ff9a3b',10);
+    if(p>=1){b.life=0;b.z=0;if(b.bait){for(const v of fighters())if(Math.hypot((v.x-b.x)*.8,v.y-b.y)<b.r&&v.z<19)strike(v,b.damage,b.x,false,null);burst(b.x,b.y-4,'#b0302a',14);sfx('slam');const n=b.bait.n||2;for(let j=0;j<n;j++)arrive(b.bait.type||'raptor',b.x<camera+W/2?'L':'R',j);return;}if(b.slag){for(const v of fighters())if(Math.hypot((v.x-b.x)*.8,v.y-b.y)<b.r&&v.z<19)strike(v,b.damage,b.x,false,b.hit||null);burst(b.x,b.y-6,'#ff9a3b',10);
       if(b.burn)zones.push({owner:b.owner,x:b.x,y:b.y,r:b.burn.r||30,t:b.burn.t||1.5,total:b.burn.t||1.5,friendly:false,damage:6,air:true,style:'fire',linger:true,tick:.25});}
       else explode(b.x,b.y,b.damage,false,b.r,{kind:'dynamite',z:0,hit:b.hit});}return;}
   b.life-=dt;
@@ -538,6 +543,8 @@ function drawRomFx(fx){
 const ROT_KEYS={};
 function rotKeys(set){if(ROT_KEYS[set])return ROT_KEYS[set];const A=ROME()?.anims||{};return (ROT_KEYS[set]=Object.keys(A).filter(k=>k.startsWith(set+':')).sort((p,q)=>(+p.split(':')[1])-(+q.split(':')[1])));}
 function drawEnemyShot(b,x,y){
+  // Thorne's bait: a bloody bundle on a cord (drawn, no ROM record)
+  if(b.bait){rect(ctx,x-4,y-5,8,6,'#7a2420');rect(ctx,x-3,y-4,4,2,'#c0504a');rect(ctx,x+3,y-7,1,3,'#d8c8a0');return true;}
   if(b.art?.fam==='bosses'){const a=bAnim(b.art.key);if(a)drawRomFrame(a.f[frameIdx(a,(b.age||0)*60)][0],x,y,b.dir||Math.sign(b.vx)||1,b.art.map,'bosses');return true;}
   if(b.kind==='bomb'){const ks=rotKeys(b.art.set),a=ks.length&&eAnim(ks[Math.floor((b.age||0)*15)%ks.length]);if(a)drawRomFrame(a.f[0][0],x,y,b.dir,b.art.map);return true;}
   if(b.kind==='parasite'){const a=eAnim(b.z>0?'0x71408:10':'0x71408:11');if(a)drawRomFrame(a.f[frameIdx(a,(b.age||0)*60)][0],x,y,b.dir,a.pal||null);return true;}
@@ -587,7 +594,7 @@ function panel(html){overlay.innerHTML=html;document.querySelector('#pause').sty
 // The title (CAMPAIGN §11.1): the original logo from the ROM (ROM_UI.logo, drawn into #title-logo once the ui sheet has
 // decoded; the HTML heading stays until then and for screen readers), the subtitle and a blinking INSERT COIN in the
 // arcade font, the eyebrow, deck and note. After 20 s without input the attract story (EDEN_INTRO) plays (attract()).
-function menu(){state='menu';lock=null;keys.clear();menuIdle=0;attractSeq=null;SR.require(0);const cp=save.checkpoint;panel(`<section class="panel title-panel"><p class="eyebrow">EASTCOAST 2513 · SIX MONTHS LATER</p><canvas id="title-logo" class="title-logo" width="384" height="136" aria-hidden="true"></canvas><h1>CADILLACS &<br>DINOSAURS <span>II</span></h1><div class="subtitle">II · THE CROWN TIDE</div><p class="deck">Fessenden is dead and the sea took the coast. Now Marshal Sable holds the water.<br>Four heroes. Six chapters. One dam.</p><div class="menu-buttons title-actions"><div class="menu-main"><button class="primary" id="newgame">START ADVENTURE →</button><button class="secondary" id="mp-open">PLAY WITH FRIENDS</button>${cp?`<button class="secondary" id="continue">CONTINUE · CH 0${cp.level+1}</button>`:''}</div><div class="menu-more"><button class="secondary" id="chapters">CHAPTERS</button><button class="secondary" id="story">THE STORY SO FAR</button><button class="secondary" id="guide">HOW TO PLAY</button><button class="secondary" id="jukebox">SOUND ROOM</button></div></div><p class="title-note">A FAN-MADE SEQUEL · MADE FOR MOSTAFA</p></section>`);bindButton('newgame',()=>characterSelect(0));bindButton('mp-open',openLobby);bindButton('continue',()=>{const s=save.checkpoint;selected=clamp(s.hero,0,3);difficulty=normalizeDifficulty(s.difficulty);score=s.score||0;lives=s.lives||3;startStage(clamp(s.level,0,5),{section:s.section|0});});bindButton('chapters',chapters);bindButton('story',attract);bindButton('guide',()=>guide(menu));bindButton('jukebox',()=>soundRoom(menu));drawTitleLogo();}
+function menu(){state='menu';lock=null;keys.clear();menuIdle=0;attractSeq=null;SR.require(0);const cp=save.checkpoint;panel(`<section class="panel title-panel"><p class="eyebrow">EAST COAST — SIX MONTHS LATER</p><canvas id="title-logo" class="title-logo" width="384" height="136" aria-hidden="true"></canvas><h1>CADILLACS &<br>DINOSAURS <span>II</span></h1><div class="subtitle">II · THE CROWN TIDE</div><p class="deck">Fessenden is dead, but his old gang is taking dinosaurs alive under Marshal Sable’s crown.<br>Four heroes. Eight stages. One valley.</p><div class="menu-buttons title-actions"><div class="menu-main"><button class="primary" id="newgame">START ADVENTURE →</button><button class="secondary" id="mp-open">PLAY WITH FRIENDS</button>${cp?`<button class="secondary" id="continue">CONTINUE · STAGE 0${cp.level+1}</button>`:''}</div><div class="menu-more"><button class="secondary" id="chapters">STAGES</button><button class="secondary" id="story">THE STORY SO FAR</button><button class="secondary" id="guide">HOW TO PLAY</button><button class="secondary" id="jukebox">SOUND ROOM</button></div></div><p class="title-note">A FAN-MADE SEQUEL · MADE FOR MOSTAFA</p></section>`);bindButton('newgame',()=>characterSelect(0));bindButton('mp-open',openLobby);bindButton('continue',()=>{const s=save.checkpoint;selected=clamp(s.hero,0,3);difficulty=normalizeDifficulty(s.difficulty);score=s.score||0;lives=s.lives||3;startStage(clamp(s.level,0,LASTCH),{section:s.section|0});});bindButton('chapters',chapters);bindButton('story',attract);bindButton('guide',()=>guide(menu));bindButton('jukebox',()=>soundRoom(menu));drawTitleLogo();}
 // The attract story (CAMPAIGN §4.7, §11.1): the five EDEN_INTRO panels in the 1993 five-beat shape, typed at 2 characters
 // per frame, each held 3.5 s (or skipped with a button), then back to the title. Any key or a click on the screen
 // returns to the title; PRESS START begins a game, as the cabinet's start button does in its attract loop.
@@ -628,9 +635,9 @@ function characterSelect(startAt=selectionChapter){loadSelectionArt();selectionC
 }
 // The chapter list keeps each chapter's `brief` (PLAN §7 G6 2: the card and the intermission panels open a chapter in
 // play; the brief is the chapter-select text): it shows for the chapter under the pointer or the focus.
-function chapters(){state='chapters';const brief=i=>i>save.unlocked?'Clear the chapter before it to unlock this one.':LEVELS[i].brief;
-  panel(`<section class="panel small-panel"><p class="eyebrow">THE CROWN TIDE</p><h2>SIX CHAPTERS. ONE TRAIL.</h2><p>Clear a chapter to unlock it here. Progress saves at every section of a chapter.</p><div class="level-grid">${LEVELS.map((l,i)=>`<button data-level="${i}" ${i>save.unlocked?'disabled':''}><span>CHAPTER 0${i+1} ${i>save.unlocked?'· LOCKED':''}</span>${l.name}</button>`).join('')}</div><p class="chapter-brief" id="chapter-brief"><b>CHAPTER 01 · ${LEVELS[0].area.split('/')[1].trim()}</b><br>${brief(0)}</p><div class="menu-buttons"><button id="back" class="secondary">← MAIN MENU</button></div></section>`);
-  document.querySelectorAll('[data-level]').forEach(b=>{b.onclick=()=>characterSelect(+b.dataset.level);const show=()=>{const i=+b.dataset.level,el=document.getElementById('chapter-brief');if(el)el.innerHTML=`<b>CHAPTER 0${i+1} · ${LEVELS[i].area.split('/')[1].trim()}</b><br>${brief(i)}`;};b.addEventListener('mouseenter',show);b.addEventListener('focus',show);});bindButton('back',menu);}
+function chapters(){state='chapters';const brief=i=>i>save.unlocked?'Clear the stage before it to unlock this one.':LEVELS[i].brief;
+  panel(`<section class="panel small-panel"><p class="eyebrow">THE CROWN TIDE</p><h2>EIGHT STAGES. ONE TRAIL.</h2><p>Clear a stage to unlock it here. Progress saves at every section of a stage.</p><div class="level-grid">${LEVELS.map((l,i)=>`<button data-level="${i}" ${i>save.unlocked?'disabled':''}><span>STAGE 0${i+1} ${i>save.unlocked?'· LOCKED':''}</span>${l.name}</button>`).join('')}</div><p class="chapter-brief" id="chapter-brief"><b>STAGE 01 · ${LEVELS[0].area.split('/')[1].trim()}</b><br>${brief(0)}</p><div class="menu-buttons"><button id="back" class="secondary">← MAIN MENU</button></div></section>`);
+  document.querySelectorAll('[data-level]').forEach(b=>{b.onclick=()=>characterSelect(+b.dataset.level);const show=()=>{const i=+b.dataset.level,el=document.getElementById('chapter-brief');if(el)el.innerHTML=`<b>STAGE 0${i+1} · ${LEVELS[i].area.split('/')[1].trim()}</b><br>${brief(i)}`;};b.addEventListener('mouseenter',show);b.addEventListener('focus',show);});bindButton('back',menu);}
 function guide(back){state='guide';panel(`<section class="panel small-panel"><p class="eyebrow">ARCADE FIELD GUIDE</p><h2>GET BACK IN THE FIGHT.</h2><div class="controls-list"><strong>WASD / ↑↓←→</strong><span>Move along the street and between lanes.</span><strong>J / Z</strong><span>Unarmed: tap or hold for punch, punch, kick, finisher; the chain continues only while blows connect. Standing on a weapon: crouch and pick it up. Holding a gun: fire only, even at close range. An empty gun is hurled at the enemy.</span><strong>GRAB</strong><span>Walk into an enemy to grab them. J knees; back + J throws them over your shoulder into the others; the fourth J throws forward.</span><strong>K / X</strong><span>Jump. Dodge shockwaves and low attacks.</span><strong>L / C</strong><span>Special move, also J + K together. Costs health when it hits; drops your weapon.</span><strong>E / V</strong><span>At a console or pod: hold to operate, or tap to tune the marked channel. Elsewhere: pick up or throw a weapon.</span><strong>SHIFT</strong><span>Run left or right, or double tap ← / →. Guns stay at the hip while you run. Run + attack: Mustapha’s flying kick, Jack’s slide, Hannah’s knee or Mess’s body splash.</span><strong>ESC / P</strong><span>Pause. Gamepad: stick / D-pad, X hit, A jump, Y special, B pick.</span></div><p>Enemies arrive from the edges of the screen or drop from above — watch both sides. Break barrels for food and weapons. Finish the marked objective to open the route. In the last chapter every collar pylon you break frees conscripts, and they fight on your side. Highway: steer into enemies, J bash, K boost, L ram.</p><div class="menu-buttons"><button id="back" class="primary">GOT IT →</button></div></section>`);bindButton('back',back);}
 
 // Chapter layout (ARCHITECTURE §2.4, §4.3; PLAN §4.2, §7 G2): a chapter is STAGE_DATA's areas, each in its own x space
@@ -755,7 +762,7 @@ let card=null,caption=null,clearSeq=null,finalBlow=false,stageKills=0,blowKind=n
 // chapter's inter[] panels (layouts A/B/C, ROM portraits), then play. A checkpoint resume shows the card only.
 function startCard(i,start){card={i,start,phase:'card',k:0,t:0,pre:i===0&&start===0&&level.card?.pre?level.card.pre:null};preloadPics();}
 const cardPanels=()=>card&&card.start===0?(level.inter||[]):[];
-const cardFrames=()=>(card.pre?(UI()?.TIMING?.pre||120):0)+Math.ceil((('CHAPTER '+(card.i+1)).length+level.name.length)/typeRate());
+const cardFrames=()=>(card.pre?(UI()?.TIMING?.pre||120):0)+Math.ceil((('STAGE '+(card.i+1)).length+level.name.length)/typeRate());
 function updateCard(dt){
   if(!card)return;card.t+=dt*60;
   if(card.phase==='card'){if(card.t>=cardFrames()+CARD_HOLD)nextCard();}
@@ -821,8 +828,9 @@ const PIC_ART={
     T.g.globalCompositeOperation='source-atop';rect(T.g,0,0,PIC_W,PIC_H,'#d6f2ffa0');for(let i=0;i<26;i++)rect(T.g,110+(i*29)%80,27+(i*11)%34,2+(i%3),1,i%3?'#f4fcff':'#9fc8dc');T.g.globalCompositeOperation='source-over';
     g.strokeStyle='#b9a678';g.lineWidth=1;g.beginPath();g.moveTo(150.5,0);g.lineTo(150.5,9);g.moveTo(150.5,9);g.lineTo(118.5,30);g.moveTo(150.5,9);g.lineTo(182.5,30);g.stroke();rect(g,148,7,5,4,'#7c858c');
     g.drawImage(T.c,0,0);for(let i=0;i<8;i++)rect(g,116+i*9,61+(i*5)%11,1,2,'#9fd8ff');return true;}},
-  // ch2 #0: Rook's manifest on a console screen, in the scroll1 font: the pods signed over as labor for the Crown
-  'p-manifest':{need:['ui'],still:g=>monitorTo(g,20,20,184,44,[['PRISON LABOR · WASSOON','grey'],['PODS 07 / 09 / 12 / 31','acid'],['FOR THE CROWN WORKS','grey']])},
+  // stages 2-3: the papers off Rook's quay and the swamp camp, on a console screen in the scroll1 font: live stock from
+  // the northern wetlands camp, shipped inland over the causeway
+  'p-manifest':{need:['ui'],still:g=>monitorTo(g,20,20,184,44,[['CAMP · NORTH WETLANDS','grey'],['LIVE STOCK ONLY','acid'],['VIA CAUSEWAY · CROWN','grey']])},
   // ch2 #1: three bikers ride escort on a pod wagon (the convoy flatbed) across the causeway. Two lanes, back to front:
   // the third rider's front wheel noses in at the left edge, the lead rider is ahead on the far lane, the wagon rolls
   // between the lanes and one rider runs beside it on the near lane; every rider's feet are low enough (y >= 70) for
@@ -836,13 +844,12 @@ const PIC_ART={
     g.save();g.fillStyle='#5fe0a830';g.beginPath();g.ellipse(cx,cy,42,30,0,0,Math.PI*2);g.fill();g.strokeStyle='#a8f4cc99';g.lineWidth=1;g.stroke();
     g.strokeStyle='#ffffff66';g.beginPath();g.ellipse(cx-6,cy-8,30,18,0,Math.PI*1.1,Math.PI*1.45);g.stroke();g.restore();
     return drawChainLine(cx+4,cy-9,cx+4,cy-9,'S1A2',g)&&ok;}},
-  // ch3 #2: Headkeeper Thorne (her own body, idle) at her nest, the sonic driver humming beside her (the boss rebuild:
-  // the AROSAURUS stand-in no longer ships)
+  // stage 2: Headkeeper Thorne (her own body, idle) at the swamp camp, the collar winch beside her
   'p-regent-asleep':{need:['bosses'],still(g){const b=ROMB()?.bodies?.thorne;if(!b)return false;
     g.save();g.translate(196,90);g.scale(LEG,LEG);consoleArt(g,0,0,'#efaa71',true);g.restore();
     return bodyFrameTo(g,'thorne',0,0,120,92,-1,b.use);}},
-  // ch4 #0: the handlers' ledger on a console screen: Echo's graft samples, all out of the Sink, and the marshal's order
-  'p-ledger':{need:['ui'],still:g=>monitorTo(g,20,20,184,44,[['SAMPLES: THE SINK','acid'],['ADAPTIVE TRIAL 01-11','grey'],['PRIORITY: THE MARSHAL','grey']])},
+  // the Sink's manifests on a console screen: the outlying workshop's orders, signed by Echo and paid for by Sable
+  'p-ledger':{need:['ui'],still:g=>monitorTo(g,20,20,184,44,[['OUTLYING WORKSHOP','acid'],['ORDERS SIGNED: DR. ECHO','grey'],['PAID: MARSHAL SABLE','grey']])},
   // ch5 #1 (layout C, so a narrower crop that leaves room for the line beside it): Echo is a voice, never a face, so the
   // console's speaker grille with her sound bars moving with her voice
   'p-echo-speaker':{need:[],size:[144,88],crop:[40,4],still(g){rect(g,28,10,88,68,'#1c262a');rect(g,28,10,88,1,'#6d8388');rect(g,31,13,82,62,'#06100d');
@@ -897,10 +904,10 @@ function updateClear(dt){
   if(!clearSeq.story&&clearSeq.t>=TALLY_FRAMES)clearStory();
   if(clearSeq.story){clearSeq.typed+=dt*60*typeRate();const el=document.getElementById('clear-end'),n=Math.min(level.end.length,Math.floor(clearSeq.typed));if(el&&+el.dataset.n!==n){el.textContent=level.end.slice(0,n);el.dataset.n=n;}}
 }
-function clearNext(){if(levelIndex<5)startStage(levelIndex+1);else ending();}
+function clearNext(){if(levelIndex<LASTCH)startStage(levelIndex+1);else ending();}
 function clearStory(){
   clearSeq.story=true;const T=clearSeq.tally;
-  panel(`<section class="panel small-panel"><p class="eyebrow">CHAPTER 0${levelIndex+1} COMPLETE</p><h2>${levelIndex===5?'THE CROWN HAS FALLEN.':'KEEP THE ENGINE RUNNING.'}</h2><p id="clear-end" data-n="0"></p><p style="color:var(--acid)">CLEAR BONUS ${T.total} · SCORE ${score.toString().padStart(6,'0')} · BEST COMBO ${bestCombo} · ${Math.floor(stageTimer/60)}:${Math.floor(stageTimer%60).toString().padStart(2,'0')}</p><div class="menu-buttons"><button id="next" class="primary">${levelIndex===5?'SEE THE ENDING':'NEXT CHAPTER'} →</button></div></section>`);bindButton('next',clearNext);
+  panel(`<section class="panel small-panel"><p class="eyebrow">STAGE 0${levelIndex+1} COMPLETE</p><h2>${levelIndex===LASTCH?'THE CROWN TIDE IS OVER.':'KEEP THE ENGINE RUNNING.'}</h2><p id="clear-end" data-n="0"></p><p style="color:var(--acid)">CLEAR BONUS ${T.total} · SCORE ${score.toString().padStart(6,'0')} · BEST COMBO ${bestCombo} · ${Math.floor(stageTimer/60)}:${Math.floor(stageTimer%60).toString().padStart(2,'0')}</p><div class="menu-buttons"><button id="next" class="primary">${levelIndex===LASTCH?'SEE THE ENDING':'NEXT STAGE'} →</button></div></section>`);bindButton('next',clearNext);
 }
 // The players of a chapter (§3.2): single player one hero (`selected`, today's score and lives); a host's roster (START)
 // or the players already in (the next chapter, a retry, a restart) keep their heroes, scores and lives (a player out
@@ -947,7 +954,7 @@ function startStage(i,opts={}){
   const start=clamp(opts.section|0,0,plan.sections.length-1),sec=plan.sections[start];
   encIndex=sec.first;
   // Objectives finished before this checkpoint stay finished, including conscripts already freed.
-  if(start>0)for(const e of plan.encounters.slice(0,sec.first))if(e.task!==undefined){mission.completed++;alliesFreed+=mission.spec.tasks[e.task][4]||0;}
+  if(start>0)for(const e of plan.encounters.slice(0,sec.first))if(e.task!==undefined){mission.completed=Math.min(mission.total,mission.completed+1);alliesFreed+=mission.spec.tasks[e.task][4]||0;}
   driving=!!sec.drive;enterArea(sec.area,start,true);enterSection(start,true);
   for(let k=0;k<alliesFreed;k++)spawnAlly(k,true);
   resetInput();started=true;toast=driving?(TOUCH?'STICK STEERS · HIT BASHES · JUMP BOOSTS':'STEER ↑↓ · RAM ENEMIES · J BASH · K BOOST'):start?'CHECKPOINT · '+sec.name:TOUCH?'STICK MOVES · PUSH TO THE EDGE TO RUN · HIT · JUMP · PICK':'MOVE → · J ATTACK · K JUMP · E PICK UP';toastTime=6;
@@ -956,7 +963,7 @@ function startStage(i,opts={}){
   // The card state (PLAN §7 G6 2): the canvas shows the chapter card and the intermission panels; the overlay keeps
   // NEXT and ENTER (#enter-stage skips straight to play, as Enter does).
   const resume=start?`<p class="dock-note">RESUMING AT SECTION ${start+1} · ${sec.name}</p>`:'';
-  state='brief';startCard(i,start);panel(`<section class="panel dock-panel card-dock"><p class="eyebrow">CHAPTER 0${i+1} · ${level.area.split('/')[1].trim()} · ${level.name}</p>${resume}<div class="menu-buttons"><button id="card-next" class="secondary">NEXT ›</button><button id="enter-stage" class="primary">${driving?'START YOUR ENGINE':'ENTER THE CHAPTER'} →</button></div></section>`);bindButton('card-next',cardAdvance);bindButton('enter-stage',enterPlay);
+  state='brief';startCard(i,start);panel(`<section class="panel dock-panel card-dock"><p class="eyebrow">STAGE 0${i+1} · ${level.area.split('/')[1].trim()} · ${level.name}</p>${resume}<div class="menu-buttons"><button id="card-next" class="secondary">NEXT ›</button><button id="enter-stage" class="primary">${driving?'START YOUR ENGINE':'ENTER THE STAGE'} →</button></div></section>`);bindButton('card-next',cardAdvance);bindButton('enter-stage',enterPlay);
   // ENTER waits until the chapter's first two screens of stage pages are decoded (ARCHITECTURE §5.5), 5 s at most.
   const go=document.getElementById('enter-stage');
   if(go&&!SR.ready(i)){go.disabled=true;const t0=performance.now(),poll=setInterval(()=>{if(!go.isConnected||state!=='brief'){clearInterval(poll);return;}if(SR.ready(i)||performance.now()-t0>5000){go.disabled=false;clearInterval(poll);}},100);}
@@ -984,7 +991,7 @@ function setDriving(on){
     toastTime=3.5;
   }
 }
-function pause(by='host'){if(NETROLE==='client'){window.EDEN_LOBBY?.confirmLeave?.();return;}if(state==='play'){state='paused';netPause(true,by);resetInput();panel(`<section class="panel small-panel"><p class="eyebrow">TAKE A BREATHER</p><h2>PAUSED.</h2><p>Chapter 0${levelIndex+1} · ${level.name}<br>Section ${sectionIndex+1} of ${plan.sections.length} · ${plan.sections[sectionIndex].name}<br>Your checkpoint is saved at the start of this section.</p><div class="menu-buttons"><button id="resume" class="primary">RESUME →</button><button id="controls" class="secondary">CONTROLS</button><button id="pause-sound" class="secondary">AUDIO SETTINGS</button>${TOUCH&&!root.classList.contains('standalone')?`<button id="pause-full" class="secondary">${isFull()?'EXIT FULLSCREEN':'FULLSCREEN'}</button>`:''}<button id="restart" class="secondary">RESTART SECTION</button>${mpHosting()?'<button id="mp-end" class="secondary">END GAME FOR EVERYONE</button>':'<button id="quit" class="secondary">MAIN MENU</button>'}</div></section>`);bindButton('resume',resume);bindButton('mp-end',mpToRoom);bindButton('pause-sound',()=>soundRoom(()=>{state='play';pause();}));bindButton('pause-full',()=>{toggleFull();setTimeout(()=>{if(state==='paused'){state='play';pause();}},450);});bindButton('controls',()=>guide(()=>{state='play';pause();}));bindButton('restart',()=>startStage(levelIndex,{section:sectionIndex}));bindButton('quit',()=>{checkpoint();menu();});}else if(state==='paused')resume();}
+function pause(by='host'){if(NETROLE==='client'){window.EDEN_LOBBY?.confirmLeave?.();return;}if(state==='play'){state='paused';netPause(true,by);resetInput();panel(`<section class="panel small-panel"><p class="eyebrow">TAKE A BREATHER</p><h2>PAUSED.</h2><p>Stage 0${levelIndex+1} · ${level.name}<br>Section ${sectionIndex+1} of ${plan.sections.length} · ${plan.sections[sectionIndex].name}<br>Your checkpoint is saved at the start of this section.</p><div class="menu-buttons"><button id="resume" class="primary">RESUME →</button><button id="controls" class="secondary">CONTROLS</button><button id="pause-sound" class="secondary">AUDIO SETTINGS</button>${TOUCH&&!root.classList.contains('standalone')?`<button id="pause-full" class="secondary">${isFull()?'EXIT FULLSCREEN':'FULLSCREEN'}</button>`:''}<button id="restart" class="secondary">RESTART SECTION</button>${mpHosting()?'<button id="mp-end" class="secondary">END GAME FOR EVERYONE</button>':'<button id="quit" class="secondary">MAIN MENU</button>'}</div></section>`);bindButton('resume',resume);bindButton('mp-end',mpToRoom);bindButton('pause-sound',()=>soundRoom(()=>{state='play';pause();}));bindButton('pause-full',()=>{toggleFull();setTimeout(()=>{if(state==='paused'){state='play';pause();}},450);});bindButton('controls',()=>guide(()=>{state='play';pause();}));bindButton('restart',()=>startStage(levelIndex,{section:sectionIndex}));bindButton('quit',()=>{checkpoint();menu();});}else if(state==='paused')resume();}
 function resume(){state='play';netPause(false);panel('');resetInput();canvas.focus();}
 function gameover(){state='gameover';save.best=Math.max(save.best,score);persist();const at=Math.max(0,sectionIndex);panel(`<section class="panel small-panel"><p class="eyebrow">THE COUNT RAN OUT</p><h2>GAME OVER.</h2><p>No coin dropped in time. The gang can regroup at the start of section ${at+1}: ${plan.sections[at].name}.<br>Score ${score.toString().padStart(6,'0')} · Best combo ${bestCombo}</p><div class="menu-buttons"><button id="retry" class="primary">TRY AGAIN →</button><button id="quit" class="secondary">MAIN MENU</button></div></section>`);bindButton('retry',()=>{lives=3;startStage(levelIndex,{section:at});});bindButton('quit',()=>mpHosting()?mpToRoom():menu());}
 function stageClear(){if(cleared)return;cleared=true;state='clear';player.victoryT=0;player.runLatch=0;voice('win');if(!driving){player.z=0;player.vz=0;player.dropIn=false;}
@@ -993,38 +1000,43 @@ function stageClear(){if(cleared)return;cleared=true;state='clear';player.victor
   // 2-3 players: everyone strikes the pose; each gets the clear bonus with their own vitality (the tally shows this
   // machine's numbers); joiners save the unlock too
   if(multi())for(const p of present())if(p!==player)withPlayer(p,()=>{player.victoryT=0;player.runLatch=0;voice('win');if(!driving){player.z=0;player.vz=0;player.dropIn=false;}score+=Math.max(0,Math.round(player.hp))*100+beaten+blow;});
-  if(NETROLE==='host')hostEv('unlock',Math.min(5,levelIndex+1));
-  save.unlocked=Math.max(save.unlocked,Math.min(5,levelIndex+1));save.best=Math.max(save.best,score);sfx('clear');save.checkpoint=levelIndex<5?{level:levelIndex+1,section:0,hero:selected,difficulty,score,lives}:null;persist();
-  panel(`<section class="panel dock-panel clear-dock"><p class="eyebrow">CHAPTER 0${levelIndex+1} COMPLETE</p><div class="menu-buttons"><button id="next" class="primary">${levelIndex===5?'SEE THE ENDING':'NEXT CHAPTER'} →</button></div></section>`);bindButton('next',clearNext);}
-// ---------------------------------------------------------------- the ending (CAMPAIGN §11.2-§11.4; EDEN_ENDING)
-// The beats of EDEN_ENDING in order (STORY.md, "Nobody owns the water"): 'fall' and 'alarm' (dialogue boxes over the
-// dimmed floodgate: Crownback lies in the spillway, the gates stick open), 'run' (the hero and the four freed conscripts
-// run for the gatehouse through the dam gallery, one conscript stumbles), 'choice' (your own hero's box, then the hero
-// runs back and lifts him: the 1993 beat of going back for Hannah, not re-enacted), 'dawn' (a picture panel), 'road'
-// (the sunset road: Mustapha and Mess walk, the Cadillac pulls up with Jack and Hannah, six boxes, the car drives off
-// and Mustapha and Mess run after it, as in 1993) and 'thanks' (the staff roll, then THANK YOU), then the §11.3 panel. The sunset road is the Coral Causeway's E3a0 loop
-// (chapter 2's stage pages) in the 1993 ending's sunset light; while its pages load, the p-sunset-road picture stands in.
+  if(NETROLE==='host')hostEv('unlock',Math.min(LASTCH,levelIndex+1));
+  save.unlocked=Math.max(save.unlocked,Math.min(LASTCH,levelIndex+1));save.best=Math.max(save.best,score);sfx('clear');save.checkpoint=levelIndex<LASTCH?{level:levelIndex+1,section:0,hero:selected,difficulty,score,lives}:null;persist();
+  panel(`<section class="panel dock-panel clear-dock"><p class="eyebrow">STAGE 0${levelIndex+1} COMPLETE</p><div class="menu-buttons"><button id="next" class="primary">${levelIndex===LASTCH?'SEE THE ENDING':'NEXT STAGE'} →</button></div></section>`);bindButton('next',clearNext);}
+// ---------------------------------------------------------------- the ending (STORY.md revision 3, STORYLINE §7-8; EDEN_ENDING)
+// The beats of EDEN_ENDING in order: 'fall' and 'alarm' (dialogue boxes over the dimmed dam crest: Crownback lies where
+// he fell into the discharge works; the reservoir is still too high), 'roles' (four boxes: Jack's diesel backup,
+// Mustapha's release governor, Mess's diversion mechanism, Hannah's call; water fills the diversion channel at the foot
+// of the screen and the gates open gradually), 'run' (all four heroes run for the Cadillac through the dam gallery while
+// the crest walkway gives way behind them), 'board' (two boxes: everybody in), 'dawn' (a picture panel), 'road' (the
+// sunset road: the Cadillac with all four aboard stops while a large dinosaur crosses, the scarred young raptor watches
+// from the far verge; four boxes, then the car rolls on) and 'thanks' (the staff roll, then the final card), then the
+// §11.3 panel. The sunset road is the Coral Causeway's E3a0 loop (stage 3's pages, ch3) in the 1993 ending's sunset
+// light; while its pages load, the p-sunset-road picture stands in. Everything the road draws is a function of the beat's
+// clock (endSeq.t), so a 2-3 player client draws the same scene from the synced clock.
 let endSeq=null,endActors=[],endCar=null,rollT=0,endLot=null,lastLot00=null;
 const END_BEATS=()=>window.EDEN_ENDING||[];
 const endBeat=()=>endSeq?END_BEATS()[endSeq.k]||null:null;
-const END_RUN=300,END_CHOICE_OUT=200,END_ROAD_IN=270,END_ROAD_OUT=200,END_THANKS=240,END_RUN_V=210;
+const END_RUN=300,END_ROAD_IN=270,END_ROAD_OUT=200,END_THANKS=240,END_RUN_V=210,END_ROLES_OUT=60;
+const ROAD_CH=2;   // the stage whose first area is the sunset road (ch3, the Coral Causeway's drive loop)
+const roadArea=()=>SD.chapters[chapterKey(ROAD_CH)]?.areas?.[0]||null;
 function ending(){
-  // without a chapter in play (a test hook from the title) there is no stage for the in-stage beats: the final panel only
+  // without a stage in play (a test hook from the title) there is no stage for the in-stage beats: the final panel only
   if(!started||!player||!plan){state='ending';save.checkpoint=null;persist();endSeq={k:END_BEATS().length,t:0,box:0,done:true};endActors=[];endCar=null;endingPanel();return;}
   state='ending';save.checkpoint=null;persist();caption=null;radio=null;radioQueue=[];bossCard=null;toastTime=0;drops=[];floating=[];bullets=[];effects=[];particles=[];
-  SR.require(1);endSeq={k:-1,t:0,box:0,done:false};endActors=[];endCar=null;endLot=endLotSetup();
+  SR.require(ROAD_CH);endSeq={k:-1,t:0,box:0,done:false};endActors=[];endCar=null;endLot=endLotSetup();
   panel(`<section class="panel dock-panel ending-dock"><p class="eyebrow">THE CROWN TIDE · THE END</p><div class="menu-buttons"><button id="ending-next" class="secondary">NEXT ›</button><button id="ending-skip" class="primary">SKIP →</button></div></section>`);
   bindButton('ending-next',endAdvance);bindButton('ending-skip',endingPanel);
   nextBeat();
 }
-// The 'fall' beat (CAMPAIGN §11.2 #1): under Sable's box CROWNBACK lies fallen in the spillway (its stand-in body, main 10)
-// where it was beaten, with the plates it still had, in its own colours, while the spillway water sprays over it. After
-// the fight the beaten Crownback itself (its defeat remnant, held behind the tally) is the beat's actor: it leaves
-// `enemies`, so it is drawn once (G6 verify r2 #1). When the ending opens without the fight (a test hook) it lies in
-// front of the hero. Drawn only: no particles, no Math.random. It fades out in the alarm.
+// The 'fall' beat: under Hannah's box CROWNBACK lies where he fell, in the discharge works below the crest, with the
+// plates he still had, in his own colours, while the discharge water sprays over him. After the fight the beaten
+// Crownback itself (its defeat remnant, held behind the tally) is the beat's actor: it leaves `enemies`, so it is drawn
+// once. When the ending opens without the fight (a test hook) it lies in front of the hero. Drawn only: no particles, no
+// Math.random. It fades out in the alarm.
 function endLotSetup(){
   const rem=enemies.find(e=>e.type==='fessenden'&&e.boss&&e.defeat);enemies=enemies.filter(e=>e.type!=='fessenden');
-  const lie=crownKey(11);if(levelIndex!==5||!player||!BDEF.fessenden||!bodyOf({type:'fessenden'})||!bAnim(lie))return null;
+  const lie=crownKey(11);if(levelIndex!==LASTCH||!player||!BDEF.fessenden||!bodyOf({type:'fessenden'})||!bAnim(lie))return null;
   const xf=BDEF.fessenden?.defeat?.crossfade||1.5;
   if(rem){rem.ba={key:lie,t:0,hold:true};Object.assign(rem,{dead:9,z:0,fallT:0,remnant:true,hidden:false,dissolve:false,flashMap:null,jetT:0});Object.assign(rem.defeat,{said:true,done:true});return rem;}
   const x=lastLot00?lastLot00.x:clamp(player.x+130,camera+70,camera+W-40),y=lastLot00?lastLot00.y:player.y;
@@ -1035,7 +1047,7 @@ function drawEndLot(beat){
   const e=endLot;if(!e||!endSeq)return;const fade=beat==='alarm'?clamp(1-endSeq.t/24,0,1):1;if(fade<=0)return;
   ctx.save();ctx.translate(0,-Math.round(cameraY));ctx.globalAlpha*=fade;e.drawn=drawCrownback(e,e.x-viewX,e.y-(e.z||0));
   const t=e.fallT||0,x0=e.x-viewX;
-  // spillway spray over the fallen body, and the water sheet running over its feet
+  // discharge spray over the fallen body, and the water sheet running over its feet
   for(let i=0;i<16;i++){const u=t-(i%8)*.09;if(u<=0)continue;const z=(110+(i*37)%100)*u-210*u*u;if(z<0)continue;rect(ctx,x0+((i*13)%60-30)+(i%2?1:-1)*(24+(i*29)%70)*u,e.y-40-z,2,2,i%3?'#cfeeff':'#6fb6e0');}
   {const k=clamp(t/1.2,0,1);if(k>0)rect(ctx,0,Math.round(e.y-6*k),W,Math.round(6*k)+2,'rgba(90,170,225,.35)');}
   ctx.restore();
@@ -1043,12 +1055,16 @@ function drawEndLot(beat){
 // frames a box needs: typing plus the hold
 const boxFrames=b=>panelFrames(b)+BOX_HOLD;
 function endBoxes(b){return b?.boxes||[];}
+// where a beat's boxes start (frames into the beat): the road waits for the car to pull up
+const endBoxesIn=b=>b?.beat==='road'?END_ROAD_IN:0;
+const endBoxesLen=b=>endBoxes(b).reduce((n,x)=>n+boxFrames(x),0);
 function beatFrames(b){
   if(!b)return 0;
   if(b.beat==='run')return END_RUN;
-  if(b.beat==='choice')return boxFrames(b)+END_CHOICE_OUT;
   if(b.beat==='dawn')return panelFrames({lines:[b.caption]})+PANEL_HOLD;
-  if(b.beat==='road')return END_ROAD_IN+endBoxes(b).reduce((n,x)=>n+boxFrames(x),0)+END_ROAD_OUT;
+  if(b.beat==='road')return END_ROAD_IN+endBoxesLen(b)+END_ROAD_OUT;
+  if(b.beat==='roles')return endBoxesLen(b)+END_ROLES_OUT;
+  if(b.boxes)return endBoxesLen(b);
   if(b.beat==='thanks')return rollFrames()+END_THANKS;
   return boxFrames(b);
 }
@@ -1061,89 +1077,95 @@ function nextBeat(){
   if(b.beat==='run')endRunSetup();
   if(b.beat==='road')endRoadSetup();
 }
-// NEXT: finish the typing of the box on show, else move on (a road box at a time)
+// NEXT: finish the typing of the box on show, else move on (a box at a time)
 function endAdvance(){
   if(state!=='ending'||!endSeq||endSeq.done)return;const b=endBeat();if(!b)return;
-  if(b.beat==='road'){const r=endRoadBox(b);if(r){if(r.t<panelFrames(r.box))endSeq.t+=panelFrames(r.box)-r.t;else endSeq.t+=boxFrames(r.box)-r.t;return;}}
+  if(b.boxes){const r=endBoxAt(b);if(r){if(r.t<panelFrames(r.box))endSeq.t+=panelFrames(r.box)-r.t;else endSeq.t+=boxFrames(r.box)-r.t;return;}}
   const typing=b.beat==='dawn'?panelFrames({lines:[b.caption]}):b.lines?panelFrames(b):0;
   if(b.lines&&endSeq.t<typing){endSeq.t=typing;return;}
-  if(b.beat==='choice'&&endSeq.t<boxFrames(b)){endSeq.t=boxFrames(b);return;}
   nextBeat();
 }
-// the road box on show: {box, i, t} (t frames into it), null outside the boxes
-function endRoadBox(b){let t=endSeq.t-END_ROAD_IN;if(t<0)return null;const B=endBoxes(b);for(let i=0;i<B.length;i++){const f=boxFrames(B[i]);if(t<f)return {box:B[i],i,t};t-=f;}return null;}
-// an ending actor: a hero's ROM clips through the hero clip player (animateClone), drawn in its own colours ('hero'), or
-// a freed conscript (`conscript`: hero -1, FERRIS on his ROM records inside the gold outline, animateConscript)
-function endActor(hero,x,y,o={}){return Object.assign({hero,x,y,z:0,dir:1,state:'walk',moving:false,running:false,ally:true,hp:1,maxhp:1,hurt:0,inv:0,strikeFlash:0,freeze:0,v:0,freed:true},o);}
-const endConscript=(x,y,o={})=>endActor(-1,x,y,Object.assign({conscript:true,v:CONSCRIPT.v},o));
+// the box on show in a beat with boxes: {box, i, t} (t frames into it), null outside the boxes
+function endBoxAt(b){let t=endSeq.t-endBoxesIn(b);if(t<0)return null;const B=endBoxes(b);for(let i=0;i<B.length;i++){const f=boxFrames(B[i]);if(t<f)return {box:B[i],i,t};t-=f;}return null;}
+const endRoadBox=endBoxAt;   // the old name (the road's boxes)
+// an ending actor: a hero's ROM clips through the hero clip player (animateClone), drawn in its own colours ('hero')
+function endActor(hero,x,y,o={}){return Object.assign({hero,x,y,z:0,dir:1,state:'walk',moving:false,running:false,ally:true,hp:1,maxhp:1,hurt:0,inv:0,strikeFlash:0,freeze:0,v:0,freed:false},o);}
 const animActor=(a,dt,moved)=>a.conscript?animateConscript(a,dt,moved):animateClone(a,dt,moved);
+// the heroes nobody is playing run beside the players (single player: the other three)
+function endOtherHeroes(){const used=new Set(multi()?present().map(p=>p.mp.hero):[selected]);return [0,1,2,3].filter(h=>!used.has(h));}
 function endRunSetup(){endLot=null;
-  // the dam gallery (ch6 a1) when the chapter is loaded, else the arena the chapter ended in
-  if(plan&&plan.areas.length>1&&levelIndex===5){enterArea(1);}
+  // the dam gallery (the last stage's a1) when the stage is loaded, else the arena the stage ended in
+  if(plan&&plan.areas.length>1&&levelIndex===LASTCH){enterArea(1);}
   allies=[];enemies=[];bullets=[];zones=[];effects=[];objects=[];drops=[];floating=[];scenery=[];player.victoryT=null;player.weapon=null;player.ammo=0;player.hurt=0;player.special=0;player.attack=0;player.pickup=0;player.dir=1;
   const b=bandOf(player.x);player.y=b.top+b.h*.55;
   // the other players run with the hero, a step behind on their own lanes
   if(multi())present().forEach((p,k)=>{if(p===player)return;Object.assign(p,{victoryT:null,weapon:null,ammo:0,hurt:0,special:0,attack:0,pickup:0,dir:1,z:0,down:false,dying:false});p.mp.cont=null;p.mp.out=false;p.x=player.x-20*(k||1);p.y=clamp(player.y+(k%2?-12:12),b.top,b.bottom);});
-  // the four freed conscripts run for the gatehouse a step behind the gang; the first one stumbles
-  endActors=[0,1,2,3].map(k=>{const x=player.x-44-k*34,bb=bandOf(x);return endConscript(x,clamp(player.y+[-19,16,-6,27][k],bb.top+4,bb.bottom-4));});
-  endSeq.stumbler=endActors[0];endSeq.lift=null;endSeq.camHold=null;caption={text:endBeat()?.caption||'',t:0};
+  // all four heroes run for the Cadillac together: the heroes nobody plays run a step behind the players
+  endActors=endOtherHeroes().map((h,k)=>{const x=player.x-34-k*30,bb=bandOf(x);return endActor(h,x,clamp(player.y+[-16,14,-4][k%3],bb.top+4,bb.bottom-4),{running:true});});
+  // the Cadillac waits at the end of the run, where the four stop beside it
+  {const ar=curArea(),cx=Math.min((ar?.w||player.x+1300)-90,player.x+1100);endSeq.carX=cx;parkedCar={x:cx,y:laneY(.62,cx)};}
+  caption={text:endBeat()?.caption||'',t:0};
 }
 function endRoadSetup(){
-  const A2=SD.chapters.ch2?.areas?.[0],band=x=>{const r=A2&&STG.bandAt(A2,x);return r?{top:r[0],bottom:r[1]}:{top:140,bottom:216};},lane=(x,f)=>{const b=band(x);return b.top+(b.bottom-b.top)*f;};
-  endSeq.road={area:A2,cam:{x:0,y:A2?STG.pathY(A2,0):0}};const cy=endSeq.road.cam.y;
-  endActors=[endActor(0,-40,lane(0,.42)-cy,{freed:false,moving:true}),endActor(3,-80,lane(0,.62)-cy,{freed:false,moving:true})];
-  endCar={x:-260,y:lane(0,.86)-cy,v:330,roll:0,stopX:258,state:'in'};
+  const A2=roadArea(),cy=A2?STG.pathY(A2,0):0;
+  endSeq.road={area:A2,cam:{x:0,y:cy}};
+  // all four ride in the Cadillac: Jack at the wheel, Hannah beside him, Mustapha and Mess in the back
+  endActors=[];endCar={x:-260,y:endRoadLane(0,.8)-cy,v:330,roll:0,stopX:150,state:'in'};
   caption=null;
 }
+function endRoadLane(x,f){const A2=roadArea(),r=A2&&STG.bandAt(A2,x),b=r?{top:r[0],bottom:r[1]}:{top:140,bottom:216};return b.top+(b.bottom-b.top)*f;}
+// the large dinosaur crossing the road in front of the stopped car (ANKIROSAURS walking across the lanes, front to back,
+// from the moment the car stops until the last box), and the scarred young raptor on the far verge (R HOPPER: it watches
+// the car through the first box, then runs off into the green); both a function of the road beat's clock
+function endRoadCrossing(t){
+  const b=endBeat();if(!b||b.beat!=='road')return null;const A2=roadArea(),cy=A2?STG.pathY(A2,0):0,top=endRoadLane(300,0)-cy,bottom=endRoadLane(300,1)-cy;
+  const t0=END_ROAD_IN-40,t1=END_ROAD_IN+endBoxesLen(b)-30,k=clamp((t-t0)/Math.max(1,t1-t0),0,1);
+  const dino={x:330,y:Math.round(bottom+50-(bottom-top+130)*k),dir:-1,walking:k>0&&k<1,f:Math.floor(t/10)};
+  const first=boxFrames(endBoxes(b)[0]||{lines:['']}),rt=t-END_ROAD_IN,raptor=rt<first+40?{x:rt<first?352:352+(rt-first)*4,y:Math.round(top+6),dir:rt<first?-1:1,run:rt>=first,f:Math.floor(t/6)}:null;
+  return {dino,raptor,k};
+}
 function endMove(a,dt,vx){const ox=a.x,oy=a.y;a.x+=vx*dt;a.moving=Math.abs(vx)>1;a.dir=vx<0?-1:vx>0?1:a.dir;animActor(a,dt,Math.hypot(a.x-ox,a.y-oy));}
-// the hero in the ending's choice beat: runs at vx (0: stands), its clips from updateHeroAnim as in the run beat
-function endHeroMove(dt,vx){const px=player.x;player.move=Math.abs(vx)>1;player.run=player.move;if(vx)player.dir=vx<0?-1:1;player.x+=vx*dt;updateHeroAnim(dt,player.x-px);}
 function updateEnding(dt){
   if(!endSeq||endSeq.done){if(state==='ending')rollT+=dt*60;return;}
   const b=endBeat();if(!b){endingPanel();return;}
   endSeq.t+=dt*60;shake=Math.max(0,shake-dt*22);flash=Math.max(0,flash-dt);
   if(caption){caption.t+=dt*60;if(caption.t>=CAPTION_FRAMES)caption=null;}
   if(b.beat==='fall'&&endLot){if(endLot.ba)endLot.ba.t+=dt*60;endLot.defeat.t+=dt;endLot.fallT+=dt;}
+  if(b.beat==='roles'&&Math.floor(endSeq.t/40)>Math.floor((endSeq.t-dt*60)/40))shake=Math.max(shake,2);
   if(b.beat==='run'){
     const t=endSeq.t,px=player.x;player.move=true;player.run=true;player.dir=1;
-    const ar=curArea(),maxX=ar?ar.w-24:player.x+999;player.x=Math.min(maxX,player.x+END_RUN_V*dt);
-    for(const a of endActors){if(a===endSeq.stumbler&&t>=150){if(a.state!=='down'){a.state='down';a.moving=false;a.running=false;}animActor(a,dt,0);continue;}a.running=true;a.state='walk';endMove(a,dt,END_RUN_V);}
-    // the camera follows the runners until the conscript stumbles, then holds on him while the others run on out of shot
-    if(t<150){camera=clamp(player.x-150,0,Math.max(0,(ar?.w||W)-W));if(ar)cameraY=STG.pathY(ar,camera);}
+    const ar=curArea(),carX=endSeq.carX??(ar?ar.w-24:player.x+999),maxX=carX-48;const pm=player.x<maxX;player.x=Math.min(maxX,player.x+END_RUN_V*dt);if(!pm){player.move=false;player.run=false;}
+    endActors.forEach((a,k)=>{const stop=carX-74-k*26;if(a.x<stop){a.running=true;a.state='walk';endMove(a,dt,Math.min(END_RUN_V,(stop-a.x)*6));}else{a.running=false;a.moving=false;a.dir=1;animActor(a,dt,0);}});
+    // the crest walkway gives way behind the runners: a jolt every 50 frames
+    if(Math.floor(t/50)>Math.floor((t-dt*60)/50))shake=Math.max(shake,5);
+    camera=clamp(player.x-150,0,Math.max(0,(ar?.w||W)-W));if(ar)cameraY=STG.pathY(ar,camera);
     updateHeroAnim(dt,player.x-px);
     if(multi())for(const p of present())if(p!==player)withPlayer(p,()=>{const qx=player.x;player.move=true;player.run=true;player.dir=1;player.x=Math.min(maxX,player.x+END_RUN_V*dt);updateHeroAnim(dt,player.x-qx);});
-  }else if(b.beat==='choice'){
-    // your own hero goes back for the conscript who fell, lifts him, and the two run on together
-    const fallen=endSeq.stumbler,t=endSeq.t-boxFrames(b);
-    if(t<0)endHeroMove(dt,0);
-    else if(fallen){
-      if(endSeq.lift==null){if(player.x>camera+W+30)player.x=camera+W+30;endHeroMove(dt,-END_RUN_V);if(player.x<=fallen.x+22){player.x=fallen.x+22;endSeq.lift=t;player.dir=-1;fallen.state='rise';}}
-      else if(t-endSeq.lift<40){endHeroMove(dt,0);animActor(fallen,dt,0);}
-      else{fallen.state='walk';fallen.running=true;endMove(fallen,dt,END_RUN_V);endHeroMove(dt,END_RUN_V);}
-    }
-    for(const a of endActors)if(a!==fallen&&a.x<camera+W+80)endMove(a,dt,END_RUN_V);
+  }else if(b.beat==='board'){
+    // the runners catch their breath by the car before the boxes
+    endHeroMove(dt,0);for(const a of endActors){a.moving=false;a.running=false;animActor(a,dt,0);}
   }else if(b.beat==='road'){
     const t=endSeq.t,c=endCar,out=t>=beatFrames(b)-END_ROAD_OUT;
-    for(const a of endActors){const stopAt=a.hero===0?122:86;
-      if(out){a.running=true;endMove(a,dt,230);}else if(a.x<stopAt){a.running=false;endMove(a,dt,Math.min(54,(stopAt-a.x)*4));}else{a.moving=false;a.dir=1;animActor(a,dt,0);}}
     if(c){if(out){c.state='out';c.v=Math.min(420,c.v+300*dt);}else if(t>=110){c.v=c.x<c.stopX?Math.max(12,Math.min(330,(c.stopX-c.x)*2.4)):0;if(c.x>=c.stopX){c.x=c.stopX;c.v=0;}}else c.v=0;
       c.x+=c.v*dt;c.roll+=c.v*dt;}
   }
   if(endSeq.t>=beatFrames(b))nextBeat();
 }
-// §11.3: the final panel (the fallback and the last screen; the road stays behind it with THANK YOU)
+// the hero standing (vx 0) or running in an ending beat, its clips from updateHeroAnim as in the run beat
+function endHeroMove(dt,vx){const px=player.x;player.move=Math.abs(vx)>1;player.run=player.move;if(vx)player.dir=vx<0?-1:1;player.x+=vx*dt;updateHeroAnim(dt,player.x-px);}
+// §11.3: the final panel (the fallback and the last screen; the road stays behind it with the final card)
 function endingPanel(){
   if(state!=='ending')return;if(endSeq){endSeq.done=true;endSeq.k=END_BEATS().length;}rollT=0;
   const me=HEROES[selected];
-  panel(`<section class="panel small-panel"><p class="eyebrow">THE CROWN TIDE · THE END</p><h2>NOBODY OWNS THE WATER.</h2><p>Morning finds the Crown dam running at half. The gang did not blow it: the coast needs it. Hannah set the gates to a slow, even release, the kind the coast can live with, the collars came off every conscript on the gallery, and downstream the taps run again. Rook, Cinder and Echo stand trial in Wassoon. Breakwater grazes on the causeway, and Glassback keeps her nest.</p><p style="color:var(--acid)">MUSTAPHA: Every tap on the coast is running.<br>HANNAH: And his seal comes off every door in Wassoon.<br>JACK: Fessenden tried it. Sable tried it. Nature always balances itself.<br>MESS: Hey… that car seats two up front. Jack? JACK!</p><p>The Cadillac pulls away, and Mustapha and Mess run after it, just like last time.</p><p>${me.name} drives home with the gang · ${kills} enemies defeated · ${Math.floor(runTime/60)} minutes · score ${score}<br>All six chapters are now available.</p><div class="menu-buttons"><button id="chapters" class="primary">PLAY A CHAPTER →</button><button id="credits" class="secondary">CREDITS</button><button id="quit" class="secondary">MAIN MENU</button></div></section>`);bindButton('chapters',()=>mpHosting()?mpToRoom():chapters());bindButton('credits',credits);bindButton('quit',()=>mpHosting()?mpToRoom():menu());}
+  panel(`<section class="panel small-panel"><p class="eyebrow">THE CROWN TIDE · THE END</p><h2>NO ONE OWNS THE VALLEY.</h2><p>In the days that follow, the holding pens come down and the captured animals are released near suitable habitats, guided by people who know the valley. The injured experimental subjects stay in care: beating Echo did not undo what she did. Echo and the captured officers face the communities whose people they imprisoned. The records survive as evidence; the cultures and the production equipment do not, and ordinary people take over the dam’s useful machinery.</p><p>On the way home a scarred young raptor watches the Cadillac from the edge of a new, open migration route, then slips into the green. Later a large dinosaur steps onto the road, and Jack stops the car and waits.</p><p style="color:var(--acid)">MESS: We beat the whole gang, and we’re still stuck in traffic?<br>JACK: It was here first.</p><p>THE ROAD GOES ON.</p><p>${me.name} rides home with the gang · ${kills} enemies defeated · ${Math.floor(runTime/60)} minutes · score ${score}<br>All eight stages are now available.</p><div class="menu-buttons"><button id="chapters" class="primary">PLAY A STAGE →</button><button id="credits" class="secondary">CREDITS</button><button id="quit" class="secondary">MAIN MENU</button></div></section>`);bindButton('chapters',()=>mpHosting()?mpToRoom():chapters());bindButton('credits',credits);bindButton('quit',()=>mpHosting()?mpToRoom():menu());}
 // §11.4: the staff roll over the sunset road (red categories, white names), then THANK YOU and the credits text.
-function credits(){state='credits';rollT=0;SR.require(1);panel(`<section class="panel dock-panel credits-dock"><p class="eyebrow">THANKS FOR PLAYING</p><div class="menu-buttons"><button id="credits-text" class="secondary">ABOUT THIS GAME</button><button id="quit" class="primary">MAIN MENU →</button></div></section>`);bindButton('quit',()=>mpHosting()?mpToRoom():menu());bindButton('credits-text',creditsText);}
-function creditsText(){panel(`<section class="panel small-panel"><p class="eyebrow">THANKS FOR PLAYING</p><h2>FOR THE OLD ARCADE DAYS.</h2><p>An unofficial fan sequel made for Mostafa. It continues the story of Capcom’s 1993 arcade game six months after Dr. Fessenden’s death in the Under World beneath the City in the Sea. The heroes, enemies, bosses and dinosaurs are the original arcade sprites, decoded from the ROM files the user supplied; new characters are original bodies in new palettes, the way the arcade made Walther from Vice T. Every stage is a new layout built from the original arcade’s tiles, blocks and palettes.</p><p>New story, levels, encounters, combat engine and boss behaviours were made for this game. Original soundtrack supplied by the user. Original Cadillacs and Dinosaurs arcade game and artwork: Capcom. Characters and setting derive from Xenozoic Tales by Mark Schultz.</p><div class="menu-buttons"><button id="quit" class="primary">MAIN MENU →</button></div></section>`);bindButton('quit',menu);}
+function credits(){state='credits';rollT=0;SR.require(ROAD_CH);panel(`<section class="panel dock-panel credits-dock"><p class="eyebrow">THANKS FOR PLAYING</p><div class="menu-buttons"><button id="credits-text" class="secondary">ABOUT THIS GAME</button><button id="quit" class="primary">MAIN MENU →</button></div></section>`);bindButton('quit',()=>mpHosting()?mpToRoom():menu());bindButton('credits-text',creditsText);}
+function creditsText(){panel(`<section class="panel small-panel"><p class="eyebrow">THANKS FOR PLAYING</p><h2>FOR THE OLD ARCADE DAYS.</h2><p>An unofficial fan sequel made for Mostafa. It continues the story of Capcom’s 1993 arcade game six months after the destruction of Dr. Fessenden’s laboratory, as the surviving Black Marketeers start taking dinosaurs alive. The heroes, enemies, bosses and dinosaurs are the original arcade sprites, decoded from the ROM files the user supplied; new characters are original bodies in new palettes, the way the arcade made Walther from Vice T. Every stage is a new layout; its backgrounds are being repainted for the eight-stage story.</p><p>New story, levels, encounters, combat engine and boss behaviours were made for this game. Original soundtrack supplied by the user. Original Cadillacs and Dinosaurs arcade game and artwork: Capcom. Characters and setting derive from Xenozoic Tales by Mark Schultz.</p><div class="menu-buttons"><button id="quit" class="primary">MAIN MENU →</button></div></section>`);bindButton('quit',menu);}
 // ---------------------------------------------------------------- G6 drawing (arcade screen px, under beginFrame)
 function drawAttract(){const U=UI(),list=window.EDEN_INTRO||[];rect(ctx,0,0,W,H,'#000000');if(!U||!attractSeq)return;const p=list[attractSeq.k];if(p){picFrame(p.pic,attractSeq.t);U.panel(ctx,{...p,typed:attractSeq.t});}}
 // the tally over the dimmed victory pose; once the story panel is up, only the dim
 function drawClear(){const U=UI();if(!clearSeq||!U||clearSeq.story){rect(ctx,0,0,W,H,clearSeq?.story?'#0b1a16aa':'#0b1a1688');return;}U.tally(ctx,{...clearSeq.tally,t:Math.floor(clearSeq.t),dim:.55});}
-// which screen an ending beat draws on: the world (fall, alarm, run, choice), a picture panel (dawn) or the sunset road
+// which screen an ending beat draws on: the world (fall, alarm, roles, run, board), a picture panel (dawn) or the sunset road
 const endScene=()=>{if(state==='credits')return 'road';const b=endBeat();if(!endSeq||endSeq.done||!b)return 'road';return b.beat==='dawn'?'pic':b.beat==='road'||b.beat==='thanks'?'road':'world';};
 // a hero's 72x72 ROM portrait as a canvas (the ui sheet in its own map); 'self' boxes show the selected hero's face
 function portraitCanvas(who){const SP=window.SPRITES,U=window.ROM_UI,i=UI()?.PORTRAIT_INDEX?.[who];if(!SP||!U||i==null||!SP.familyReady?.('ui'))return null;
@@ -1155,59 +1177,47 @@ function drawEndWorld(){
     // the alarm: harmless water rises at the foot of the screen while the dam lets go
     if(b.beat==='alarm'){const k=Math.min(1,endSeq.t/180);rect(ctx,0,H-Math.round(k*36),W,Math.round(k*36),'rgba(70,150,215,.4)');}
     U.dialogue(ctx,boxOpts(b,endSeq.t));}
-  else if(b.beat==='choice'&&endSeq.t<boxFrames(b)){rect(ctx,0,0,W,H,'rgba(0,0,0,.35)');U.dialogue(ctx,boxOpts(b,endSeq.t));}
+  else if(b.beat==='roles'){
+    // the diversion channel fills at the foot of the screen while the gates open, a notch per box
+    rect(ctx,0,0,W,H,'rgba(0,0,0,.4)');const k=clamp(endSeq.t/Math.max(1,beatFrames(b)),0,1),h=Math.round(6+k*34);rect(ctx,0,H-h,W,h,'rgba(70,150,215,.45)');
+    for(let i=0;i<12;i++)rect(ctx,((i*37+endSeq.t*3)%(W+20))-10,H-h+3+(i%3)*5,10,1,'#cfeeff');
+    const r=endBoxAt(b);if(r)U.dialogue(ctx,boxOpts(r.box,r.t));}
+  else if(b.beat==='board'){const r=endBoxAt(b);if(r){rect(ctx,0,0,W,H,'rgba(0,0,0,.3)');U.dialogue(ctx,boxOpts(r.box,r.t));}}
 }
-// an ending actor: a hero through the hero clip player in its own colours ('hero'), or a freed conscript (drawConscript)
+// an ending actor: a hero through the hero clip player in its own colours ('hero'), or a freed conscript (drawConscript;
+// no beat uses one since revision 3)
 function drawEndActor(a,x,y){
   if(a.conscript||a.hero<0)return drawConscript(a,x,y);
   const R=RIG(),st=NETROLE==='client'?null:animateClone(a,0,0),body=st?{full:st.main}:a.rig?{full:{clip:a.rig[0],k:a.rig[1]}}:null;if(!R||!body||st&&!st.main.clip)return false;const id=HEROES[a.hero].id,parts=R.parts(id,body,null);
   return a.freed?drawOutlined(parts,x,y,a.z,a.dir,CFG.sockets.scale,'freed-'+id,'#ffd257'):R.draw(ctx,parts,x,y,a.z,a.dir,CFG.sockets.scale,'hero');
 }
-// The ending car: the ROM's own ending records (3489/3490: the Cadillac with Jack at the wheel and Hannah beside him,
-// ROM_FX.cadillac.anims.ending, S3A0 colours) on the arrival car's wheels; the HELL ROAD car with Jack is the fallback.
-function drawEndCar(c){
-  const C=window.ROM_FX?.cadillac,SP=window.SPRITES,E=C?.anims?.ending;if(!C||!SP||!SP.familyReady?.('fx'))return false;
-  if(!E||!E.length)return car(ctx,c.x,c.y,{hero:1,roll:c.roll,moving:c.v>0,t:time});
-  const map=C.mapKey||'S3A0',A=C.arrival?.wheels||{dx:[77,-75],dy:3},Wh=C.wheels,bx=Math.round(c.x),by=Math.round(c.y)-C.ground,ph=Math.floor((c.roll||0)/16)&1;
-  shadow(ctx,bx,Math.round(c.y)+1,118,5);
-  for(const dx of A.dx)SP.drawRec(ctx,'fx',Wh.steer[Wh.straight][ph],map,bx+dx,by+A.dy,false);
-  return SP.drawRec(ctx,'fx',seqCycle(E,time*60),map,bx,by,false);
-}
-// The sunset road: chapter 2's HELL ROAD loop (E3a0) under the 1993 ending's sunset light (a multiply ramp); the
-// p-sunset-road picture stands in while chapter 2's pages load.
+// The ending car: the drive Cadillac (car()) with all four aboard: Jack at the wheel, Hannah beside him, Mustapha and
+// Mess in the back seat (STORYLINE §7: all four leave together; nobody runs after it).
+function drawEndCar(c){return car(ctx,c.x,c.y,{hero:1,passengers:[2,0,3],roll:c.roll,moving:c.v>0,t:time});}
+// The sunset road: stage 3's HELL ROAD loop (E3a0, the Coral Causeway) under the 1993 ending's sunset light (a multiply
+// ramp); the p-sunset-road picture stands in while those pages load.
 function drawRoad(){
-  const A2=SD.chapters.ch2?.areas?.[0];
-  if(A2&&SR.ready(1)){const cam={x:0,y:Math.round(STG.pathY(A2,0))};SR.back(ctx,A2,cam,time,{road:0});SR.front(ctx,A2,cam,time,{road:0});
+  const A2=roadArea();
+  if(A2&&SR.ready(ROAD_CH)){const cam={x:0,y:Math.round(STG.pathY(A2,0))};SR.back(ctx,A2,cam,time,{road:0});SR.front(ctx,A2,cam,time,{road:0});
     ctx.save();ctx.globalCompositeOperation='multiply';const gr=ctx.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#ff7e48');gr.addColorStop(.5,'#ffb47a');gr.addColorStop(1,'#d2785a');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);ctx.restore();return;}
   rect(ctx,0,0,W,H,'#000000');const U=UI();if(U)U.drawPic(ctx,U.resolvePic('p-sunset-road',224,96),80,64);
 }
-function drawRoadCast(){const list=[...endActors.map(a=>({y:a.y,fn:()=>drawEndActor(a,a.x,a.y),sh:()=>shadow(ctx,a.x,a.y)})),...(endCar?[{y:endCar.y,fn:()=>drawEndCar(endCar),sh:()=>{}}]:[])].sort((p,q)=>p.y-q.y);for(const d of list)d.sh();for(const d of list)d.fn();}
+// the road cast: the car, the crossing dinosaur and the young raptor on the verge (their places from the beat's clock)
+function drawRoadCast(){
+  const X=state==='ending'&&endSeq&&!endSeq.done?endRoadCrossing(endSeq.t):null,ex=[];
+  // the herd sprite is a far-scenery animal: drawn at twice its size it is the large dinosaur in the road
+  if(X?.dino){const d=X.dino;ex.push({y:d.y,fn:()=>{ctx.save();ctx.translate(Math.round(d.x),Math.round(d.y));ctx.scale(2,2);const ok=kindFrameTo(ctx,'herd','A',['main',0],d.walking?d.f%4:0,0,0,d.dir);ctx.restore();return ok;},sh:()=>shadow(ctx,d.x,d.y,70,9)});}
+  if(X?.raptor){const r=X.raptor;ex.push({y:r.y,fn:()=>kindFrameTo(ctx,'raptor','A',r.run?['main',9]:['main',0],r.f%(r.run?6:2),r.x,r.y,r.dir),sh:()=>shadow(ctx,r.x,r.y)});}
+  const list=[...endActors.map(a=>({y:a.y,fn:()=>drawEndActor(a,a.x,a.y),sh:()=>shadow(ctx,a.x,a.y)})),...(endCar?[{y:endCar.y,fn:()=>drawEndCar(endCar),sh:()=>{}}]:[]),...ex].sort((p,q)=>p.y-q.y);for(const d of list)d.sh();for(const d of list)d.fn();}
 function drawEndScene(){
-  const U=UI(),b=state==='ending'&&endSeq&&!endSeq.done?endBeat():null,thanks=(END_BEATS().find(x=>x.beat==='thanks')||{}).lines||['THANK YOU FOR PLAYING','A FAN SEQUEL MADE FOR MOSTAFA'];
+  const U=UI(),b=state==='ending'&&endSeq&&!endSeq.done?endBeat():null,thanks=(END_BEATS().find(x=>x.beat==='thanks')||{}).lines||['THE ROAD GOES ON','THANK YOU FOR PLAYING','A FAN SEQUEL MADE FOR MOSTAFA'];
   if(b&&b.beat==='dawn'){rect(ctx,0,0,W,H,'#000000');if(U)U.panel(ctx,{layout:'A',pic:b.pic,lines:[b.caption],typed:endSeq.t});return;}
   drawRoad();
   if(state==='credits'){if(U){if(rollT<rollFrames())U.staffRoll(ctx,rollT);else U.thanks(ctx,thanks);}return;}
   drawRoadCast();if(!U)return;
-  if(b&&b.beat==='road'){const r=endRoadBox(b);if(r)U.dialogue(ctx,boxOpts(r.box,r.t));}
+  if(b&&b.beat==='road'){const r=endBoxAt(b);if(r)U.dialogue(ctx,boxOpts(r.box,r.t));}
   else if(b&&b.beat==='thanks'){if(endSeq.t<rollFrames())U.staffRoll(ctx,endSeq.t);else U.thanks(ctx,b.lines||thanks);}
   else U.thanks(ctx,thanks);
-}
-// Echo's clean tank row in the vat hall (CAMPAIGN §9.1 S4; the ch5 recipe's section 5-4 overlay heroTanks): the four
-// heroes' copies float behind the glass of the E8a0 tanks, idle frames in the clone palette, in place of the 1993
-// specimens, with name plates TENREC / DUNDEE / CAIRO / O'BRADOVICH over the tank numbers. All four are in the vat hall:
-// section 5-4 is cut from E8a0 592-1104 (G6 verify r2 #3), so tanks 05-08 stand at area x 30, 175, 320, 464 and the
-// opening screen, where Jack's "all four of us" line plays, shows three of them. Tanks 07 and 08 hold the same copies
-// again where E8a0 864-1120 returns in the lens hall (x 2096, 2240). Stage art, drawn over the back layers and under
-// every fighter; a slow bob, no Math.random.
-const HERO_TANKS=[[30,'jack','TENREC'],[175,'hannah','DUNDEE'],[320,'mess','O’BRADOVICH'],[464,'mustapha','CAIRO'],[2096,'mess','O’BRADOVICH'],[2240,'mustapha','CAIRO']];
-function drawHeroTanks(){
-  const R=RIG(),U=UI();if(!R?.ready)return;
-  for(const [ax,id,plate] of HERO_TANKS){const x=ax-viewX;if(x<-60||x>W+60)continue;const clip=R.clip(id,'idle');if(!clip)continue;
-    ctx.save();ctx.beginPath();ctx.rect(x-41,20,82,85);ctx.clip();rect(ctx,x-41,20,82,85,'#3f9a8edd');
-    for(let j=0;j<5;j++)rect(ctx,x-34+j*16,20+((time*22+j*31)%85),2,2,'#c8fff0');
-    R.draw(ctx,R.parts(id,{full:{clip,k:0}},null),x,101+Math.round(Math.sin(time*1.3+ax)*1.5),0,ax%2?1:-1,1,'mirror-'+id);
-    rect(ctx,x-41,20,82,85,'#8ff0d433');rect(ctx,x-36,24,4,76,'#ffffff30');rect(ctx,x-29,24,2,76,'#ffffff1c');ctx.restore();
-    if(U){const w=plate.length*8+6;rect(ctx,x-w/2,110,w,11,'#0b2a26');rect(ctx,x-w/2,110,w,1,'#9fe0c8');rect(ctx,x-w/2,120,w,1,'#06150f');U.text(ctx,plate,x,111,{font:8,align:'center',pen:'acid',shadow:false});}}
 }
 // The radio strip in the ROM 8x16 font (PLAN §7 G6 4, CAMPAIGN §4.7): two rows in the tall strip (8,46)-(376,78), above
 // the feet band at y 81; JACK, HANNAH, MUSTAPHA and MESS speak with their ROM face (the P1 block faces), every other
@@ -1234,9 +1244,9 @@ function drawRadio(){
 const BASE_HP={brute:125,gunner:68,raptor:90,knifer:82,mutant:138,biker:125,regent:150,slicer:160,mirror:150,zeke:58};
 // Boss HP is BOSS_DEFS[kind].hp (enemy-kinds.js, CAMPAIGN §12.4) times BOSS_HP_LEVER (the boss driver, G5); this table is
 // the fallback for a boss kind without a def.
-const BOSS_HP=[760,860,840,940,940,720];
+const BOSS_HP=[760,760,780,940,980,1000,940,900];
 // Bosses call reinforcements from both edges at two thirds and one third of their health.
-const BOSS_GUARDS=[['raider','knifer','gunner'],['biker','biker','gunner'],['raptor','raptor','raptor'],['brute','gunner','knifer'],['mutant','regent','gunner'],['raider','knifer','gunner']];
+const BOSS_GUARDS=[['raider','knifer','gunner'],['raider','knifer','gunner'],['biker','biker','gunner'],['brute','gunner','knifer'],['raider','gunner','knifer'],['mutant','raider','gunner'],['mutant','regent','gunner'],['raider','knifer','gunner']];
 function bossReinforce(e){e.calls=(e.calls||0)+1;BOSS_GUARDS[levelIndex].forEach((type,j)=>arrive(type,j%2?'L':'R',j));toast='REINFORCEMENTS · WATCH BOTH SIDES';toastTime=2.5;}
 // Every regular is an ENEMY_KINDS kind in one of its ROM variants (e.v, ENEMIES §1.2): spawnEnemy gives it the kind's
 // first variant (so the test dummies and the seeded random order stay as they were: id, timer, anim, the old clone roll's
@@ -1261,12 +1271,14 @@ function setVariant(e,V,palAlt){
 }
 // The chapter default variant pools (CAMPAIGN §4.4), overridden per section by STAGE_DATA `cast`: cast ids -> [kind, V].
 const CAST_POOLS=[
-  {raider:['ferris','gneiss'],knifer:['blade'],gunner:['poacherJ'],brute:['blkElmer','hammerT']},
+  {raider:['ferris','gneiss'],knifer:['blade'],gunner:['poacherJ'],brute:['blkElmer','hammerT'],raptor:['hopper'],militia:['militiaman']},
+  {raider:['ferris','gneiss'],knifer:['blade'],gunner:['poacherJ','skinner'],brute:['hammerT','lashT'],raptor:['hopper'],trapper:['trapper']},
   {raider:['driver','ferris'],knifer:['razor'],gunner:['dyna','skinner'],brute:['wrenchT','hammerT'],biker:['ride','jump']},
-  {raider:['gneiss','poacherJ'],knifer:['blade'],gunner:['skinner','gutter'],brute:['hammerT','blkElmer'],raptor:['hopper']},
   {raider:['gneiss','driver'],knifer:['razor'],gunner:['bomber','gutter'],brute:['wrenchT','blkElmer'],mutant:['bludge'],regent:['tyrog']},
-  {raider:['driver'],knifer:['razor','knife'],gunner:['gutter','bomber'],brute:['lashT','blkElmer'],mutant:['bludge'],regent:['tyrog']},
-  {raider:['gneiss','driver'],knifer:['razor','blade'],gunner:['gutter','skinner'],brute:['blkElmer'],mutant:['bludge'],regent:['tyrog']}];
+  {raider:['ferris','driver'],knifer:['blade','razor'],gunner:['poacherJ','skinner'],brute:['hammerT','blkElmer'],raptor:['hopper'],militia:['militiaman']},
+  {raider:['gneiss','driver'],knifer:['blade','knife'],gunner:['skinner','gutter'],brute:['wrenchT','blkElmer'],mutant:['bludge'],regent:['tyrog'],raptor:['hopper'],trapper:['trapper'],hybrid:['enforcer']},
+  {raider:['driver'],knifer:['razor','knife'],gunner:['gutter','bomber'],brute:['lashT','blkElmer'],mutant:['bludge'],regent:['tyrog'],militia:['militiaman'],hybrid:['enforcer']},
+  {raider:['gneiss','driver'],knifer:['razor','blade'],gunner:['gutter','skinner'],brute:['blkElmer','hammerT'],mutant:['bludge'],regent:['tyrog'],militia:['militiaman'],hybrid:['enforcer']}];
 // 'raider:C' pins a variant, 'raider:gneiss' a cast id; otherwise pool[(wave + j) % n] (the wave index inside the
 // encounter and the slot), the same rule tests/enemies.cjs (5) budgets the chapters with. No random call.
 function castVariant(type,pin,j,wi){
@@ -1310,7 +1322,7 @@ function startEncounter(enc){
 // with its encounter's `set`.
 function startSetPieces(enc){
   if(!setPiecesOn()||!plan)return;const sec=plan.sections[enc.section],first=plan.encounters.findIndex(e=>e.section===enc.section)===plan.encounters.indexOf(enc);
-  if(first&&(sec?.set||[]).includes('zeke')&&(levelIndex!==1||enc.section%2===1))spawnZeke(enc.section%2?1:-1);
+  if(first&&(sec?.set||[]).includes('zeke')&&(!level.drive||enc.section%2===1))spawnZeke(enc.section%2?1:-1);
   if(enc.set==='naguri-vignette')spawnVignette();
 }
 function spawnNextWave(){
@@ -1353,14 +1365,15 @@ function updateEncounter(){
 const encounterSpawned=()=>encounter&&(encounter.spec.boss?bossSpawned:encounter.next>=(encounter.spec.w||[]).length&&(!encounter.spec.elite||encounter.eliteSpawned));
 
 let mission=null;
-function initMission(){const spec=EDEN_MISSIONS[levelIndex];mission={completed:0,total:spec.tasks.length,active:null,items:[],spec};radio=null;}
+// a boss with a driver (Thorne's COLLAR WINCH) counts as one more task from the start, so the HUD reads 0/4 all stage
+function initMission(){const spec=EDEN_MISSIONS[levelIndex];mission={completed:0,total:spec.tasks.length+(BDEF[level?.kind]?.driver?1:0),active:null,items:[],spec};radio=null;}
 function say(text){if(text&&radio?.text!==text&&!radioQueue.includes(text))radioQueue.push(text);}
 // a beaten boss's last lines go on the radio at once, ahead of the fight's queued chatter (the clear waits for them, G5)
 function sayNow(text){if(!text)return;radioQueue=radioQueue.filter(t=>t!==text);if(radio?.text!==text)radio={text,ttl:4.6};}
 function createObjective(kind,name,x,y,target=0,bossTask=false,taskIndex=-1){
   const item={kind,name,x,y,target,channel:0,progress:0,hp:kind==='beacon'?bossTask?300:80:1,maxhp:kind==='beacon'?bossTask?300:80:1,done:false,bossTask,taskIndex};
   mission.items.push(item);mission.active=item;
-  toast=kind==='beacon'?'DESTROY THE SONIC LURE':kind==='cargo'?'RAM THE CARGO WAGON':kind==='tuner'?`TUNE CHANNEL ${target} · E TO STEP`:kind==='pod'?'HOLD E / PICK TO OPEN THE POD':'HOLD E / PICK TO OPERATE';toastTime=3.5;return item;
+  const S=mission.spec||{};toast=bossTask&&kind==='beacon'?'SMASH THE '+name:kind==='beacon'?S.toast||'WRECK IT':kind==='cargo'?'RAM THE CARGO TRAILER':kind==='tuner'?`TUNE CHANNEL ${target} · E TO STEP`:kind==='pod'?'HOLD E / PICK TO OPEN THE POD':S.toast||'HOLD E / PICK TO OPERATE';toastTime=3.5;return item;
 }
 // Mission objects stand where their section authors them (STAGE_DATA props: pods, gates, beacons, valves, tuners, by name,
 // else the nearest of their kind in the area), pulled inside the locked screen by OBJ_MARGIN, on a spot reachable from
@@ -1382,25 +1395,24 @@ function interactMission(tapped=false){
   return true;
 }
 function completeObjective(){
-  const t=mission?.active;if(!t||t.done)return;t.done=true;t.progress=1;mission.completed++;mission.active=null;score+=800;sfx('pickup');burst(t.x,t.y-36,'#ace1b4',18);
+  const t=mission?.active;if(!t||t.done)return;t.done=true;t.progress=1;mission.completed=Math.min(mission.total,mission.completed+1);mission.active=null;score+=800;sfx('pickup');burst(t.x,t.y-36,'#ace1b4',18);
   const task=mission.spec.tasks[t.taskIndex];if(task?.[3])say(task[3]);if(task?.[4])freeConscripts(task[4]);
   if(t.kind==='valve')zones=zones.filter(z=>z.style!=='vent');
-  // ch3: the NEST SONIC DRIVER steers Thorne's pack and keeps Glassback standing: smashed, she is open to the end (x1.5)
-  // and, held at her HP floor, she falls at once
-  if(t.bossTask&&levelIndex===2){for(const e of enemies)if(e.boss&&!e.dead&&!e.dying){e.vulnT=999;e.vulnMul=1.5;if(e.phase===2&&e.hp<=1&&e.state!=='mutate'){finalBlow=blowKind==='special'||blowKind==='throw';e.inv=0;damageEnemy(e,99);}}say(level.driverDeadSay);toast='THE DRIVER IS DEAD · HIT HER NOW';toastTime=2;}
-  if(t.bossTask&&levelIndex===5){say(level.spillwaySay);spawnLastCopy();}
+  // a boss's driver (Thorne's COLLAR WINCH, stage 2): smashed, she is open to the end (x1.5) and, held at an HP floor
+  // (BOSS_DEFS driver.hpFloor), she falls at once
+  if(t.bossTask&&BDEF[level.kind]?.driver){for(const e of enemies)if(e.boss&&!e.dead&&!e.dying){e.vulnT=999;e.vulnMul=1.5;if(e.phase===2&&e.hp<=1&&e.state!=='mutate'){finalBlow=blowKind==='special'||blowKind==='throw';e.inv=0;damageEnemy(e,99);}}say(level.driverDeadSay);toast=(BDEF[level.kind]?.driver?.name||'THE DRIVER')+' IS DOWN · HIT HER NOW';toastTime=2;}
 }
 // The spillway opens and the smashed control chair cracks (STORY.md chapter 6): Sable will not lose the gates, takes the
 // unfinished Crown treatment and becomes CROWNBACK (BOSS_DEFS.fessenden, the engine's id): he steps out of the cracked
 // chair to lock.right - 120 and transforms there (crownSpawn, crownMutate: about 2.9 s, invulnerable); card CROWNBACK ·
 // THE CROWN TREATMENT, toast, lastCopy.say[0], his line for the front player's hero (lastCopy.byHero), say[1].
-function spawnLastCopy(){
+function spawnLastCopy(from=null){
   if(!lock)lock={left:camera,right:camera+W};encounter={spec:{boss:true},next:0,timer:0};bossSpawned=true;cleared=false;
   const ly=laneY(.62,lock.right),D=BDEF.fessenden,t=D?.intro?.t||3.4;
-  const b=crownSpawn(lock.right-(parseInt(String(D?.intro?.settle||'').split('-')[1])||120),ly);b.hp=b.maxhp=bossHpOf('fessenden')*rules().enemyHealth*bossScale();bossIntro=t;setBossCard(b.name,level.lastCopy?.card||D?.intro?.card||'CROWNBACK',t,true);
+  const b=crownSpawn(lock.right-(parseInt(String(D?.intro?.settle||'').split('-')[1])||120),ly);if(from&&!crown){b.x=clamp(from.x,lock.left+40,lock.right-40);b.y=from.y;}b.hp=b.maxhp=bossHpOf('fessenden')*rules().enemyHealth*bossScale();bossIntro=t;setBossCard(b.name,level.lastCopy?.card||D?.intro?.card||'CROWNBACK',t,true);
   if(crown){crown.cracked=true;crown.occupied=false;crown.stalled=false;}
   flash=.8;shake=14;toast=level.lastCopy?.toast||'SABLE TAKES THE UNFINISHED TREATMENT';toastTime=4.5;sfx('explosion');burst(crown?crown.x:lock.right-96,(crown?crown.y:ly)-60,'#cfeeff',26);
-  const lc=level.lastCopy||{};say(lc.say?.[0]);say(lc.byHero?.[HEROES[multi()?leadPlayer().mp.hero:selected].id]);say(lc.say?.[1]);makeWheels();
+  const lc=level.lastCopy||{};say(lc.say?.[0]);say(lc.byHero?.[HEROES[multi()?leadPlayer().mp.hero:selected].id]);say(lc.say?.[1]);if(BDEF.fessenden?.phases?.[0]?.wheels)makeWheels();
 }
 function damageObjective(power,x=player.x,y=player.y,range=67,dir=player.dir){
   const t=mission?.active;if(!t||t.kind!=='beacon'||t.done)return false;
@@ -1447,7 +1459,7 @@ function consoleArt(g,x,y,glow,mast){
 }
 function drawMissionArt(t,x,y){
   shadow(ctx,x,y,25,6);
-  const glow=t.done?'#a9de9a':t.kind==='beacon'?'#efaa71':levelIndex===5&&t.kind==='gate'?'#c08cff':'#7fdfd5';
+  const glow=t.done?'#a9de9a':t.kind==='beacon'?'#efaa71':'#7fdfd5';
   if(t.kind==='cargo'){
     // A convoy cargo wagon keeping pace with the Cadillac; ramming it knocks its crate loose.
     shadow(ctx,x,y,62,6);cargoArt(ctx,x,y,road/(9*LEG),t.done);
@@ -1458,20 +1470,14 @@ function drawMissionArt(t,x,y){
     else{rect(ctx,x-18,y-30,36,18,'#3fbf8a44');rect(ctx,x-14,y-86,4,30,'#bfe9ff55');}
     rect(ctx,x-16,y-86,4,72,'#ffffff22');rect(ctx,x-22,y-96,44,8,'#4b5d63');rect(ctx,x-9,y-104,18,8,'#6f8288');
     label(['07','09','12'][t.taskIndex]||'31',x+12,y-74,8,t.done?'#89a395':'#c7f4dc','center');
-  }else if(t.kind==='gate'&&levelIndex===5){
-    // Collar pylon broadcasting Echo's command signal to the conscripts' collars.
-    rect(ctx,x-18,y-16,36,16,'#2b2f3c');rect(ctx,x-9,y-112,18,98,'#3b3f52');rect(ctx,x-5,y-108,10,90,t.done?'#2a2535':'#8656d8');
-    if(!t.done){ctx.strokeStyle='#c49bff88';for(let i=0;i<3;i++){const r=(time*40+i*20)%60;ctx.beginPath();ctx.ellipse(x,y-112,r,r*.35,0,0,Math.PI*2);ctx.stroke();}rect(ctx,x-3,y-100+((time*60)%80),6,6,'#f0e2ff');}
-    else{rect(ctx,x-12,y-70,24,4,'#16131c');rect(ctx,x+2,y-60,10,3,'#16131c');}
-    rect(ctx,x-24,y-122,48,10,'#4a4f63');ctx.strokeStyle=glow;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y-46,11,0,Math.PI*2);ctx.stroke();
   }else{
     const mast=t.kind==='relay'||t.kind==='beacon';consoleArt(ctx,x,y,glow,mast);
     if(mast){if(!t.done){ctx.strokeStyle=glow+'77';ctx.beginPath();ctx.ellipse(x,y-79,12+(time*18)%35,7+(time*9)%17,0,0,Math.PI*2);ctx.stroke();}}
     if(t.kind==='valve'||t.kind==='gate'){ctx.strokeStyle=glow;ctx.lineWidth=4;ctx.beginPath();ctx.arc(x,y-40,13,0,Math.PI*2);ctx.stroke();rect(ctx,x-2,y-53,4,26,'#273d40');}
   }
-  if(t.done){label('✓',x,y-(t.kind==='gate'&&levelIndex===5?130:t.kind==='pod'?112:79),17,glow,'center');return;}
-  const tall=t.kind==='gate'&&levelIndex===5?40:t.kind==='pod'?18:0;
-  const hint=t.kind==='beacon'?'J / FIRE · SILENCE':t.kind==='cargo'?'RAM TO COLLECT':t.kind==='tuner'?`E · ${t.channel} → ${t.target}`:'HOLD E / PICK';
+  if(t.done){label('✓',x,y-(t.kind==='pod'?112:79),17,glow,'center');return;}
+  const tall=t.kind==='pod'?18:0;
+  const hint=t.kind==='beacon'?mission?.spec?.hint||'J / FIRE · WRECK':t.kind==='cargo'?'RAM TO COLLECT':t.kind==='tuner'?`E · ${t.channel} → ${t.target}`:'HOLD E / PICK';
   label(t.name,x,y-106-tall,9,'#e6e6c4','center');label(hint,x,y-92-tall,10,glow,'center');
   rect(ctx,x-30,y-76-tall,60,4,'#10222b');rect(ctx,x-30,y-76-tall,60*(t.kind==='beacon'?t.hp/t.maxhp:t.progress),4,glow);
 }
@@ -1484,20 +1490,20 @@ function missionHud(){
 
 function spawnBoss() {
   // Once a boss is in, the next chapter's stage pages start loading (ARCHITECTURE §5.5; two chapters stay decoded).
-  if(levelIndex<5){SR.require(levelIndex+1);bossArt(levelIndex+1);}
+  if(levelIndex<LASTCH){SR.require(levelIndex+1);bossArt(levelIndex+1);}
   bossSpawned=true;if(!lock)lock={left:camera,right:camera+W};if(!encounter)encounter={spec:{boss:true},next:0,timer:0};
   const type=level.kind,D=BDEF[type],t=D?.intro?.t||2.4,b=spawnEnemy(lock.right+111,laneY(.55,lock.right),type,true);
   b.name=D?.name||level.boss;b.pi=0;b.useN={};b.said={};b.calls=0;
-  // the dam's gate controls (the Crown bake, a control chair under glass) stand in the floodgate arena from the start:
-  // Sable takes the chair at his phase 2; its feet line sits in the back of the band, low enough that the glass (114 px
-  // up) clears the radio strip
-  if(type==='sable'){const x=lock.right-96,bb=bandOf(x);crown={x,y:clamp(Math.max(bb.top+18,cameraY+176),bb.top+18,bb.bottom-12),cracked:false,occupied:false,stalled:false};}
+  // the dam's gate controls (the Crown bake, a control chair under glass) stand in the arena only for a Sable def with the
+  // old gate-controls phase 2 (revision 3 has none: he goes straight to the treatment)
+  if(type==='sable'&&D?.phase2){const x=lock.right-96,bb=bandOf(x);crown={x,y:clamp(Math.max(bb.top+18,cameraY+176),bb.top+18,bb.bottom-12),cracked:false,occupied:false,stalled:false};}
   // Krag's convoy halts on the causeway: everybody out of the Cadillac, the haulmaster comes on foot
   if(driving&&D?.onFoot){parkedCar={x:lock.left+58,y:laneY(.2,lock.left+58)};setDriving(false);toast='THE CONVOY HALTS · EVERYBODY OUT';toastTime=3;}
   if(type==='truck'&&driving){b.y=player.y;bossIntroSetup(b,{t,enterX:Math.min(lock.right-90,player.x+150)});}else bossIntroSetup(b,{t});
   bossIntro=t;setBossCard(b.name,level.bossCard||'',t);
   toast=level.bossToast||b.name;toastTime=4;for(const line of level.bossSay||[])say(line);voice('bossTaunt');
-  if(levelIndex===2){mission.total=4;const x=lock.right-64;createObjective('beacon',D?.driver?.name||'NEST SONIC DRIVER',x,laneY(.83,x),0,true);}
+  // a boss with a driver (Thorne's COLLAR WINCH) brings it in as the fourth task, by her side of the arena
+  if(D?.driver){mission.total=Math.max(mission.total,mission.spec.tasks.length+1);const x=lock.right-64;createObjective('beacon',D.driver.name||'THE DRIVER',x,laneY(.83,x),0,true);}
   sfx('special');
 }
 // Freed conscripts (STORY.md chapter 6): every collar pylon broken frees collared Wassoon prisoners, who join from behind
@@ -1571,6 +1577,7 @@ function drawParticles(){
 function damageEnemy(e,amount,knock=0,forceDown=false,byAlly=false,opts=null) {
   if(e.waiting||e.dead||e.dying||e.inv>0||e.state==='flee'||(e.state==='drop'&&e.z>30)||e.delay>0||e.captive||e.state==='submerged')return false;
   const heavy=forceDown||!!opts?.heavy,melee=!!opts?.melee,kdir=Math.sign(knock)||-e.dir||1,R=romKind(e);
+  if(e.type==='militia'&&!byAlly&&militiaBlocks(e,kdir,opts))return false;
   // A Naguri group beating its captive is a set piece until someone hits one of them: then both turn on the hero as the
   // Hutori handlers of the same HUD name (CAMPAIGN §4.5) and count as fighters. ZEKE drops out of the sky on any hit.
   if(e.setPiece&&e.v==='N')provokeNaguri(e);
@@ -1596,7 +1603,7 @@ function damageEnemy(e,amount,knock=0,forceDown=false,byAlly=false,opts=null) {
     const stop=melee?(heavy?.16:.1):opts?.bullet?.04:.06;e.freeze=Math.max(e.freeze||0,stop);if(melee)player.freeze=Math.max(player.freeze||0,stop);shake=Math.max(shake,heavy?5:2);}
   if(!opts?.bullet)effects.push({type:'spark',x:e.x+kdir*-9,y:e.y-(e.boss?e.type==='fessenden'?88:62:46)-e.z,age:0,life:heavy?.2:.13,big:heavy});
   if(e.boss&&melee&&heavy&&e.hp>0)bossKnock(e,kdir);
-  if((opts?.bullet||opts?.sharp)&&!(e.type==='truck'&&(e.phase===2||!BDEF.truck?.onFoot))&&!(e.type==='sable'&&e.phase===2))bloodBurst(e,kdir,opts);else burst(e.x,e.y-39-e.z,'#ffe2a1',opts?.bullet?8:4);if(!opts?.bullet)sfx(heavy?'heavy':'hit');
+  if((opts?.bullet||opts?.sharp)&&!(e.boss&&defOf(e)?.sparks&&e.type!=='truck')&&!(e.type==='truck'&&(e.phase===2||!BDEF.truck?.onFoot))&&!(e.type==='sable'&&e.phase===2))bloodBurst(e,kdir,opts);else burst(e.x,e.y-39-e.z,'#ffe2a1',opts?.bullet?8:4);if(!opts?.bullet)sfx(heavy?'heavy':'hit');
   if(e.boss&&e.hp>0)bossThresholds(e,before);
   if(e.hp<=0){
     // the tally's FINAL BLOW (CAMPAIGN §4.7): a special or a thrown weapon finished this boss (the last boss down counts)
@@ -1627,6 +1634,35 @@ function damageEnemy(e,amount,knock=0,forceDown=false,byAlly=false,opts=null) {
   return true;
 }
 
+// The Crown Militiaman's riot shield (ENEMY_KINDS.militia.shield; revision 3): a hero's ground blow (opts.melee: punches,
+// kicks, the combo, a weapon swing) from the side he faces is blocked while he walks, idles, enters or guards: no damage,
+// a clank, both pushed a little apart, and he shows his guard (state 'guard', main 2). Jump attacks (the hero off the
+// floor), throws (he is held, or another body is thrown into him), gunfire, blasts and blows from behind or while he
+// attacks, recovers, flinches or lies get through. The breakAfter-th blocked blow inside `window` s (a heavy blow counts
+// two) breaks his guard: he staggers open for `stagger` s (state 'dizzy', main 13). Deterministic (no random call).
+function militiaBlocks(e,kdir,opts){
+  const S=eTable(e)?.shield;if(!S||!opts?.melee||opts.bullet||opts.blast||!['walk','guard','enter'].includes(e.state)||e.dying)return false;
+  if(player.z>2||player.grab?.e===e)return false;
+  const dx=player.x-e.x;if(Math.abs(dx)<6||Math.sign(dx)!==e.dir)return false;
+  e.blocks=(stageTimer-(e.blockT??-99)<=S.window?(e.blocks||0):0)+(opts.heavy?2:1);e.blockT=stageTimer;
+  effects.push({type:'spark',x:e.x+e.dir*16,y:e.y-48-e.z,age:0,life:.13,big:!!opts.heavy});sfx('block');lastHitEnemy=e;
+  e.freeze=Math.max(e.freeze||0,.06);player.freeze=Math.max(player.freeze||0,.06);shake=Math.max(shake,1);
+  if(e.blocks>=S.breakAfter){e.blocks=0;e.state='dizzy';e.timer=S.stagger;e.move=null;e.rec=null;e.guardBroken=(e.guardBroken||0)+1;burst(e.x+e.dir*14,e.y-44,'#e6eef0',8);return true;}
+  e.state='guard';e.timer=.34;e.move=null;e.x-=e.dir*(S.push||10)*.4;player.x+=e.dir*(S.push||10)*.6;if(lock&&e.onstage)e.x=clamp(e.x,lock.left+21,lock.right-31);
+  return true;
+}
+// The Trapper's catch-pole shock (ENEMY_KINDS.trapper lunge.shock; revision 3): a hero the prod hits on the floor is held
+// in the shock (the hurt pose, sparks) for `hold` s, then knocked back (a knockdown hit of (mul - 1) x the lunge's damage).
+function trapperShock(v,e,I,S){
+  if(!(v===player||isLiveP(v)))return;
+  withPlayer(v,()=>{if(player.knocked||player.hp<=0||player.dying)return;player.shock={t:S.hold,t0:S.hold,from:e.x,dmg:Math.max(1,Math.round(I.dmg*((S.mul||1.4)-1)))};
+    player.hurt=player.hurtTotal=Math.max(player.hurt,S.hold+.05);player.inv=Math.max(player.inv,S.hold+.05);sfx('zap');});
+}
+function shockTick(dt){
+  const s=player.shock;if(!s)return;s.t-=dt;
+  if(Math.floor(s.t*12)!==Math.floor((s.t+dt)*12))effects.push({type:'spark',x:player.x+((Math.floor(s.t*40)%3)-1)*10,y:player.y-30-((Math.floor(s.t*30)%4)*9),age:0,life:.08});
+  if(s.t<=0||player.knocked||player.dying){player.shock=null;if(player.knocked||player.dying)return;player.inv=0;player.hurt=0;damagePlayer(s.dmg,s.from,true,{stun:10,react:4});}
+}
 // KI21 (mechanics 0x1C08A): the hero has a stun meter of 10. Every enemy hit takes its 0xA2EA4 stun byte off it, and the
 // hero is knocked down when the meter reaches 0, when the attack carries the knockdown flag (the record's reaction byte
 // of 4 or more: the heavy reactions; 0 and 2 are the flinches the live runs show on 29/29 + 23/23 hits), when the hero is
@@ -1793,7 +1829,7 @@ function updateGrab(dt,dx){
   if(!g){
     if(driving||player.weapon||player.grabCd>0||player.attack>0||player.hurt>0||player.z>0||player.pickup>0||player.special>0||!dx)return;
     // Grabbable = the kind has a ROM held set (ENEMIES §2.3, RC8): BLUDGE and TYROG now, never a raptor, a bike or ZEKE.
-    const e=enemies.find(o=>!o.dead&&!o.dying&&!o.boss&&!o.elite&&!o.setPiece&&o.onstage&&!(o.delay>0)&&!o.z&&['walk','hurt','windup','recover'].includes(o.state)&&(romKind(o)?eTable(o)?.grab!==false:!['raptor','biker','mutant','regent'].includes(o.type))&&Math.abs(o.x-player.x)<27&&Math.abs(o.y-player.y)<8&&Math.sign(o.x-player.x)===dx);
+    const e=enemies.find(o=>!o.dead&&!o.dying&&!o.boss&&!o.elite&&!o.setPiece&&o.onstage&&!(o.delay>0)&&!o.z&&['walk','hurt','windup','recover','guard'].includes(o.state)&&(romKind(o)?eTable(o)?.grab!==false:!['raptor','biker','mutant','regent'].includes(o.type))&&Math.abs(o.x-player.x)<27&&Math.abs(o.y-player.y)<8&&Math.sign(o.x-player.x)===dx);
     if(e){player.grab={e,t:0,hits:0};e.state='held';e.timer=0;e.hitChain=0;clearEnemyHazards(e.id);player.dir=dx;player.moveState=null;toast=TOUCH?'GRAB · HIT KNEES · BACK + HIT THROWS':'GRAB · J KNEE · BACK + J THROW';toastTime=1.6;}
     return;
   }
@@ -2008,7 +2044,7 @@ function bossThink(e,dt,ox,oy){
   const D=defOf(e),t=player;if(!D)return;
   const sd=Math.sign(t.x-e.x)||e.dir;
   if(D.stationary)e.dir=-1;
-  else if(e.type==='raptor'&&e.phase===2){if(sd!==e.dir){e.turnT=(e.turnT||0)+dt;if(e.turnT>.6){e.dir=sd;e.turnT=0;}}else e.turnT=0;}   // a big animal turns late (the tail punishes its back)
+  else if(D.turnLate){if(sd!==e.dir){e.turnT=(e.turnT||0)+dt;if(e.turnT>.6){e.dir=sd;e.turnT=0;}}else e.turnT=0;}   // a big animal turns late (the tail punishes its back)
   else e.dir=sd;
   if(e.hurt>0&&!D.stationary){if(D.flinch&&!(e.flinchCd>0)&&!(e.flinch>0)){e.flinch=.22;e.flinchCd=2.5;}if(!(e.flinch>0))bIdle(e);return;}
   if(D.near&&!e.next&&!(e.nearCd>0)&&fighters().some(v=>Math.abs(v.x-e.x)<D.near.r&&Math.abs(v.y-e.y)<BOSS_DEPTH)){e.next=D.near.move;e.nearCd=D.near.cd||2.5;}
@@ -2133,6 +2169,7 @@ function bossLob(e,I){
   // the barrel is a breakable object (objects: any hit breaks it, 1 HP) that rolls along his lane (bossObjs)
   if(mv.proj==='barrel'){const o={type:'barrel',boss:true,rolling:true,hideT:mv.hide||0,x:e.x+e.dir*(mv.dx||30),y:e.y,z:0,hp:1,vx:e.dir*(mv.vx||190),dmg:bossDmg(mv.dmg),knock:!!mv.knock,roll:0,content:null,owner:e.id};bossObjs.push(o);objects.push(o);sfx('swing');return;}
   const tf=bodyOf(e)?.throwFrame,sp=tf?.spawn||{dx:16,h:48},x0=e.x-e.dir*sp.dx,x1=clamp(v.x,L.left+16,L.right-16);
+  if(mv.proj==='bait'){bullets.push({kind:'bomb',bait:mv.summon||{type:'raptor',n:2},x:x0,y:e.y,z:sp.h,x0,y0:e.y,z0:sp.h,x1,y1:v.y,h:50,t:0,T:.85,friendly:false,damage:bossDmg(mv.dmg??6),r:mv.r||30,owner:e.id,life:3,age:0,dir:e.dir});toast='BAIT! · RAPTORS INCOMING';toastTime=1.6;sfx('swing');return;}
   if(mv.proj==='rock:3'||e.mvName==='slag'){bullets.push({kind:'bomb',slag:true,x:x0,y:e.y,z:sp.h,x0,y0:e.y,z0:sp.h,x1,y1:v.y,h:40,t:0,T:mv.arc||.8,friendly:false,damage:bossDmg(mv.dmg),r:24,burn:mv.burn||null,owner:e.id,life:3,age:0,dir:e.dir,art:{fam:'bosses',key:'0x71408:8',map:'S5A1'}});sfx('swing');return;}
   bullets.push({kind:'bomb',x:x0,y:e.y,z:sp.h,x0,y0:e.y,z0:sp.h,x1,y1:v.y,h:44,t:0,T:.8,friendly:false,damage:bossDmg(mv.dmg),r:mv.r||56,owner:e.id,life:3,age:0,dir:e.dir,art:{fam:'bosses',key:'0x71408:0',map:B?.bodies?.['boss-projectiles']?.pal?.home||'S5A1'}});sfx('swing');
 }
@@ -2191,7 +2228,7 @@ function bossCall(e,k){
   const D=defOf(e);e.calls=k+1;
   if(e.type==='fessenden'){if(k===1){bossSummon(e,BDEF.fessenden?.phases?.[2]?.summon||{type:'raider',n:2});}return;}
   if(e.type==='truck'&&!BDEF.truck?.onFoot){bPlay(e,bSpec(e,'main:1')?.alts[0][0]);for(let j=0;j<2;j++)arrive('biker','L',j);toast='BELLOW · RIDERS FROM BEHIND';toastTime=2.5;return;}
-  if(e.type==='raptor'&&k===0){e.roarT=.5;const ck=bSpec(e,defOf(e)?.callA||'main:10')?.alts[0][0];if(ck&&['walk','recover'].includes(e.state))bPlay(e,ck);sfx('special');voice('roar');arrive('raptor','R',0);arrive('raptor','L',1);toast='THE PACK ANSWERS!';toastTime=2;return;}
+  if(D?.roarCall&&k===0){e.roarT=.5;const ck=bSpec(e,defOf(e)?.callA||'main:10')?.alts[0][0];if(ck&&['walk','recover'].includes(e.state))bPlay(e,ck);sfx('special');voice('roar');arrive('raptor','R',0);arrive('raptor','L',1);toast='THE PACK ANSWERS!';toastTime=2;return;}
   if(e.type==='echo'&&k===1){const u=D.moves?.grafts;if(u){say(level.bossLines?.p33);bossSummon(e,u);return;}}
   bossReinforce(e);e.calls=k+1;   // bossReinforce counts its own call
 }
@@ -2217,14 +2254,14 @@ function bossArena(e,dt){
     else{for(const off of mv.zones||[-70,70])zones.push({owner:e.id,x:player.x+off,y:player.y,r:mv.r||43,t:mv.t||1.25,total:mv.t||1.25,friendly:false,damage:bossDmg(mv.dmg),air:mv.air===true,style:'flood'});
       if(mv.a&&['walk','recover'].includes(e.state)){e.state='recover';e.timer=Math.max(e.timer,.6);e.rec=null;bPlay(e,bSpec(e,mv.a)?.alts[0][0]);}toast=MOVE_TOAST[n]||'CHANGE LANES';toastTime=1.6;}}
 }
-function bossDriver(){const t=mission?.active;return levelIndex===2&&t&&t.bossTask&&t.kind==='beacon'&&!t.done?t:null;}
+function bossDriver(){const t=mission?.active;return BDEF[level?.kind]?.driver&&t&&t.bossTask&&t.kind==='beacon'&&!t.done?t:null;}
 function bossTether(e){const D=BDEF[e.type],dr=D?.tether&&bossDriver();if(!dr)return;const lo=dr.x-D.tether,hi=dr.x+D.tether;if(e.x<lo||e.x>hi){e.x=clamp(e.x,lo,hi);if(!e.said?.leash&&e.state==='walk'){(e.said=e.said||{}).leash=true;say(level.bossLines?.leash);}}}
-// beyond her leash is a safe rest (CAMPAIGN §7.4): Glassback will not leave her nest, so her blows never reach a fighter
+// beyond her leash is a safe rest (CAMPAIGN §7.4): Thorne will not leave her winch, so her blows never reach a fighter
 // standing more than her tether from the driver beside it
-function beyondChain(e,v){const D=BDEF[e.type],dr=D?.tether&&e.type==='raptor'&&bossDriver();return !!dr&&Math.abs(v.x-dr.x)>D.tether;}
-// the nest driver's thirds (ch3): each third of its HP lost calms Glassback for 3 s, taking x1.5 (CAMPAIGN §7.4)
-function driverHit(t){if(levelIndex!==2||!t.bossTask)return;const third=Math.floor((t.maxhp-t.hp)/(t.maxhp/3));if(third>(t.thirds||0)&&t.hp>0){t.thirds=third;const r=enemies.find(e=>e.boss&&e.type==='raptor'&&!e.dead&&e.state!=='mutate');const mv=r&&defOf(r)?.moves?.drowsy;
-  if(r&&mv){r.drowsy=mv.t||3;r.vulnT=mv.t||3;r.vulnMul=mv.hurt||1.5;if(['walk','recover'].includes(r.state)){const k=bSpec(r,defOf(r)?.flinch||'main:15')?.alts[0][0];if(k)bPlay(r,k);}say(level.bossLines?.driverHit);toast='THE DRIVER SPARKS · SHE STAGGERS';toastTime=1.6;}}}
+function beyondChain(e,v){const D=BDEF[e.type],dr=D?.tether&&e.boss&&bossDriver();return !!dr&&Math.abs(v.x-dr.x)>D.tether;}
+// the driver's thirds (Thorne's winch, stage 2): each third of its HP lost staggers her for 3 s, taking x1.5 (CAMPAIGN §7.4)
+function driverHit(t){if(!BDEF[level.kind]?.driver||!t.bossTask)return;const third=Math.floor((t.maxhp-t.hp)/(t.maxhp/3));if(third>(t.thirds||0)&&t.hp>0){t.thirds=third;const r=enemies.find(e=>e.boss&&e.type===level.kind&&!e.dead&&e.state!=='mutate');const mv=r&&defOf(r)?.moves?.drowsy;
+  if(r&&mv){r.drowsy=mv.t||3;r.vulnT=mv.t||3;r.vulnMul=mv.hurt||1.5;if(['walk','recover'].includes(r.state)){const k=bSpec(r,defOf(r)?.flinch||'main:15')?.alts[0][0];if(k)bPlay(r,k);}say(level.bossLines?.driverHit);toast=(BDEF[level.kind]?.driver?.name||'THE DRIVER')+' SPARKS · SHE STAGGERS';toastTime=1.6;}}}
 // --------------------------------------------------------------- knockdowns, defeats, Sable's phases
 function bossKnock(e,kdir){
   const b=bodyOf(e);if(CFG.bossKnockdown===false||!b?.hit||['truck','fessenden','raptor'].includes(e.type)||(e.type==='sable'&&e.phase===2))return false;
@@ -2239,6 +2276,10 @@ function bossDownTick(e,dt){const L=lock||{left:camera,right:camera+W};e.x=clamp
 // hp <= 0: true when the boss lives on (a phase change: Sable to the controls, Krag's trial dose; Glassback's floor), else the defeat script runs
 function bossDown(e,kdir){
   const L=lock||{left:camera,right:camera+W};
+  // revision 3: Sable has one human phase; beaten, Mustapha disengages the release mechanism and the marshal takes the
+  // treatment (spawnLastCopy: CROWNBACK walks out of his place and transforms)
+  if(e.type==='sable'&&e.phase===1&&!BDEF.sable?.phase2&&BDEF.sable?.treatment){clearEnemyHazards(e.id);Object.assign(e,{z:0,hp:0,state:'dead',hidden:true,dead:.01,mvI:null,rec:null,next:null,gaff:null,defeat:{kind:'engine',t:0,said:true,done:true}});score+=2000;kills++;
+    sayNow(level.releaseSay);spawnLastCopy({x:e.x,y:e.y});return true;}
   if(e.type==='sable'&&e.phase===1){clearEnemyHazards(e.id);Object.assign(e,{z:0,phase:2,calls:0,state:'transform',timer:2.7,inv:2.7,attackNo:0,pi:0,phIdx:-1,useN:{},said:{},mvI:null,rec:null,next:null,tempoMul:1});e.hp=e.maxhp=bossHpOf('sable',2)*rules().enemyHealth*bossScale();
     flash=.65;shake=12;voice('bossTaunt');toast=level.phase2?.toast||'SABLE TAKES THE GATE CONTROLS';toastTime=4;effects.push({x:e.x,y:e.y,age:0,life:.8,type:'explosion'});say(level.phase2?.say);e.name=BDEF.sable?.phase2?.name||'SABLE · GATE CONTROLS';bPlay(e,bWalkKey(e),{hold:false});return true;}
   const D0=BDEF[e.type];
@@ -2247,15 +2288,17 @@ function bossDown(e,kdir){
     const [fa,ta]=T.anims||[5,9];bPlay(e,kb&&ib?comboAnim(P.body+':serum',kb.main+':'+fa,ib.main+':'+ta):null,{hold:true});
     flash=.5;shake=10;toast=level.phase2?.toast||(e.name+'!');toastTime=3.5;say(level.phase2?.say);setBossCard(e.name,level.phase2?.card||'',t,true);sfx('special');voice('bossTransform');return true;}
   // while the driver hums Glassback cannot be beaten (phase2.driver.hpFloor)
-  if(e.type==='raptor'&&defOf(e)?.driver?.hpFloor&&bossDriver()){e.hp=1;e.state='recover';e.timer=1.4;e.inv=1.4;e.rec=null;toast='THE DRIVER KEEPS HER STANDING · SMASH IT';toastTime=2;return true;}
+  if(defOf(e)?.driver?.hpFloor&&bossDriver()){e.hp=1;e.state='recover';e.timer=1.4;e.inv=1.4;e.rec=null;toast='THE DRIVER KEEPS HER STANDING · SMASH IT';toastTime=2;return true;}
   if(e.type==='truck'&&!BDEF.truck?.onFoot){clearEnemyHazards(e.id);Object.assign(e,{hp:1,state:'flee',timer:2.4,inv:9,dir:1,z:0,collar:false});score+=2000;kills++;say(level.bossDefeat);voice('bossHurt');sparkBurst(e.x+e.dir*60,e.y-48,18);toast='THE HARNESS BREAKS';toastTime=2.5;
     effects.push({type:'chain',x:e.x-30,y:e.y,age:0,life:2,vx:-(roadRate||CAR.road)});bPlay(e,bodyOf(e)?.main+':0');return true;}
+  // a driver still standing when its boss falls (Thorne's winch) goes down with the platform: the task is done
+  if(mission?.active?.bossTask&&BDEF[e.type]?.driver){const t=mission.active;t.done=true;t.progress=1;mission.completed=Math.min(mission.total,mission.completed+1);mission.active=null;}
   clearEnemyHazards(e.id);e.z=0;e.state='dead';e.mvI=null;e.rec=null;e.gaff=null;score+=2000;kills++;
   // defeats (STORY.md): Rook is knocked down and arrested, Cinder cowers and surrenders, Echo kneels and is arrested, the
   // gate controls are smashed ('engine', the engine's name), Crownback falls in the spillway ('lot00', the engine's name)
-  const D=defOf(e),kind=e.type==='sable'?'engine':e.type==='fessenden'?'lot00':D?.defeat?.arrest&&bSpec(e,D.defeat.anim)?'arrest':e.type==='cinder'?'surrender':e.type==='echo'?'kneel':'knock';
+  const D=defOf(e),kind=e.type==='sable'?'engine':e.type==='fessenden'?'lot00':D?.defeat?.escape?'escape':D?.defeat?.arrest&&bSpec(e,D.defeat.anim)?'arrest':e.type==='cinder'?'surrender':e.type==='echo'?'kneel':'knock';
   if(kind!=='engine')voice(kind==='lot00'?'roar':'bossDeath');
-  e.defeat={kind,t:0,said:false};e.dead=kind==='surrender'?(D.defeat?.t||2.6)+.3:kind==='kneel'?2.4:kind==='lot00'?(BDEF.fessenden?.defeat?.crossfade||1.5)+.4:kind==='engine'?.5:kind==='arrest'?6:1.9;
+  e.defeat={kind,t:0,said:false};e.dead=kind==='escape'?2.4:kind==='surrender'?(D.defeat?.t||2.6)+.3:kind==='kneel'?2.4:kind==='lot00'?(BDEF.fessenden?.defeat?.crossfade||1.5)+.4:kind==='engine'?.5:kind==='arrest'?6:1.9;
   if(kind==='engine'){say(level.phase2?.defeat);if(crown){crown.occupied=false;crown.stalled=true;}mission.total=4;createObjective('gate','FINAL SPILLWAY RELEASE',L.right-125,laneY(.64,L.right-125),0,true);say(level.gateSay);}
   else if(kind==='lot00'){sayNow(level.lastCopy?.lines?.defeat);
     // he rears up, staggers, falls over and lies in the spillway (main 9, held on its last frame)
@@ -2263,6 +2306,7 @@ function bossDown(e,kdir){
   else if(kind==='knock'){const k=bodyOf(e)?.hit;bPlay(e,k?k+':2':bIdleKey(e));sayNow(level.bossDefeat);}
   else if(kind==='surrender')bPlay(e,bodyOf(e)?.main+':8');
   else if(kind==='arrest')bPlay(e,bSpec(e,D.defeat.anim).alts[0][0],{hold:true});
+  else if(kind==='escape'){const k=bSpec(e,D.defeat.anim||D.flinch)?.alts[0][0];if(k)bPlay(e,k,{hold:true});e.dir=e.x<(lock?(lock.left+lock.right)/2:e.x)?1:-1;e.vx=-e.dir*150;}
   else if(kind==='kneel')bPlay(e,bodyOf(e)?.hit+':5',{hold:false});
   return false;
 }
@@ -2274,6 +2318,9 @@ function bossDeadTick(e,dt){
   const d=e.defeat;if(!d)return;d.t+=dt;if(e.ba)e.ba.t+=dt*60;
   if(d.kind==='knock'&&d.t>=1.0)d.done=true;
   if(d.kind==='arrest'){if(d.t>=1.3&&!d.said){d.said=true;sayNow(level.bossDefeat);}if(d.said&&d.t>=1.6)d.done=true;}
+  // Thorne staggers back off the collapsing platform into the river (a splash) and is gone downstream; she says her
+  // line on the way (no arrest)
+  if(d.kind==='escape'){if(d.t<.9){e.x+=(e.vx||0)*dt;e.y+=26*dt;}else if(!d.k){d.k=1;e.dead=Math.min(e.dead,.35);burst(e.x,e.y-10,'#9fe3f2',26);shake=Math.max(shake,5);sfx('slam');}if(d.t>=.4&&!d.said){d.said=true;sayNow(level.bossDefeat);}if(d.said&&d.k)d.done=true;}
   if(d.kind==='surrender'){if(e.ba&&e.ba.t>=50)e.ba.t=49.9;if(d.t>=1.65&&!d.said){d.said=true;sayNow(level.bossDefeat);}if(d.said)d.done=true;}
   if(d.kind==='kneel'){if(d.t>=.8&&!d.k){d.k=1;bPlay(e,bodyOf(e)?.hit+':4');}if(e.ba&&e.ba.key.endsWith(':4')&&e.ba.t>=bLen(e.ba.key)-1)e.ba.t=bLen(e.ba.key)-1;if(d.t>=1.4&&!d.said){d.said=true;sayNow(level.bossDefeat);}if(d.said)d.done=true;}
   if(d.kind==='lot00'){if(d.t>=1.2&&!d.said){d.said=true;sayNow(level.lastCopy?.lines?.after);}if(d.said)d.done=true;}
@@ -2542,8 +2589,8 @@ function frameIdx(a,t,hold=false){
 }
 function defaultVariant(type){const k=EK&&EK[type];if(!k||!k.variants||k.hero||k.parked||k.scenery)return null;return Object.keys(k.variants).find(V=>EK.variantData(type,V))||null;}
 function kindHpOf(type,V){if(!EK||!EK[type])return null;if(EK[type].hero)return EKK.MIRROR_HP;return V?EK.kindHp(type,V,levelIndex,'normal'):null;}
-// TYROG's +0x23 colour per chapter (ENEMIES §2.7, KI13): slot 30 in ch5, 29 in ch6, its home 31 elsewhere.
-function regentAlt(e){return e.type!=='regent'?null:levelIndex===4?'30':levelIndex===5?'29':null;}
+// TYROG's +0x23 colour per stage (ENEMIES §2.7, KI13): ENEMY_KINDS.regent.slot (30 at the observatory ch7, 29 at the dam ch8), its home 31 elsewhere.
+function regentAlt(e){const k=EK?.regent?.slot||{};return e.type!=='regent'?null:k[chapterKey(levelIndex)]!=null?String(k[chapterKey(levelIndex)]):null;}
 function enemyMap(e,gel){const F=ROME();if(!F||!F.palMap||!e.v)return null;const base=`${EK.typeOf(e.type,e.v)}:${e.v}`;return gel?F.palMap[base+'/gel']:(e.palAlt&&F.palMap[`${base}/${e.palAlt}`])||F.palMap[base];}
 const telegraph=()=>EKK.telegraph?.[normalizeDifficulty(difficulty)]??1;
 const setPiecesOn=()=>normalizeDifficulty(difficulty)!=='easy';
@@ -2630,7 +2677,7 @@ function romStrike(e){
   else if(I.kind==='shot'){if(I.lift>0)e.pendingShot={t:I.lift/60};else enemyShot(e,I);}
   else if(I.kind==='lob')throwBomb(e,I,v);
   else if(I.kind==='spit')spitParasites(e,I,v);
-  else{const dx=v.x-e.x;if(Math.abs(dx)<=I.win[1]+(e.elite?6:0)&&(Math.sign(dx)===e.dir||Math.abs(dx)<12)&&Math.abs(e.y-v.y)<EKK.DEPTH)strike(v,I.dmg*rageMul(e),e.x,false,hitOf(I));}
+  else{const dx=v.x-e.x;if(Math.abs(dx)<=I.win[1]+(e.elite?6:0)&&(Math.sign(dx)===e.dir||Math.abs(dx)<12)&&Math.abs(e.y-v.y)<EKK.DEPTH){const h0=v.hurt||0,k0=!!v.knocked;strike(v,I.dmg*rageMul(e),e.x,false,hitOf(I));if(a.shock&&(v.hurt||0)>h0&&!v.knocked&&!k0)trapperShock(v,e,I,a.shock);}}
   if(a.once)e.spent=true;
   e.bit=e.type==='raptor'&&/bite/i.test(a.id);
   endAttack(e,I);
@@ -2722,7 +2769,11 @@ function romThink(e,dt,ox,oy){
     if(lock&&e.onstage)e.x=clamp(e.x,lock.left+21,lock.right-31);const r=walkTo(ox,oy,e.x,e.y);e.x=r.x;e.y=r.y;return;}}
   if(e.brood&&broodMove(e))return;
   const t=hostileTarget(e);
-  e.dir=Math.sign(t.x-e.x)||e.dir;const distance=Math.abs(t.x-e.x),dy=Math.abs(t.y-e.y);
+  // a kind with `turnLag` (the shield-bearing militiaman) turns round only after its target has stood behind it that long,
+  // so a hero who jumps or runs past can hit its back
+  {const want=Math.sign(t.x-e.x)||e.dir,lag=eTable(e)?.turnLag;if(!lag||want===e.dir){e.dir=want;e.turnT=0;}else if((e.turnT=(e.turnT||0)+dt)>=lag){e.dir=want;e.turnT=0;}}
+  if(e.turnT>0)return;   // turning round: it stands (and keeps its shield the wrong way)
+  const distance=Math.abs(t.x-e.x),dy=Math.abs(t.y-e.y);
   if(e.bit&&(t===player||isLiveP(t))&&(t.attack>0||t.moveState)&&distance<64&&dy<EKK.DEPTH){startEvade(e);return;}
   const speed=enemySpeed(e),stop=once?Infinity:e.type==='knifer'&&e.knife===false?45:ROM_STOP[e.type]??eTable(e)?.stop??57;
   const flank=!once&&e.id<rules().flankChance&&enemies.some(o=>o!==e&&!o.dead&&!o.waiting&&!o.setPiece&&Math.abs(o.x-t.x)<rules().flankDistance&&Math.abs(o.y-t.y)<18);
@@ -2879,6 +2930,7 @@ function resolveAnim(e){
       return {key:e.thrown?S('thrownLand'):e.flyHeld?S('flyHeld'):S('fly'),k:'last'};}
     case 'rise':return e.riseFrom==='drop'?{key:landKey(e),t:stF,hold:true}:{key:S('rise'),t:stF,hold:true};
     case 'dizzy':return {key:S('dizzy')||S('idle')};
+    case 'guard':return {key:S('guard')||S('idle')};
     case 'hurt':return {key:EK.stateAnim(e.type,e.v,'hurt',(e.hitChain+1)%2)||S('hurt'),t:stF,hold:true};
     case 'held':{const gp=multi()?players.find(p=>p&&p.grab&&p.grab.e===e)||player:player,g=gp?.grab,ms=gp?.moveState;
       if(g&&g.e===e&&ms&&ms.name==='knee'&&S('kneed'))return {key:S('kneed'),k:clamp(g.hits-1,0,4)};
@@ -2963,7 +3015,7 @@ function updateEnemy(e,dt) {
   if(e.state==='rise'){if(e.timer<=0){if(R&&(e.kd||[]).length>=3&&hasSt(e,'dizzy')){e.kd=[];e.state='dizzy';e.timer=1.2;}else{e.state='walk';e.timer=e.boss?.45:.65;}}return;}
   // an aimed shot leaves on its fire frame, the lift after the windup (romStrike; ROM pace, held by hitstop above)
   if(e.state==='recover'&&e.pendingShot){e.pendingShot.t-=dt;if(e.pendingShot.t<=1e-6||e.timer<=0){e.pendingShot=null;const I=atkInfo(e,e.move);if(I)enemyShot(e,I);}}
-  if(['transform','recover','dizzy'].includes(e.state)){if(e.timer<=0){e.state='walk';e.timer=e.boss?.45:.65;e.rec=null;}return;}
+  if(['transform','recover','dizzy','guard'].includes(e.state)){if(e.timer<=0){e.state='walk';e.timer=e.boss?.45:.65;e.rec=null;}return;}
   if(e.state==='pickup'){if(e.timer<=0){const d=e.seekDrop;if(d&&drops.includes(d)&&!d.claimed){drops.splice(drops.indexOf(d),1);e.knife=true;}e.seekDrop=null;e.state='walk';e.timer=.3;}return;}
   if(e.hurt>0)return;
   if(e.state==='hurt'){if(e.timer<=0){e.state='walk';e.timer=.55;}return;}
@@ -3035,6 +3087,7 @@ function controlStep(dt){
   const h=HEROES[selected];if(!down(dashKey))dashTime=0;
   const frozen=player.freeze>0;
   for(const k of ['inv','hurt','attack','special','specialCd','boost','boostCd','land','freeze','comboWin','grabCd'])if(!(frozen&&k==='attack'))player[k]=Math.max(0,player[k]-dt);
+  if(player.shock)shockTick(dt);
   player.shotT+=dt;if(player.stunT>0){player.stunT-=dt;if(player.stunT<=0)player.stun=10;}
   if(player.dying&&player.hurt<=0)startDropIn();if(player.hurt<=0)player.knocked=false;
   // Jack's dash slides for its whole clip (27 f) and then recovers on dashEnd (the hopping heroes end theirs on landing).
@@ -3160,7 +3213,7 @@ function update(dt) {
   for(const z of zones){if(z.cancelled)continue;z.t-=dt;if(z.lane||z.mark)continue;if(z.linger){if(z.t<=0)z.cancelled=true;continue;}if(z.band&&z.t<=0){for(const v of fighters())if(v.y>=z.band[0]-2&&v.y<=z.band[1]+2&&(!z.air||v.z<19))strike(v,z.damage,v.x+20,!z.air,z.knock?{stun:10,react:10}:null);burst(z.x,z.band[1]-8,'#c9f1ff',24);shake=7;continue;}if(z.t<=0){const quiet=['land','steam','slam','fire','flood'].includes(z.style);burst(z.x,z.y-15,z.friendly?'#efb36d':z.style==='fire'?'#ff9a3b':z.style==='steam'?'#eef4f2':z.style==='land'?'#b9b28f':z.style==='flood'?'#9fe3f2':'#c7ea91',quiet?(z.style==='flood'?22:14):24);if(!quiet)effects.push({x:z.x,y:z.y,age:0,life:.55,type:'explosion'});shake=quiet?Math.max(shake,4):7;if(z.friendly){for(const e of enemies)if(Math.hypot((e.x-z.x)*.8,e.y-z.y)<z.r)damageEnemy(e,z.damage,Math.sign(e.x-z.x)*26,true);}else for(const v of fighters())if(Math.hypot((v.x-z.x)*.8,v.y-z.y)<z.r&&(!z.air||v.z<19))strike(v,z.damage,z.x,!z.air,z.knock?{stun:10,react:10}:null);}}
   zones=zones.filter(z=>!z.cancelled&&z.t>0);
   // Foundry vents and lab discharges announce their location before activating.
-  if(!bossSpawned&&lock&&sectionIndex>=1&&(levelIndex===3||levelIndex===4)&&!(levelIndex===3&&!mission.active)&&Math.floor(stageTimer/9)>Math.floor((stageTimer-dt)/9)){const vx=leadPlayer().x+67;zones.push({x:vx,y:laneY(levelIndex===3?.79:.15,vx),r:43,t:1.25,total:1.25,friendly:false,damage:18,air:true,style:'vent'});}
+  if(!bossSpawned&&lock&&sectionIndex>=1&&(levelIndex===3||levelIndex===6)&&!(levelIndex===3&&!mission.active)&&Math.floor(stageTimer/9)>Math.floor((stageTimer-dt)/9)){const vx=leadPlayer().x+67;zones.push({x:vx,y:laneY(levelIndex===3?.79:.15,vx),r:43,t:1.25,total:1.25,friendly:false,damage:18,air:true,style:'vent'});}
   updateParticles(dt);
   for(const f of floating){f.y-=22*dt;f.life-=dt;}floating=floating.filter(f=>f.life>0);
   if(multi()){for(const p of present())withPlayer(p,()=>{if(comboTimer>0){comboTimer-=dt;if(comboTimer<=0)combo=0;}});}
@@ -3305,8 +3358,9 @@ function car(g,x,y,o={}){
   SP.drawRec(g,'fx',Wh.steer[steer][ph],map,bx+Wh.front.dx,by+Wh.front.dy+bob+jit(1),false);
   SP.drawRec(g,'fx',(o.brake?C.anims.brake:C.anims.drive)[0][0],map,bx,by,false);
   const R=RIG();
-  // 2-3 players: the riders in the passenger seat and the back seat (seats 1 and 2), seated on the drive clip
-  if(o.passengers&&R)o.passengers.forEach((h,i)=>{const st=C.seats[i+1];if(!st||!HEROES[h])return;const id=HEROES[h].id,c=R.clip(id,'drive');if(c)R.draw(g,R.parts(id,{full:{clip:'drive',k:carFrameAt(c,(o.t||0)+.3*(i+1))}},null),bx+st.dx,by+st.dy,0,st.flip?1:-1,1,'hero');});
+  // 2-3 players: the riders in the passenger seat and the back seat (seats 1 and 2), seated on the drive clip; a fourth
+  // rider (the ending: all four heroes aboard) sits beside the third in the back seat
+  if(o.passengers&&R)o.passengers.forEach((h,i)=>{const st=C.seats[i+1]||(C.seats[2]&&Object.assign({},C.seats[2],{dx:C.seats[2].dx+24*(i-1)}));if(!st||!HEROES[h])return;const id=HEROES[h].id,c=R.clip(id,'drive');if(c)R.draw(g,R.parts(id,{full:{clip:'drive',k:carFrameAt(c,(o.t||0)+.3*(i+1))}},null),bx+st.dx,by+st.dy,0,st.flip?1:-1,1,'hero');});
   if(o.hero>=0&&R&&HEROES[o.hero]){
     const id=HEROES[o.hero].id,c=R.clip(id,'drive'),seat=C.seats[0];
     // the seated records already face right (seat 0 is not flipped): dir -1 draws them as stored
@@ -3721,7 +3775,7 @@ function drawDrop(d) {
 // screen px at half the old canvas sizes, so its drop shadow is half a pixel (screenText).
 let screenText=false;
 function label(text,x,y,size=12,color='#ecebcf',align='left'){const o=screenText?.5:1;ctx.font=`bold ${size}px Consolas, monospace`;ctx.textAlign=align;ctx.fillStyle='#12261e';ctx.fillText(text,x+o,y+o);ctx.fillStyle=color;ctx.fillText(text,x,y);}
-const ENEMY_LABEL={raider:'POACHER',knifer:'KNIFER',gunner:'GUNNER',brute:'HEAVY',raptor:'RAPTOR',mutant:'GRAFT',biker:'RIDER',regent:'REGENT',slicer:'BRAWLER',mirror:'MIRROR TEST'};
+const ENEMY_LABEL={raider:'POACHER',knifer:'KNIFER',gunner:'GUNNER',brute:'HEAVY',raptor:'RAPTOR',mutant:'GRAFT',biker:'RIDER',regent:'REGENT',slicer:'BRAWLER',militia:'MILITIAMAN',trapper:'TRAPPER',hybrid:'HYBRID',mirror:'MIRROR TEST'};
 // Regulars show their variant's ROM HUD name (ENEMIES §1.3: FERRIS, GNEISS, BLADE, POACHER J, HAMMER T., R HOPPER, TYROG...),
 // except a chapter's `guard` name for its human regulars (chapter 6: CROWN GUARD); copies their hero's name, elites and
 // bosses their own; ENEMY_LABEL is the fallback without enemy-kinds.js.
@@ -3761,14 +3815,15 @@ const BAR_CYCLE=[[0xffffff,0xffee00,0xee0000],[0xffffff,0x990099,0xffee00],[0xff
 function foeBarState(hp,maxhp){const h=Math.max(0,Math.ceil(hp)),layer=h>0?Math.ceil(h/100)-1:0,cyc=hudData()?.lifeBar?.foe?.cycle||BAR_CYCLE;return {len:Math.min(100,Math.max(1,Math.round(maxhp))),fill:h-layer*100,layer,cols:cyc[layer%cyc.length]};}
 // Foe faces (0x179B6): regulars by their variant's ROM HUD name (the +0x03 index), bosses by their body, copies by their
 // hero (the kind-2 faces of 0x17A82).
-const BODY_FACE={butcher:'0x0F',torikeratopss:'0x11',arosaurus:'0x07',morgan:'0x15',slice:'0x05',richmond:'0x0C',fessenden:'0x22',sable:'0x0C',crownback:'0x22',rook:'0x0F',krag:'0x11',ironclub:'0x11',thorne:'0x07',glassback:'0x07',cinder:'0x15',overdrive:'0x15',echo:'0x05',engine:'0x05'};
+const BODY_FACE={butcher:'0x0F',torikeratopss:'0x11',arosaurus:'0x07',morgan:'0x15',slice:'0x05',richmond:'0x0C',fessenden:'0x22',sable:'0x0C',crownback:'0x22',rook:'0x0F',krag:'0x11',ironcap:'0x11',ironclub:'0x11',thorne:'0x07',glassback:'0x07',cinder:'0x15',overdrive:'0x15',echo:'0x05',engine:'0x05'};
 const FACE_BY_TYPE={'thurow:T':'0x24','thurow:U':'0x1D','naguri:N':'0x1E','knifeonly:P':'0x1C'};   // names the ROM table lists twice
 const hex2=i=>'0x'+i.toString(16).toUpperCase().padStart(2,'0');
 function foeFaceRec(e){const F=hudData()?.foeFaces;if(!F||!e)return null;
  if(e.type==='mirror')return F.hero[HEROES[e.hero]?.id]||null;
  if(e.boss){const b=BDEF[e.type]?.body;return BODY_FACE[b]?F.enemy[BODY_FACE[b]]||null:null;}
  if(!(romKind(e)||e.type==='zeke'))return null;const t=EK.typeOf?.(e.type,e.v),o=FACE_BY_TYPE[t+':'+e.v];if(o)return F.enemy[o]||null;
- const i=(F.names||[]).indexOf(EK.variantData(e.type,e.v)?.hud);return i>=0?F.enemy[hex2(i)]||null:null;}
+ // a generated kind (revision 3) borrows a ROM face by name (its variant's `face`: VICE T. for the militia, SKINNER, BLUDGE)
+ const d=EK.variantData(e.type,e.v),i=(F.names||[]).indexOf(d?.face||d?.hud);return i>=0?F.enemy[hex2(i)]||null:null;}
 // The P1 block has 13 cells for a name (x 24-127; slot 2's INSERT COIN starts at x 136, so a 14th cell would run into it).
 // A longer sequel name keeps the part after its last ' · ' (SABLE · GATE CONTROLS -> GATE CONTROLS), else its last word
 // (FOREMAN CINDER -> CINDER, MARSHAL SABLE -> SABLE), cut to 13 cells.
@@ -3887,7 +3942,7 @@ function render(){ctx.setTransform(1,0,0,1,0,0);ctx.imageSmoothingEnabled=false;
  // priority pixels (fg pages) over all of them. World y is drawn relative to cameraY; the stage passes take the camera.
  const ar=curArea(),cam={x:viewX,y:Math.round(cameraY)},sopt={road:roadStream};
  if(ar)SR.back(ctx,ar,cam,time,sopt);else rect(ctx,0,0,W,H,'#000000');
- ctx.save();ctx.translate(0,-cam.y);if(levelIndex===4&&ar?.id==='a2')drawHeroTanks();
+ ctx.save();ctx.translate(0,-cam.y);
  for(const z of zones){if(z.style==='land')continue;const x=z.x-viewX;
   // Crownback's jet lane: a water strip along his lane while the gills open, brighter while the jet runs
   if(z.mark){const k=clamp(1-z.t/z.total,0,1),rr=z.r*(.45+.55*k);ctx.fillStyle=`rgba(6,10,14,${(.28+.4*k).toFixed(3)})`;ctx.beginPath();ctx.ellipse(x,z.y,rr,rr*.36,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#e8d27a';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(x,z.y,z.r,z.r*.36,0,0,Math.PI*2);ctx.stroke();continue;}
@@ -4140,7 +4195,7 @@ function rsync(sec,rows,fix){
   return out;
 }
 function replicaChapter(i){
-  levelIndex=clamp(i|0,0,5);level=LEVELS[levelIndex];plan=buildPlan(levelIndex);level.length=plan.length;SR.require(levelIndex);bossArt(levelIndex);STG.use(chapterKey(levelIndex));heroRigChapter(levelIndex);
+  levelIndex=clamp(i|0,0,LASTCH);level=LEVELS[levelIndex];plan=buildPlan(levelIndex);level.length=plan.length;SR.require(levelIndex);bossArt(levelIndex);STG.use(chapterKey(levelIndex));heroRigChapter(levelIndex);
   const spec=EDEN_MISSIONS[levelIndex];mission={completed:0,total:spec.tasks.length,active:null,items:[],spec};started=true;areaIndex=-1;
 }
 function applyView(v){
@@ -4209,7 +4264,7 @@ function fireEvent(ev){
     case 'popup':_popup(n(a[0]),n(a[1]),String(a[2]??''),String(a[3]||'#e9ecd1'));break;
     case 'fx':if(a[0]&&typeof a[0]==='object'&&effects.length<300)effects.push({...a[0]});break;
     case 'pt':if(a[0]&&typeof a[0]==='object'&&particles.length<CFG.fx.maxParticles)particles.push({...a[0]});break;
-    case 'unlock':{const u=clamp(n(a[0]),0,5);if(u>save.unlocked){save.unlocked=u;persist();}break;}
+    case 'unlock':{const u=clamp(n(a[0]),0,LASTCH);if(u>save.unlocked){save.unlocked=u;persist();}break;}
     default:break;   // 'notice': the lobby shows join / leave notices from the roster
   }
 }
@@ -4267,7 +4322,7 @@ const MP_ADAPTER={
     NETROLE='host';localSlot=0;const r0=(cfg.roster||[]).find(r=>r&&r.slot===0);
     selected=clamp(r0?r0.hero|0:selected,0,3);difficulty=normalizeDifficulty(cfg.difficulty);score=0;lives=3;kills=0;bestCombo=0;runTime=0;coins=0;
     for(const k of Object.keys(mpReserve))delete mpReserve[k];
-    startStage(clamp(cfg.chapter|0,0,5),{skipBrief:true,section:cfg.section|0,roster:cfg.roster&&cfg.roster.length?cfg.roster:null});
+    startStage(clamp(cfg.chapter|0,0,LASTCH),{skipBrief:true,section:cfg.section|0,roster:cfg.roster&&cfg.roster.length?cfg.roster:null});
     if(!(cfg.section|0))queueDialog();
   },
   canAdmit(o){if(state!=='play'||fade||driving||bossIntro>0||bossSpawned||bossCard||!started||!players[0])return false;if(!lock)return true;return !!(o&&o.waitedMs>30000);},
@@ -4322,10 +4377,10 @@ window.LAST_EDEN={render, get state(){return state;},
  voice:{map:VOICE,cooldown:VOICE_CD,max:VOICE_MAX,files:voiceFiles,pick:voicePick,say:voice,play:playVoice,reset:()=>{voiceNext={};voiceLast={};voiceTurn=0;voiceLog.length=0;for(const a of voiceLive.splice(0))try{a.pause();}catch{}},get live(){return voiceLive.filter(a=>!a.paused&&!a.ended).length;},get log(){return [...voiceLog];}},get units(){return {world:'arcade',px:PX,aspect:settings.aspect};},get layout(){return {hud:[...LAYOUT.hud],radio:[...LAYOUT.radio],weapon:[...LAYOUT.weapon],font:UI()?.romFonts?'rom':'authored'};},get snapshot(){const b=bandOf(player?player.x:0),ar=plan?.areas?.[areaIndex];return {units:'arcade',view:{x:camera,y:cameraY,w:W,h:H},cameraY,area:ar?{index:ar.index,id:ar.id,w:ar.w,h:ar.h}:null,band:{top:b.top,bottom:b.bottom,mid:b.mid},areaLength:ar?ar.w:0,fade:fade?{to:fade.to,out:fade.out,t:fade.t}:null,roadStream,rules:JSON.parse(JSON.stringify(RULES)),difficulty:normalizeDifficulty(difficulty),road,coins,continueTimer,held:lastHeld?{...lastHeld}:null,difficultyRules:{...rules()},particles:particles.map(p=>({...p})),gunSocket:player?.weapon&&weaponClass(player.weapon)?gunMount():null,mission:mission?{completed:mission.completed,total:mission.total,active:mission.active?{...mission.active}:null}:null,artReady:SEQUEL_RENDER.ready,posesReady:!!RIG()?.ready,state,level:levelIndex,wave,score,lives,section:sectionIndex,encounter:encIndex,driving,camera,length:level.length,plan:plan?{areas:plan.areas.map(a=>({index:a.index,id:a.id,w:a.w,h:a.h,x0:a.x0})),sections:plan.sections.map(s=>({index:s.index,name:s.name,say:s.say,drive:s.drive,x:s.x,len:s.len,area:s.area,first:s.first,stage:s.stage,cap:s.cap,props:s.props.map(p=>({...p}))})),encounters:plan.encounters.map(e=>({x:e.x,cam:e.cam,lockId:e.lockId,area:e.area,section:e.section,task:e.task,boss:!!e.boss,elite:e.elite?.name||null}))}:null,lock:lock?{...lock}:null,bullets:bullets.map(b=>({...b})),discards:discards.map(d=>({...d})),zones:zones.map(z=>({...z})),effects:effects.map(f=>f.type),audio:soundtrack.status,player:player?{...player,pickTarget:null,grab:player.grab?{t:player.grab.t,hits:player.grab.hits,type:player.grab.e.type}:null,moveState:player.moveState?{name:player.moveState.name,k:player.moveState.k}:null}:null,enemies:enemies.map(e=>({...e,nid:e.nid,target:null,tp:null,byP:null,hitList:null,...(e.type==='mirror'?{rig:cloneInfo(e)}:{}),...(e.type==='fessenden'?{lot:{mode:crownModeOf(e),stagger:e.stagger||0}}:{})})),allies:allies.map(a=>({...a,target:null,rig:cloneInfo(a),rom:a.conscript?{key:a.ak||null,frame:a.af|0,fid:a.fid??null}:null})),objects:objects.map(o=>({...o})),drops:drops.map(d=>({...d})),scenery:scenery.map(c=>({...c})),crown:crown?{...crown}:null,wheels:spillWheels.map(w=>({...w})),bossObjects:bossObjs.map(o=>({...o})),bossCard:bossCard?{...bossCard}:null,radio:radio?radio.text:null,radioQueue:[...radioQueue],unlocked:save.unlocked,
   // G6 presentation: the card state, the area caption, the clear tally, the ending beat, the attract story
   card:card?{i:card.i,start:card.start,phase:card.phase,k:card.k,t:card.t,pre:card.pre}:null,caption:caption?{...caption}:null,tally:clearSeq?{...clearSeq.tally,t:clearSeq.t,story:clearSeq.story}:null,
-  ending:endSeq?{k:endSeq.k,beat:endBeat()?.beat||null,t:endSeq.t,done:!!endSeq.done,actors:endActors.map(a=>({hero:a.hero,x:a.x,y:a.y,state:a.state,own:!!a.own,freed:!!a.freed,conscript:!!a.conscript})),car:endCar?{...endCar}:null,area:areaIndex,lot:endLot?{x:endLot.x,y:endLot.y,dir:endLot.dir,key:endLot.ba?.key||null,map:bossMap(endLot),gelMap:bossMap(endLot,true),parts:bFrame(endLot)?1:0,drawn:!!endLot.drawn,remnant:!!endLot.remnant}:null}:null,attract:attractSeq?{...attractSeq}:null,menuIdle,checkpoint:save.checkpoint?{...save.checkpoint}:null,
+  ending:endSeq?{k:endSeq.k,beat:endBeat()?.beat||null,t:endSeq.t,done:!!endSeq.done,box:endBeat()?.boxes?endBoxAt(endBeat())?.box||null:null,crossing:endSeq.done?null:endRoadCrossing(endSeq.t),actors:endActors.map(a=>({hero:a.hero,x:a.x,y:a.y,state:a.state,own:!!a.own,freed:!!a.freed,conscript:!!a.conscript})),car:endCar?{...endCar}:null,area:areaIndex,lot:endLot?{x:endLot.x,y:endLot.y,dir:endLot.dir,key:endLot.ba?.key||null,map:bossMap(endLot),gelMap:bossMap(endLot,true),parts:bFrame(endLot)?1:0,drawn:!!endLot.drawn,remnant:!!endLot.remnant}:null}:null,attract:attractSeq?{...attractSeq}:null,menuIdle,checkpoint:save.checkpoint?{...save.checkpoint}:null,
   // §3.17: every player in slot order, this machine's slot, the network status, the sim time (on a joiner the shown time)
   players:[0,1,2].map(k=>pview(players[k])),localSlot,net:NETROLE==='off'?null:netView(),time};},
- start:(i=0,hero=0,mode='story',section=0)=>{selected=clamp(hero,0,3);difficulty=normalizeDifficulty(mode);score=0;lives=3;startStage(clamp(i,0,5),{skipBrief:true,section});},step:(dt=1/60)=>NETROLE==='client'?clientStep(dt):stepSim(dt),controls:{attack,jump,special,pickup,coin:insertCoin},
+ start:(i=0,hero=0,mode='story',section=0)=>{selected=clamp(hero,0,3);difficulty=normalizeDifficulty(mode);score=0;lives=3;startStage(clamp(i,0,LASTCH),{skipBrief:true,section});},step:(dt=1/60)=>NETROLE==='client'?clientStep(dt):stepSim(dt),controls:{attack,jump,special,pickup,coin:insertCoin},
  test:{loadChapter:i=>window.SEQUEL_RENDER?SEQUEL_RENDER.loadChapter(i):SR.require(i),damageObjective:n=>damageObjective(n,mission.active?.x,mission.active?.y,74,1),completeObjective,equip:(type,ammo)=>{player.pushV=0;player.pendingStrike=null;player.swing=null;player.dashPhase=null;player.attack=0;player.pickup=0;player.weapon=type;player.ammo=type?ammo??WEAPONS[type].ammo:0;},
   // spawnEnemy(x, y, 'kind[:V|:castId]', boss): a variant can be named (G4).
   spawnEnemy:(x,y,type='raider',boss=false)=>{const [k,V]=String(type).split(':'),e=spawnEnemy(x,y,k,boss);if(V)setVariant(e,castVariant(k,V,0,0)||V);return e;},drop:(type,x,y,food)=>drops.push({type,x,y,life:999,food:food||(type==='food'?'hamburger':type==='bonus'?'goldbar':type==='ammo'?'ammo':undefined)}),// move(x, y, area): arcade px in the area's own space; `area` (index or id) switches to that area first. The camera
@@ -4362,7 +4417,7 @@ window.LAST_EDEN={render, get state(){return state;},
   freeClones:freeConscripts,freeConscripts,clear:stageClear,
   // G6: open a chapter on its card and panels (start() skips them), the title, the attract story, the ending, the
   // credits, and the NEXT buttons of the card and of the ending
-  startCard:(i=0,hero=0,mode='story',section=0)=>{selected=clamp(hero,0,3);difficulty=normalizeDifficulty(mode);score=0;lives=3;startStage(clamp(i,0,5),{section});return state;},
+  startCard:(i=0,hero=0,mode='story',section=0)=>{selected=clamp(hero,0,3);difficulty=normalizeDifficulty(mode);score=0;lives=3;startStage(clamp(i,0,LASTCH),{section});return state;},
   menu:()=>{menu();return state;},attract:()=>{attract();return state;},ending:()=>{ending();return state;},credits:()=>{credits();return state;},cardAdvance,endAdvance,
   // G6 fix: compose an intermission picture now (true once its sprite overlay is in ARCADE_UI), redraw a live one at frame t
   composePic:id=>composePic(id),picFrame:(id,t)=>{picFrame(id,t);return !!picDone[id];},picArt:()=>Object.fromEntries(Object.entries(PIC_ART).map(([id,A])=>[id,{size:A.size||[PIC_W,PIC_H],crop:A.crop||[0,0],bg:A.bg!==false,live:!!A.live,done:!!picDone[id]}])),

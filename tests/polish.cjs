@@ -25,10 +25,10 @@ const checks=await page.evaluate(()=>{
  check('Every 72 Hz step moves the hero by the same amount (no skipped frames)',steps.every(d=>Math.abs(d-steps[0])<.01)&&steps[0]>1);
 
  // The Cadillac builds speed, coasts down instead of stopping dead, and never drifts into the screen edge while locked.
- g.start(1,0,'normal');ticks(5);const startX=car().x;key('KeyD',true);ticks(6);const early=car().vx;ticks(60);const top=car().vx;key('KeyD',false);ticks(12);const coasting=car().vx;ticks(90);
+ g.start(2,0,'normal');ticks(5);const startX=car().x;key('KeyD',true);ticks(6);const early=car().vx;ticks(60);const top=car().vx;key('KeyD',false);ticks(12);const coasting=car().vx;ticks(90);
  check(`Throttle builds speed over time (${early.toFixed(0)} → ${top.toFixed(0)} px/s) and the car moved forward`,early>0&&early<top&&top>148&&car().x>startX+111);
  check(`Releasing the throttle coasts down (${coasting.toFixed(0)} px/s) rather than stopping instantly`,coasting>0&&coasting<top);
- g.start(1,0,'normal');ticks(5);const plan=g.snapshot.plan;g.test.skipTo(0);g.step(1/60);ticks(30);let s=g.snapshot;
+ g.start(2,0,'normal');ticks(5);const plan=g.snapshot.plan;g.test.skipTo(0);g.step(1/60);ticks(30);let s=g.snapshot;
  check('The first highway fight locks the screen with riders entering from off screen',s.lock&&s.enemies.length>0&&s.enemies.every(e=>e.type==='biker'));
  ticks(180);release();ticks(120);const held=car().x,hp0=car().hp;ticks(120);s=g.snapshot;
  // A rider's hit jolts the car 23 px; apart from that, an unattended car must not creep toward the edge.
@@ -42,7 +42,7 @@ const checks=await page.evaluate(()=>{
  // Ramming is a single impact per enemy that flings them; a beaten rider's bike explodes.
  // (G4 fix pass: bikes now start beyond the edge by their 89-px frame reach, so their entry and charge timings shift and at
  // tick 240 neither rider may be riding level (mid-charge or still entering); wait up to 3 s more for one in its ride.)
- g.start(1,0,'normal');ticks(5);g.test.skipTo(0);g.step(1/60);ticks(240);s=g.snapshot;
+ g.start(2,0,'normal');ticks(5);g.test.skipTo(0);g.step(1/60);ticks(240);s=g.snapshot;
  let rider=s.enemies.find(e=>!e.dead&&e.onstage&&e.state==='walk');for(let i=0;i<180&&!rider;i++){ticks(1);s=g.snapshot;rider=s.enemies.find(e=>!e.dead&&e.onstage&&e.state==='walk');}
  if(rider){g.test.move(rider.x-193,rider.y);key('KeyD',true);ticks(10);g.controls.jump();ticks(45);release();}
  s=g.snapshot;const hitRider=s.enemies.find(e=>e.id===rider?.id);
@@ -50,7 +50,7 @@ const checks=await page.evaluate(()=>{
  check('Drops on the highway slide back with the road',(()=>{g.test.drop('food',car().x+222,car().y);const d0=g.snapshot.drops.at(-1).x;ticks(30);const d=g.snapshot.drops.find(v=>v.type==='food');return !d||d.x<d0-74;})());
  const made=g.test.spawnEnemy(car().x+163,car().y,'biker');const idx=g.snapshot.enemies.findIndex(e=>e.id===made.id);g.test.damageEnemy(idx,99999);
  check('A beaten rider’s bike goes up in an explosion',g.snapshot.effects.includes('explosion')&&g.snapshot.enemies[idx].dying);
- g.start(1,1,'normal');ticks(5);g.test.skipTo(g.snapshot.plan.encounters.findIndex(e=>e.task===0));g.step(1/60);ticks(30);
+ g.start(2,1,'normal');ticks(5);g.test.skipTo(g.snapshot.plan.encounters.findIndex(e=>e.task===0));g.step(1/60);ticks(30);
  check('Convoy pods are carried on a flatbed that must be rammed',g.snapshot.mission.active?.kind==='cargo');
  // The radio strip has its own rect above the feet band (ARCHITECTURE §1.7): a line changes the pixels inside layout.radio
  // (most of them: the strip is drawn) and none in the lanes below arcade y 81.
@@ -65,31 +65,26 @@ const checks=await page.evaluate(()=>{
  // Riders swerve into the car and no longer shoot (ENEMIES §2.5: the ROM has no rider firing pose); a gunner arriving on the
  // highway is a roadside Thurow DYNA, whose dynamite is the hostile projectile (ENEMIES §8, PLAN §7 G4: polish L54
  // renamed). skipTo(1)'s waves are bikers only, so the thrower is brought in with test.arrive.
- g.start(1,0,'normal');ticks(5);g.test.skipTo(1);g.step(1/60);let rushes=0,shots=0,riderShots=0,thrower=null;
+ g.start(2,0,'normal');ticks(5);g.test.skipTo(1);g.step(1/60);let rushes=0,shots=0,riderShots=0,thrower=null;
  for(let i=0;i<900;i++){if(i===60)thrower=g.test.arrive('gunner','R',0);g.step(1/60);const t=g.snapshot,bikers=new Set(t.enemies.filter(e=>e.type==='biker').map(e=>e.id));if(t.enemies.some(e=>e.type==='biker'&&e.state==='charge'))rushes++;if(t.bullets.some(b=>!b.friendly&&b.kind==='bomb'))shots++;if(t.bullets.some(b=>!b.friendly&&bikers.has(b.owner)))riderShots++;}
  check(`Riders charge the car (${rushes} charge ticks) and never shoot (${riderShots}); roadside dynamite flies (${shots} ticks, ${thrower?thrower.v:'no thrower'})`,rushes>0&&riderShots===0&&shots>0&&thrower?.v==='T');
 
- // After the gate controls and the spillway, Sable takes the unfinished Crown treatment and comes back as CROWNBACK.
- g.start(5,5,'story');ticks(5);g.test.skipTo(g.snapshot.plan.encounters.length-1);g.step(1/60);ticks(200);
- s=g.snapshot;const sable=s.enemies.findIndex(e=>e.boss);g.test.damageEnemy(sable,s.enemies[sable].maxhp+1);ticks(5);s=g.snapshot;
- check('Sable takes the gate controls when his first health bar empties',s.enemies.some(e=>e.boss&&e.phase===2&&!e.dead));
- ticks(200);g.test.clearFighters();ticks(80);s=g.snapshot;
- check('The spillway release is required after the gate controls are smashed',s.mission.active?.kind==='gate'&&s.mission.active.bossTask&&g.state==='play');
- // The boss rebuild: Sable steps out of the cracked chair and takes the treatment in front of it (his own generated frames,
- // then Crownback's: the 'crownback:treatment' anim), invulnerable while it plays; then Crownback fights on his own body.
- g.test.completeObjective();ticks(2);s=g.snapshot;const last=s.enemies.find(e=>e.type==='fessenden'),li0=s.enemies.indexOf(last);
- check('Opening the spillway brings CROWNBACK in as a boss: Sable steps out of the cracked gate controls and takes the treatment there',!!last&&last.boss&&last.name==='CROWNBACK'&&last.state==='mutate'&&last.x>s.lock.right-120&&last.x<s.lock.right-80&&s.crown?.cracked&&g.state==='play');
- {const keys=new Set();let hurt=false;for(let i=0;i<200;i++){g.step(1/60);const e=g.snapshot.enemies[li0];if(e?.ba)keys.add(e.ba.key);if(i===90){const h=e.hp;g.test.damageEnemy(li0,50);hurt=g.snapshot.enemies[li0].hp<h;}}
+ // Revision 3 (stage 8): beaten, Sable takes the unfinished treatment at once (no gate controls, no spillway): Mustapha's
+ // release line goes on the radio, Sable walks to the crest and transforms (his own frames, then Crownback's: the
+ // 'crownback:treatment' anim), invulnerable while it plays; then Crownback fights on his own body.
+ g.start(7,5,'story');ticks(5);g.test.skipTo(g.snapshot.plan.encounters.length-1);g.step(1/60);ticks(200);
+ s=g.snapshot;const sable=s.enemies.findIndex(e=>e.boss);g.test.damageEnemy(sable,s.enemies[sable].maxhp+1);ticks(2);s=g.snapshot;
+ const last=s.enemies.find(e=>e.type==='fessenden');
+ check('Beaten, Sable takes the treatment at once: Mustapha disengages the release (radio), then CROWNBACK comes in as a boss with no gate-controls phase',!!last&&last.boss&&last.name==='CROWNBACK'&&last.state==='mutate'&&!s.enemies.some(e=>e.boss&&e.type==='sable'&&e.phase===2&&!e.dead)&&[s.radio,...(s.radioQueue||[])].includes(EDEN_CAMPAIGN[7].releaseSay)&&!s.mission.active&&g.state==='play');
+ {const keys=new Set();let hurt=false;const fi=()=>g.snapshot.enemies.findIndex(x=>x.type==='fessenden');for(let i=0;i<200;i++){g.step(1/60);const e=g.snapshot.enemies[fi()];if(e?.ba)keys.add(e.ba.key);if(i===90&&e){const h=e.hp;g.test.damageEnemy(fi(),50);hurt=g.snapshot.enemies[fi()].hp<h;}}
   check(`The treatment plays Sable's walk, then his transform frames into Crownback's, and he cannot be hurt meanwhile (${[...keys].join(', ')})`,keys.has('sable:1')&&keys.has('crownback:treatment')&&!hurt);}
  ticks(60);s=g.snapshot;const beast=s.enemies.find(e=>e.type==='fessenden');
- check('Crownback finishes the treatment where Sable stood and starts attacking',beast&&beast.x<s.lock.right-44&&!['intro','mutate'].includes(beast.state));
+ check('Crownback finishes the treatment on the crest and starts attacking',beast&&beast.x<s.lock.right-44&&!['intro','mutate'].includes(beast.state));
  {let drew=true;try{g.render();}catch(e){drew=false;}const bx=g.test.bossBox(s.enemies.indexOf(beast));
   check(`Crownback draws on his generated body ('crownback' frames, ${bx?bx.w+'x'+bx.h:'none'} px) without errors`,drew&&!!bx&&/^crownback:/.test(beast.ba?.key||'')&&bx.h>=130&&bx.h<=200);}
  g.test.clearFighters();ticks(90);
- check('Beating Crownback ends the chapter and leads to the ending',g.state==='clear');
- // Story 2: the final form is Sable after the unfinished Crown treatment (CROWNBACK), not a copy of Fessenden; the body is
- // still BOSS_DEFS.fessenden (the engine's id) until the boss rebuild.
- check('The chapter ending and story text describe Sable’s transformation into Crownback',/Crownback/.test(EDEN_CAMPAIGN[5].end)&&/Crown treatment/.test(EDEN_CAMPAIGN[5].brief)&&/CROWNBACK/.test(EDEN_CAMPAIGN[5].lastCopy.card));
+ check('Beating Crownback ends the stage and leads to the ending',g.state==='clear');
+ check('The stage ending and story text describe Sable’s transformation into Crownback and his fall into the discharge works',/Crownback/.test(EDEN_CAMPAIGN[7].end)&&/discharge works/.test(EDEN_CAMPAIGN[7].end)&&/treatment/.test(EDEN_CAMPAIGN[7].brief)&&/CROWNBACK/.test(EDEN_CAMPAIGN[7].lastCopy.card));
 
  // Arcade gun stances decoded from the ROM (HEROES §10.2, PLAN §7 G3a): Jack's clips by record, the rec2 under-layer included.
  const RA=ROM_HEROES.hero.jack.anim,recs=(r,i)=>RA[r].f.map(f=>f[i]).join();
@@ -132,37 +127,39 @@ const checks=await page.evaluate(()=>{
  g.start(0,0,'story');ticks(5);g.test.spawnBoss();ticks(170);s=g.snapshot;bi=s.enemies.findIndex(e=>e.boss);g.test.damageEnemy(bi,s.enemies[bi].maxhp*.45);let tide=null;
  for(let i=0;i<300&&!tide;i++){ticks(1);tide=g.snapshot.zones.find(z=>z.style==='tide');}
  check('From 60 % the tide surges over the front of the band: a zone that cannot be jumped (air:false)',!!tide&&tide.air===false&&tide.band&&tide.band[1]>tide.band[0]);
- // The boss rebuild (chapter 5): DR. ECHO's dish ring flies down her lane as its own sprite (echoring); at 0 HP she boards
- // the ECHO ENGINE (invulnerable), whose sonic beam marks its lane during the glowing-dish tell before it fires.
- g.start(4,0,'story');ticks(5);g.test.spawnBoss();ticks(170);s=g.snapshot;bi=s.enemies.findIndex(e=>e.boss);g.test.move(s.enemies[bi].x-150,s.enemies[bi].y);ticks(1);
+ // The boss rebuild (stage 7): DR. ECHO's dish ring flies down her lane as its own sprite (echoring); at 0 HP she boards
+ // the ECHO ENGINE (invulnerable), whose beam marks its lane during the glowing tell before it fires.
+ g.start(6,0,'story');ticks(5);g.test.spawnBoss();ticks(170);s=g.snapshot;bi=s.enemies.findIndex(e=>e.boss);g.test.move(s.enemies[bi].x-150,s.enemies[bi].y);ticks(1);
  g.test.bossMove(bi,'ring');let ring=null;for(let i=0;i<120&&!ring;i++){ticks(1);ring=g.snapshot.bullets.find(b=>!b.friendly&&b.art&&b.art.key==='echoring:0');}
  check('Echo raises her dish and fires a ring down her lane (its own sprite)',!!ring&&Math.abs(ring.y-g.snapshot.enemies[bi].y)<1);
  g.test.damageEnemy(bi,99999);ticks(2);const eb=g.snapshot.enemies[bi];let ehurt=false;ticks(60);{const h=g.snapshot.enemies[bi].hp;g.test.damageEnemy(bi,40);ehurt=g.snapshot.enemies[bi].hp<h;}ticks(120);s=g.snapshot;
  check('At 0 HP Echo boards the ECHO ENGINE (invulnerable while boarding) and fights on in it',eb.state==='mutate'&&eb.phase===2&&!ehurt&&s.enemies[bi].name==='ECHO ENGINE'&&/^engine:/.test(s.enemies[bi].ba?.key||''));
  g.test.move(s.enemies[bi].x-150,s.enemies[bi].y);g.test.bossMove(bi,'beam');let lane=null,fired=false;for(let i=0;i<120&&!fired;i++){ticks(1);const z=g.snapshot.zones.find(z=>z.lane);if(z&&!lane)lane=z;if(g.snapshot.enemies[bi].jetT>0)fired=true;}
  check('The Engine marks its beam lane during the tell, then fires the sonic beam',!!lane&&fired);
- // G5 (PLAN §7 5e, CAMPAIGN §10.4): a spillway wheel held 1 s knocks the planted Crownback off his brace (x1.5); his plates
- // break off in stages, neck B at 66 % and the long shield arm at 33 %, when his guard collapses.
- g.start(5,0,'story');ticks(5);g.test.spawnBoss();ticks(170);g.test.damageEnemy(0,99999);ticks(200);g.test.damageEnemy(0,99999);ticks(5);g.test.completeObjective();ticks(230);
- s=g.snapshot;let li=s.enemies.findIndex(e=>e.type==='fessenden'),wheel=s.wheels[0];
- if(wheel){g.test.move(wheel.x,wheel.y);key('KeyE',true);ticks(70);key('KeyE',false);}s=g.snapshot;const lot=s.enemies[li];
- check('A spillway wheel held for a second staggers Crownback and opens him to x1.5 damage',!!wheel&&lot.lot.stagger>0&&lot.vulnT>0&&s.wheels[0].cd>0);
- ticks(250);   // the stagger (and its x1.5) runs out before the phase thresholds are crossed one at a time
- // the phases (BOSS-SPECS 6c): at 66 % the arm plates crack and he wades out (a roar), at 33 % his guard breaks (x1.5 to the end)
+ // Revision 3: no spillway wheels (the river never fights for the heroes); Crownback's plates break off in stages, the
+ // shield arm cracking at 66 % (he wades out with a roar) and his guard collapsing at 33 % (x1.5 to the end).
+ g.start(7,0,'story');ticks(5);g.test.spawnBoss();ticks(170);g.test.damageEnemy(0,99999);ticks(230);
+ s=g.snapshot;let li=s.enemies.findIndex(e=>e.type==='fessenden'&&!e.dead);
+ check('No spillway wheels in the Crownback fight',li>=0&&(s.wheels||[]).length===0);
  {const L0=g.snapshot.enemies[li];g.test.damageEnemy(li,L0.hp-L0.maxhp*.6);}ticks(8);const p1=g.snapshot.enemies[li];g.test.damageEnemy(li,p1.hp-p1.maxhp*.3);ticks(8);const p2=g.snapshot.enemies[li];
  check('Crownback changes phase in stages: wading out with a roar at 66 %, his guard broken (x1.5) at 33 %',p1.lot.mode==='wading'&&p1.ba?.key==='crownback:8'&&p2.lot.mode==='collapse'&&p2.vulnT>100);
- // Chapter 2's boss rebuild: BREAKWATER (fought from the Cadillac) became HAULMASTER KRAG -> IRONCLUB, fought on foot. At
- // the last wagon's lock the convoy halts and the gang leaves the car; Krag's 0 HP is his trial dose: the serum anim
- // (Krag's frames, then Ironclub's) while he cannot be hurt, then IRONCLUB on his own body; his defeat is an arrest.
- g.start(1,0,'story');ticks(5);g.test.spawnBoss();ticks(2);s=g.snapshot;bi=s.enemies.findIndex(e=>e.boss);
- check('Chapter 2: the convoy halts at the boss and the gang fights HAULMASTER KRAG on foot',!s.driving&&s.enemies[bi]?.name==='HAULMASTER KRAG');
- ticks(170);g.test.damageEnemy(bi,99999);ticks(2);s=g.snapshot;let k0=s.enemies[bi];const serum=new Set();let hurtInSerum=false;
- for(let i=0;i<150;i++){ticks(1);const e=g.snapshot.enemies[bi];if(e.ba)serum.add(e.ba.key);if(i===60){const h=e.hp;g.test.damageEnemy(bi,40);hurtInSerum=g.snapshot.enemies[bi].hp<h;}}s=g.snapshot;
- check(`At 0 HP Krag takes the trial dose (${[...serum].join(', ')}) without being hurt, then fights as IRONCLUB on his own body`,k0.state==='mutate'&&k0.phase===2&&serum.has('ironclub:serum')&&!hurtInSerum&&s.enemies[bi].name==='IRONCLUB'&&/^ironclub:/.test(s.enemies[bi].ba?.key||''));
+ // Stage 3 (revision 3): HAULMASTER KRAG is human only, fought on foot when the convoy halts; beaten he is held (arrest).
+ g.start(2,0,'story');ticks(5);g.test.spawnBoss();ticks(2);s=g.snapshot;bi=s.enemies.findIndex(e=>e.boss);
+ check('Stage 3: the convoy halts at the boss and the gang fights HAULMASTER KRAG on foot',!s.driving&&s.enemies[bi]?.name==='HAULMASTER KRAG');
+ ticks(170);g.test.damageEnemy(bi,99999);ticks(2);s=g.snapshot;const k0=s.enemies[bi];
+ check('Beaten, Krag stays human: no trial dose, he is held (his hurt frame) and the stage clears',k0.type==='truck'&&k0.phase===1&&k0.defeat?.kind==='arrest'&&(()=>{let n=0;g.snapshot.enemies.forEach((e,j)=>{if(!e.boss&&!e.dead)g.test.damageEnemy(j,99999);});while(g.state!=='clear'&&n<600){ticks(1);n++;}return g.state==='clear';})());
+ // Stage 5: IRONCLUB, Sable's shock captain (revision 3: two forms). He fights first as the ARMOURED CAPTAIN ('ironcap':
+ // the haymaker, the double slam, the stomping charge); beaten, he sheds the armour (ironcap main 5 then ironclub main 9)
+ // into the plated body ('ironclub'), rolls along his lane as a ball, then uncurls open (x1.5); beaten, he stays plated (held).
+ g.start(4,0,'story');ticks(5);g.test.spawnBoss();ticks(2);s=g.snapshot;bi=s.enemies.findIndex(e=>e.boss);
+ {const keys=new Set();for(let i=0;i<170;i++){ticks(1);const e=g.snapshot.enemies[bi];if(e?.ba)keys.add(e.ba.key);}s=g.snapshot;
+  check(`Stage 5's boss is IRONCLUB, first in his armour on the captain's body (${[...keys].join(', ')})`,s.enemies[bi].type==='ironclub'&&s.enemies[bi].name==='IRONCLUB'&&s.enemies[bi].phase===1&&[...keys].some(k=>/^ironcap:/.test(k))&&![...keys].some(k=>/^ironclub:/.test(k)));}
+ {g.test.damageEnemy(bi,99999);const keys=new Set();let inv=true;for(let i=0;i<200;i++){ticks(1);const e=g.snapshot.enemies[bi];if(e?.ba)keys.add(e.ba.key);if(i<120&&e.state==='mutate'&&!(e.inv>0))inv=false;}s=g.snapshot;
+  check(`Beaten in his armour, he sheds it (the bursting plates, then the roar) and fights on as plated IRONCLUB (${[...keys].join(', ')})`,s.enemies[bi].phase===2&&!s.enemies[bi].dead&&inv&&[...keys].some(k=>/^ironclub:(serum|9)/.test(k))&&/^ironclub:/.test(s.enemies[bi].ba?.key||''));}
  g.test.move(s.enemies[bi].x-150,s.enemies[bi].y);g.test.bossMove(bi,'roll');let rolled=false,open=null;for(let i=0;i<200&&!open;i++){ticks(1);const e=g.snapshot.enemies[bi];if(e.state==='charge'&&e.ba?.key==='ironclub:5')rolled=true;if(rolled&&e.state==='recover'&&e.ba?.key==='ironclub:6')open=e;}
  check('Ironclub rolls along his lane as a ball, then uncurls open (x1.5)',rolled&&!!open&&open.vulnT>0&&open.vulnMul===1.5);
- ticks(60);g.test.damageEnemy(bi,99999);let n=0;while(g.state!=='clear'&&n<600){ticks(1);n++;}const kd=g.snapshot.enemies.find(e=>e.type==='truck');
- check('Beating Ironclub arrests him (no dissolve, his defeat anim held) and clears the chapter',g.state==='clear'&&(!kd||kd.defeat?.kind==='arrest'));
+ ticks(60);g.test.damageEnemy(bi,99999);let n=0;while(g.state!=='clear'&&n<600){ticks(1);n++;}const kd=g.snapshot.enemies.find(e=>e.type==='ironclub');
+ check('Beating Ironclub holds him (no dissolve, his defeat anim held) and clears the stage',g.state==='clear'&&(!kd||kd.defeat?.kind==='arrest'));
  // CAMPAIGN §8.4 / §10.4 ('lines.after; then clear'): a beaten boss's defeat script plays before the chapter clears. Since
  // the boss rebuild Cinder is beaten as Overdrive Cinder: he climbs out of his broken rig (the arrest script), his surrender
  // goes on the radio at 1.3 s, and only then does the clear panel come up (STORY.md: he talks).

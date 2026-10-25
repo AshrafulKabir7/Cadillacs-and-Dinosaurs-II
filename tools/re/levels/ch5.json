@@ -1,958 +1,288 @@
 {
-  "id": "ch5",
-  "title": "THE OBSERVATORY",
-  "objPage": "S7A1",
-  "preset": "coldlab",
-  "notes": [
-    "COHERENCE (2026-10-22): ch5 climbs to Echo's observatory and goes inside, one way: a0 THE CLIFF ROAD is the rock road up the cliff at night (E5a0 1696-2464 only), a1 THE COPIED VAULT is the observatory's library and instrument halls (E7a2 448-1472 only: shelves, chart rolls, the dark stacks), a2 is the dome itself (E7a3 0-1264 only): the vat hall under the ribbed dome (the tunnel ribs), the broadcast room (the consoles) and the dish gallery where Echo fights. Each area walks back and forth through its one source strip (legs <= 512 px, leftward legs mirrored), so every join is a mirror join or a continuation; the place changes only at the fades.",
-    "Palette: night (scale + 15% toward #2a3a6a) on the cliff; inside, one cold blue-violet light for the halls and the dome (saturation 0.75, lightness 0.92, 22% toward #4a5aa0; the tanks 12%), so the library and the dome read as one building at night. The cliff's far layer is E5a0's mountains under the night sky; the library and the dome have no far layer (their open stacks and openings show the dark backdrop).",
-    "5-4 THE VAT HALL keeps Echo's clean tank row: E8a0 592-1104 tanks 05-08 (h 112-240, blend over the dome ribs) at area x 0, so game.js HERO_TANKS (x 30, 175, 320, 464) stand in their glass; 5-6 carries tanks 07-08 again (E8a0 864-1120 at x 2048: HERO_TANKS x 2096, 2240).",
-    "Boss arena (5-6, DR. ECHO with the acoustic dish): the dish gallery under the dome ribs, the broadcast consoles and their screens (Echo's command transmitter) on both sides of the lock (E7a3 880-1264, before the original COMPUTER ROOM boss window at 1264); the runtime adds the vat vents."
-  ],
-  "areas": [
+ "id": "ch5",
+ "title": "CROWN VALLEY",
+ "objPage": "S1A0",
+ "preset": "ruin",
+ "notes": [
+  "Painted scenery (revision 3, step D): the 5 st5 paintings (work/bg/gen/st5 -> strips tools/art/strips/st5, prompts tools/art/bg-prompts.json). a0 is the dry river crossing (one painting, 1312 px); a1 and a2 are the four strips of their two paintings in storyline order (a<N>-1 A, B, a<N>-2 A, B), overlapping 32 px with a floor-only crossfade (2592 px).",
+  "Gameplay structure (sections, lock counts, task props, casts, boss lock) from step B, re-fitted to the painted areas and their floor lines. a0 has one painting, so 5-2 (the fence line, task 0 BARRIER · FARM ROAD, the scouts driving raptors at the farmhouses) moved into a1 with the farms."
+ ],
+ "areas": [
+  {
+   "id": "a0",
+   "w": 1312,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
     {
-      "id": "a0",
-      "w": 1344,
-      "h": 224,
-      "bg": "auto",
-      "preset": "night",
-      "ops": [
-        {
-          "op": "tint",
-          "rgb": "#2a3a6a",
-          "amount": 0.15
-        }
-      ],
-      "s2": [
-        {
-          "slice": {
-            "src": "E5a0",
-            "x": [
-              1696,
-              2208
-            ],
-            "h": [
-              528,
-              752
-            ]
-          },
-          "at": [
-            0,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E5a0",
-            "x": [
-              1952,
-              2208
-            ],
-            "h": [
-              528,
-              752
-            ]
-          },
-          "at": [
-            512,
-            0
-          ],
-          "flip": true
-        },
-        {
-          "slice": {
-            "src": "E5a0",
-            "x": [
-              1952,
-              2400
-            ],
-            "h": [
-              528,
-              752
-            ]
-          },
-          "at": [
-            768,
-            0
-          ]
-        },
-        {
-          "slice": {
-            "src": "E5a0",
-            "x": [
-              2272,
-              2400
-            ],
-            "h": [
-              528,
-              752
-            ]
-          },
-          "at": [
-            1216,
-            0
-          ],
-          "flip": true
-        }
-      ],
-      "s3": [
-        {
-          "x": [
-            0,
-            1344
-          ],
-          "src": "E5a0",
-          "note": "the mountains under the night sky"
-        }
-      ],
-      "sections": [
-        {
-          "id": "5-1",
-          "name": "THE CLIFF ROAD",
-          "x0": 0,
-          "len": 1344,
-          "cap": "THE CLIFF ROAD",
-          "locks": [
-            640,
-            960
-          ],
-          "bossLock": null,
-          "set": [
-            "zeke"
-          ],
-          "scenery": [
-            "pteranodon-bg"
-          ],
-          "cast": {
-            "gunner": [
-              "bomber",
-              "poacherJ"
-            ]
-          },
-          "props": [
-            {
-              "kind": "crate",
-              "x": 222
-            },
-            {
-              "kind": "barrel",
-              "x": 607
-            },
-            {
-              "kind": "barrel",
-              "x": 992
-            }
-          ]
-        }
-      ]
+     "img": "tools/art/strips/st5/st5-a0-1-A.png",
+     "at": 0,
+     "note": "the dry river crossing: the cracked riverbed, stranded boats, the fence across the animal trail, the dam far upstream"
     },
     {
-      "id": "a1",
-      "w": 2048,
-      "h": 224,
-      "bg": "auto",
-      "s2": [
-        {
-          "slice": {
-            "src": "E7a2",
-            "x": [
-              448,
-              960
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            0,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.75,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E7a2",
-            "x": [
-              704,
-              960
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            512,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.75,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E7a2",
-            "x": [
-              704,
-              960
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            768,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.75,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E7a2",
-            "x": [
-              960,
-              1472
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1024,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.75,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E7a2",
-            "x": [
-              1216,
-              1472
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1536,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.75,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E7a2",
-            "x": [
-              1216,
-              1472
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1792,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.75,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.22
-            }
-          ]
-        }
-      ],
-      "sections": [
-        {
-          "id": "5-2",
-          "name": "THE INSTRUMENT FLOOR",
-          "x0": 0,
-          "len": 1024,
-          "cap": "THE COPIED VAULT",
-          "locks": [
-            192,
-            640
-          ],
-          "bossLock": null,
-          "props": [
-            {
-              "kind": "crate",
-              "x": 193
-            },
-            {
-              "kind": "barrel",
-              "x": 578
-            },
-            {
-              "kind": "tuner",
-              "name": "CONTROL CHANNEL A",
-              "x": 420
-            }
-          ],
-          "cast": {
-            "knifer": [
-              "knife",
-              "blade"
-            ]
-          }
-        },
-        {
-          "id": "5-3",
-          "name": "THE COPIED ARCHIVE",
-          "x0": 1024,
-          "len": 1024,
-          "locks": [
-            1216,
-            1664
-          ],
-          "bossLock": null,
-          "note": "elite MIRROR TEST; fg book piles (priority pens)",
-          "cast": {
-            "gunner": [
-              "bomber",
-              "poacherJ"
-            ],
-            "knifer": [
-              "blade",
-              "knife"
-            ]
-          },
-          "props": [
-            {
-              "kind": "barrel",
-              "x": 193
-            },
-            {
-              "kind": "crate",
-              "x": 578
-            }
-          ]
-        }
-      ],
-      "ops": []
-    },
-    {
-      "id": "a2",
-      "w": 3200,
-      "h": 224,
-      "bg": "auto",
-      "s2": [
-        {
-          "slice": {
-            "src": "E7a3",
-            "x": [
-              0,
-              384
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            0,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.75,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E7a3",
-            "x": [
-              128,
-              384
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            384,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.75,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E7a3",
-            "x": [
-              128,
-              512
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            640,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.75,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E7a3",
-            "x": [
-              512,
-              1024
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1024,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.75,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E7a3",
-            "x": [
-              1024,
-              1264
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1536,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.75,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E7a3",
-            "x": [
-              992,
-              1264
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            1776,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.75,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E7a3",
-            "x": [
-              992,
-              1264
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            2048,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.75,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E7a3",
-            "x": [
-              880,
-              1264
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            2320,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.75,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E7a3",
-            "x": [
-              880,
-              1264
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            2704,
-            0
-          ],
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.75,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "slice": {
-            "src": "E7a3",
-            "x": [
-              1152,
-              1264
-            ],
-            "h": [
-              16,
-              240
-            ]
-          },
-          "at": [
-            3088,
-            0
-          ],
-          "flip": true,
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.75,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.22
-            }
-          ]
-        },
-        {
-          "patch": {
-            "src": "E8a0",
-            "x": [
-              592,
-              1104
-            ],
-            "h": [
-              112,
-              240
-            ]
-          },
-          "at": [
-            0,
-            0
-          ],
-          "blend": "over",
-          "prio": "none",
-          "note": "Echo's clean tank row (E8a0 tanks, blend over the dome wall)",
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.85,
-              "l": 0.95
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.12
-            }
-          ]
-        },
-        {
-          "patch": {
-            "src": "E8a0",
-            "x": [
-              848,
-              1120
-            ],
-            "h": [
-              112,
-              240
-            ]
-          },
-          "at": [
-            2032,
-            0
-          ],
-          "blend": "over",
-          "prio": "none",
-          "note": "Echo's clean tank row (E8a0 tanks, blend over the dome wall)",
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.85,
-              "l": 0.95
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.12
-            }
-          ]
-        },
-        {
-          "patch": {
-            "src": "E7a3",
-            "x": [
-              880,
-              912
-            ],
-            "h": [
-              112,
-              240
-            ]
-          },
-          "at": [
-            2032,
-            0
-          ],
-          "join": true,
-          "prio": "none",
-          "note": "the dome's riser pipe over the 5-5 | 5-6 join (tank 07 begins at the join)",
-          "preset": false,
-          "ops": [
-            {
-              "op": "hsl",
-              "h": 0,
-              "s": 0.75,
-              "l": 0.92
-            },
-            {
-              "op": "tint",
-              "rgb": "#4a5aa0",
-              "amount": 0.22
-            }
-          ]
-        }
-      ],
-      "sections": [
-        {
-          "id": "5-4",
-          "name": "THE VAT HALL",
-          "x0": 0,
-          "len": 1024,
-          "cap": "THE VAT HALL",
-          "locks": [
-            192,
-            640
-          ],
-          "bossLock": null,
-          "props": [
-            {
-              "kind": "barrel",
-              "x": 193
-            },
-            {
-              "kind": "barrel",
-              "x": 578
-            },
-            {
-              "kind": "tuner",
-              "name": "CONTROL CHANNEL B",
-              "x": 420
-            }
-          ],
-          "overlay": "heroTanks (G6): hero idle frames behind the tank glass, plates TENREC / DUNDEE / CAIRO / O’BRADOVICH",
-          "cast": {
-            "gunner": [
-              "poacherJ",
-              "bomber"
-            ],
-            "knifer": [
-              "blade",
-              "knife"
-            ]
-          }
-        },
-        {
-          "id": "5-5",
-          "name": "THE BROADCAST ROOM",
-          "x0": 1024,
-          "len": 1024,
-          "locks": [
-            1216,
-            1664
-          ],
-          "bossLock": null,
-          "props": [
-            {
-              "kind": "crate",
-              "x": 193
-            },
-            {
-              "kind": "barrel",
-              "x": 578
-            },
-            {
-              "kind": "tuner",
-              "name": "CONTROL CHANNEL C",
-              "x": 860
-            }
-          ],
-          "cast": {
-            "gunner": [
-              "bomber",
-              "poacherJ"
-            ]
-          }
-        },
-        {
-          "id": "5-6",
-          "name": "THE LENS HALL",
-          "x0": 2048,
-          "len": 1152,
-          "locks": [
-            2240
-          ],
-          "bossLock": 2816,
-          "props": [
-            {
-              "kind": "barrel",
-              "x": 193
-            },
-            {
-              "kind": "crate",
-              "x": 578
-            },
-            {
-              "kind": "barrel",
-              "x": 963
-            },
-            {
-              "kind": "vat-vent",
-              "x": 840
-            },
-            {
-              "kind": "vat-vent",
-              "x": 960
-            },
-            {
-              "kind": "vat-vent",
-              "x": 1080
-            }
-          ],
-          "note": "boss lock 2816-3200 = E4a2 512-768 + 640-768 flip (a mirror join); no E7a3/E8a0 column in it; the Slice window E4a2 1136+ is unused",
-          "cast": {
-            "gunner": [
-              "bomber",
-              "poacherJ"
-            ],
-            "knifer": [
-              "blade",
-              "knife"
-            ]
-          }
-        }
-      ],
-      "ops": []
+     "img": "tools/art/strips/st5/st5-a0-1-B.png",
+     "at": 640,
+     "note": "the fence and stone wall flattened by something huge and armored, plated footprints in the mud",
+     "blend": 32,
+     "blendRows": "floor"
     }
-  ]
+   ],
+   "start": {
+    "x": 60
+   },
+   "sections": [
+    {
+     "id": "5-1",
+     "name": "THE DRY RIVER",
+     "x0": 0,
+     "len": 1312,
+     "cap": "THE DRY RIVER CROSSING",
+     "locks": [
+      640,
+      928
+     ],
+     "bossLock": null,
+     "props": [
+      {
+       "kind": "crate",
+       "x": 170
+      },
+      {
+       "kind": "crate",
+       "x": 330
+      },
+      {
+       "kind": "drop",
+       "type": "gun",
+       "x": 260
+      }
+     ],
+     "scenery": [
+      "flock"
+     ],
+     "note": "the dry river and the flattened fence; the start kit (2 crates, the drop) by the stranded boats"
+    }
+   ],
+   "anims": []
+  },
+  {
+   "id": "a1",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
+    {
+     "img": "tools/art/strips/st5/st5-a1-1-A.png",
+     "at": 0,
+     "note": "the abandoned farms: farmhouse, broken windmill, fenced fields, the militia posters of the armored captain"
+    },
+    {
+     "img": "tools/art/strips/st5/st5-a1-1-B.png",
+     "at": 640,
+     "note": "the farmyard: smashed gates, the overturned cart, coolant canisters and harness hoses by the barn, crown banners",
+     "blend": 32,
+     "blendRows": "floor"
+    },
+    {
+     "img": "tools/art/strips/st5/st5-a1-2-A.png",
+     "at": 1280,
+     "note": "the evacuation road: log and barbed-wire barriers, carts piled with belongings, the watchtower",
+     "blend": 32,
+     "blendRows": "floor",
+     "ramp": 32
+    },
+    {
+     "img": "tools/art/strips/st5/st5-a1-2-B.png",
+     "at": 1920,
+     "note": "the road checkpoint: sandbags and the gate pole, militia tents, confiscated supplies",
+     "blend": 32,
+     "blendRows": "floor"
+    }
+   ],
+   "sections": [
+    {
+     "id": "5-2",
+     "name": "THE FENCE LINE",
+     "x0": 0,
+     "len": 864,
+     "cap": "THE ABANDONED FARMS",
+     "locks": [
+      224,
+      480
+     ],
+     "bossLock": null,
+     "props": [
+      {
+       "kind": "crate",
+       "x": 96
+      },
+      {
+       "kind": "crate",
+       "x": 128
+      },
+      {
+       "kind": "crate",
+       "x": 600
+      },
+      {
+       "kind": "gate",
+       "name": "BARRIER · FARM ROAD",
+       "x": 420
+      }
+     ],
+     "note": "task 0 (BARRIER · FARM ROAD) by the fenced fields (lock 224)"
+    },
+    {
+     "id": "5-3",
+     "name": "THE ABANDONED FARMS",
+     "x0": 864,
+     "len": 864,
+     "locks": [
+      992,
+      1344
+     ],
+     "bossLock": null,
+     "note": "the farmyard; the SCOUT CAPTAIN at lock 1344",
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
+      },
+      {
+       "kind": "crate",
+       "x": 578
+      }
+     ]
+    },
+    {
+     "id": "5-4",
+     "name": "THE EVACUATION ROAD",
+     "x0": 1728,
+     "len": 864,
+     "locks": [
+      2048,
+      2208
+     ],
+     "bossLock": null,
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 96
+      },
+      {
+       "kind": "barrel",
+       "x": 192
+      },
+      {
+       "kind": "gate",
+       "name": "BARRIER · EVACUATION ROAD",
+       "x": 568
+      }
+     ],
+     "note": "task 1 (BARRIER · EVACUATION ROAD) at the checkpoint gate pole (lock 2048)"
+    }
+   ],
+   "anims": []
+  },
+  {
+   "id": "a2",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
+    {
+     "img": "tools/art/strips/st5/st5-a2-1-A.png",
+     "at": 0,
+     "note": "the edge of the fortified town: barricaded houses, the palisade crushed inward (lifted 14 px: floor 140 like the square)",
+     "lift": 14
+    },
+    {
+     "img": "tools/art/strips/st5/st5-a2-1-B.png",
+     "at": 640,
+     "note": "the street into the square: militia tents, weapon racks, the cooling-harness frame, coolant canisters (lifted 8 px)",
+     "blend": 32,
+     "blendRows": "floor",
+     "lift": 8
+    },
+    {
+     "img": "tools/art/strips/st5/st5-a2-2-A.png",
+     "at": 1280,
+     "note": "the town square: the dry fountain with the crown statue, crown banners (lifted 6 px)",
+     "blend": 32,
+     "blendRows": "floor",
+     "lift": 6
+    },
+    {
+     "img": "tools/art/strips/st5/st5-a2-2-B.png",
+     "at": 1920,
+     "note": "the far side of the square: the town hall, the dented steel shield-door (the boss arena)",
+     "blend": 32,
+     "blendRows": "floor"
+    }
+   ],
+   "sections": [
+    {
+     "id": "5-5",
+     "name": "THE PALISADE",
+     "x0": 0,
+     "len": 1296,
+     "cap": "THE FORTIFIED TOWN",
+     "locks": [
+      384,
+      832
+     ],
+     "bossLock": null,
+     "scenery": [
+      "flock"
+     ],
+     "props": [
+      {
+       "kind": "crate",
+       "x": 193
+      },
+      {
+       "kind": "barrel",
+       "x": 578
+      },
+      {
+       "kind": "gate",
+       "name": "BARRIER · TOWN SQUARE",
+       "x": 1040
+      }
+     ],
+     "note": "the crushed palisade; task 2 (BARRIER · TOWN SQUARE) in the street into the square (lock 832)"
+    },
+    {
+     "id": "5-6",
+     "name": "THE FORTIFIED SQUARE",
+     "x0": 1296,
+     "len": 1296,
+     "locks": [
+      1424
+     ],
+     "bossLock": 2208,
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 1044
+      },
+      {
+       "kind": "barrel",
+       "x": 1084
+      },
+      {
+       "kind": "barrel",
+       "x": 1184
+      },
+      {
+       "kind": "barrel",
+       "x": 1224
+      }
+     ],
+     "note": "boss lock 2208-2592: the far side of the square, the dented shield-door"
+    }
+   ],
+   "anims": []
+  }
+ ]
 }

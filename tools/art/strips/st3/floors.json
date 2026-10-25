@@ -1,0 +1,128 @@
+{
+ "note": "written by tools/art/import-bg.cjs; floor = the strip y where the back scenery meets the walkable floor (override from tools/art/bg-floors.json, else detected)",
+ "colours": 96,
+ "images": [
+  {
+   "id": "a0-1",
+   "src": "work/bg/gen/st3/st3-a0-1.png",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  {
+   "id": "a1-1",
+   "src": "work/bg/gen/st3/st3-a1-1.png",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  {
+   "id": "a2-1",
+   "src": "work/bg/gen/st3/st3-a2-1.png",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  {
+   "id": "a2-2",
+   "src": "work/bg/gen/st3/st3-a2-2.png",
+   "size": [
+    1536,
+    1024
+   ]
+  }
+ ],
+ "strips": {
+  "st3-a0-1-A": {
+   "floor": 134,
+   "detected": 134,
+   "score": 0.5738,
+   "override": null,
+   "bandTop": 134,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 57570
+  },
+  "st3-a0-1-B": {
+   "floor": 120,
+   "detected": 120,
+   "score": 0.6797,
+   "override": null,
+   "bandTop": 120,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 58712
+  },
+  "st3-a1-1-A": {
+   "floor": 124,
+   "detected": 124,
+   "score": 0.597,
+   "override": null,
+   "bandTop": 124,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 64082
+  },
+  "st3-a1-1-B": {
+   "floor": 119,
+   "detected": 119,
+   "score": 0.4442,
+   "override": null,
+   "bandTop": 119,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 72498
+  },
+  "st3-a2-1-A": {
+   "floor": 131,
+   "detected": 131,
+   "score": 0.401,
+   "override": null,
+   "bandTop": 131,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 73637
+  },
+  "st3-a2-1-B": {
+   "floor": 130,
+   "detected": 130,
+   "score": 0.5084,
+   "override": null,
+   "bandTop": 130,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 78496
+  },
+  "st3-a2-2-A": {
+   "floor": 144,
+   "detected": 144,
+   "score": 0.5578,
+   "override": null,
+   "bandTop": 144,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 68808
+  },
+  "st3-a2-2-B": {
+   "floor": 142,
+   "detected": 142,
+   "score": 0.5194,
+   "override": null,
+   "bandTop": 142,
+   "flags": [],
+   "w": 672,
+   "h": 224,
+   "bytes": 63918
+  }
+ }
+}

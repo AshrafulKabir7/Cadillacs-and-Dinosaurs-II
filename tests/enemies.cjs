@@ -22,8 +22,8 @@ function sandbox(files) {
   return win;
 }
 // the generated boss bodies (tools/art/import-sprite.cjs: Sable, Crownback and his jet) load after the ROM family, as in play.html
-const bossFiles = ['sprite-data-bosses.js', ...[1, 2, 3, 4, 5, 6].map(n => `sprite-data-bosses-ch${n}.js`), 'sprite-data-boss-sable.js', 'sprite-data-boss-crownback.js', 'sprite-data-boss-crownjet.js', 'sprite-data-boss-rook.js', 'sprite-data-boss-krag.js', 'sprite-data-boss-ironclub.js', 'sprite-data-boss-thorne.js', 'sprite-data-boss-glassback.js', 'sprite-data-boss-cinder.js', 'sprite-data-boss-overdrive.js', 'sprite-data-boss-cinderfx.js', 'sprite-data-boss-echo.js', 'sprite-data-boss-echoring.js', 'sprite-data-boss-engine.js', 'sprite-data-boss-enginefx.js'];
-const W = sandbox(['combat-config.js', 'sprite-data-enemies.js', ...bossFiles, 'enemy-kinds.js', 'campaign.js']);
+const bossFiles = ['sprite-data-bosses.js', ...[1, 2, 3, 4, 5, 6].map(n => `sprite-data-bosses-ch${n}.js`), 'sprite-data-boss-sable.js', 'sprite-data-boss-crownback.js', 'sprite-data-boss-crownjet.js', 'sprite-data-boss-rook.js', 'sprite-data-boss-krag.js', 'sprite-data-boss-ironcap.js', 'sprite-data-boss-ironclub.js', 'sprite-data-boss-thorne.js', 'sprite-data-boss-glassback.js', 'sprite-data-boss-cinder.js', 'sprite-data-boss-overdrive.js', 'sprite-data-boss-cinderfx.js', 'sprite-data-boss-echo.js', 'sprite-data-boss-echoring.js', 'sprite-data-boss-engine.js', 'sprite-data-boss-enginefx.js'];
+const W = sandbox(['combat-config.js', 'sprite-data-enemies.js', 'sprite-data-enemy-militia.js', 'sprite-data-enemy-trapper.js', 'sprite-data-enemy-hybrid.js', ...bossFiles, 'enemy-kinds.js', 'campaign.js']);
 const FAM = (W.SPRITE_DATA && W.SPRITE_DATA.families) || {};
 const EN = FAM.enemies || null;
 const BO = (() => { const parts = Object.entries(FAM).filter(([k]) => k === 'bosses' || /^bosses-ch\d+$/.test(k)).map(([, f]) => f); if (!parts.length) return null; const v = { anims: {}, bodies: {}, frames: null, sheets: {}, rect: {}, pal: { rows: {}, maps: {} } }; for (const p of parts) { Object.assign(v.anims, p.anims); Object.assign(v.bodies, p.bodies); Object.assign(v.sheets, p.sheets); Object.assign(v.rect, p.rect); Object.assign(v.pal.rows, p.pal.rows); Object.assign(v.pal.maps, p.pal.maps); v.frames = v.frames && p !== FAM.bosses ? v.frames : p.frames;   /* the ROM family's frame list (a generated body's frames are local to its file) */ v.crownEngine = p.crownEngine || v.crownEngine; } return v; })();
@@ -65,14 +65,18 @@ else {
 }
 
 // ================================================================ (5) HP budgets per chapter
-const CURRENT = [4853, 5888, 5641, 5372, 5945, 6576], EXEMPT = [1];
-const POOLS = [
-  { raider: ['ferris', 'gneiss'], knifer: ['blade'], gunner: ['poacherJ'], brute: ['blkElmer', 'hammerT'] },
+// revision 3 (eight stages): the reference budgets are the stages as authored on 2026-10-24 (K.HP 'spec' at K.LV); stage 3
+// (the causeway, mostly bikers) keeps the old chapter-2 exemption
+const CURRENT = [5164, 5638, 4589, 6043, 6107, 7339, 6816, 4998], EXEMPT = [2];
+const POOLS = [   // game.js CAST_POOLS, stage order
+  { raider: ['ferris', 'gneiss'], knifer: ['blade'], gunner: ['poacherJ'], brute: ['blkElmer', 'hammerT'], raptor: ['hopper'], militia: ['militiaman'] },
+  { raider: ['ferris', 'gneiss'], knifer: ['blade'], gunner: ['poacherJ', 'skinner'], brute: ['hammerT', 'lashT'], raptor: ['hopper'], trapper: ['trapper'] },
   { raider: ['driver', 'ferris'], knifer: ['razor'], gunner: ['dyna', 'skinner'], brute: ['wrenchT', 'hammerT'], biker: ['ride', 'jump'] },
-  { raider: ['gneiss', 'poacherJ'], knifer: ['blade'], gunner: ['skinner', 'gutter'], brute: ['hammerT', 'blkElmer'], raptor: ['hopper'] },
   { raider: ['gneiss', 'driver'], knifer: ['razor'], gunner: ['bomber', 'gutter'], brute: ['wrenchT', 'blkElmer'], mutant: ['bludge'], regent: ['tyrog'] },
-  { raider: ['driver'], knifer: ['razor', 'knife'], gunner: ['gutter', 'bomber'], brute: ['lashT', 'blkElmer'], mutant: ['bludge'], regent: ['tyrog'], mirror: ['mirror'] },
-  { raider: ['gneiss', 'driver'], knifer: ['razor', 'blade'], gunner: ['gutter', 'skinner'], brute: ['blkElmer'], mutant: ['bludge'], regent: ['tyrog'], mirror: ['mirror'] }];
+  { raider: ['ferris', 'driver'], knifer: ['blade', 'razor'], gunner: ['poacherJ', 'skinner'], brute: ['hammerT', 'blkElmer'], raptor: ['hopper'], militia: ['militiaman'] },
+  { raider: ['gneiss', 'driver'], knifer: ['blade', 'knife'], gunner: ['skinner', 'gutter'], brute: ['wrenchT', 'blkElmer'], mutant: ['bludge'], regent: ['tyrog'], raptor: ['hopper'], trapper: ['trapper'], hybrid: ['enforcer'] },
+  { raider: ['driver'], knifer: ['razor', 'knife'], gunner: ['gutter', 'bomber'], brute: ['lashT', 'blkElmer'], mutant: ['bludge'], regent: ['tyrog'], militia: ['militiaman'], hybrid: ['enforcer'] },
+  { raider: ['gneiss', 'driver'], knifer: ['razor', 'blade'], gunner: ['gutter', 'skinner'], brute: ['blkElmer', 'hammerT'], mutant: ['bludge'], regent: ['tyrog'], militia: ['militiaman'], hybrid: ['enforcer'] }];
 function sectionCasts() { const out = {}, dir = rel('tools/re/levels'); if (!fs.existsSync(dir)) return out; for (const f of fs.readdirSync(dir).filter(x => /^ch\d\.json$/.test(x)).sort()) { const j = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')); for (const a of j.areas || []) for (const s of a.sections || []) if (s.cast) out[s.id] = s.cast; } return out; }
 if (!KINDS || !EN || !CAMPAIGN) C.fail('G0', '(5) Regular HP budgets within ±15 % per chapter', 'enemy-kinds.js, sprite-data-enemies.js or campaign.js missing');
 else {
@@ -85,9 +89,9 @@ else {
   });
   const alt = KINDS.K.HP_USE === 'spec' ? 'tuned' : 'spec';
   rows.forEach((r, i) => { let a = 0; const c = CAMPAIGN[i]; for (const s of c.sections) { const pools = { ...POOLS[i], ...(casts[s.stage] || {}) }; for (const e of s.enc) (e.w || []).forEach((w, wi) => w.forEach((kind, j) => { const pool = [].concat(pools[kind] || []), id = pool.length ? pool[(wi + j) % pool.length] : kind, [k, v] = KINDS.CAST[id] || [kind, null]; if (k === 'mirror') { a += KINDS.K.MIRROR_HP; return; } const rom = KINDS.romHp(k, v, KINDS.K.lvl(i)); a += rom == null ? 0 : KINDS.K.HP(rom, 1, alt); })); } r.alt = +(a / r.current).toFixed(3); });
-  rows.forEach(r => console.log(`      ch${r.ch} K.HP ('${KINDS.K.HP_USE}') budget ${r.budget} vs ${r.current} = ${r.ratio}${EXEMPT.includes(r.ch - 1) ? ' (exempt, O12 on)' : ''}; under '${alt}' ${r.alt}`));
+  rows.forEach(r => console.log(`      ch${r.ch} K.HP ('${KINDS.K.HP_USE}') budget ${r.budget} vs ${r.current} = ${r.ratio}${EXEMPT.includes(r.ch - 1) ? ' (exempt: the bikers)' : ''}; under '${alt}' ${r.alt}`));
   const out = rows.filter(r => !EXEMPT.includes(r.ch - 1) && Math.abs(r.ratio - 1) > 0.15).map(r => `ch${r.ch} ${r.ratio}`);
-  C.check('G0', `(5) Regular HP budgets within ±15 % of ENEMIES §2.6 (K.HP '${KINDS.K.HP_USE}' = round(${KINDS.K.HP_A} + ${KINDS.K.HP_B} rom), ch2 exempt: O12 on, about 0.7)`, !out.length, out.join(', '));
+  C.check('G0', `(5) Regular HP budgets within ±15 % of ENEMIES §2.6 (K.HP '${KINDS.K.HP_USE}' = round(${KINDS.K.HP_A} + ${KINDS.K.HP_B} rom), stage 3 exempt: the bikers)`, !out.length && rows.length === 8, out.join(', '));
   C.check('G0', '(5c) K.HP is the ENEMIES §0 DECISION formula 40 + 0.9 rom (a retune needs the user / G4)', KINDS.K.HP_USE === 'spec' && KINDS.K.HP_A === 40 && KINDS.K.HP_B === 0.9, `${KINDS.K.HP_USE} ${KINDS.K.HP_A} ${KINDS.K.HP_B}`);
   C.check('G0', '(5b) specification.cjs anchor: kindHp(brute, A) = HAMMER T. at LV 9 through K.HP', KINDS.kindHp('brute', 'A', 0) === KINDS.K.HP(KINDS.romHp('brute', 'A', 9)), `${KINDS.kindHp('brute', 'A', 0)}`);
   fs.mkdirSync(rel('tests/results'), { recursive: true }); fs.writeFileSync(rel('tests/results/enemies-budget.json'), JSON.stringify(rows, null, 1));
@@ -121,9 +125,11 @@ const png = require(rel('tools/re/build/png.cjs'));
 for (const [name, F] of [['enemies', EN], ['bosses', FAM.bosses || null]]) {
   if (!F) { C.skip('G0', `${name}: sheet checksums, frame boxes and palette maps`, `sprite-data-${name}.js not shipped`); continue; }
   const bad = [];
-  for (const [id, sh] of Object.entries(F.sheets)) { const im = png.fromDataURL(sh.png); if (im.width !== sh.w || im.height !== sh.h) bad.push(`${id} size`); if (png.fnvIndexed(im.rgba).toString(16) !== String(sh.sum)) bad.push(`${id} sum`); let maxR = 0, maxG = 0; for (let q = 0; q < im.width * im.height; q++) if (im.rgba[q * 4 + 3]) { maxR = Math.max(maxR, im.rgba[q * 4]); maxG = Math.max(maxG, im.rgba[q * 4 + 1]); } if (F.mode === 'indexed' && (maxR > 31 || maxG > 15)) bad.push(`${id} not slot/pen indexed`); }
+  // a lazy sheet (the generated general enemies, sprite-data-enemy-*.js) keeps its pixels in its own script (sh.lazy)
+  const lazyPng = sh => { const m = /'(data:image\/png;base64,[^']+)'/.exec(fs.readFileSync(rel(sh.lazy), 'utf8')); return m && m[1]; };
+  for (const [id, sh] of Object.entries(F.sheets)) { const im = png.fromDataURL(sh.png || lazyPng(sh)); if (im.width !== sh.w || im.height !== sh.h) bad.push(`${id} size`); if (png.fnvIndexed(im.rgba).toString(16) !== String(sh.sum)) bad.push(`${id} sum`); let maxR = 0, maxG = 0; for (let q = 0; q < im.width * im.height; q++) if (im.rgba[q * 4 + 3]) { maxR = Math.max(maxR, im.rgba[q * 4]); maxG = Math.max(maxG, im.rgba[q * 4 + 1]); } if (F.mode === 'indexed' && (maxR > 31 || maxG > 15)) bad.push(`${id} not slot/pen indexed`); }
   for (const fr of F.frames) { const sh = F.sheets[fr[0]]; if (!sh || fr[1] + fr[3] > sh.w || fr[2] + fr[4] > sh.h) bad.push(`frame outside ${fr[0]}`); }
-  for (const [k, m] of Object.entries(F.pal.maps)) { if (m.length !== 32) bad.push(`map ${k} length ${m.length}`); for (const e of m) if (!F.pal.rows[String(e)]) { bad.push(`map ${k} -> row ${e} missing`); break; } }
+  for (const [k, m] of Object.entries(F.pal.maps)) { if (m.length !== 32) bad.push(`map ${k} length ${m.length}`); for (const e of m) if (e != null && !F.pal.rows[String(e)]) { bad.push(`map ${k} -> row ${e} missing`); break; } }
   C.check('G0', `${name}: ${Object.keys(F.sheets).length} sheets decode with their fnv sums, ${F.frames.length} frames inside their sheets, ${Object.keys(F.pal.maps).length} maps x 32 rows`, !bad.length, bad.slice(0, 6).join(' | '));
 }
 if (EN) {
@@ -335,6 +341,42 @@ function reachable(url) { return new Promise(res => { if (/^file:/i.test(url)) r
     const key = `${ROM_BOSSES.bodies.overdrive.main}:8`; let t = 0, said = null, maxF = -1, gel = false;
     for (; t < 200; t++) { const b = g.snapshot.enemies.find(e => e.boss && e.type === 'cinder'); if (!b) break; if (b.ba && b.ba.key === key) maxF = Math.max(maxF, b.ba.t); if (b.flashMap === 'gel' || b.dissolve) gel = true; if (b.defeat && b.defeat.done && said == null) said = t; AT.ticks(1); g.render(); }
     return said != null && said / 60 <= 2.6 && maxF >= 0 && !gel && g.snapshot.radio === EDEN_CAMPAIGN[3].bossDefeat ? true : `surrender at ${said == null ? '-' : (said / 60).toFixed(2) + ' s'}, defeat anim up to ${maxF.toFixed(1)} f, gel ${gel}, radio ${g.snapshot.radio}`;
+  }));
+
+  // (11) revision 3: the generated general enemies (ENEMY_KINDS militia / trapper / hybrid, their atlases in ROM_ENEMIES). Each
+  // draws from its own atlas at native scale, walks, attacks, flinches, is grabbed and thrown, dies and scores; the
+  // militiaman's shield blocks front punches (no damage), a jump attack and a blow from behind get through, the 3rd
+  // blocked blow breaks his guard (dizzy); the trapper's lunge holds a hero in the shock, then knocks him down.
+  await C.gated('G4', '(11) Revision 3 general enemies: militia (shield block, guard break, jump / back hits), trapper (shock hold, then knockdown) and hybrid draw, fight, grab, throw, die and score', g4, why, () => ev(() => {
+    const g = LAST_EDEN, bad = [], pl = () => g.snapshot.player;
+    const fresh = st => { g.start(st, 1, 'normal'); AT.ticks(100); const s = g.snapshot; AT.move(s.view.x + 120, AT.M()); g.test.clearFighters(); AT.ticks(2); return g.snapshot.player; };
+    const punch = () => { AT.hold('KeyJ', 2); AT.ticks(26); };
+    for (const [kind, st] of [['militia', 0], ['trapper', 1], ['hybrid', 5]]) {
+      let p = fresh(st); const e = AT.spawn(kind, p.x + 150, p.y); e.state = 'walk'; e.timer = 99; AT.ticks(30); g.render();
+      const fr = e.fid != null && ROM_ENEMIES.frames[e.fid];
+      if (!e.v || !fr || fr[0] !== 'e-' + kind || !/^\w+:1$/.test(e.ak || '')) bad.push(`${kind}: walk anim ${e.ak} frame ${fr && fr[0]}`);
+      if (!e.maxhp || e.maxhp !== ENEMY_KINDS.kindHp(kind, 'A', st) * g.snapshot.difficultyRules.enemyHealth) bad.push(`${kind}: hp ${e.maxhp}`);
+      // grab and throw
+      AT.ticks(150); e.state = 'walk'; e.timer = 99; e.x = pl().x + 20; e.y = pl().y; e.dir = -1; AT.ticks(1);
+      AT.key('ArrowRight', true); AT.ticks(20); AT.key('ArrowRight', false);
+      if (e.state !== 'held') bad.push(`${kind}: not grabbed (${e.state})`);
+      else { AT.key('ArrowLeft', true); AT.hold('KeyJ', 2); AT.key('ArrowLeft', false); AT.ticks(12); if (!(e.thrown && e.state === 'fly')) bad.push(`${kind}: not thrown (${e.state})`); }
+      AT.ticks(120); e.inv = 0; e.state = 'walk'; e.delay = 0; const sc = g.snapshot.score, i = g.snapshot.enemies.findIndex(x => x.nid === e.nid); g.test.damageEnemy(i, 99999); AT.ticks(60);
+      if (!(e.dying && e.state === 'dead' && /^\w+:8$|^\w+:7$/.test(e.ak || '') && g.snapshot.score > sc)) bad.push(`${kind}: death ${e.state} ${e.ak}`);
+    }
+    // the shield
+    let p = fresh(0); const m = AT.spawn('militia', p.x + 36, p.y); m.dir = -1; m.state = 'walk'; m.timer = 99; const hp0 = m.hp;
+    punch(); if (m.hp !== hp0) bad.push(`militia: a front punch did ${hp0 - m.hp} damage`);
+    m.timer = 99; punch(); m.timer = 99; punch(); if (m.state !== 'dizzy' || m.hp !== hp0) bad.push(`militia: 3 blocks -> ${m.state}, hp ${m.hp}`);
+    m.state = 'walk'; m.timer = 99; m.x = pl().x + 36; m.dir = 1; m.turnT = 0; AT.hold('KeyJ', 2); AT.ticks(8); if (!(m.hp < hp0)) bad.push('militia: a punch in the back was blocked');
+    const h1 = m.hp; m.state = 'walk'; m.timer = 99; m.x = pl().x + 50; m.dir = -1; AT.key('KeyK', true); AT.ticks(6); AT.key('KeyK', false); AT.ticks(4); AT.key('KeyJ', true); AT.ticks(2); AT.key('KeyJ', false);
+    for (let t = 0; t < 40; t++) { m.dir = -1; m.timer = 99; if (m.state === 'walk') m.x = pl().x + 30; AT.ticks(1); }
+    if (!(m.hp < h1)) bad.push('militia: a jump attack was blocked');
+    // the shock
+    p = fresh(1); const t = AT.spawn('trapper', p.x + 95, p.y); t.state = 'walk'; t.timer = 0; t.dir = -1; let sh = null, kn = null;
+    for (let k = 0; k < 600 && !kn; k++) { AT.ticks(1); const P = pl(); if (P.shock && sh == null) sh = k; if (sh != null && P.knocked) kn = k; }
+    if (sh == null || kn == null || (kn - sh) < 30 || (kn - sh) > 45) bad.push(`trapper: shock at ${sh}, knocked at ${kn}`);
+    return bad.length ? bad.join('; ') : true;
   }));
 
   await browser.close();

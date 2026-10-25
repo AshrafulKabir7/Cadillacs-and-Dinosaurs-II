@@ -1,0 +1,320 @@
+{
+ "id": "hybrid",
+ "name": "HYBRID ENFORCER",
+ "family": "enemies",
+ "chapterTag": 113,
+ "height": 84,
+ "bg": "#FF00FF",
+ "anchor": "feet",
+ "ship": "sprite-data-enemy-hybrid.js",
+ "note": "Generated general enemy (revision 3): a volunteer of Echo's treatment, scaled skin and hooked claws; a leaping slash. Stages 6, 7, 8. About 84 arcade px hunched (a BLUDGE graft is 78).",
+ "enemy": {
+  "data": {
+   "hud": "HYBRID",
+   "face": "BLUDGE",
+   "hp": [
+    80,
+    80,
+    80,
+    80,
+    80,
+    80,
+    80,
+    80,
+    80,
+    88,
+    88,
+    88,
+    96,
+    104,
+    104,
+    104,
+    112,
+    112,
+    112,
+    112,
+    112,
+    112,
+    112,
+    112,
+    112,
+    112,
+    112,
+    112,
+    112,
+    112,
+    112,
+    112
+   ],
+   "rankRow": [
+    32,
+    32,
+    32,
+    32,
+    35,
+    35,
+    35,
+    35,
+    38,
+    38,
+    38,
+    38,
+    44,
+    44,
+    44,
+    44,
+    48,
+    48,
+    48,
+    48,
+    52,
+    52,
+    52,
+    52,
+    56,
+    56,
+    56,
+    56,
+    60,
+    60,
+    60,
+    68
+   ],
+   "walk": 1.25
+  }
+ },
+ "inputs": [
+  {
+   "file": "work/art/gen/hybrid/hybrid-00-model.png",
+   "split": "auto",
+   "names": [
+    "idle0"
+   ]
+  },
+  {
+   "file": "work/art/gen/hybrid/hybrid-01-idle-walk.png",
+   "split": "auto",
+   "names": [
+    "_ref1",
+    "idle1",
+    "walk1",
+    "walk2"
+   ]
+  },
+  {
+   "file": "work/art/gen/hybrid/hybrid-02-walk-tell.png",
+   "split": "auto",
+   "names": [
+    "_ref2",
+    "walk3",
+    "walk4",
+    "tell"
+   ]
+  },
+  {
+   "file": "work/art/gen/hybrid/hybrid-03-attack.png",
+   "split": "auto",
+   "names": [
+    "_ref3",
+    "leap",
+    "slash",
+    "slash2"
+   ]
+  },
+  {
+   "file": "work/art/gen/hybrid/hybrid-04-hurt.png",
+   "split": "auto",
+   "names": [
+    "_ref4",
+    "hurt1",
+    "hurt2",
+    "fall"
+   ]
+  },
+  {
+   "file": "work/art/gen/hybrid/hybrid-05-down.png",
+   "split": "auto",
+   "names": [
+    "_ref5",
+    "down",
+    "getup",
+    "roar"
+   ],
+   "flipNames": [
+    "down"
+   ]
+  }
+ ],
+ "anims": [
+  {
+   "name": "idle",
+   "frames": [
+    "idle0",
+    "idle1"
+   ],
+   "dur": 20,
+   "loop": 0
+  },
+  {
+   "name": "walk",
+   "frames": [
+    "walk1",
+    "walk2",
+    "walk3",
+    "walk4"
+   ],
+   "dur": 7,
+   "loop": 0,
+   "alignTo": "idle0"
+  },
+  {
+   "name": "pounce",
+   "frames": [
+    "tell",
+    "leap"
+   ],
+   "dur": [
+    20,
+    28
+   ],
+   "act": [
+    1
+   ],
+   "align": "none",
+   "atk": {
+    "id": 903,
+    "tbl": 14,
+    "stun": 11,
+    "react": 4,
+    "hitstop": 9,
+    "src": "sequel: hybrid leaping slash (knocks down)"
+   }
+  },
+  {
+   "name": "slash",
+   "frames": [
+    "tell",
+    "slash",
+    "slash2"
+   ],
+   "dur": [
+    12,
+    6,
+    16
+   ],
+   "act": [
+    1
+   ],
+   "align": "none",
+   "atk": {
+    "id": 904,
+    "tbl": 12,
+    "stun": 5,
+    "react": 2,
+    "hitstop": 9,
+    "src": "sequel: hybrid claw slash"
+   }
+  },
+  {
+   "name": "roar",
+   "frames": [
+    "roar"
+   ],
+   "dur": 40,
+   "alignTo": "idle0"
+  },
+  {
+   "name": "hurt",
+   "frames": [
+    "hurt1"
+   ],
+   "dur": 10
+  },
+  {
+   "name": "hurt-low",
+   "frames": [
+    "hurt2"
+   ],
+   "dur": 10
+  },
+  {
+   "name": "fly",
+   "frames": [
+    "fall",
+    "fall",
+    "down"
+   ],
+   "dur": [
+    12,
+    12,
+    40
+   ],
+   "align": "none"
+  },
+  {
+   "name": "dead",
+   "frames": [
+    "fall",
+    "down"
+   ],
+   "dur": [
+    10,
+    60
+   ],
+   "align": "none"
+  },
+  {
+   "name": "rise",
+   "frames": [
+    "down",
+    "getup"
+   ],
+   "dur": [
+    6,
+    20
+   ],
+   "align": "none"
+  },
+  {
+   "name": "held",
+   "frames": [
+    "hurt1"
+   ],
+   "dur": 30
+  },
+  {
+   "name": "kneed",
+   "frames": [
+    "hurt2",
+    "hurt2",
+    "hurt2",
+    "hurt2",
+    "hurt2"
+   ],
+   "dur": 8
+  },
+  {
+   "name": "thrown",
+   "frames": [
+    "hurt1",
+    "hurt2",
+    "fall",
+    "fall"
+   ],
+   "dur": 8,
+   "align": "none"
+  }
+ ],
+ "palette": {
+  "mode": "ramps",
+  "lock": [
+   "#556633",
+   "#778844",
+   "#99aa55",
+   "#bbcc77"
+  ]
+ },
+ "clean": {
+  "smooth": 1
+ }
+}

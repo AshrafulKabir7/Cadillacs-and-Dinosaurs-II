@@ -1,0 +1,336 @@
+{
+ "id": "ch7",
+ "title": "THE OBSERVATORY",
+ "objPage": "S7A1",
+ "preset": "coldlab",
+ "notes": [
+  "Painted scenery (revision 3, step D): the 5 st7 paintings (work/bg/gen/st7 -> strips tools/art/strips/st7, prompts tools/art/bg-prompts.json; st7 has no a0-2). a0 is the cliff road (one painting, 1312 px); a1 and a2 are the four strips of their two paintings in storyline order (a<N>-1 A, B, a<N>-2 A, B), overlapping 32 px with a floor-only crossfade (2592 px).",
+  "Gameplay structure (sections, lock counts, task props, casts, boss lock) from step B, re-fitted to the painted areas and their floor lines. The research archive is painted in a1 (a1-2), so 7-4 moved into a1 after the relay station (7-2) and the generator room (7-3); a2 holds the workshop and walker bay (7-5) and the control gallery (7-6, the boss arena at its far end)."
+ ],
+ "areas": [
+  {
+   "id": "a0",
+   "w": 1312,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
+    {
+     "img": "tools/art/strips/st7/st7-a0-1-A.png",
+     "at": 0,
+     "lift": 15,
+     "note": "the cliff road at night: the observatory dome on the clifftop, radio masts, the low stone wall, the sea below (lifted 15 px: floor 142)"
+    },
+    {
+     "img": "tools/art/strips/st7/st7-a0-1-B.png",
+     "at": 640,
+     "blend": 32,
+     "blendRows": "floor",
+     "floor": 142,
+     "note": "the cliff road past the guard post, cables on poles, walker footprints at the road edge (painted floor line 128; walk band from 142 like strip A)"
+    }
+   ],
+   "sections": [
+    {
+     "id": "7-1",
+     "name": "THE CLIFF ROAD",
+     "x0": 0,
+     "len": 1312,
+     "cap": "THE CLIFF ROAD",
+     "locks": [
+      640,
+      928
+     ],
+     "bossLock": null,
+     "set": [
+      "zeke"
+     ],
+     "scenery": [
+      "pteranodon-bg"
+     ],
+     "cast": {
+      "gunner": [
+       "bomber",
+       "poacherJ"
+      ]
+     },
+     "props": [
+      {
+       "kind": "crate",
+       "x": 222
+      },
+      {
+       "kind": "barrel",
+       "x": 607
+      },
+      {
+       "kind": "barrel",
+       "x": 992
+      }
+     ],
+     "note": "the cliff road and the guard post"
+    }
+   ],
+   "anims": []
+  },
+  {
+   "id": "a1",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
+    {
+     "img": "tools/art/strips/st7/st7-a1-1-A.png",
+     "at": 0,
+     "note": "the relay station: radio racks, small rotating dishes on brackets, cable trays, blinking lamps"
+    },
+    {
+     "img": "tools/art/strips/st7/st7-a1-1-B.png",
+     "at": 640,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "the generator room: switchboards, knife switches, thick cables, a dish on a stand"
+    },
+    {
+     "img": "tools/art/strips/st7/st7-a1-2-A.png",
+     "at": 1280,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "the research archive: shelves of record boxes, file drawers, monitors of archived creature scans"
+    },
+    {
+     "img": "tools/art/strips/st7/st7-a1-2-B.png",
+     "at": 1920,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "the far end of the archive: notebooks and specimen jars, the cracked empty cloning tank, the framed blueprint"
+    }
+   ],
+   "sections": [
+    {
+     "id": "7-2",
+     "name": "THE RELAY STATION",
+     "x0": 0,
+     "len": 672,
+     "cap": "THE RELAY STATION",
+     "locks": [
+      128,
+      288
+     ],
+     "bossLock": null,
+     "props": [
+      {
+       "kind": "crate",
+       "x": 193
+      },
+      {
+       "kind": "barrel",
+       "x": 578
+      },
+      {
+       "kind": "beacon",
+       "name": "RELAY MAST · STATION",
+       "x": 420
+      }
+     ],
+     "cast": {
+      "knifer": [
+       "knife",
+       "blade"
+      ]
+     },
+     "note": "task 0 (RELAY MAST · STATION) among the relay racks (lock 128)"
+    },
+    {
+     "id": "7-3",
+     "name": "THE RADIO ROOM",
+     "x0": 672,
+     "len": 672,
+     "locks": [
+      816,
+      960
+     ],
+     "bossLock": null,
+     "note": "the generator room; elite ECHO’S BODYGUARD (RAZOR) at lock 960",
+     "cast": {
+      "gunner": [
+       "bomber",
+       "poacherJ"
+      ],
+      "knifer": [
+       "blade",
+       "knife"
+      ]
+     },
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
+      },
+      {
+       "kind": "crate",
+       "x": 578
+      }
+     ]
+    },
+    {
+     "id": "7-4",
+     "name": "THE RESEARCH ARCHIVE",
+     "x0": 1344,
+     "len": 1248,
+     "locks": [
+      1536,
+      2176
+     ],
+     "bossLock": null,
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
+      },
+      {
+       "kind": "barrel",
+       "x": 578
+      },
+      {
+       "kind": "beacon",
+       "name": "RELAY MAST · ARCHIVE",
+       "x": 420
+      }
+     ],
+     "cast": {
+      "gunner": [
+       "poacherJ",
+       "bomber"
+      ],
+      "knifer": [
+       "blade",
+       "knife"
+      ]
+     },
+     "note": "task 1 (RELAY MAST · ARCHIVE) by the archive monitors (lock 1536)"
+    }
+   ],
+   "anims": []
+  },
+  {
+   "id": "a2",
+   "w": 2592,
+   "h": 224,
+   "bg": "auto",
+   "paint": [
+    {
+     "img": "tools/art/strips/st7/st7-a2-1-A.png",
+     "at": 0,
+     "lift": 13,
+     "note": "the workshop gallery: gripper arms, cutting saws, armor plates, the pinned walker blueprint (lifted 13 px: floor 135)"
+    },
+    {
+     "img": "tools/art/strips/st7/st7-a2-1-B.png",
+     "at": 640,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "the walker assembly bay: the empty cradle frame, hoists, hydraulic fluid on the floor"
+    },
+    {
+     "img": "tools/art/strips/st7/st7-a2-2-A.png",
+     "at": 1280,
+     "blend": 32,
+     "blendRows": "floor",
+     "lift": 16,
+     "note": "the control gallery: long consoles, blank monitors, the window onto the dam in the storm (lifted 16 px: floor 135)"
+    },
+    {
+     "img": "tools/art/strips/st7/st7-a2-2-B.png",
+     "at": 1920,
+     "blend": 32,
+     "blendRows": "floor",
+     "note": "the far end of the gallery: the reinforced steel wall, fallen cables, the broken window (the boss arena)"
+    }
+   ],
+   "sections": [
+    {
+     "id": "7-5",
+     "name": "THE WALKER WORKSHOP",
+     "x0": 0,
+     "len": 1296,
+     "cap": "THE WALKER WORKS",
+     "locks": [
+      384,
+      832
+     ],
+     "bossLock": null,
+     "props": [
+      {
+       "kind": "crate",
+       "x": 193
+      },
+      {
+       "kind": "barrel",
+       "x": 578
+      },
+      {
+       "kind": "beacon",
+       "name": "RELAY MAST · GALLERY",
+       "x": 560
+      }
+     ],
+     "cast": {
+      "gunner": [
+       "bomber",
+       "poacherJ"
+      ]
+     },
+     "note": "the workshop gallery; task 2 (RELAY MAST · GALLERY) by the cutting saws (lock 384); the walker assembly bay"
+    },
+    {
+     "id": "7-6",
+     "name": "THE CONTROL GALLERY",
+     "x0": 1296,
+     "len": 1296,
+     "locks": [
+      1424
+     ],
+     "bossLock": 2208,
+     "props": [
+      {
+       "kind": "barrel",
+       "x": 193
+      },
+      {
+       "kind": "crate",
+       "x": 578
+      },
+      {
+       "kind": "barrel",
+       "x": 700
+      },
+      {
+       "kind": "vat-vent",
+       "x": 984
+      },
+      {
+       "kind": "vat-vent",
+       "x": 1104
+      },
+      {
+       "kind": "vat-vent",
+       "x": 1224
+      }
+     ],
+     "note": "the control gallery; boss lock 2208-2592: the far end, the steel wall and the broken window (Echo, then her walker); the vat vents inside it",
+     "cast": {
+      "gunner": [
+       "bomber",
+       "poacherJ"
+      ],
+      "knifer": [
+       "blade",
+       "knife"
+      ]
+     }
+    }
+   ],
+   "anims": []
+  }
+ ]
+}

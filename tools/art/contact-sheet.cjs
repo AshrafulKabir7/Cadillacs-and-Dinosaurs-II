@@ -65,7 +65,7 @@ function heroIdle(name) {
 function render(jsonFile, opts = {}) {
   const fam = JSON.parse(fs.readFileSync(jsonFile, 'utf8')), dir = path.dirname(jsonFile);
   const sid = Object.keys(fam.sheets)[0], atlas = png.read(path.join(dir, fam.sheets[sid].file));
-  const row = fam.pal.rows[(fam.bodies && fam.bodies[fam.id] && fam.bodies[fam.id].pal && fam.bodies[fam.id].pal.home) || fam.id];
+  const row = fam.pal.rows[(fam.bodies && fam.bodies[fam.id] && fam.bodies[fam.id].pal && fam.bodies[fam.id].pal.home) || (fam.pal.rows['art-' + fam.id] ? 'art-' + fam.id : fam.id)];
   const sprites = fam.frames.map(([, x, y, w, h, ox, oy], k) => {
     const px = new Uint8Array(w * h * 4);
     for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
@@ -93,7 +93,7 @@ function render(jsonFile, opts = {}) {
   const W = Math.max(aW, bW, cW, 760), H = 40 + aH + bH + cH + 90;
   const c = canvas(W, H, BG);
   let y = 12;
-  text(c, PAD, y, `${fam.bodies[fam.id].hud}  -  ${sprites.length} FRAMES  ${anims.length} ANIMS  ${fam.palette.hex.length} COLOURS + TRANSPARENT`, INK, 2); y += 24;
+  text(c, PAD, y, `${fam.bodies ? fam.bodies[fam.id].hud : (fam.types && fam.types[fam.id] && fam.types[fam.id].title) || fam.id}  -  ${sprites.length} FRAMES  ${anims.length} ANIMS  ${fam.palette.hex.length} COLOURS + TRANSPARENT`, INK, 2); y += 24;
   // (A) game scale
   text(c, PAD, y, `GAME SCALE X${S1} (ARCADE PX X2) NEXT TO ROM ${hero.name} IDLE (${hero.h} PX)`, DIM, 2); y += 18;
   const base = y + Math.max(hero.h, ...firsts.map(s => s.oy)) * S1 + 8;

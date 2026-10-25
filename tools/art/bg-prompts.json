@@ -1,0 +1,282 @@
+{
+  "about": "Painted stage backgrounds for The Crown Tide (work/story3/STORYLINE.md). One image = two stacked 1536x512 strips (A on top, B below) that continue the same place left to right; tools/art/import-bg.cjs scales each strip to 672x224 arcade px. Every stage's scenery foreshadows its boss.",
+  "style": "Use your image generation tool to generate ONE image, wide landscape 1536x1024, for a 1990s Capcom CPS-1 side-scrolling beat 'em up (the style of Cadillacs and Dinosaurs, 1993). The attached image is a STYLE reference only (hand-painted 16-bit arcade pixel art, limited palette, crisp dithered shading, bold dark outlines) - do not copy its contents. It must be crisp pixel art with visible square pixel clusters, not a smooth digital painting.",
+  "layout": "LAYOUT (important): the image is TWO horizontal strips stacked on top of each other, each exactly 1536 wide and 512 tall, with no gap or border (strip A is the top half, strip B the bottom half). Strip B continues the same place to the right of strip A, as if one long scrolling stage were cut in two. In EACH strip the camera is strictly side-on: the back scenery (walls, buildings, trees, machinery) runs straight across parallel to the screen and fills the upper half of the strip; the walkable ground is flat, seen from slightly above, and fills the LOWER HALF of the strip edge to edge, at the same height in both strips. Keep the ground itself clear and walkable (low clutter only along its back edge). Both ends of each strip end on a tall vertical element (a pillar, post, tree trunk or girder) so strips can be joined side by side.",
+  "driveLayout": "LAYOUT (important): the image is TWO horizontal strips stacked on top of each other, each exactly 1536 wide and 512 tall, with no gap or border (strip A is the top half, strip B the bottom half). Strip B continues the same road to the right of strip A. In EACH strip the camera is strictly side-on: sky and distant scenery fill the upper 45% of the strip; a wide flat two-lane road runs straight across the lower 55% of the strip edge to edge, seen from slightly above, with its lane markings parallel to the screen, at the same height in both strips. Keep the road surface clear. The left and right edges of each strip must match each other in road, horizon and ground height so the strip can repeat seamlessly.",
+  "finish": "No characters, no people, no dinosaurs or animals, no text, no letters, no numbers, no logos except the simple emblems described, no UI, no frame. Save the generated PNG unchanged (no resize, no recolour, no post-processing) as {file} in the current directory.",
+  "stages": [
+    {
+      "id": "st1",
+      "name": "City in the Sea",
+      "light": "orange dusk sky turning to evening, warm oil lamps glowing, wet stone",
+      "images": [
+        {
+          "id": "a0-1",
+          "a": "waterfront promenade of a ruined, vine-covered coastal city: crumbling stone buildings, a sea wall with the harbor and a far skyline of broken towers behind it, a militia checkpoint barricade of sandbags and crates hung with simple gold crown banners",
+          "b": "a waterfront street of boarded-up shopfronts and stone arcades, blank militia notice boards, a wheeled cage cart wrapped in heavy chains, an old skull stamp painted over with a fresh gold crown on the cart"
+        },
+        {
+          "id": "a0-2",
+          "a": "fish market stalls under a stone arcade with torn striped awnings, ice crates of fish, hanging nets, lanterns",
+          "b": "the far end of the fish market square: a big wooden cage smashed open from inside, its broken restraint chains dragged across the stones, deep claw scratches on the stall posts, scattered baskets and toppled barrels"
+        },
+        {
+          "id": "a1-1",
+          "a": "cargo sheds of corrugated iron and brick along the docks, heavy iron chains and big cargo hooks hanging from every beam, a lattice crane boom with a hook",
+          "b": "stacked dinosaur cages stamped with a gold crown over an old black-market skull stamp, tarps, coils of chain on the ground, hooks swinging from a gantry"
+        },
+        {
+          "id": "a1-2",
+          "a": "a crane yard between warehouses: two tall rusty dock cranes with dangling hooks, pallets of crates under cargo nets, stacked rope coils",
+          "b": "the open loading bay of a large warehouse with racks of boat hooks and gaff poles, chains looped on wall pegs, iron shackles on hooks, lanterns"
+        },
+        {
+          "id": "a2-1",
+          "a": "a stone jail quay: barred cells cut into the massive sea wall, wall shackles, burning torches, wet stones",
+          "b": "the prison barge moored alongside the quay behind a low wall, its deck lined with barred cages, gangplanks, bollards with thick mooring ropes"
+        },
+        {
+          "id": "a2-2",
+          "a": "the dock commander's quay: a guard hut with racks of long boat hooks and heavy chains, coiled ropes, a tall crane with a big hook hanging over the quay, crown banners",
+          "b": "the end of the stone pier: open dark sea and the prison barge's stern behind a chain railing, iron bollards, a lamp post, spray on the stones"
+        }
+      ]
+    },
+    {
+      "id": "st2",
+      "name": "The Swamp Forest",
+      "light": "humid green daylight through mist, shafts of sunlight, dark swamp water",
+      "images": [
+        {
+          "id": "a0-1",
+          "a": "an old hunting trail through a prehistoric swamp forest: giant ferns, cycads, mangrove roots, hanging moss, a rusty abandoned leg trap by the path",
+          "b": "an abandoned poachers' hunting blind of planks and camouflage netting, reinforced iron cages chained to tree trunks, a rack of tranquilizer rifles"
+        },
+        {
+          "id": "a0-2",
+          "a": "a raised wooden walkway over shallow swamp water, net traps and snare lines strung between trees, a pulley trap hanging from a branch",
+          "b": "a muddy river bank of broken trap cages and sprung snares, old bleached bones half sunk in the mud, reeds and roots"
+        },
+        {
+          "id": "a1-1",
+          "a": "a nesting ground among huge ferns: big empty dinosaur nests of twigs and mud, woven baskets full of large stolen eggs stacked beside them",
+          "b": "a field station at the nests: crates of tranquilizer darts, long catch-poles and electric prods racked upright, restraint collars hanging from a line"
+        },
+        {
+          "id": "a1-2",
+          "a": "egg baskets on a cart, a humming portable generator charging a rack of long electric cattle prods with little sparks, cables in the mud",
+          "b": "rough timber pens holding nothing but empty large collars and chains, a bait bucket of raw meat, a feeding trough, ferns behind"
+        },
+        {
+          "id": "a2-1",
+          "a": "a poachers' loading camp in a clearing: canvas tents, floodlight poles, cages on pallets, fuel drums, a generator",
+          "b": "transport pens and a crate loader, a weapon rack of electric prods and a handler's whistle on a cord, bait buckets, a stack of empty collars"
+        },
+        {
+          "id": "a2-2",
+          "a": "the head handler's tent: a camp table with a pair of brass goggles and a red braided ribbon, maps pinned to an easel (blank), a long electric prod leaning on the tent pole",
+          "b": "a sagging timber loading platform built out over a wide brown river, cracked planks, a cargo crane, a small motor launch tied at the far end, jungle on the far bank"
+        }
+      ]
+    },
+    {
+      "id": "st3",
+      "name": "The Coral Causeway",
+      "light": "bright midday sun, turquoise sea, white coral, heat haze",
+      "images": [
+        {
+          "id": "a0-1",
+          "drive": true,
+          "a": "an old cracked coastal highway along the sea: rusted guard rails, a ruined billboard frame with nothing on it, palms and sea cliffs, the open ocean behind",
+          "b": "the same coastal highway past toppled concrete road barriers and an old stripped car wreck on the verge, gulls' rocks, ocean behind"
+        },
+        {
+          "id": "a1-1",
+          "drive": true,
+          "a": "a causeway road exposed at low tide with shallow turquoise water and coral heads on both sides, wet sand drifts, deep wide tyre ruts gouged by a very heavy vehicle along the verge",
+          "b": "the causeway road dips low here: a thin sheet of sea water washes across the asphalt, but the flat two-lane road stays clearly visible and continuous across the whole strip; enormous dinosaur footprints in the wet sand beside the road, an overturned truck trailer half sunk in the shallows behind it"
+        },
+        {
+          "id": "a2-1",
+          "a": "a convoy checkpoint at the start of a bridge: smashed toll booths, sandbag walls, crown banners on poles, deep heavy tyre ruts in the concrete, a dragged chain scar",
+          "b": "a convoy yard: a tall loading arm gantry with a hook and chain, stacked cages and refrigerated containers with a laboratory hazard emblem, oil drums"
+        },
+        {
+          "id": "a2-2",
+          "a": "the armored hauler parked behind a barrier: a huge riveted armored truck with a crane loading arm folded on top and chains hanging from its bumper, crown painted on its door",
+          "b": "the deck of an old concrete bridge over the sea: railings, lamp posts, open sea and causeway behind, the bridge deck wide and flat"
+        }
+      ]
+    },
+    {
+      "id": "st4",
+      "name": "The Sink",
+      "light": "dark and wet, cold blue shadows lit by sodium work lamps and sparks, dripping water",
+      "images": [
+        {
+          "id": "a0-1",
+          "a": "the ruined foundations of a destroyed underground complex in a flooded excavation pit: broken concrete pillars, rebar, salvage cranes and pump hoses snaking down, a dark stormy sky above the pit rim",
+          "b": "an excavation wall of shattered concrete punched with rows of round pile-driver holes, heavy hydraulic hoses, work lamps on poles, puddles"
+        },
+        {
+          "id": "a0-2",
+          "a": "the mouth of a damaged service tunnel: cracked concrete arch, flickering emergency lights, bundled cables, a fallen sign frame (blank)",
+          "b": "inside the service tunnel: pipes and cable trays along the wall, ankle-deep water on one side, emergency lights, a collapsed section propped with steel props"
+        },
+        {
+          "id": "a1-1",
+          "a": "flooded loading chambers: a big concrete room with rusted cargo doors, refrigeration units and generators being stripped, chains and hoists",
+          "b": "a chamber of stripped machinery: pulled-out cables, cutting-torch scorch marks on steel walls, salvage crates, a pump running"
+        },
+        {
+          "id": "a1-2",
+          "a": "a sluice room with heavy pumps and pipes, a walkway beside dark water, steam leaking from valves",
+          "b": "captive workers' area emptied: rows of chains on the wall, a cage lift, a guard post with a lamp"
+        },
+        {
+          "id": "a2-1",
+          "a": "the top of a salvage shaft: winch towers and cables, a scaffold of pipes, enormous mechanical rig footprints pressed into wet silt",
+          "b": "a salvage rig maintenance bay: a spare giant pile-driver arm hanging from a hoist, hydraulic cylinders, a cutting arm on a bench, steam vents"
+        },
+        {
+          "id": "a2-2",
+          "a": "the shaft floor: cracked concrete walls with deep pile-driver craters, broken generators, winches and chains",
+          "b": "the bottom of the unstable salvage shaft: high walls with an open sky far above, falling dust, a huge winch drum, collapsing scaffolds at the back"
+        }
+      ]
+    },
+    {
+      "id": "st5",
+      "name": "Crown Valley",
+      "light": "hot hazy afternoon, dusty gold light, a big concrete dam visible far upstream",
+      "images": [
+        {
+          "id": "a0-1",
+          "a": "a dry river crossing: a cracked mud riverbed starved of water, stranded boats, a fence of posts and wire cutting across an animal trail, the dam far upstream in the haze",
+          "b": "a long section of fence and a stone wall flattened as if something huge and armored walked straight through it, enormous plated footprints in the dried mud"
+        },
+        {
+          "id": "a1-1",
+          "a": "abandoned farms: empty farmhouses and barns, a broken windmill, fenced fields, militia posters on the barn wall showing a huge armored captain in a cooling harness (no text)",
+          "b": "a farmyard with smashed gates and an overturned cart, canisters of glowing blue coolant with harness hoses stacked by the barn, crown banners on a fence"
+        },
+        {
+          "id": "a1-2",
+          "a": "an evacuation road between fields: barriers of logs and barbed wire, abandoned carts piled with belongings, a militia watchtower",
+          "b": "a road checkpoint with sandbags and a gate pole, militia tents with crown banners, crates of supplies being confiscated"
+        },
+        {
+          "id": "a2-1",
+          "a": "the edge of a fortified town: stone houses with barricaded windows, wooden palisade walls, a wall section crushed inward by a huge impact",
+          "b": "a street into the square: militia tents, weapon racks, a heavy steel cooling harness frame on a stand, blue coolant canisters"
+        },
+        {
+          "id": "a2-2",
+          "a": "the fortified town square: a dry fountain with a crown statue, crown banners on every building, barricades pushed aside",
+          "b": "the far side of the square: a town hall with militia flags, a giant dented steel shield-door, cracked paving, a broken barricade"
+        }
+      ]
+    },
+    {
+      "id": "st6",
+      "name": "The Verdant Biodome",
+      "light": "green-tinted light through a huge cracked glass dome, lush plants, clinical white lamps",
+      "images": [
+        {
+          "id": "a0-1",
+          "a": "inside a ruined botanical glass dome: huge iron-framed glass panes overhead, giant tropical plants, artificial nesting beds under heat lamps",
+          "b": "rows of incubators holding stolen eggs, empty heavy restraint frames sized for large animals, chains bolted to the floor, cracked glass"
+        },
+        {
+          "id": "a0-2",
+          "a": "a walkway between planting beds and glass walls, watering pipes, broken planters, vines climbing the frames",
+          "b": "a nursery area with small cages and feeding troughs, a feed cart, an iron gate into the pens"
+        },
+        {
+          "id": "a1-1",
+          "a": "animal pens with thick bars along a corridor of the dome, empty and dark, straw on the floor, warning lamps",
+          "b": "a laboratory corridor: glass walls, pipes, specimen tanks of green fluid holding only scaly tissue samples, steel doors to cells"
+        },
+        {
+          "id": "a1-2",
+          "a": "a treatment ward: medical beds with restraint straps, IV stands, medicine carts, curtains, monitors with blank screens",
+          "b": "a laboratory: large culture vats of glowing green fluid, pipes, workbenches with microscopes and racks of serum vials"
+        },
+        {
+          "id": "a2-1",
+          "a": "the approach to the test enclosure: deep claw gouges slashed high across the glass walls, a rack of spine-support harnesses, a broken pair of brass goggles and a red braided ribbon on a steel bench",
+          "b": "a viewing gallery of reinforced glass looking into a test enclosure, cracked and splintered from the inside, bars bent outward"
+        },
+        {
+          "id": "a2-2",
+          "a": "inside the reinforced test enclosure: high glass walls scarred by claws, a sandy floor, broken feeding gates, harness chains hanging",
+          "b": "the far end of the test enclosure: a shattered glass panel open to the jungle beyond, twisted bars, emergency lights"
+        }
+      ]
+    },
+    {
+      "id": "st7",
+      "name": "The Observatory",
+      "light": "stormy night, lightning, cold moonlight, amber control-room lights",
+      "images": [
+        {
+          "id": "a0-1",
+          "a": "a cliff road at night winding up to an old observatory dome on the clifftop, radio masts, a low stone wall, the sea far below",
+          "b": "the cliff road past a guard post, cables strung on poles, huge mechanical walker footprints pressed into the road edge"
+        },
+        {
+          "id": "a1-1",
+          "a": "a relay station: racks of short-range radio equipment, small rotating dishes on brackets, cable trays, blinking lamps",
+          "b": "a generator room feeding the relays: switchboards, big knife switches, thick cables, a dish on a stand"
+        },
+        {
+          "id": "a1-2",
+          "a": "a research archive: tall shelves of record boxes and file drawers, old monitors showing archived scans of creatures (no text), salvaged laboratory equipment",
+          "b": "the archive's far end: a desk of notebooks and specimen jars, a cracked cloning tank (empty), a framed old blueprint of a lab (no text)"
+        },
+        {
+          "id": "a2-1",
+          "a": "a workshop gallery: workbenches with giant hydraulic gripper arms, industrial cutting saws and armor plates, a blueprint of a four-legged maintenance walker pinned on the wall (no text)",
+          "b": "a walker assembly bay: an empty walker cradle frame, hoists, welding sparks marks, hydraulic fluid on the floor"
+        },
+        {
+          "id": "a2-2",
+          "a": "the industrial control gallery: long control consoles with dials and levers, big monitors with blank screens, a huge window with lightning over the dam in the distance",
+          "b": "the far end of the control gallery: a reinforced steel wall, fallen ceiling cables, a broken window and the storm outside"
+        }
+      ]
+    },
+    {
+      "id": "st8",
+      "name": "The Crown Dam",
+      "light": "heavy rain before dawn, floodlights, deep blue night with a faint dawn glow",
+      "images": [
+        {
+          "id": "a0-1",
+          "a": "a turbine gallery inside a huge dam: giant generator turbines in a row, big pipes, catwalk railings, floodlights",
+          "b": "more turbine hall: huge penstock pipes, valves, a crown emblem painted on a turbine housing, puddles on the steel floor"
+        },
+        {
+          "id": "a1-1",
+          "a": "maintenance lifts: steel lift cages in a concrete shaft, counterweights, chains, warning stripes",
+          "b": "a narrow maintenance platform along the dam wall, pipes and valves, rain pouring through a grating, the reservoir glimpsed above"
+        },
+        {
+          "id": "a1-2",
+          "a": "the gatehouse exterior on the dam: a massive concrete gatehouse with crown emblems, gate machinery and giant gears behind bars",
+          "b": "inside the gatehouse: a wall chart of a powered shoulder brace and a giant armored shield-arm sketched on it (no text), medical cases, a rack of pistols and a heavy blade"
+        },
+        {
+          "id": "a2-1",
+          "a": "the gate control room: huge release gears and a lever mechanism, control panels, a crown emblem on the wall, rain hitting the windows",
+          "b": "the door out onto the dam crest: open steel blast doors, rain, floodlights, the walkway beyond"
+        },
+        {
+          "id": "a2-2",
+          "a": "the dam crest in pouring rain: a wide concrete walkway, the reservoir dangerously high on the back side, floodlight towers, a crown emblem on the parapet",
+          "b": "the dam crest near the spillway: a damaged steel service gantry, the spillway gates, the dark valley far below with a faint dawn on the horizon"
+        }
+      ]
+    }
+  ]
+}

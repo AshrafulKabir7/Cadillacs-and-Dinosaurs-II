@@ -27,8 +27,8 @@
       "stage-data.js": 153600
     },
     "anyShippedFile": 1572864,
-    "stagePagesPerChapter": 1048576,
-    "stagePagesTotal": 5242880,
+    "stagePagesPerChapter": 1310720,
+    "stagePagesTotal": 10485760,
     "pageMax": 1024,
     "trackedFileMax": 2097152
   },

@@ -137,11 +137,11 @@ check('Every authored glyph fits its cell: at most 7 rows, one or two 8 px cells
     const d = loadData(file);
     for (const key of ['EDEN_CAMPAIGN', 'EDEN_MISSIONS', 'EDEN_INTRO', 'EDEN_ENDING']) if (d[key]) walk(d[key], [key]);
   }
-  const hud = ['INSERT COIN', 'JOIN-IN', 'CREDIT 0', 'JACK.T', 'HANNAH.D', 'MUSTAPHA', 'MESS.O', '1ST', 'GATE CONTROLS', 'CROWNBACK', 'SHOTS', 'HITS', 'CONTINUE?', 'CHAPTER 1 CLEAR', 'VITALITY', 'FINAL BLOW', 'FREED CLONES ×2', 'THE LAST COPY', 'FESSENDEN’S LEGACY', 'EASTCOAST 2513 · SIX MONTHS LATER',
+  const hud = ['INSERT COIN', 'JOIN-IN', 'CREDIT 0', 'JACK.T', 'HANNAH.D', 'MUSTAPHA', 'MESS.O', '1ST', 'CROWNBACK', 'SHOTS', 'HITS', 'CONTINUE?', 'STAGE 1 CLEAR', 'VITALITY', 'FINAL BLOW', 'EAST COAST — SIX MONTHS LATER',
     // G6 screens drawn by game.js: the title, the tally, the ending
-    'II · THE CROWN TIDE', 'CHAPTER 6 CLEAR', 'TOTAL', 'THANK YOU FOR PLAYING', 'A FAN SEQUEL MADE FOR MOSTAFA',
-    // G6 verify fix: the picture screens (p-manifest, p-ledger) and the vat hall's tank plates
-    'COLD CARGO · WASSOON', 'LOT 07 / 09 / 12 / 31', 'TO: THE CORAL CAUSEWAY', 'STOCK: THE SINK', 'TANK 01 02 03 04 05 06', 'TANK 07 08 09 10 11 --', 'TENREC', 'DUNDEE', 'CAIRO', 'O’BRADOVICH'];
+    'II · THE CROWN TIDE', 'STAGE 8 CLEAR', 'TOTAL', 'THE ROAD GOES ON', 'THANK YOU FOR PLAYING', 'A FAN SEQUEL MADE FOR MOSTAFA',
+    // the picture screens (p-manifest, p-ledger; revision 3 texts)
+    'CAMP · NORTH WETLANDS', 'LIVE STOCK ONLY', 'VIA CAUSEWAY · CROWN', 'OUTLYING WORKSHOP', 'ORDERS SIGNED: DR. ECHO', 'PAID: MARSHAL SABLE'];
   const bad = [];
   for (const s of strings.concat(hud)) { const m = UI.missing(s.replace(/\\n/g, '\n')); if (m.length) bad.push(m.join('') + ' in ' + JSON.stringify(s.slice(0, 40))); }
   check('Every drawn campaign/mission/HUD character has a glyph (' + (strings.length + hud.length) + ' strings)', bad.length === 0, bad.slice(0, 5).join('; '));
@@ -219,11 +219,11 @@ check('caption: 8x16, centred on row 23 (y 184), x snapped to 8', (() => {
   const t = traced(g => UI.caption(g, '47TH STREET', 10)); return t.r === true && t.glyphs[0].y === 184 && t.glyphs[0].x === 144 && t.glyphs.every(e => e.font === 16);
 })());
 check('caption: visible for 150 frames then gone', (() => { const a = traced(g => UI.caption(g, 'X', 149)), b = traced(g => UI.caption(g, 'X', 150)); return a.r === true && a.glyphs.length === 1 && b.r === false && b.glyphs.length === 0; })());
-check('card: ch1 shows the pre caption for 2 s, then the map, the marker and the typed title', (() => {
-  const c = { pre: 'EASTCOAST 2513 · SIX MONTHS LATER', chapter: 1, name: 'WASSOON', marker: 'wassoon' };
+check('card: stage 1 shows the pre caption for 2 s, then the map, the marker and the typed title', (() => {
+  const c = { pre: 'EAST COAST — SIX MONTHS LATER', chapter: 1, name: 'WASSOON', marker: 'wassoon' };
   const pre = traced(g => UI.card(g, Object.assign({ t: 60 }, c))), then = traced(g => UI.card(g, Object.assign({ t: 120 }, c))), later = traced(g => UI.card(g, Object.assign({ t: 124 }, c))), full = traced(g => UI.card(g, c));
-  // t 124 = 4 frames of typing = 8 characters = 'CHAPTER ' (the space is not drawn: 7 glyphs)
-  return pre.r.phase === 'pre' && pre.glyphs.every(e => e.y === 184) && then.r.phase === 'card' && then.glyphs.length === 0 && then.r.remaining === 16 && later.glyphs.length === 7 && later.r.remaining === 8 && full.r.remaining === 0 && full.glyphs.some(e => e.y === 136) && full.glyphs.some(e => e.y === 168);
+  // t 124 = 4 frames of typing = 8 characters = 'STAGE 1' and the name's W (the space is not drawn: 7 glyphs)
+  return pre.r.phase === 'pre' && pre.glyphs.every(e => e.y === 184) && then.r.phase === 'card' && then.glyphs.length === 0 && then.r.remaining === 14 && later.glyphs.length === 7 && later.r.remaining === 6 && full.r.remaining === 0 && full.glyphs.some(e => e.y === 136) && full.glyphs.some(e => e.y === 168);
 })());
 check('card: the map picture sits in the frame at (80,16) 224x96 and the marker blinks on t', (() => {
   const g = recorder(); UI.card(g, { chapter: 2, name: 'THE CORAL CAUSEWAY', marker: 'causeway', t: 400 });
@@ -408,7 +408,7 @@ const SCREENS = [
   ['panel-B', (g, t) => UI.panel(g, { layout: 'B', who: 'hannah', pic: 'p-manifest', lines: ['ROOK’S MANIFEST SAYS THE PODS', 'RIDE THE CORAL CAUSEWAY.'], lines2: ['IT ONLY SURFACES AT', 'LOW TIDE.'], typed: t })],
   ['panel-B3', (g, t) => UI.panel(g, { layout: 'B', who: 'jack', lines: ['FESSENDEN’S DEAD. WE WATCHED', 'THAT LAB GO UP.', 'SO WHO’S SHOPPING IN HIS', 'GRAVE?'], typed: t })],
   ['panel-C', (g, t) => UI.panel(g, { layout: 'C', pic: 'p-echo-speaker', lines: ['YOU BROKE HIS BODY.', 'YOU NEVER BROKE HIS WORK.'], typed: t })],
-  ['card-pre', (g, t) => UI.card(g, { pre: 'EASTCOAST 2513 · SIX MONTHS LATER', chapter: 1, name: 'WASSOON', marker: 'wassoon', label: 'WASSOON', t })],
+  ['card-pre', (g, t) => UI.card(g, { pre: 'EAST COAST — SIX MONTHS LATER', chapter: 1, name: 'WASSOON', marker: 'wassoon', label: 'WASSOON', t })],
   ['card', (g, t) => UI.card(g, { chapter: 2, name: 'THE CORAL CAUSEWAY', marker: 'causeway', label: 'THE CORAL CAUSEWAY', t: t + 120 })],
   ['caption', (g, t) => { g.fillStyle = '#304050'; g.fillRect(0, 0, 384, 224); UI.caption(g, 'WASSOON HARBOR', t); }],
   ['bossCard', (g, t) => { g.fillStyle = '#304050'; g.fillRect(0, 0, 384, 224); UI.bossCard(g, { name: 'WARDEN ROOK', sub: 'WARDEN OF THE JAIL BARGE', t, accent: '#8fb3e6' }); UI.radio(g, { name: 'MESS', accent: '#8fb3e6', text: 'Hey… I know that face.' }); UI.coinSlot(g, 0, 'INSERT COIN', t); UI.coinSlot(g, 1, 'JOIN-IN', t); }],

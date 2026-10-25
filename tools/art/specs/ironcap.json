@@ -1,0 +1,26 @@
+{
+  "id": "ironcap",
+  "name": "CAPTAIN IRONCLUB",
+  "note": "Revision 3: Ironclub's armoured first phase (stage 5), Sable's shock captain in petrol-green plate with the cooling harness. Sources: work/art/gen/ironcap (Codex sheets from tools/art/boss-prompts.json 'ironcap', magenta, facing left); each sheet's first pose is the idle reference that sets its scale (~108 arcade px, 1.37 hero). Anim numbers are BOSS_DEFS.ironclub 'main:<n>' references (phase 1); anim 5 (the armour bursting off, plates over a plated body) starts the transform that IRONCLUB's main 9 finishes.",
+  "height": 108,
+  "bg": "#FF00FF",
+  "chapterTag": 106,
+  "ship": "sprite-data-boss-ironcap.js",
+  "anchor": "feet",
+  "inputs": [
+    { "file": "work/art/gen/ironcap/ironcap-01-idle-walk.png", "split": "auto", "names": ["idle0", "walk1", "walk2", "walk3"] },
+    { "file": "work/art/gen/ironcap/ironcap-02-attack.png", "split": "auto", "names": ["_ref2", "tell", "punch", "slam"] },
+    { "file": "work/art/gen/ironcap/ironcap-03-shed.png", "split": "auto", "names": ["_ref3", "hurt1", "shed1", "shed2"] }
+  ],
+  "anims": [
+    { "name": "idle", "frames": ["idle0"], "dur": 30, "loop": 0 },
+    { "name": "walk", "frames": ["walk1", "walk2", "walk3", "walk2"], "dur": 11, "loop": 0, "alignTo": "idle0" },
+    { "name": "punch", "frames": ["tell", "punch", "idle0"], "dur": [28, 16, 12], "act": [1], "align": "none" },
+    { "name": "slam", "frames": ["tell", "slam", "slam"], "dur": [26, 18, 20], "act": [1], "align": "none" },
+    { "name": "hurt", "frames": ["hurt1"], "dur": 14, "alignTo": "idle0" },
+    { "name": "shed", "frames": ["hurt1", "shed1", "shed2"], "dur": [16, 30, 36], "align": "none" },
+    { "name": "charge", "frames": ["walk1", "walk2", "walk3", "walk2"], "dur": 5, "loop": 0, "act": [0, 1, 2, 3], "alignTo": "idle0" }
+  ],
+  "palette": { "mode": "ramps", "lock": ["#ffbb88", "#cc7755"] },
+  "clean": { "smooth": 1 }
+}
