@@ -184,8 +184,16 @@ const WEAPONS = {
   torch: {name:'TORCH', ammo:12, cooldown:.46, damage:48, melee:true, range:77},
   grenade: {name:'GRENADE', ammo:2, cooldown:.5, damage:100, thrown:true},
   dynamite: {name:'DYNAMITE', ammo:2, cooldown:.5, damage:125, thrown:true},
-  stone: {name:'STONE', ammo:1, cooldown:.4, damage:32, thrown:true}
+  stone: {name:'STONE', ammo:1, cooldown:.4, damage:32, thrown:true},
+  // HEROES O4: a lifted ROM container (class 0x20A), carried overhead and thrown; the id is its hold key in ROM_HEROES
+  'container-drum': {name:'OIL DRUM', ammo:1, cooldown:.3, damage:64, carried:'drum'},
+  'container-barrel': {name:'BARREL', ammo:1, cooldown:.3, damage:56, carried:'barrel'}
 };
+// Carrying (MECHANICS §1.1: 0x50A4 carry speeds are .94 of the walk for every hero; no run, 0x1923E) and the throw: the
+// ROM's thrown-container flight is not decoded, so it leaves the hands at 5 px/f with a small lift (1 px/f, the carry
+// jump's .3125 px/f² gravity), rolls on at .7 of its speed braking 300 px/s², knocks down up to 3 foes and breaks.
+const CARRY={walk:.94,vx:5,vz:1,g:.3125,roll:.7,brake:300,pierce:3};
+const carrying=(p=player)=>!!(p&&WEAPONS[p.weapon]?.carried);
 // Music is campaign data (CAMPAIGN §4.6, PLAN §7 G6 1): level.music.stage gives one cue per section, intro → boss at the
 // boss, `engine` for Sable at the gate controls and `lastCopy` (32, the original final boss theme) for CROWNBACK. The original
 // soundtrack's ids (soundtrack-data.js); '06'/'09'/'10' are the chapter-1 anchors regression.cjs pins.
@@ -264,8 +272,10 @@ function weaponPoint(type,at){const R=RIG(),m=R&&R.muzzle(HEROES[selected].id,ty
 function dropWeapon() {
   // Knocked loose, the weapon pops out of the hand spinning through its ROM rotations (10 f each) and lands on its
   // ground record (HEROES §7.12).
-  if(player.weapon)drops.push({x:player.x-player.dir*15,y:player.y+4,type:player.weapon,ammo:player.ammo,life:60,loose:true,z:32,vz:90,dir:player.dir});
-  player.weapon=null;player.ammo=0;player.pendingStrike=null;player.burst=null;player.swing=null;player.pushV=0;
+  // a carried container falls and breaks at the hero's feet, spilling what it held
+  if(carrying())crashContainer({weapon:player.weapon,x:player.x+player.dir*12,y:player.y,dir:player.dir,content:player.carryLoot});
+  else if(player.weapon)drops.push({x:player.x-player.dir*15,y:player.y+4,type:player.weapon,ammo:player.ammo,life:60,loose:true,z:32,vz:90,dir:player.dir});
+  player.weapon=null;player.carryLoot=null;player.ammo=0;player.pendingStrike=null;player.burst=null;player.swing=null;player.pushV=0;
 }
 // An explosion: the ROM fireball (ROM_HEROES.fx.explosion = records 378-393, or `kind:'dynamite'` = 460-469 then
 // 2140-2142) at height z, plus the debris and smoke particles. Damage and radius stay the sequel's.
@@ -282,8 +292,58 @@ function breakObject(o,power) {
   // a broken ROM container is knocked over (its lying pose, anim 1 of the set, for 12 frames) as its item pops out; the
   // set has no break frames (anims 2+ are the rolling frames of a thrown one; ROM_FX.containers)
   if(o.hp<=0&&!o.boss){const P=propOf(o.type),C=P&&window.ROM_FX.containers?.[P.container],rec=C?.anims?.[1]?.[0]?.[0];if(rec!=null)effects.push({type:'container',seq:[[rec,12]],x:o.x,y:o.y,z:0,dir:-1,age:0,life:.2});}
-  if(o.hp<=0){if(o.content&&(o.content!=='food'||Math.random()<rules().propFoodChance)){const c=o.content;drops.push(c==='food'?foodDrop(o.x,o.y):c==='bonus'?bonusDrop(o.x,o.y):c==='ammo'?{x:o.x,y:o.y,type:'ammo',food:'ammo',life:999}:{x:o.x,y:o.y,type:c,life:90});}score+=100;}
+  if(o.hp<=0){spillContent(o.content,o.x,o.y);score+=100;}
 }
+function spillContent(c,x,y){if(c&&(c!=='food'||Math.random()<rules().propFoodChance))drops.push(c==='food'?foodDrop(x,y):c==='bonus'?bonusDrop(x,y):c==='ammo'?{x,y,type:'ammo',food:'ammo',life:999}:{x,y,type:c,life:90});}
+// ---- carried containers (HEROES O4, §7.13): lift (the ROM `lift` clip, main:22), carry (stand/walkTorso.container,
+// containerJump) and throw (attack.container, released on its ev1 frame) a drum or barrel; ROM_FX.containers anims[1]
+// is its knocked-over pose and anims[2] the rolling frames of a thrown one.
+const containerOf=type=>window.ROM_FX.containers?.[WEAPONS[type]?.carried]||null;
+// the intact container within reach of the hero's hands (same lane; `toward`: in front of him)
+function liftable(toward){let best=null,dist=1e9;
+  for(const o of objects){if(o.hp<=0||o.boss||o.falling||o.rolling)continue;const P=propOf(o.type),k=P&&'container-'+P.container;if(!WEAPONS[k]?.carried||!window.ROM_FX.containers?.[P.container]?.carried)continue;
+    const dx=o.x-player.x,dy=Math.abs(o.y-player.y);if(Math.abs(dx)>=38||dy>=14||(toward&&Math.abs(dx)>4&&Math.sign(dx)!==player.dir))continue;if(Math.abs(dx)+dy<dist){dist=Math.abs(dx)+dy;best=o;}}
+  return best;}
+// the lift's ev2 frame: the container leaves the floor (its content goes with it) and shows at the clip's hold
+function liftObject(o){if(o.hp<=0||player.weapon)return;const P=propOf(o.type);o.hp=0;o.lifted=true;player.weapon='container-'+P.container;player.ammo=1;player.carryLoot=o.content??null;sfx('pickup');toast=WEAPONS[player.weapon].name;toastTime=1.2;}
+// ATTACK or PICK UP while carrying: attack.container plays and the container leaves the hands on its ev1 frame (resolveSwing)
+function carryThrow(){
+  const type=player.weapon,role=heroClassRole('container','attack');heroAct('container');
+  player.moveState=null;player.pendingStrike=null;player.burst=null;player.runLatch=0;player.dashVelocity=0;player.pushV=0;player.attackKind='throw';
+  player.attack=player.attackTotal=Math.max(WEAPONS[type].cooldown,heroClipLen(role,.3));
+  player.swing={t:heroClipEvent(role,f=>f[4]===1,.15),type,carry:true};sfx('swing');if(player.swing.t<=0)resolveSwing();
+}
+// from the container's hold on that frame (its bottom centre: the fx records' origin), into the flight below
+function releaseCarry(type){
+  const R=RIG(),S=CFG.sockets.scale,dir=player.dir,tm=heroClipTiming(heroClassRole('container','attack')),f=tm?.f.find(q=>q[4]===1),e=f&&R?.hero(HEROES[selected].id)?.hold[type]?.[f[3]];
+  bullets.push({x:player.x-dir*(e?e[1]:-16)*S,y:player.y,z:(e?-e[2]:80)*S+player.z,vx:dir*CARRY.vx*60*S,vz:CARRY.vz*60*S,g:CARRY.g*3600*S,friendly:true,damage:WEAPONS[type].damage,life:4,kind:'container',weapon:type,content:player.carryLoot??null,hits:[],pierce:CARRY.pierce,age:0,hero:true,dir,...(multi()?{ps:player.mp.slot}:{})});
+  player.weapon=null;player.ammo=0;player.carryLoot=null;
+}
+// A thrown container: it arcs to the floor, rolls on braking, knocks down each foe it meets (once, up to CARRY.pierce)
+// and breaks on a container, the objective, the arena's or the screen's edge, or when it stops.
+function stepContainer(b,dt){
+  const x0=b.x;b.age=(b.age||0)+dt;b.life-=dt;b.x+=b.vx*dt;
+  if(!b.landed){b.vz-=b.g*dt;b.z+=b.vz*dt;if(b.z<=0){b.z=0;b.vz=0;b.landed=true;b.vx*=CARRY.roll;shake=Math.max(shake,3);sfx('slam');}}
+  else{const v=Math.abs(b.vx)-CARRY.brake*dt;b.vx=v>0?Math.sign(b.vx)*v:0;}
+  const lo=Math.min(x0,b.x),hi=Math.max(x0,b.x),d=Math.sign(b.vx)||b.dir||1;blowKind='throw';
+  for(const e of enemies){if(b.life<=0)break;if(e.dead||e.dying||e.waiting||e.state==='flee'||e.state==='held'||e.inv>0||b.hits.includes(e.id))continue;
+    const span=e.boss&&bossSpan(e),ex=span?hx(e,b.x):e.x,r=span?2:18;if(ex<lo-r||ex>hi+r||Math.abs(b.y-e.y)>(e.boss?Math.max(16,bossDepth(e)-6):16)||b.z>e.z+(e.boss?119:83)||e.z>b.z+40)continue;
+    if(!damageEnemy(e,b.damage,d*31,true,false,{weapon:b.weapon,hitZ:b.z+20}))continue;
+    b.hits.push(e.id);effects.push({type:'pow',x:ex-d*9,y:b.y-b.z-20,age:0,life:.32});if(--b.pierce<=0)b.life=0;}
+  for(const o of objects)if(b.life>0&&o.hp>0&&o.x>=lo-19&&o.x<=hi+19&&Math.abs(b.y-o.y)<22&&b.z<74){breakObject(o,b.damage);b.life=0;}
+  const t=mission?.active;if(b.life>0&&t?.kind==='beacon'&&!t.done&&t.x>=lo-17&&t.x<=hi+17&&Math.abs(b.y-t.y)<24&&b.z<81){damageObjective(b.damage,t.x,b.y,30,d);b.life=0;}
+  blowKind=null;
+  const L=lock||{left:camera,right:camera+W};if(b.x<L.left+8||b.x>L.right-8||(b.landed&&!b.vx))b.life=0;
+  if(b.life<=0)crashContainer(b);
+}
+// it breaks: the set's knocked-over pose (anim 1, as breakObject) where it ends, inside the view, and its content drops
+function crashContainer(b){
+  const C=containerOf(b.weapon),L=lock||{left:camera,right:camera+W},x=clamp(b.x,L.left+16,L.right-16),rec=C?.anims?.[1]?.[0]?.[0];
+  if(rec!=null)effects.push({type:'container',seq:[[rec,18]],x,y:b.y,z:0,dir:-(b.dir||1),age:0,life:.3});
+  burst(x,b.y-14,'#c3925d',10);sfx('slam');spillContent(b.content,x,b.y);score+=100;
+}
+// in flight it turns through the set's rolling frames (4 f each), its origin at the bottom centre
+function drawContainerShot(b,x){const C=containerOf(b.weapon),S=C?.anims?.[2];shadow(ctx,x,b.y,14);if(S&&S.length)fxDraw(seqCycle(S,(b.age||0)*60+1e-6),x,b.y,b.z,-(Math.sign(b.vx)||b.dir||1));}
 // The hero's ROM stab box (0x62AE per hero: fwd, xoff, xRange, dOff, dRange; HEROES D17, §7.7): a target counts when
 // 0 <= x + dir*fwd - target.x + xoff < xRange and 0 <= y - target.y + dOff < dRange (0x6248, unsigned compares).
 // Enemies, breakable objects and an objective target count, so a knife beside a crate still stabs.
@@ -295,7 +355,7 @@ function stabTargets(){
   return out;
 }
 function weaponAttack() {
-  const w=WEAPONS[player.weapon];if(!w)return false;player.moveState=null;
+  const w=WEAPONS[player.weapon];if(!w)return false;if(w.carried){carryThrow();return true;}player.moveState=null;
   player.pendingStrike=null;player.dashVelocity=0;
   const type=player.weapon,cls=rigClass(type);player.attackTotal=w.cooldown;player.attack=w.cooldown;player.attackKind=w.melee?'weapon-melee':w.thrown?'throw':'fire';heroAct(w.thrown?'throwable':cls);
   player.runLatch=0;player.swing=null;
@@ -332,6 +392,7 @@ function burstGap(type){const t=heroClipTiming(heroClassRole(rigClass(type),'att
 // A stab hits what is inside the stab box on its frame (the box that chose the stab, D17); a swing keeps its reach.
 function resolveSwing(){
   const s=player.swing;player.swing=null;if(!s||player.weapon!==s.type)return;
+  if(s.carry){releaseCarry(s.type);return;}
   const opts={melee:true,weapon:s.type,sharp:s.type==='knife'},kd=s.type!=='knife';
   if(s.stab){for(const {kind,t} of stabTargets()){if(kind==='enemy')damageEnemy(t,s.power,player.dir*(kd?31:6),kd,false,opts);else if(kind==='object')breakObject(t,s.power);else damageObjective(s.power,player.x,player.y,Math.abs(t.x-player.x)+1,player.dir);}}
   else meleeStrike(s.range,s.power,s.type!=='knife',null,opts);
@@ -410,7 +471,7 @@ function heroThrow(type,damage){
 // last round ends; E throws any held weapon the same way. It flies like a thrown knife (ROM_HEROES.fx.hurl), hits for
 // 42 (a knife 45), rebounds off what it hits and lies there 63 f; a grenade or dynamite thrown by E still goes off.
 function throwHeldWeapon(){
-  if(!player.weapon)return;const type=player.weapon,w=WEAPONS[type];heroAct('throwable');
+  if(!player.weapon)return;if(carrying()){carryThrow();return;}const type=player.weapon,w=WEAPONS[type];heroAct('throwable');
   heroThrow(type,w?.thrown?w.damage:w?.throwDamage||ROMFX()?.hurl?.damage||42);
   player.weapon=null;player.ammo=0;player.burst=null;player.pendingStrike=null;player.swing=null;player.runLatch=0;player.pushV=0;player.attack=.26;player.attackTotal=.26;player.attackKind='throw';sfx('swing');
 }
@@ -481,6 +542,7 @@ function stepBullet(b,dt){
   {
     if(b.life<=0)return;
     if(b.kind==='bomb'||b.kind==='parasite'){updateHostileObject(b,dt);return;}
+    if(b.kind==='container'){stepContainer(b,dt);return;}
     if(b.group&&b.group.pierce<=0){b.life=0;return;}
     const from=b.sweepFrom??b.x;delete b.sweepFrom;
     b.age=(b.age||0)+dt;b.x+=b.vx*dt;b.y+=(b.vy||0)*dt;b.life-=dt;
@@ -560,6 +622,7 @@ function drawEffects() {
   for(const b of bullets){if(b.delay>0)continue;const x=b.x-viewX,y=b.y-b.z;
     if(!b.hero&&!b.friendly&&drawEnemyShot(b,x,y))continue;
     if(b.kind==='lob'||b.kind==='thrown'){shadow(ctx,x,b.y,6);drawThrown(b,x);}
+    else if(b.kind==='container')drawContainerShot(b,x);
     else if(b.hero&&drawRomShot(b,x))continue;
     else if(b.kind==='rocket'){const rr=ROMW('bazooka')?.shot?.rec;if(rr)fxDraw(seqCycle(rr,(b.age||0)*60),x,b.y,b.z,Math.sign(b.vx)||1);rect(ctx,x-Math.sign(b.vx)*22,y-1,Math.sign(b.vx)*13,2,'#ffb33b');}
     else {rect(ctx,x,y,Math.sign(b.vx)*(b.weapon==='shotgun'?20:13),1,b.friendly?'#fff7c5':'#ff8662');if(b.weapon==='shotgun'){rect(ctx,x-4,y-6,7,1,'#ffdc7c');rect(ctx,x-4,y+6,7,1,'#ffdc7c');}}
@@ -1691,7 +1754,7 @@ function damagePlayer(amount,fromX,ignoreAir=false,hit=null) {
   else{player.hurtRole=back?'hurtBack':'hurt';player.hurt=heroClipLen(player.hurtRole,.3);}
   player.hurtTotal=player.hurt;player.inv=player.knocked?player.hurt+20/60:.65;
   player.x+=fromX<player.x?17:-17;player.attack=0;player.pendingStrike=null;player.moveState=null;player.swing=null;player.freeze=0;releaseGrab();player.z=0;player.vz=0;combo=0;comboTimer=0;player.pickup=0;player.pickTarget=null;
-  player.burst=null;player.runLatch=0;player.dashPhase=null;player.dropIn=false;if(player.knocked)dropWeapon();shake=6;flash=.06;sfx('hurt');if(player.hp<=0||player.knocked&&player.knockRole==='knockHard')voice('death');burst(player.x,player.y-33,'#eea575',8);
+  player.burst=null;player.runLatch=0;player.dashPhase=null;player.dropIn=false;if(player.knocked||carrying())dropWeapon();shake=6;flash=.06;sfx('hurt');if(player.hp<=0||player.knocked&&player.knockRole==='knockHard')voice('death');burst(player.x,player.y-33,'#eea575',8);
   // A lost life: the death fall (knockHard, the ROM's death fall) and a moment lying, then the next life drops in from
   // the top of the screen (startDropIn; HEROES §6.6). The last life goes to the continue count.
   if(player.hp<=0){lives--;if(lives>0){player.hp=player.maxhp;dropWeapon();player.knocked=!driving;player.dying=!driving;if(!driving){player.knockRole='knockHard';player.hurt=player.hurtTotal=heroClipLen('knockHard',.65)+1;}else player.hurt=0;player.inv=player.hurt+3;toast=multi()?`${player.mp.slot+1}P · ${lives} LIVES REMAINING`:`${lives} LIVES REMAINING`;toastTime=3;checkpoint();}else if(multi())mpStartContinue();else startContinue();}
@@ -1777,12 +1840,14 @@ function shoot(x,y,dir,friendly=true,damage=18,speed=459,owner=null){bullets.pus
 const nearbyDrop=(rx,ry,weaponsOnly)=>{let best=null,dist=1e9;for(const d of drops){if(d.claimed||(weaponsOnly&&PICKUPS.has(d.type)))continue;const dx=Math.abs(d.x-player.x),dy=Math.abs(d.y-player.y);if(dx<rx&&dy<ry&&dx+dy<dist){dist=dx+dy;best=d;}}return best;};
 // Picking something up is the ROM crouch, main:10 (11 f): the item reaches the hand on its ev1 frame (after 10 f) and
 // the weapon shows in its stance afterwards (HEROES §6.1 row 2, §6.5).
-function startPickup(d){heroAct();player.moveState=null;player.swing=null;player.runLatch=0;player.dashPhase=null;player.pickup=player.pickupTotal=heroClipLen('pickup',.26);player.pickAt=Math.min(player.pickup,heroClipEvent('pickup',f=>f[4]===1,.14));
-  player.pickTarget=d;d.claimed=true;player.attack=0;player.pendingStrike=null;player.burst=null;player.dashVelocity=0;player.attackKind='ready';if(Math.abs(d.x-player.x)>4)player.dir=Math.sign(d.x-player.x);}
+// A container is lifted on the ROM lift clip (main:22, 21 f): it leaves the floor on its ev2 frame (after 9 f) and is overhead
+// when the clip ends (HEROES §6.1 row 2, §7.13).
+function startPickup(d,role='pickup'){heroAct();player.moveState=null;player.swing=null;player.runLatch=0;player.dashPhase=null;player.pickRole=role;player.pickup=player.pickupTotal=heroClipLen(role,role==='lift'?.35:.26);player.pickAt=Math.min(player.pickup,heroClipEvent(role,f=>f[4]===(role==='lift'?2:1),role==='lift'?.15:.14));
+  player.pickTarget=d;if(role==='pickup')d.claimed=true;player.attack=0;player.pendingStrike=null;player.burst=null;player.dashVelocity=0;player.attackKind='ready';if(Math.abs(d.x-player.x)>4)player.dir=Math.sign(d.x-player.x);}
 function updatePickup(dt){
   if(player.pickup<=0)return;const before=player.pickup;player.pickup=Math.max(0,player.pickup-dt);const at=player.pickupTotal-player.pickAt+1e-9;
   if(before>at&&player.pickup<=at){
-    const d=player.pickTarget;player.pickTarget=null;if(!d||!drops.includes(d))return;drops.splice(drops.indexOf(d),1);sfx('pickup');score+=75;
+    const d=player.pickTarget;player.pickTarget=null;if(d&&player.pickRole==='lift'){if(objects.includes(d))liftObject(d);return;}if(!d||!drops.includes(d))return;drops.splice(drops.indexOf(d),1);sfx('pickup');score+=75;
     if(PICKUPS.has(d.type)){consumeItem(d);}
     else{dropWeapon();player.weapon=d.type;player.ammo=d.ammo??Math.max(1,Math.round((WEAPONS[d.type]?.ammo??1)*(WEAPONS[d.type]?.melee?rules().meleeDurability:1)));toast=`${WEAPONS[player.weapon]?.name||player.weapon} · ${player.ammo} ${WEAPONS[player.weapon]?.melee?'HITS':'SHOTS'}`;toastTime=2;}
   }
@@ -1855,6 +1920,9 @@ function grabAttack(){
 function attack() {
   if(state!=='play'||player.hurt>0||player.attack>0||player.special>0||bossIntro>0||player.pickup>0||player.dropIn)return;
   if(player.grab){grabAttack();return;}
+  if(carrying()&&!driving){carryThrow();return;}
+  // The ROM also lifts a container on attack with the stick held towards it (0x5B68); here only PICK UP lifts, so walking
+  // into a drum and punching still attacks (and breaks it), as every touch-screen and keyboard player expects
   if(!driving&&!player.weapon&&player.z===0){const d=nearbyDrop(22,13,true);if(d){startPickup(d);return;}}
   if(driving){player.attack=.5;player.attackTotal=.5;player.boost=.5;meleeStrike(CAR_REACH+33,62,true,null,{car:true});sfx('hit');return;}
   // D9 (HEROES §1, §6.1 rows 8-9): in the air an attack is the jump kick and on the run it is the dash, armed or not
@@ -1883,6 +1951,9 @@ function endDash(){player.dashPhase='end';player.dashT=0;player.pendingStrike=nu
 // last 3 frames (ROM +0xAB), jumpFwd while moving, else jumpUp; it plays by time and holds its last frame until landing.
 function jump(){if(player.z>0||player.hurt>0||player.pickup>0||player.dropIn)return;if(driving){if(player.boostCd<=0){player.boost=1.15;player.boostCd=3;player.inv=1.2;sfx('jump');}return;}
   player.jumpRole=player.run?'jumpRun':time-player.turnAt<3/60+1e-9?'jumpBack':player.move?'jumpFwd':'jumpUp';player.airAttacked=false;
+  // carrying: the ROM's kind-3 jump (0x1B05E: vh about 3.2 px/f under .3125 px/f², 18-22 f in the air) on containerJump
+  player.carryJump=carrying();if(player.carryJump){const J=RIG()?.hero(HEROES[selected].id)?.jump?.kinds?.[3]?.by,v=J&&J[player.move?(player.dir>0?'right':'left'):'none']||[0,3.5,-.3125];
+    player.jumpRole=player.move?'containerJump.fwd':'containerJump';player.carryG=Math.abs(v[2])*3600*CFG.sockets.scale;player.vz=v[1]*60*CFG.sockets.scale;player.z=.1;sfx('jump');return;}
   player.vz=263;player.z=.1;sfx('jump');voice('hop');}
 // The mega crash's ROM clip is punch:8 (Jack 39 f, Mustapha 118 f, Hannah 36 f, Mess 54 f; HEROES §6.3); its damage stays
 // on the call (regression L29-L31 read it at once). MEGA_ROM_LOCK: G4 took PLAN §8.2's R1 lever 'mega lock' (HEROES R1
@@ -1909,8 +1980,10 @@ function special() {
 function pickup() {
   if(player.hurt>0||player.z>0||player.pickup>0||player.dropIn)return;
   if(interactMission(true)||driving||wheelNear())return;
+  if(carrying()){carryThrow();return;}
   const d=nearbyDrop(33,18,false);if(d){startPickup(d);return;}
-  if(player.weapon)throwHeldWeapon();
+  if(player.weapon){throwHeldWeapon();return;}
+  const o=liftable(false);if(o)startPickup(o,'lift');
 }
 
 // ================================================================ the boss driver (PLAN §7 G5; ENEMIES §6.1; CAMPAIGN §5.4-§10.4, §12.4)
@@ -3103,13 +3176,13 @@ function controlStep(dt){
   // latches. Shift and the touch stick's rim stay plain run modifiers. CFG.runPersist=false restores the old rule.
   if(driving||CFG.runPersist===false)player.runLatch=0;
   else{
-    if(player.runLatch&&(dx===-player.runLatch||player.hurt>0||player.grab||player.special>0||player.pickup>0||player.dropIn))player.runLatch=0;
+    if(player.runLatch&&(dx===-player.runLatch||carrying()||player.hurt>0||player.grab||player.special>0||player.pickup>0||player.dropIn))player.runLatch=0;
     const tapDir=dashTime>0&&down(dashKey)?(dashKey==='ArrowRight'||dashKey==='KeyD'?1:-1):0;
-    if(tapDir&&dx===tapDir&&player.latchTap!==dashTap&&player.hurt<=0&&player.pickup<=0&&!player.grab){player.runLatch=dx;player.latchTap=dashTap;}
+    if(tapDir&&dx===tapDir&&!carrying()&&player.latchTap!==dashTap&&player.hurt<=0&&player.pickup<=0&&!player.grab){player.runLatch=dx;player.latchTap=dashTap;}
     if(player.runLatch&&!dx)dx=player.runLatch;
   }
   // Running is a horizontal sprint; lane changes while running are slower so the stride stays readable.
-  player.run=!driving&&!!dx&&player.pickup<=0&&(down('ShiftLeft','ShiftRight','TouchRun')||(dashTime>0&&down(dashKey))||dx===player.runLatch);player.move=!!(dx||dy);
+  player.run=!driving&&!!dx&&player.pickup<=0&&!carrying()&&(down('ShiftLeft','ShiftRight','TouchRun')||(dashTime>0&&down(dashKey))||dx===player.runLatch);player.move=!!(dx||dy);
   if(dx&&player.attack<=0&&player.pickup<=0&&!player.grab){if(player.dir!==dx)player.turnAt=time;player.dir=dx;}
   const px=player.x,py=player.y;
   player.walkFire=false;if(driving||player.hurt>0)player.pushV=0;
@@ -3120,7 +3193,7 @@ function controlStep(dt){
     // on the ground holds him in place.
     const walkFire=player.attack>0&&player.attackKind==='fire'&&player.z<=0&&!!dx&&BURST_CLS.has(rigClass(player.weapon));
     if(walkFire){player.walkFire=true;player.run=false;}
-    const V=heroV(h),speed=player.run?FIREARMS.has(player.weapon)?V.walk*1.5:V.run:V.walk,lane=V.lane*(player.run?.5:1);
+    const V=heroV(h),cf=carrying()?CARRY.walk:1,speed=(player.run?FIREARMS.has(player.weapon)?V.walk*1.5:V.run:V.walk)*cf,lane=V.lane*(player.run?.5:1)*cf;
     const drag=player.attack>0&&player.z<=0&&!walkFire?0:1;
     player.x+=dx*speed*drag*dt;player.y+=dy*lane*drag*dt;
     if(dx&&dy&&!player.run){player.x-=dx*speed*drag*dt*.22;player.y-=dy*lane*drag*dt*.22;}
@@ -3148,7 +3221,7 @@ function controlStep(dt){
   else if(player.move)player.walkDist+=moved;
   // Landing (HEROES §6.1 row 16, §6.5): the land clip (main:6, 7-10 f), or landHard (main:30, 18-22 f) after an air
   // attack, which ends with the landing; a hopping dash lands into dashEnd; the drop-in hands control back.
-  if(player.z>0&&!frozen){player.vz-=630*dt;player.z+=player.vz*dt;if(player.z<=0){player.z=0;player.vz=0;
+  if(player.z>0&&!frozen){player.vz-=(player.carryJump&&carrying()?player.carryG:630)*dt;player.z+=player.vz*dt;if(player.z<=0){player.z=0;player.vz=0;
     if(player.attackKind==='dash'&&player.dashPhase==='dash'&&player.attack>0)endDash();
     else{const hard=player.airAttacked;player.landRole=hard?'landHard':'land';player.land=player.landTotal=heroClipLen(player.landRole,hard?.3:.1);player.airAttacked=false;}
     player.dropIn=false;if(player.attackKind==='air'){player.attack=0;player.pendingStrike=null;}burst(player.x,player.y,'#8b9470',4);}}
@@ -3624,7 +3697,7 @@ let heroAnim={main:null,legs:null,want:null,flame:null,swing:null,force:null,sel
 function heroAnimReset(){const R=window.HeroRig;Object.assign(heroAnim,{main:R?R.player():null,legs:R?R.player():null,want:null,flame:null,swing:null,force:null,sel:null});}
 // `swing` is the ROM weapon class whose attack clip the move plays (blade stab, blunt swing, throwable throw).
 function heroAct(swing=null){heroAnim.swing=swing;}
-const rigClass=type=>RIG()?.data.weapon[type]?.cls||null;
+const rigClass=type=>RIG()?.data.weapon[type]?.cls||(WEAPONS[type]?.carried?'container':null);
 // Held weapons take the chapter's OBJ palette page (0x8E8E; B. KNIFE and YOROI change colour per chapter, KI7).
 function heroRigChapter(i){const R=window.HeroRig,p=window.STAGE_DATA?.chapters?.[chapterKey(i)]?.objPage,maps=(window.ROM_FX||window.SPRITE_DATA?.families?.fx)?.pal?.maps;if(R)R.objPage=p&&maps&&maps[p]?p:null;}
 // Which clip shows now (HEROES §6.1, first match wins). Firearms keep the armed-* pose strings.
@@ -3639,7 +3712,7 @@ function heroRoles(){
   const stand=C&&has(C.stand)?C.stand:'idle';
   // the chapter is cleared: main:14 (Mustapha's ends on the thumbs-up, rec 295), its last frame held
   if(player.victoryT!=null)return {pose:'victory',role:'victory',at:player.victoryT};
-  if(player.pickup>0)return {pose:'pickup',role:'pickup',at:gone(player.pickupTotal,player.pickup)};
+  if(player.pickup>0)return {pose:player.pickRole==='lift'?'lift':'pickup',role:player.pickRole||'pickup',at:gone(player.pickupTotal,player.pickup)};
   if(player.grab){const m=player.moveState;if(m&&(m.name==='throw'||m.name==='knee'))return {pose:m.name==='throw'?'throw':'grab',role:m.role,k:m.k};return {pose:'grab',role:'grab'};}
   if(player.special>0)return {pose:'special',role:'mega',at:gone(player.specialTotal,player.special)};
   // the last life: the death fall (knockHard), then its lying frame under the continue count
@@ -3662,6 +3735,8 @@ function heroRoles(){
     // the Uzi/M-16 walking burst (G3d): the smgWalkFire torso, one clip per round, over legsWalk, then the walking torso
     if(player.walkFire&&C){if(has(C.walkFire)&&player.shotT<heroClipLen(C.walkFire,0))return {pose:'fire',role:C.walkFire,legs:'legsWalk',at:player.shotT};return has(C.walkTorso)?{pose:'fire',role:C.walkTorso,legs:'legsWalk'}:{pose:'fire',role:'walk'};}
     return player.shotT<heroClipLen(role,0)?{pose:'fire',role,at:player.shotT}:{pose:'fire',role:stand};}
+  // a carried container: stand.container, walkTorso.container over legsWalk, containerJump (HEROES §7.13); no run, no landing clip
+  if(carrying())return air?{pose:'carry-jump',role:/^containerJump/.test(player.jumpRole||'')?player.jumpRole:'containerJump'}:mv?walk('carry-walk'):{pose:'carry',role:stand};
   if(air)return {pose:fire?'armed-jump':'jump',role:player.jumpRole||(player.run?'jumpRun':mv?'jumpFwd':'jumpUp')};
   if(mv)return player.run?run(fire?'armed-run':'run'):walk(fire?'armed-walk':'walk');
   if(player.land>0)return {pose:fire?'armed-ready':'land',role:player.landRole||'land',at:gone(player.landTotal,player.land)};
@@ -3762,7 +3837,7 @@ function consumeItem(d){
     // Eaten at full health, a meal is worth its points instead, as on the cabinet.
     if(player.hp>=player.maxhp-.5){score+=f.score||1000;popup(player.x,player.y-71,'+'+(f.score||1000),'#ffe08a');}else{player.hp=Math.min(player.maxhp,player.hp+heal);popup(player.x,player.y-71,d.food.toUpperCase()+' +'+heal,'#d5ec69');}}
   else if(d.type==='bonus'){score+=f.score||1000;popup(player.x,player.y-71,'+'+(f.score||1000),'#ffe08a');}
-  else if(d.type==='ammo'){const w=WEAPONS[player.weapon];if(w&&!w.melee&&!w.thrown){player.ammo=w.ammo;popup(player.x,player.y-71,'AMMO FULL','#9ad1ff');}else{score+=1000;popup(player.x,player.y-71,'+1000','#ffe08a');}}
+  else if(d.type==='ammo'){const w=WEAPONS[player.weapon];if(w&&!w.melee&&!w.thrown&&!w.carried){player.ammo=w.ammo;popup(player.x,player.y-71,'AMMO FULL','#9ad1ff');}else{score+=1000;popup(player.x,player.y-71,'+1000','#ffe08a');}}
 }
 function drawDrop(d) {
   // Items are ROM records, drawn at one arcade px per art px. A weapon on the ground is its ROM ground record at 1x about
@@ -4280,7 +4355,7 @@ function fireEvent(ev){
 function echoStep(row,f,dt){
   if(!row||!bit(row.flags,8)||!plan||!curArea())return row;
   const b=f.b|0,dx=((b>>1)&1)-(b&1),dy=((b>>3)&1)-((b>>2)&1);if(!dx&&!dy)return row;
-  const run=!!((b>>8)&1)&&!!dx,V=heroV(HEROES[row.hero]||HEROES[0]),speed=run?FIREARMS.has(row.weapon)?V.walk*1.5:V.run:V.walk,lane=V.lane*(run?.5:1);
+  const cf=WEAPONS[row.weapon]?.carried?CARRY.walk:1,run=!!((b>>8)&1)&&!!dx&&cf===1,V=heroV(HEROES[row.hero]||HEROES[0]),speed=(run?FIREARMS.has(row.weapon)?V.walk*1.5:V.run:V.walk)*cf,lane=V.lane*(run?.5:1)*cf;
   let x=row.x+dx*speed*dt,y=row.y+dy*lane*dt;if(dx&&dy&&!run){x-=dx*speed*dt*.22;y-=dy*lane*dt*.22;}
   const r=walkTo(row.x,row.y,x,y,{cam:{x:camera,y:cameraY},lock});return Object.assign({},row,{x:r.x,y:r.y,dir:dx||row.dir});
 }
@@ -4391,7 +4466,7 @@ window.LAST_EDEN={render, get state(){return state;},
  start:(i=0,hero=0,mode='story',section=0)=>{selected=clamp(hero,0,3);difficulty=normalizeDifficulty(mode);score=0;lives=3;startStage(clamp(i,0,LASTCH),{skipBrief:true,section});},step:(dt=1/60)=>NETROLE==='client'?clientStep(dt):stepSim(dt),controls:{attack,jump,special,pickup,coin:insertCoin},
  test:{loadChapter:i=>window.SEQUEL_RENDER?SEQUEL_RENDER.loadChapter(i):SR.require(i),damageObjective:n=>damageObjective(n,mission.active?.x,mission.active?.y,74,1),completeObjective,equip:(type,ammo)=>{player.pushV=0;player.pendingStrike=null;player.swing=null;player.dashPhase=null;player.attack=0;player.pickup=0;player.weapon=type;player.ammo=type?ammo??WEAPONS[type].ammo:0;},
   // spawnEnemy(x, y, 'kind[:V|:castId]', boss): a variant can be named (G4).
-  spawnEnemy:(x,y,type='raider',boss=false)=>{const [k,V]=String(type).split(':'),e=spawnEnemy(x,y,k,boss);if(V)setVariant(e,castVariant(k,V,0,0)||V);return e;},drop:(type,x,y,food)=>drops.push({type,x,y,life:999,food:food||(type==='food'?'hamburger':type==='bonus'?'goldbar':type==='ammo'?'ammo':undefined)}),// move(x, y, area): arcade px in the area's own space; `area` (index or id) switches to that area first. The camera
+  spawnEnemy:(x,y,type='raider',boss=false)=>{const [k,V]=String(type).split(':'),e=spawnEnemy(x,y,k,boss);if(V)setVariant(e,castVariant(k,V,0,0)||V);return e;},prop:(type,x,y,content=null)=>{const o={x,y,hp:28,type,content};objects.push(o);return o;},drop:(type,x,y,food)=>drops.push({type,x,y,life:999,food:food||(type==='food'?'hamburger':type==='bonus'?'goldbar':type==='ammo'?'ammo':undefined)}),// move(x, y, area): arcade px in the area's own space; `area` (index or id) switches to that area first. The camera
   // stays where it is (skipTo moves it), so two renders with the hero moved compare the same view; the next step applies
   // the clamps.
   move:(x,y,area)=>{if(area!=null&&plan){const k=typeof area==='number'?area:plan.areas.findIndex(a=>a.id===area);if(k>=0&&k<plan.areas.length&&k!==areaIndex){enterArea(k);encIndex=Math.max(encIndex,plan.encounters.findIndex(e=>e.area===k));enterSection(plan.sections.findIndex(s=>s.area===k),true);}}

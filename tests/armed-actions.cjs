@@ -48,6 +48,36 @@ const BASE=require('./lib/arcade.cjs').BASE;   // the game page, play.html on GA
   g.start(7);g.test.spawnBoss();ticks(160);g.test.damageEnemy(0,9999);ticks(30);{const b=g.snapshot.enemies.find(e=>e.boss&&!e.dead);results.push(['Beaten, Sable takes the treatment at once (no gate-controls phase): CROWNBACK transforms',!!b&&b.type==='fessenden'&&b.state==='mutate'&&g.snapshot.mission.active==null]);}
   return results;
  });for(const [name,ok] of rows)check(name,ok);
+ // HEROES O4 (the user: "I should be able to pick drums"): PICK UP beside an oil drum or a barrel lifts it on the ROM
+ // lift clip; it is carried overhead on the container class (stand / walkTorso over legsWalk / containerJump, ROM holds),
+ // slower and never running, jumps the low kind-3 hop, and ATTACK throws it: it knocks the first foe down for its
+ // damage, breaks and drops what it held. A hit while carrying drops and breaks it.
+ const drums=await page.evaluate(()=>{
+  const g=LAST_EDEN,out=[],M=()=>g.snapshot.band.mid,held=new Set();function ticks(n){for(let i=0;i<n;i++)g.step(.016);}
+  function key(code,on){if(on!==held.has(code)){window.dispatchEvent(new KeyboardEvent(on?'keydown':'keyup',{code,bubbles:true}));on?held.add(code):held.delete(code);}}
+  for(let hero=0;hero<4;hero++){const type=hero%2?'barrel':'crate',id=type==='crate'?'container-drum':'container-barrel',rec=type==='crate'?1861:1873,dmg=type==='crate'?64:56;
+   g.start(0,hero);g.test.clearFighters();g.test.move(200,M());ticks(2);const o=g.test.prop(type,228,g.snapshot.player.y,'gun');
+   g.controls.pickup();ticks(4);const lift=g.snapshot.player.pose==='lift'&&g.snapshot.player.anim?.role==='lift'&&g.snapshot.player.weapon===null&&o.hp>0;ticks(30);g.render();
+   const p=g.snapshot.player,carried=p.weapon===id&&p.pose==='carry'&&p.anim.role==='stand.container'&&o.hp<=0&&g.snapshot.held?.rec===rec&&g.snapshot.held.origin[1]<-60;
+   out.push([`Hero ${hero+1}: PICK UP lifts the ${type==='crate'?'oil drum':'barrel'} on the ROM lift clip and carries it overhead`,lift&&carried]);
+   let x0=g.snapshot.player.x;key('KeyD',true);key('ShiftLeft',true);ticks(30);g.render();const w=g.snapshot.player,v=(w.x-x0)/(30*.016),walkV=HeroRig.hero(HeroRig.data.gameOrder[hero]).speed.walk*60;
+   out.push([`Hero ${hero+1}: carrying, the hero walks on walkTorso.container at .94 of the walk and cannot run (${v.toFixed(1)} px/s)`,w.pose==='carry-walk'&&w.anim.role==='walkTorso.container'&&w.anim.legs?.role==='legsWalk'&&!w.run&&Math.abs(v-walkV*.94)<2&&g.snapshot.held?.weapon===id]);
+   key('ShiftLeft',false);g.controls.jump();ticks(3);const jr=g.snapshot.player.anim.role;let top=0,n=0;for(;n<90&&g.snapshot.player.z>0;n++){top=Math.max(top,g.snapshot.player.z);ticks(1);}key('KeyD',false);
+   out.push([`Hero ${hero+1}: a carrying jump is the ROM's low container hop (${top.toFixed(1)} px, ${n} ticks) on containerJump`,/^containerJump/.test(jr)&&top>8&&top<30&&n<40&&g.snapshot.player.weapon===id]);
+   ticks(20);g.test.move(200,M());ticks(1);const P=g.snapshot.player,e=g.test.spawnEnemy(P.x+120,P.y,'brute');e.hp=e.maxhp=1000;e.state='recover';e.timer=1000;const ex=e.x;
+   g.controls.attack();ticks(2);const role=g.snapshot.player.anim.role;ticks(12);let flew=false;for(let i=0;i<80&&g.snapshot.bullets.some(b=>b.kind==='container');i++){flew=true;ticks(1);}ticks(2);
+   const gun=g.snapshot.drops.find(d=>d.type==='gun'&&Math.abs(d.x-ex)<40);
+   out.push([`Hero ${hero+1}: ATTACK throws it (attack.container); it knocks the brute down for ${dmg}, breaks and drops its gun`,role==='attack.container'&&flew&&g.snapshot.player.weapon===null&&Math.abs(e.maxhp-e.hp-dmg)<.01&&['fly','down'].includes(e.state)&&!!gun]);
+   g.test.equip(id);ticks(1);g.test.damagePlayer(5);ticks(1);
+   out.push([`Hero ${hero+1}: a hit while carrying drops the container, which breaks`,g.snapshot.player.weapon===null&&g.snapshot.effects.includes('container')]);
+  }
+  for(const k of held)window.dispatchEvent(new KeyboardEvent('keyup',{code:k,bubbles:true}));
+  // ATTACK while walking towards a container attacks (only PICK UP lifts, unlike ROM 0x5B68); E lifts, E again throws
+  g.start(0,1);g.test.clearFighters();g.test.move(200,M());ticks(2);g.test.prop('crate',226,g.snapshot.player.y,'food');key('KeyD',true);ticks(1);g.controls.attack();const swung=!!g.snapshot.player.attack;key('KeyD',false);ticks(40);
+  const punched=g.snapshot.player.weapon===null;g.test.clearFighters();g.test.prop('crate',g.snapshot.player.x+24,g.snapshot.player.y,'food');g.controls.pickup();ticks(40);const lifted=g.snapshot.player.weapon==='container-drum';g.controls.pickup();ticks(14);
+  out.push(['ATTACK towards a drum attacks; PICK UP lifts it and PICK UP again throws it',swung&&punched&&lifted&&g.snapshot.player.weapon===null&&g.snapshot.bullets.some(b=>b.kind==='container'&&b.vx>0)]);
+  return out;
+ });for(const [name,ok] of drums)check(name,ok);
  // Real input: running persists while its direction stays held (the release is the KI22 check below).
  await page.evaluate(()=>LAST_EDEN.start(0));await page.keyboard.press('ArrowRight');await page.keyboard.down('ArrowRight');
  await page.evaluate(()=>{for(let i=0;i<125;i++)LAST_EDEN.step(.016);});check('Double-tap running does not expire after 1.6 seconds while held',await page.evaluate(()=>LAST_EDEN.snapshot.player.run));

@@ -1,5 +1,5 @@
 {
-  "about": "Output name (assets/sfx/voice/<name>.mp3) -> original clip id. The identification behind every row is in work/audio/VOICES.md. Entries may be {src, semitones} to lower the pitch (Mustapha's shouts are pitched down 6 semitones, to his eating voice V31, because the user heard them as female). Mess's main shout (-3) and Jack's jump shout (-2) are brought to within a semitone or two of their own eating voices too.",
+  "about": "Output name (assets/sfx/voice/<name>.mp3) -> original clip id. The identification behind every row is in work/audio/VOICES.md. Entries may be {src, semitones} to lower the pitch (Mustapha's shouts are pitched down 6 semitones, to his eating voice V31, because the user heard them as female). Mess's main shout (-3) and Jack's jump shout (-2) are brought to within a semitone or two of their own eating voices too. enemy-grunt was V26, which matches Hannah's V21 (VOICES.md) and played on nearly every hit, so a fight sounded like a girl; it is now the male grunt V11 lowered 4 semitones.",
   "files": {
     "hannah-jump": "V21",
     "hannah-jumpkick": "V13",
@@ -41,7 +41,10 @@
     "mess-food": "V03",
     "enemy-scream": "V27",
     "enemy-scream2": "V02",
-    "enemy-grunt": "V26",
+    "enemy-grunt": {
+      "src": "V11",
+      "semitones": -4
+    },
     "boss-laugh": "V28",
     "boss-laugh2": "V29",
     "monster-roar": "M01",
