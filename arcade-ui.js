@@ -456,8 +456,10 @@
       const left = budget === Infinity ? Infinity : Math.max(0, budget - beside.join('').length);
       remaining += typeLines(g, below, 32, yBelow, 24, left, { pen: p.pen });
     } else {                                                               // A: picture centred at the top, lines below
-      if (pic) drawPic(g, pic, 192 - Math.floor(pic.w / 2), 16);
-      remaining += typeLines(g, lines.concat(lines2), 64, Math.max(120, pic ? 16 + pic.h + 8 : 0), 24, budget, { pen: p.pen });
+      // the lines start on the picture's left edge (x 64 without a picture)
+      const px = pic ? 192 - Math.floor(pic.w / 2) : 64;
+      if (pic) drawPic(g, pic, px, 16);
+      remaining += typeLines(g, lines.concat(lines2), Math.min(px, 64 + 16), Math.max(120, pic ? 16 + pic.h + 8 : 0), 24, budget, { pen: p.pen });
     }
     return remaining;
   }

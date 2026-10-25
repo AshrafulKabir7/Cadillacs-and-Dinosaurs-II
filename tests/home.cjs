@@ -63,16 +63,17 @@ function watch(page, tag) {
       C.check(S, 'Head: title, description, canonical https://www.playcadillacsdinosaurs2.online/, og:title/og:image, twitter card, theme-color, icon, manifest, lang', !!head.title && head.desc.length > 60 && head.canonical === 'https://www.playcadillacsdinosaurs2.online/' && /\/assets\/home\/og\.png$/.test(head.ogImage) && !!head.ogTitle && head.tw === 'summary_large_image' && !!head.theme && !!head.icon && !!head.manifest && head.lang === 'en', JSON.stringify(head));
       C.check(S, 'The social card assets/home/og.png exists at 1200x630', ogOk, og);
       C.check(S, 'One h1, every <img> has an alt attribute, no first-view image is broken', head.h1 === 1 && head.noAlt.length === 0 && head.broken.length === 0, JSON.stringify({ h1: head.h1, noAlt: head.noAlt, broken: head.broken }));
-      const scene = await page.evaluate(() => { const c = document.getElementById('drive'), r = c.getBoundingClientRect(); return { w: c.width, h: c.height, cw: r.width, ch: r.height }; });
-      const s = scene.ch / scene.h;
-      C.check(S, 'The hero drive canvas is 224 arcade px tall, shown at a whole-number scale (crisp pixels)', scene.h === 224 && Math.abs(s - Math.round(s)) < 1e-6 && s >= 1 && Math.abs(scene.w * s - scene.cw) < s + 1, JSON.stringify(scene));
-      // walk the whole page: the lazy art loads, every sprite gets a frame, nothing is broken
-      const H = await page.evaluate(() => document.documentElement.scrollHeight);
-      for (let y = 0; y < H; y += 450) { await page.evaluate(y => window.scrollTo(0, y), y); await page.waitForTimeout(60); }
-      await page.waitForTimeout(700);
-      const art = await page.evaluate(() => ({ sprites: document.querySelectorAll('.spr[data-spr]').length, imgs: Array.from(document.querySelectorAll('.spr img')).length, broken: Array.from(document.images).filter(i => i.complete && !i.naturalWidth).map(i => i.getAttribute('src')) }));
-      C.check(S, 'After scrolling, every sprite has its strip and no image on the page is broken', art.sprites > 10 && art.imgs === art.sprites && art.broken.length === 0, JSON.stringify(art));
-      C.check(S, 'Still no console error after scrolling the whole page', own.length === 0, own.join(' | '));
+      // the key art fills the window (no frame, nothing below it) and the nav opens the panels
+      const fit = await page.evaluate(() => { const h = document.querySelector('.hero').getBoundingClientRect(); return { w: h.width, h: h.height, iw: innerWidth, ih: innerHeight, sh: document.documentElement.scrollHeight }; });
+      C.check(S, 'The hero fills the window and the page does not scroll (the whole site is the hero)', Math.abs(fit.w - fit.iw) < 2 && Math.abs(fit.h - fit.ih) < 2 && fit.sh <= fit.ih + 1, JSON.stringify(fit));
+      const panels = [];
+      for (const id of ['story', 'stages', 'characters', 'coop']) { await page.click(`.kv-nav > button[data-open="${id}"]`); await page.waitForTimeout(150); panels.push([id, await page.evaluate(i => document.getElementById('p-' + i).open, id)]); await page.keyboard.press('Escape'); await page.waitForTimeout(100); }
+      for (const id of ['controls', 'faq', 'about']) { await page.click('.kv-more summary'); await page.click(`.kv-more button[data-open="${id}"]`); await page.waitForTimeout(150); panels.push([id, await page.evaluate(i => document.getElementById('p-' + i).open, id)]); await page.keyboard.press('Escape'); await page.waitForTimeout(100); }
+      C.check(S, 'Every nav entry (Story, Stages, Characters, Co-op, More: Controls, FAQ, About) opens its panel and Esc closes it', panels.every(p => p[1]) && await page.evaluate(() => !document.querySelector('dialog[open]')), JSON.stringify(panels));
+      await page.click('.kv-dots button[data-go="2"]'); await page.waitForTimeout(1300);
+      const sl = await page.evaluate(() => ({ n: document.querySelector('[data-num]').textContent, img: document.querySelector('.kv-slide.on').currentSrc, ok: document.querySelector('.kv-slide.on').naturalWidth }));
+      C.check(S, 'The slider dots switch the key art (03 shows the dam painting)', sl.n === '03' && /kv-dam\.webp/.test(sl.img) && sl.ok > 0, JSON.stringify(sl));
+      C.check(S, 'Still no console error after using the panels and the slider', own.length === 0, own.join(' | '));
       await ctx.close();
     }
 
@@ -136,10 +137,9 @@ function watch(page, tag) {
       else C.warn(S, '/play serves the game (vercel.json rewrite, tools/serve.cjs)', `HTTP ${st}: a server started before tools/serve.cjs learned /play`);
       const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' }), page = await ctx.newPage(), own = watch(page, 'reduced');
       await page.goto(HOME, { waitUntil: 'load' }); await page.waitForTimeout(500);
-      const a = await page.evaluate(() => Array.from(document.querySelectorAll('.spr')).map(e => e.style.getPropertyValue('--k')).join(','));
-      await page.waitForTimeout(700);
-      const b = await page.evaluate(() => ({ k: Array.from(document.querySelectorAll('.spr')).map(e => e.style.getPropertyValue('--k')).join(','), hidden: Array.from(document.querySelectorAll('.reveal')).filter(e => getComputedStyle(e).opacity !== '1').length }));
-      C.check(S, 'prefers-reduced-motion: sprites hold still, every section is visible without waiting for a reveal, no error', a === b.k && b.hidden === 0 && own.length === 0, JSON.stringify({ same: a === b.k, hidden: b.hidden, own }));
+      const a = await page.evaluate(() => document.querySelector('[data-num]').textContent); await page.waitForTimeout(7600);
+      const b = await page.evaluate(() => document.querySelector('[data-num]').textContent);
+      C.check(S, 'prefers-reduced-motion: the key art does not advance by itself, no error', a === '01' && b === '01' && own.length === 0, JSON.stringify({ a, b, own }));
       await ctx.close();
     }
   } finally { await browser.close(); if (srv.child) srv.child.kill(); }
