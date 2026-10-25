@@ -66,7 +66,7 @@ const BASE=require('./lib/arcade.cjs').BASE;   // the game page, play.html on GA
   const cd=V.cooldown.enemyDeath,a=V.pick('enemyDeath',null,100),held=V.pick('enemyDeath',null,100+cd*.5),b=V.pick('enemyDeath',null,100+cd+.01);
   const seq=[];for(let i=0;i<12;i++)seq.push(V.pick('enemyDeath',null,200+i*(cd+.01)));const noRepeat=seq.every((f,i)=>f&&(i===0||f!==seq[i-1]));
   const hero=V.pick('death','hannah',300)==='hannah-death'&&V.pick('death','hannah',300.1)===null&&V.pick('death','jack',300.1)==='jack-death';
-  V.reset();const p1=V.play('enemy-grunt'),p2=V.play('enemy-scream'),p3=V.play('enemy-scream2'),live=V.live,p4=V.play('!boss-laugh');V.reset();
+  V.reset();const p1=V.play('enemy-grunt'),p2=V.play('enemy-scream'),p3=V.play('enemy-grunt2'),live=V.live,p4=V.play('!boss-laugh');V.reset();
   return {perHero,cool:!!a&&held===null&&!!b,noRepeat,hero,cap:p1&&p2&&!p3&&live<=V.max&&p4,seq};});
  check('Every hero has jump, attack, throw, special, death, food and win voices',vrules.perHero);
  check('A voice kind cools down (a second call inside the cooldown is dropped)',vrules.cool);

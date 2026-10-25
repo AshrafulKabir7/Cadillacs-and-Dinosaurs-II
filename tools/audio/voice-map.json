@@ -1,5 +1,5 @@
 {
-  "about": "Output name (assets/sfx/voice/<name>.mp3) -> original clip id. The identification behind every row is in work/audio/VOICES.md. Entries may be {src, semitones} to lower the pitch (Mustapha's shouts are pitched down 6 semitones, to his eating voice V31, because the user heard them as female). Mess's main shout (-3) and Jack's jump shout (-2) are brought to within a semitone or two of their own eating voices too. enemy-grunt was V26, which matches Hannah's V21 (VOICES.md) and played on nearly every hit, so a fight sounded like a girl; it is now the male grunt V11 lowered 4 semitones.",
+  "about": "Output name (assets/sfx/voice/<name>.mp3) -> original clip id. The identification behind every row is in work/audio/VOICES.md. Entries may be {src, semitones} to lower the pitch (Mustapha's shouts are pitched down 6 semitones, to his eating voice V31, because the user heard them as female). Mess's main shout (-3) and Jack's jump shout (-2) are brought to within a semitone or two of their own eating voices too. enemy-grunt was V26, which matches Hannah's V21 (VOICES.md) and played on nearly every hit, so a fight sounded like a girl; it is now the male grunt V11 lowered 4 semitones. 2026-10-25, by the user's ear: Mustapha is V12 (-6), V09, V31 and V05 only (V23 is not him, V07 is not him: V07 is now Jack's win); V02 is not an enemy voice, so enemies use the male grunt V11 at -4 and -7.",
   "files": {
     "hannah-jump": "V21",
     "hannah-jumpkick": "V13",
@@ -11,15 +11,12 @@
       "src": "V12",
       "semitones": -6
     },
-    "mustapha-jumpkick2": {
-      "src": "V23",
-      "semitones": -6
-    },
     "mustapha-attack": {
       "src": "V12",
       "semitones": -6
     },
-    "mustapha-win": "V07",
+    "mustapha-win": "V05",
+    "mustapha-yell": "V05",
     "mustapha-death": "V09",
     "mustapha-food": "V31",
     "jack-attack": "V18",
@@ -28,7 +25,7 @@
       "src": "V11",
       "semitones": -2
     },
-    "jack-win": "V05",
+    "jack-win": "V07",
     "jack-death": "V04",
     "jack-food": "V01",
     "mess-attack": {
@@ -40,10 +37,13 @@
     "mess-death": "V30",
     "mess-food": "V03",
     "enemy-scream": "V27",
-    "enemy-scream2": "V02",
     "enemy-grunt": {
       "src": "V11",
       "semitones": -4
+    },
+    "enemy-grunt2": {
+      "src": "V11",
+      "semitones": -7
     },
     "boss-laugh": "V28",
     "boss-laugh2": "V29",

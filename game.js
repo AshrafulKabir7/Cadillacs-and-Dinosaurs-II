@@ -131,15 +131,15 @@ function sfx(name){if(!settings.sfx)return;unlockAudio();if(name.startsWith('vo:
 // Nothing is downloaded at startup: a stage start warms the files up once (voicePrefetch), and a voice that has not
 // loaded yet simply starts late.
 const VOICE={
-  jump:{hannah:['hannah-jumpkick'],mustapha:['mustapha-jumpkick','mustapha-jumpkick2'],jack:['jack-jump'],mess:['mess-attack']},
+  jump:{hannah:['hannah-jumpkick'],mustapha:['mustapha-jumpkick'],jack:['jack-jump'],mess:['mess-attack']},
   hop:{hannah:['hannah-jump']},
   attack:{hannah:['hannah-attack'],mustapha:['mustapha-attack'],jack:['jack-attack'],mess:['mess-attack']},
   throw:{hannah:['hannah-attack'],mustapha:['mustapha-attack'],jack:['jack-attack2'],mess:['mess-attack2']},
-  special:{hannah:['hannah-jumpkick'],mustapha:['mustapha-jumpkick2'],jack:['jack-attack2'],mess:['mess-attack2']},
+  special:{hannah:['hannah-jumpkick'],mustapha:['mustapha-yell'],jack:['jack-attack2'],mess:['mess-attack2']},
   death:{hannah:['hannah-death'],mustapha:['mustapha-death'],jack:['jack-death'],mess:['mess-death']},
   food:{hannah:['hannah-food'],mustapha:['mustapha-food'],jack:['jack-food'],mess:['mess-food']},
   win:{hannah:['hannah-win'],mustapha:['mustapha-win'],jack:['jack-win'],mess:['mess-win']},
-  enemyDeath:['enemy-scream2','enemy-grunt'],enemyHurt:['enemy-grunt','enemy-scream2'],
+  enemyDeath:['enemy-grunt2','enemy-grunt'],enemyHurt:['enemy-grunt','enemy-grunt2'],
   bossTaunt:['boss-laugh','boss-laugh2'],bossHurt:['enemy-scream'],bossTransform:['monster-roar','boss-laugh2'],bossDeath:['enemy-scream'],
   roar:['monster-roar'],go:['go']};
 const VOICE_CD={jump:.7,hop:1.2,attack:1.1,throw:.8,special:.6,death:2.5,food:1.5,win:3,enemyDeath:.45,enemyHurt:1.6,bossTaunt:5,bossHurt:2.5,bossTransform:2.5,bossDeath:3,roar:2.5,go:4};
