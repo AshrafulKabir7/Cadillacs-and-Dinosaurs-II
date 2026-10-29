@@ -51,7 +51,7 @@
         <a class="kv-brand" href="./" aria-label="Cadillacs &amp; Dinosaurs II home"><img src="assets/home/logo.png" width="288" height="116" alt=""><span>The Crown Tide</span></a>
         <nav class="kv-nav" aria-label="Main">
           <button type="button" data-open="story">Story</button><button type="button" data-open="stages">Stages</button><button type="button" data-open="characters">Characters</button><button type="button" data-open="coop">Co-op</button>
-          <details class="kv-more"><summary>More</summary><div><button type="button" class="m-only" data-open="story">Story</button><button type="button" class="m-only" data-open="stages">Stages</button><button type="button" class="m-only" data-open="characters">Characters</button><button type="button" class="m-only" data-open="coop">Co-op</button><button type="button" data-open="controls">Controls</button><button type="button" data-open="faq">FAQ</button><button type="button" data-open="about">About</button></div></details>
+          <details class="kv-more"><summary>More</summary><div><button type="button" class="m-only" data-open="story">Story</button><button type="button" class="m-only" data-open="stages">Stages</button><button type="button" class="m-only" data-open="characters">Characters</button><button type="button" class="m-only" data-open="coop">Co-op</button><button type="button" data-open="controls">Controls</button><button type="button" data-open="faq">FAQ</button><button type="button" data-open="creator">Creator</button><button type="button" data-open="about">About</button></div></details>
         </nav>
         <div class="kv-tools">
           <a class="kv-round" href="play.html?online" data-friends title="Play with friends" aria-label="Play with friends"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3.2"/><circle cx="16.5" cy="8.5" r="2.7"/><path d="M2.5 19c.5-3.4 2.8-5.2 5.5-5.2s5 1.8 5.5 5.2M14 14.2c.8-.4 1.6-.6 2.5-.6 2.4 0 4.3 1.6 4.8 4.9"/></svg></a>
@@ -70,6 +70,7 @@
         </div>
         <p class="resume" id="resume" hidden></p>
       </div>
+      <button type="button" class="kv-creator" data-open="creator" aria-label="About the creator, Ashraful Kabir Alif"><img src="assets/home/creator.webp" width="40" height="40" alt=""><span><small>Created by</small>Ashraful Kabir Alif</span></button>
       <ul class="kv-where" aria-label="Where it runs">
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.8 3.8 5.8 3.8 9s-1.2 6.2-3.8 9c-2.6-2.8-3.8-5.8-3.8-9S9.4 5.8 12 3z"/></svg>Browser</li><li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.2"/><path d="M10.5 18.5h3"/></svg>Phone</li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10a5 5 0 0 1 4.7 6.6l-1.1 3.2a2.6 2.6 0 0 1-4.5.8L14.3 15H9.7l-1.8 2.6a2.6 2.6 0 0 1-4.5-.8l-1.1-3.2A5 5 0 0 1 7 7z"/><path d="M7.5 10v3M6 11.5h3"/><circle cx="16" cy="10.5" r=".6"/><circle cx="17.6" cy="12.6" r=".6"/></svg>Gamepad</li><li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3.2"/><circle cx="16.5" cy="8.5" r="2.7"/><path d="M2.5 19c.5-3.4 2.8-5.2 5.5-5.2s5 1.8 5.5 5.2M14 14.2c.8-.4 1.6-.6 2.5-.6 2.4 0 4.3 1.6 4.8 4.9"/></svg>Co-op for 3</li>
       </ul>
@@ -115,6 +116,14 @@
     <form method="dialog"><button class="panel-x" aria-label="Close">&times;</button></form>
     <h2 id="p-faq-t">Before you insert a coin</h2>
     <div class="faq-list"><details><summary>Is it really free?</summary><p>Yes. No ads, no account and nothing to buy. It’s a fan project.</p></details><details><summary>Is this an official Capcom game?</summary><p>No. It’s an unofficial, non-commercial fan sequel, not affiliated with or endorsed by Capcom.</p></details><details><summary>Do I need to have played the 1993 game?</summary><p>No. The story starts six months after the original ending, and the title screen catches you up.</p></details><details><summary>Does it work on my phone?</summary><p>Yes. A touch screen gets a thumb stick and action buttons. Landscape gives the biggest screen.</p></details><details><summary>Will my progress save?</summary><p>Your last checkpoint and settings are saved in this browser. Choose Continue on the title screen.</p></details><details><summary>Can I use a controller?</summary><p>Yes. Any standard gamepad works in single player and online.</p></details></div>
+  </dialog>
+  <dialog class="panel panel-creator" id="p-creator" aria-labelledby="p-creator-t">
+    <form method="dialog"><button class="panel-x" aria-label="Close">&times;</button></form>
+    <img class="creator-photo" src="assets/home/creator.webp" width="480" height="480" alt="Ashraful Kabir Alif" loading="lazy">
+    <p class="creator-role">The creator</p>
+    <h2 id="p-creator-t">Ashraful Kabir Alif</h2>
+    <p class="note">Cadillacs &amp; Dinosaurs II · The Crown Tide was built for Mostafa’s next adventure: a fan-made sequel to the arcade classic we grew up with.</p>
+    <div class="creator-links"><a href="https://github.com/AshrafulKabir7" target="_blank" rel="noopener" aria-label="GitHub"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z"/></svg></a></div>
   </dialog>
   <dialog class="panel" id="p-about" aria-labelledby="p-about-t">
     <form method="dialog"><button class="panel-x" aria-label="Close">&times;</button></form>

@@ -188,3 +188,19 @@ ul, ol { list-style: none; margin: 0; padding: 0; }
 .faq-list p { margin-top: 8px; font-size: 15px; }
 @media (max-width: 640px) { .hero-list, .ctl-cols { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .panel[open] { animation: none; } .kv-slide { transition: none; } }
+
+/* ---------------------------------------------------------------- the creator: a chip over the art, a card in a panel */
+.kv-creator { position: absolute; z-index: 3; left: var(--pad); bottom: calc(var(--pad) * 1.1 + 40px); display: inline-flex; align-items: center; gap: 10px; padding: 5px 16px 5px 5px; border: 1px solid rgba(255, 236, 210, .28); border-radius: 999px; background: rgba(12, 8, 14, .62); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #fff; font: 600 14px/1.15 var(--sans); text-align: left; cursor: pointer; transition: border-color .2s, transform .2s var(--ease); }
+.kv-creator:hover { border-color: var(--gold); transform: translateY(-2px); }
+.kv-creator img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255, 255, 255, .85); }
+.kv-creator small { display: block; font: 600 10px/1 "Oswald", var(--sans); letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: 3px; }
+.panel-creator { width: min(440px, calc(100% - 24px)); text-align: center; }
+.creator-photo { display: block; width: min(100%, 260px); height: auto; margin-inline: auto; aspect-ratio: 1; object-fit: cover; border-radius: 14px; margin-bottom: 16px; }
+.creator-role { margin: 0; font: 600 12px/1 "Oswald", var(--sans) !important; letter-spacing: .22em; text-transform: uppercase; color: var(--gold) !important; }
+.panel-creator h2 { margin: 6px 0 10px; }
+.creator-links { display: flex; justify-content: center; gap: 14px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.creator-links a { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, .07); color: #d8cfc2; transition: color .2s, background .2s; }
+.creator-links a:hover { color: var(--gold); background: rgba(255, 255, 255, .12); }
+.creator-links svg { width: 22px; height: 22px; fill: currentColor; }
+@media (max-width: 900px) { .kv-creator { bottom: auto; top: calc(var(--pad) * 4.6); padding: 3px 12px 3px 3px; font-size: 12px; } .kv-creator img { width: 32px; height: 32px; } }
+@media (max-width: 560px) { .kv-creator span { display: none; } .kv-creator { padding: 3px; } }
