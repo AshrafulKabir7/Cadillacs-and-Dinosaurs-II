@@ -80,12 +80,6 @@ ul, ol { list-style: none; margin: 0; padding: 0; }
 .kv-more .m-only { display: none; }
 .kv-more > div button { text-align: left; cursor: pointer; padding: 9px 12px; border-radius: 8px; color: var(--text); text-decoration: none; }
 .kv-more > div button:hover { background: rgba(255, 255, 255, .08); color: var(--gold); }
-.kv-tools { display: flex; align-items: center; gap: 10px; }
-.kv-round { border: 0; padding: 0; cursor: pointer; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, .92); color: #1b1420; box-shadow: 0 4px 14px rgba(0, 0, 0, .45); transition: transform .2s var(--ease); overflow: hidden; }
-.kv-round:hover { transform: translateY(-2px) scale(1.05); }
-.kv-round svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.8; }
-.kv-face { width: 46px; height: 46px; border: 2px solid rgba(255, 255, 255, .9); background: #2c2232; }
-.kv-face img { width: 100%; height: 100%; object-fit: cover; }
 /* the title: heavy condensed letters worn by a speckle mask, the ampersand and the numeral in red brush */
 .kv-title { position: absolute; z-index: 1; left: 50%; top: 14vh; top: 14svh; transform: translateX(-50%); width: 92%; display: grid; justify-items: center; font: 400 clamp(60px, min(12.4vw, 20vh), 220px)/.84 "Anton", Impact, "Arial Narrow", sans-serif; text-transform: uppercase; letter-spacing: -.005em; color: #f2ebdc; pointer-events: none; }
 .kv-title > span:not(.kv-sub) { display: block; white-space: nowrap; filter: drop-shadow(0 6px 0 rgba(30, 14, 10, .35)) drop-shadow(0 18px 30px rgba(0, 0, 0, .45));
@@ -140,7 +134,7 @@ ul, ol { list-style: none; margin: 0; padding: 0; }
 }
 @media (max-width: 560px) {
   .kv-heroes { height: 46%; bottom: 200px; }
-  .kv-tools .kv-round:first-child { display: none; }
+
   .kv-cta { flex-direction: column; gap: 10px; }
   .kv-lead { font-size: 14px; }
   .kv-copy { bottom: 60px; }
