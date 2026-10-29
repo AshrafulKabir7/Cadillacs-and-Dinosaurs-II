@@ -1712,7 +1712,7 @@ function damageEnemy(e,amount,knock=0,forceDown=false,byAlly=false,opts=null) {
   if(e.boss&&e.type==='truck'&&!BDEF.truck?.onFoot&&!opts?.self){const H=BDEF.truck?.hurt||{},m=!opts?1:opts.ram||opts.car?(e.state==='recover'&&e.mvName==='recover'?H.ramInRecover??2:.5):opts?.bullet?H.gun??1:H.other??0;sparkBurst(e.x+e.dir*60,e.y-46,4);if(!m)return false;amount*=m;}
   if(e.boss&&e.vulnT>0)amount*=e.vulnMul||1.5;
   const before=e.hp;
-  e.hp-=amount;e.hurt=e.boss?.07:byAlly?.04:.15;e.inv=.055;if(e.boss?!(defOf(e)?.stationary||e.type==='fessenden'||e.type==='truck'):e.state==='fly')e.x+=knock*(e.boss?.25:.3);else if(!e.boss&&!heavy&&e.state!=='held'&&e.state!=='down')e.x+=knock*(e.elite?.5:1);   // a planted boss (the gate controls, Crownback, Krag's arena) is never shoved
+  e.hp-=amount;if(e.boss&&amount>0)bossBreakaway(e);e.hurt=e.boss?.07:byAlly?.04:.15;e.inv=.055;if(e.boss?!(defOf(e)?.stationary||e.type==='fessenden'||e.type==='truck'):e.state==='fly')e.x+=knock*(e.boss?.25:.3);else if(!e.boss&&!heavy&&e.state!=='held'&&e.state!=='down')e.x+=knock*(e.elite?.5:1);   // a planted boss (the gate controls, Crownback, Krag's arena) is never shoved
   if(lock&&e.onstage)e.x=clamp(e.x,lock.left+21,lock.right-31);
   e.hitChain=e.hitTimer>0?e.hitChain+1:1;e.hitTimer=1.1;
   // Mid-bosses shrug off single knockdowns and need longer chains. Freed conscripts' blows hurt without
@@ -2062,8 +2062,28 @@ const bLen=key=>animLen(bAnim(key));
 // PLAN §8.2 levers: K.BOSS_DMG (CAMPAIGN's damage numbers already carry its 0.8, ENEMIES §6.1) and boss HP in -10 % steps
 // per fight (chapter 6's three forms keep G3d's one step: Sable 720, the gate controls 945, Crownback 1035).
 const BOSS_HP_LEVER={sable:.9,fessenden:.9};
-const bossDmg=(v,k=0)=>Math.max(1,Math.round((Array.isArray(v)?v[k%v.length]:v??14)*((EKK.BOSS_DMG??.8)/.8)));
-function bossHpOf(type,phase=1){const d=BDEF[type],hp=phase===2&&d?.phase2?d.phase2.hp:d?d.hp:BOSS_HP[levelIndex];return hp*(BOSS_HP_LEVER[type]??1);}
+// The harder boss pass (2026-10-29, the user: "make the boss a bit hard now, with more features"): every boss has 15 %
+// more health, hits 10 % harder and moves 10 % faster, and three mechanics join every walking boss (bossRage,
+// bossBreakaway): RAGE at 35 % health (a roar with a call for help, then faster, unflinching and glowing red), the
+// BREAKAWAY burst (7 hits inside 2.2 s knock the heroes back, so a boss cannot be stunlocked) and its cooldown.
+const BOSS_HARD={hp:1.15,dmg:1.1,tempo:1.1,rageAt:.35,rageTempo:1.3,rageCall:2,burstHits:7,burstWin:2.2,burstCd:6};
+const bossDmg=(v,k=0)=>Math.max(1,Math.round((Array.isArray(v)?v[k%v.length]:v??14)*((EKK.BOSS_DMG??.8)/.8)*BOSS_HARD.dmg));
+function bossHpOf(type,phase=1){const d=BDEF[type],hp=phase===2&&d?.phase2?d.phase2.hp:d?d.hp:BOSS_HP[levelIndex];return hp*(BOSS_HP_LEVER[type]??1)*BOSS_HARD.hp;}
+// the states a rage or a breakaway never interrupts (entrances, transformations, knockdowns, scripted beats)
+const BOSS_BUSY=new Set(['intro','transform','mutate','script','down','rise','flee']);
+function bossRage(e){
+  if(e.raged||!e.onstage||e.hp<=0||e.hp>e.maxhp*BOSS_HARD.rageAt||BOSS_BUSY.has(e.state)||defOf(e)?.stationary)return;
+  e.raged=true;clearEnemyHazards(e.id);Object.assign(e,{state:'script',timer:.9,inv:.9,mvI:null,rec:null,next:null,flinch:0,tempoNext:(e.tempoMul||1)*BOSS_HARD.rageTempo});bIdle(e);
+  toast=`${e.name||'THE BOSS'} IS ENRAGED!`;toastTime=2.4;flash=.3;shake=Math.max(shake,10);voice('roar');sfx('special');sparkBurst(e.x,e.y-60,22);
+  bossSummon(e,{n:BOSS_HARD.rageCall,type:'raider'});toast=`${e.name||'THE BOSS'} IS ENRAGED!`;
+}
+function bossBreakaway(e){
+  if(e.type==='truck'&&driving)return;const t=stageTimer;(e.hitLog=e.hitLog||[]).push(t);while(e.hitLog.length&&t-e.hitLog[0]>BOSS_HARD.burstWin)e.hitLog.shift();
+  if(e.hitLog.length<BOSS_HARD.burstHits||e.burstCd>0||e.hp<=0||BOSS_BUSY.has(e.state)||defOf(e)?.stationary)return;
+  e.hitLog.length=0;e.burstCd=BOSS_HARD.burstCd;e.inv=.45;
+  zones.push({owner:e.id,x:e.x,y:e.y,r:92,t:.3,total:.3,friendly:false,damage:bossDmg(10),air:false,style:'slam'});
+  toast='BREAKAWAY! GIVE HIM ROOM';toastTime=1.3;shake=Math.max(shake,8);sfx('slam');
+}
 // Sable at the gate controls is his phase 2 (CAMPAIGN §10.4): his def with phase2's name, moves and pattern, stationary.
 // Krag's second form (IRONCLUB) is his phase2 on its own body: the def with phase2's name, body, moves, pattern and defeat.
 let SABLE2=null;const PHASE2={};
@@ -2180,7 +2200,7 @@ function bossThink(e,dt,ox,oy){
   if(D.stationary)e.dir=-1;
   else if(D.turnLate){if(sd!==e.dir){e.turnT=(e.turnT||0)+dt;if(e.turnT>.6){e.dir=sd;e.turnT=0;}}else e.turnT=0;}   // a big animal turns late (the tail punishes its back)
   else e.dir=sd;
-  if(e.hurt>0&&!D.stationary){if(D.flinch&&!(e.flinchCd>0)&&!(e.flinch>0)){e.flinch=.22;e.flinchCd=2.5;}if(!(e.flinch>0))bIdle(e);return;}
+  if(e.hurt>0&&!D.stationary&&!e.raged){if(D.flinch&&!(e.flinchCd>0)&&!(e.flinch>0)){e.flinch=.22;e.flinchCd=2.5;}if(!(e.flinch>0))bIdle(e);return;}
   if(D.near&&!e.next&&!(e.nearCd>0)&&fighters().some(v=>Math.abs(v.x-e.x)<D.near.r&&Math.abs(v.y-e.y)<BOSS_DEPTH)){e.next=D.near.move;e.nearCd=D.near.cd||2.5;}
   const name=e.next||bossNext(e),I=name?bInfo(e,name,e.useN?.[name]||0):null;
   // a stationary boss (Sable at the gate controls) attacks from where it stands: no spacing, no lane
@@ -2199,7 +2219,7 @@ function bossThink(e,dt,ox,oy){
   const inWin=d>=win[0]-6&&d<=win[1]+6&&(!lane||Math.abs(e.y-t.y)<20);
   if(I&&e.timer<=0&&e.onstage&&(inWin||e.waitT>2.4||e.next))startBossMove(e,name,I);
 }
-const bossTempo=e=>rules().bossTempo*(e.tempoMul||1)*(defOf(e)?.tempo||1);
+const bossTempo=e=>rules().bossTempo*BOSS_HARD.tempo*(e.tempoMul||1)*(defOf(e)?.tempo||1);
 const MOVE_TOAST={hook:'HOOK!',gaff:'GAFF!',barrel:'BARREL!',crane:'CRANE!',tail:'TAIL SWIPE!',roar:'ROAR!',slag:'ROCK!',surge:'SURGE!',drain:'SONIC BURST · CHANGE LANES',reload:'RELOAD!',roll:'JUMP THE ROLL',drop:'MOVE AWAY FROM THE LANDING',flurry:'BACK AWAY FROM THE HOOK',sweep:'JUMP THE SWEEP',lash:'CHANGE LANES',fan:'CHANGE LANES',flip:'SHE IS GOING OVER YOU',steam:'STEP OUT OF THE STEAM',grenade:'KEEP MOVING',rivets:'CHANGE LANES',stomp:'SIDESTEP THE STOMP',lunge:'SIDESTEP THE LUNGE',turrets:'CHANGE LANES',vents:'JUMP THE STEAM VENT',summon:'REINFORCEMENTS INCOMING',whip:'CHANGE LANES · THE CHAIN',thrust:'CHANGE LANES · THE PROD',swing:'BACK AWAY FROM THE STAFF',whistle:'THE PACK IS COMING',pounce:'MOVE AWAY FROM THE LANDING',slam:'JUMP THE SHOCKWAVE',drive:'CHANGE LANES · THE DRIVER',ring:'CHANGE LANES · THE RING',beam:'DISHES GLOWING · CHANGE LANES',overheat:'THE ENGINE OVERHEATS · HIT IT',quake:'JUMP THE SHOCKWAVE',cannon:'RED GAUGE · CHANGE LANES',vent:'STEAM · STAND CLEAR',jam:'HIS ARM IS STUCK · HIT HIM',screech:'THE PACK ANSWERS HER',charge:'SIDESTEP THE CHARGE',smash:'JUMP THE SHOCKWAVE',roll:'SIDESTEP THE ROLL · HIT HIM AS HE UNCURLS',gatearm:'BACK AWAY FROM THE GATE ARM',jet:'WATER JET · CHANGE LANES',brace:'SURGE · CHANGE LANES',rush:'SIDESTEP THE RUSH',rope:'BACK AWAY FROM THE ROPE',stuck:'HIS HOOK IS STUCK · HIT HIM'};
 function startBossMove(e,name,I){
   const mv=I.mv;e.useN=e.useN||{};e.useN[name]=(e.useN[name]||0)+1;
@@ -2414,11 +2434,11 @@ function bossDown(e,kdir){
   // treatment (spawnLastCopy: CROWNBACK walks out of his place and transforms)
   if(e.type==='sable'&&e.phase===1&&!BDEF.sable?.phase2&&BDEF.sable?.treatment){clearEnemyHazards(e.id);Object.assign(e,{z:0,hp:0,state:'dead',hidden:true,dead:.01,mvI:null,rec:null,next:null,gaff:null,defeat:{kind:'engine',t:0,said:true,done:true}});score+=2000;kills++;
     sayNow(level.releaseSay);spawnLastCopy({x:e.x,y:e.y});return true;}
-  if(e.type==='sable'&&e.phase===1){clearEnemyHazards(e.id);Object.assign(e,{z:0,phase:2,calls:0,state:'transform',timer:2.7,inv:2.7,attackNo:0,pi:0,phIdx:-1,useN:{},said:{},mvI:null,rec:null,next:null,tempoMul:1});e.hp=e.maxhp=bossHpOf('sable',2)*rules().enemyHealth*bossScale();
+  if(e.type==='sable'&&e.phase===1){clearEnemyHazards(e.id);Object.assign(e,{z:0,phase:2,calls:0,state:'transform',raged:false,hitLog:[],timer:2.7,inv:2.7,attackNo:0,pi:0,phIdx:-1,useN:{},said:{},mvI:null,rec:null,next:null,tempoMul:1});e.hp=e.maxhp=bossHpOf('sable',2)*rules().enemyHealth*bossScale();
     flash=.65;shake=12;voice('bossTaunt');toast=level.phase2?.toast||'SABLE TAKES THE GATE CONTROLS';toastTime=4;effects.push({x:e.x,y:e.y,age:0,life:.8,type:'explosion'});say(level.phase2?.say);e.name=BDEF.sable?.phase2?.name||'SABLE · GATE CONTROLS';bPlay(e,bWalkKey(e),{hold:false});return true;}
   const D0=BDEF[e.type];
   if(D0?.phase2?.body&&D0.transform&&e.phase!==2){const T=D0.transform,t=T.t||2.4,P=D0.phase2,kb=ROMB()?.bodies?.[D0.body],ib=ROMB()?.bodies?.[P.body];clearEnemyHazards(e.id);
-    Object.assign(e,{z:0,vx:0,phase:2,calls:0,state:'mutate',timer:t,inv:t,attackNo:0,pi:0,phIdx:-1,useN:{},said:{},mvI:null,rec:null,next:null,tempoMul:1,flinch:0});e.hp=e.maxhp=bossHpOf(e.type,2)*rules().enemyHealth*bossScale();e.name=P.name||e.name;
+    Object.assign(e,{z:0,vx:0,phase:2,calls:0,state:'mutate',raged:false,hitLog:[],burstCd:0,timer:t,inv:t,attackNo:0,pi:0,phIdx:-1,useN:{},said:{},mvI:null,rec:null,next:null,tempoMul:1,flinch:0});e.hp=e.maxhp=bossHpOf(e.type,2)*rules().enemyHealth*bossScale();e.name=P.name||e.name;
     const [fa,ta]=T.anims||[5,9];bPlay(e,kb&&ib?comboAnim(P.body+':serum',kb.main+':'+fa,ib.main+':'+ta):null,{hold:true});
     flash=.5;shake=10;toast=level.phase2?.toast||(e.name+'!');toastTime=3.5;say(level.phase2?.say);setBossCard(e.name,level.phase2?.card||'',t,true);sfx('special');voice('bossTransform');return true;}
   // while the driver hums Glassback cannot be beaten (phase2.driver.hpFloor)
@@ -2476,7 +2496,7 @@ function updateBoss(e,dt,ox,oy){
   if(e.state!=='intro'&&e.state!=='flee')bossTether(e);   // Glassback's leash to her nest holds through every move (charges and leaps too)
 }
 function bossState(e,dt,ox,oy){
-  e.flinchCd=Math.max(0,(e.flinchCd||0)-dt);e.nearCd=Math.max(0,(e.nearCd||0)-dt);
+  e.flinchCd=Math.max(0,(e.flinchCd||0)-dt);e.nearCd=Math.max(0,(e.nearCd||0)-dt);e.burstCd=Math.max(0,(e.burstCd||0)-dt);bossRage(e);
   if(e.flinch>0){if(e.state!=='walk')e.flinch=0;else{e.flinch-=dt;const k=bSpec(e,defOf(e)?.flinch)?.alts[0][0];if(k)bPlay(e,k,{keep:true});if(e.flinch>0)return;bIdle(e);}}
   switch(e.state){
     case 'intro':bossIntroTick(e,dt);return;
@@ -2529,7 +2549,9 @@ function drawBoss(e,x,y){
   const D=defOf(e),spin=e.state==='charge'&&D?.moves?.[e.mvName]?.spin;
   if(spin){const fr=ROMB().frames[f.fid],cx=x+(e.dir>0?(fr[3]-fr[5])-fr[3]/2:fr[3]/2-fr[5]),cy=y-fr[6]+fr[4]/2,q=Math.floor(Math.abs(e.x-(e.spin0??e.x))/18)%4;ctx.save();ctx.translate(Math.round(cx),Math.round(cy));ctx.rotate(-e.dir*q*Math.PI/2);const ok=drawBossFrame(f.fid,Math.round(x-cx),Math.round(y-cy),e.dir,map);ctx.restore();return ok;}
   {const R=D?.rig&&e.defeat&&f.i>=(D.rigFrom??2)&&bSpec(e,D.rig);if(R){const rf=bAnim(R.alts[0][0]).f[0][0];const side=Math.sign((lock?(lock.left+lock.right)/2:camera+W/2)-e.x)||-e.dir;drawBossFrame(rf,x+side*(D.rigDx??40),y,e.dir,genMap(e,rf)||map);}}
-  const ok=drawBossFrame(f.fid,x,y,e.dir,map);
+  // an enraged boss (bossRage) pulses with a red outline glow
+  const glow=e.raged&&!(e.dead>0)&&e.hp>0;if(glow){ctx.save();const p=.6+.4*Math.sin(time*10);ctx.filter=`drop-shadow(0 0 1px rgba(255,60,30,${(.7+.3*p).toFixed(2)})) drop-shadow(0 0 ${(3+3*p).toFixed(1)}px rgba(255,30,10,${(.55+.45*p).toFixed(2)})) saturate(${(1.15+.25*p).toFixed(2)})`;}
+  const ok=drawBossFrame(f.fid,x,y,e.dir,map);if(glow)ctx.restore();
   if(ok&&e.jetT>0)drawCrownJet(e,x,y);
   if(ok&&e.dissolve){const gm=bossMap(e,true);if(gm){ctx.save();ctx.globalAlpha*=e.dead>0?clamp(1-(e.dead-0)/.75,.35,1):.35;drawBossFrame(f.fid,x,y,e.dir,gm);ctx.restore();}}
   return ok;
@@ -4253,7 +4275,7 @@ function pRow(p){const m=p.mp;return {slot:m.slot,nid:nidOf(p),hero:m.hero,x:p.x
 function rigOf(e){if(e.conscript)return e.fid!=null?['rom',e.fid]:null;if(e.type!=='mirror'&&!e.ally)return null;const i=cloneInfo(e);return i?[i.id,i.k]:null;}
 function eRow(e){return {nid:nidOf(e),type:e.type,v:e.v||'',x:e.x,y:e.y,z:e.z||0,dir:e.dir,hp:e.hp,maxhp:e.maxhp,state:e.state||'',
   fl:bitsOf([e.boss,e.elite,e.clone,e.setPiece,e.onstage,e.waiting,e.hidden,e.dying,e.dissolve,e.knife,e.wreck,e.sink,e.half,e.testHidden,e.brood,e.collar===false,e.phase2h,e.moving,e.remnant]),
-  dead:e.dead||0,delay:e.delay||0,freeze:e.freeze||0,fid:e.fid??-1,ak:e.ak||'',af:e.af|0,name:e.name||'',hero:e.hero|0,phase:e.phase|0,timer:e.sink?e.timer:0,rage:e.rage||0,rageWarning:e.rageWarning||0,
+  dead:e.dead||0,delay:e.delay||0,freeze:e.freeze||0,fid:e.fid??-1,ak:e.ak||'',af:e.af|0,name:e.name||'',hero:e.hero|0,phase:e.phase|0,timer:e.sink?e.timer:0,rage:e.rage||0,raged:e.raged?1:0,rageWarning:e.rageWarning||0,
   palAlt:e.palAlt||'',flashMap:e.flashMap||'',mvName:e.mvName||'',hy:e.hy||0,tx:e.state==='leap'?e.targetX:0,ty:e.state==='leap'?e.targetY:0,strikeFlash:e.strikeFlash||0,inv:e.inv||0,hurt:e.hurt||0,
   ba:e.boss&&e.ba?{key:e.ba.key,t:r1(e.ba.t||0),hold:!!e.ba.hold,rev:!!e.ba.rev,pin:e.ba.pin??null}:null,lot:e.type==='fessenden'?{mode:crownModeOf(e),stagger:r2(e.stagger||0)}:null,jet:e.jetT>0?Math.round(e.jetLen||0):0,gaff:e.gaff?Math.round(e.gaff.len||0):-1,
   defeat:e.defeat?{kind:e.defeat.kind,t:r2(e.defeat.t||0)}:null,rig:rigOf(e),tp:e.tp&&e.tp.mp?e.tp.mp.slot:-1};}
@@ -4349,7 +4371,7 @@ function applyView(v){
   crown=g.crown||null;parkedCar=g.parkedCar||null;spillWheels=g.wheels||[];sectionIndex=g.section??sectionIndex;encIndex=g.enc??encIndex;wave=g.wave|0;difficulty=g.difficulty||difficulty;
   stageTimer=g.stageTimer||0;kills=g.kills|0;cleared=!!g.cleared;rollT=g.rollT||0;joinWait=g.joinWait|0;
   enemies=rsync('e',v.e,(e,r)=>{EF.forEach((k,i)=>{e[k]=bit(r.fl,i);});e.collar=e.collarOff?false:undefined;e.fid=r.fid>=0?r.fid:null;e.ak=r.ak||null;e.v=r.v||undefined;e.targetX=r.tx;e.targetY=r.ty;
-    e.gaff=r.gaff>=0?{len:r.gaff}:null;e.jetT=r.jet>0?1:0;e.jetLen=r.jet||0;e.palAlt=r.palAlt||null;e.flashMap=r.flashMap||null;});
+    e.gaff=r.gaff>=0?{len:r.gaff}:null;e.jetT=r.jet>0?1:0;e.jetLen=r.jet||0;e.palAlt=r.palAlt||null;e.flashMap=r.flashMap||null;e.raged=!!r.raged;});
   allies=rsync('a',v.a,a=>{a.ally=true;a.freed=true;a.conscript=true;});
   bullets=rsync('b',v.b,b=>{b.art=b.art||undefined;b.color=b.color||undefined;});
   drops=rsync('d',v.d,d=>{d.food=d.food||undefined;});objects=rsync('o',v.o);bossObjs=rsync('bo',v.bo);zones=rsync('z',v.z,z=>{z.band=z.band||undefined;z.lane=z.lane||undefined;});

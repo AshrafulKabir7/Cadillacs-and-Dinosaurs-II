@@ -137,7 +137,8 @@ const g6=await page.evaluate(async()=>{
   const bossHp=()=>g.snapshot.enemies.find(e=>e.boss)?.hp;
   for(let tries=0;tries<24&&bossHp()>0;tries++){until(()=>{const b=g.snapshot.enemies.find(e=>e.boss);return b&&b.inv<=0&&!['script','intro','down','leap'].includes(b.state);},120);
    const b=g.snapshot.enemies.find(e=>e.boss),p=g.snapshot.player;g.test.move(b.x-36,b.y);g.step(1/60);if(p.specialCd<=0&&p.hurt<=0)g.controls.special();g.step(1/60);if(bossHp()>0)until(()=>false,20);}
-  const killed=!(bossHp()>0);g.snapshot.enemies.forEach((e,j)=>{if(!e.boss&&!e.dead&&!e.dying)g.test.damageEnemy(j,99999);});until(()=>g.state==='clear',900);
+  // the boss's rage call (bossRage) brings two late arrivals: keep clearing the regulars until the stage ends
+  const killed=!(bossHp()>0);until(()=>{g.snapshot.enemies.forEach((e,j)=>{if(!e.boss&&!e.dead&&!e.dying)g.test.damageEnemy(j,99999);});return g.state==='clear';},900);
   check('A special that finishes the boss scores the FINAL BLOW 20 000',killed&&g.state==='clear'&&g.snapshot.tally.finalBlow===20000);}
  {// containers are ROM records from the stage recipes: every on-foot section authors its own
   let bad=[];for(let i=0;i<EDEN_CAMPAIGN.length;i++){g.start(i);const P=g.snapshot.plan;for(const s of P.sections){const box=s.props.filter(p=>p.kind==='crate'||p.kind==='barrel');if(!s.drive&&!box.length)bad.push(s.stage+' none');for(const p of box){const r=ROM_FX.props[p.kind];if(!r||r.rec==null)bad.push(s.stage+' '+p.kind);}}}
